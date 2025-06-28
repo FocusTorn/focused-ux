@@ -1,14 +1,18 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-# compiled output
+#= COMPILED OUTPUT ========================================== 
 dist
 tmp
 out-tsc
+*.tsbuildinfo
+vsix_packages
 
-# dependencies
+#= DEPENDENCIES ============================================= 
 node_modules
+.pnp
+.pnp.js
+.yalc
 
-# IDEs and editors
+#= IDES AND EDITORS ========================================= 
 /.idea
 .project
 .classpath
@@ -17,28 +21,37 @@ node_modules
 .settings/
 *.sublime-workspace
 
-# IDE - VSCode
+#= IDE - VSCODE ============================================= 
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# misc
+#= MISC ===================================================== 
 /.sass-cache
 /connect.lock
 /coverage
 /libpeerconnection.log
 npm-debug.log
-yarn-error.log
 testem.log
 /typings
 
-# System Files
+/.fux_note-hub/
+
+#= SYSTEM FILES ============================================= 
 .DS_Store
+*.pem
+
+**/*.notesHub* 
+**/*removed*
+*.bak*
+
 Thumbs.db
 
 .nx/cache
 .nx/workspace-data
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+

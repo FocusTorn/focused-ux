@@ -1,0 +1,11 @@
+packages:
+  - packages/_shared/shared-services
+  - packages/_shared/tools
+  
+  - packages/ghost-writer-core
+  - packages/ghost-writer-ext
+
+onlyBuiltDependencies:
+  - '@swc/core'
+  - esbuild
+  - nx

@@ -1,0 +1,41 @@
+{
+    
+    
+        // ESLint --------------->> 
+        
+        "eslint.useFlatConfig": true,
+        "eslint.workingDirectories": ["./"],
+        
+        //----------------------------------------------------<<
+        // Prettier ------------->> 
+        
+        "prettier.configPath": "prettier.config.cjs",
+        "prettier.experimentalTernaries": true,
+        "prettier.requireConfig": true,
+        
+        //----------------------------------------------------<<
+
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "editor.formatOnSave": true,
+        "nxConsole.generateAiAgentRules": true,
+
+
+        "search.exclude": { //>
+            "**/node_modules": true,
+            "**/.turbo": true,
+            "**/dist": true,
+            "**/coverage": true
+        }, //<
+        "files.exclude": { //>
+            "**/node_modules/**": true,
+            "**/.turbo": true
+            // "**/dist": true,
+            // "**/coverage": true
+        }, //<
+        
+    
+    
+    
+    
+    
+}

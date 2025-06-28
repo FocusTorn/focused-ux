@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Extension: Ghost Writer",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/ghost-writer/ext",
+                "${workspaceFolder}"
+            
+            
+            ],
+            "outFiles": ["${workspaceFolder}/packages/ghost-writer/ext/dist/**/*.js"],
+            "preLaunchTask": "watch: ghost-writer-ext"
+        }
+    ]
+}

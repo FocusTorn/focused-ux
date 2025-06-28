@@ -1,0 +1,14 @@
+
+> fux-ghost-writer@0.1.12 build D:\_dev\!Projects\focused-ux\focused-ux\packages\ghost-writer\ext
+> pnpm run build:js
+
+
+> fux-ghost-writer@0.1.12 build:js D:\_dev\!Projects\focused-ux\focused-ux\packages\ghost-writer\ext
+> fux-build ./src/extension.ts --outfile=./dist/extension.js
+
+
+  dist\extension.js      3.0mb
+  dist\extension.js.map  1.1mb
+
+Done in 1567ms
+[fux-build] Build successful for ./src/extension.ts -> ./dist/extension.js

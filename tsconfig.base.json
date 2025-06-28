@@ -1,21 +1,47 @@
 {
-  "compilerOptions": {
-    "composite": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": true,
-    "importHelpers": true,
-    "isolatedModules": true,
-    "lib": ["es2022"],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "noEmitOnError": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "es2022",
-    "customConditions": ["development"]
-  }
+    "compilerOptions": {
+        
+        // "customConditions": ["development"],
+        // "noEmit": false,
+        // "composite": true,
+        // "emitDeclarationOnly": true,
+        
+
+        //= ESM AND NODENEXT ========================================================================
+        "target": "ES2022",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "lib": ["ES2022"],
+        "skipLibCheck": true,
+
+        //== STRONG TYPESCRIPT ======================================================================
+        "strict": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+
+        //= DECORATORS ==============================================================================
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+
+        //= FOR MONOREPOS WITH PROJECT REFERENCES ===================================================
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "noEmitOnError": true,
+        
+
+
+        //= ALLOWABLE ===============================================================================
+        "allowSyntheticDefaultImports": true,
+        "allowJs": true,
+        "importHelpers": true,
+
+        //= PATH ALIASES ============================================================================
+        "baseUrl": ".",
+    }
 }

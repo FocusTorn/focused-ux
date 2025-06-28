@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "watch: ghost-writer-ext",
+            "type": "shell",
+            "command": "npx nx run ghost-writer-ext:build --watch",
+            "isBackground": true,
+            "problemMatcher": "$esbuild-watch",
+            "runOptions": {
+                "runOn": "default"
+            }
+        }
+    ]
+}

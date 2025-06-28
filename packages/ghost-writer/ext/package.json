@@ -1,0 +1,16 @@
+{
+    "name": "@fux/ghost-writer-ext",
+    "displayName": "Ghost Writer",
+    "description": "An extension for generating code with AI.",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.js",
+    "engines": {
+        "vscode": "^1.100.0"
+    },
+    "activationEvents": [],
+    "dependencies": {
+        "@fux/ghost-writer-core": "workspace:*"
+    }
+}

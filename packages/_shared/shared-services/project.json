@@ -1,0 +1,28 @@
+{
+    "name": "@fux/shared-services",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/_shared/shared-services/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/js:swc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/packages/_shared/shared-services",
+                "main": "packages/_shared/shared-services/src/index.ts",
+                "tsConfig": "packages/_shared/shared-services/tsconfig.lib.json",
+                "assets": [],
+                "clean": true
+                
+            }
+        },
+        "typecheck": {
+            "executor": "@nx/js:tsc",
+            "options": {
+                "tsConfig": "packages/_shared/shared-services/tsconfig.lib.json",
+                "noEmit": true
+            }
+        },
+        "lint": {}
+    }
+}
