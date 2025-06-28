@@ -1,8 +1,8 @@
 {
     "version": "2.0.0",
     "tasks": [
-        {
-            "label": "watch: ghost-writer-ext",
+        
+        { "label": "watch: ghost-writer-ext", //>
             "type": "shell",
             "command": "npx nx run ghost-writer-ext:build --watch",
             "isBackground": true,
@@ -10,6 +10,22 @@
             "runOptions": {
                 "runOn": "default"
             }
-        }
+        }, //<
+
+        { "label": "Build Ghost Writer", //>
+            "type": "shell",
+            "command": "nx run @fux/ghost-writer-ext:build:production",
+            "problemMatcher": ["$tsc-watch", "$ts-esbuild-watch"],
+            "presentation": {
+                "panel": "shared",
+                "group": "satPrelaunch",
+                "clear": true,
+                // "close": true // To open and shut
+                "reveal": "never" // Just dont show
+            },
+            "group": "build"
+        }, //<
+
+
     ]
 }

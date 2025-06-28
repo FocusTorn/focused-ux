@@ -1,7 +1,6 @@
 
 
 #= Do not exclude the following files =========================================== 
-!assets
 
 !CHANGELOG.md
 !LICENSE.txt
@@ -14,6 +13,7 @@
 !dist/extension.cjs
 !dist/extension.js
 
+!assets/logo3.png
 
 **/*
 

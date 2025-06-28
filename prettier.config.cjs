@@ -5,13 +5,18 @@
 const config = {
 	semi: false,
 	trailingComma: 'es5',
-	useTabs: false,
 	printWidth: 100,
     
 	experimentalTernaries: true,
 	// requireConfig: true,
+    
+	useTabs: false,
 	tabWidth: 4,
 	singleQuote: true,
+    
+    markdown: {
+        codeFences: "~~~",
+    },
     
 	// plugins: ['./.prettier/plugin.cjs'],
     

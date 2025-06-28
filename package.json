@@ -2,13 +2,13 @@
     "name": "@fux/source",
     "version": "0.0.0",
     "license": "MIT",
-    "scripts": {},
     "type": "module",
     "private": true,
     "dependencies": {
         "@swc/helpers": "~0.5.11",
         "@types/node": "^24.0.4",
-        "@types/vscode": "^1.101.0"
+        "@types/vscode": "^1.101.0",
+        "strip-json-comments": "^5.0.2"
     },
     "devDependencies": {
         "@antfu/eslint-config": "^4.16.1",
@@ -16,6 +16,7 @@
         "@nx/esbuild": "^21.2.1",
         "@nx/eslint": "^21.2.1",
         "@nx/js": "^21.2.1",
+        "@nx/release": "^21.2.1",
         "@nx/workspace": "^21.2.1",
         "@seahax/eslint-plugin-wrap": "^0.6.7",
         "@swc/cli": "~0.6.0",

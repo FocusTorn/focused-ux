@@ -1,6 +1,6 @@
 {
     "jsc": {
-        "target": "es2017",
+        "target": "es2022",
         "parser": {
             "syntax": "typescript",
             "decorators": true,
@@ -18,12 +18,5 @@
         "type": "nodenext"
     },
     "sourceMaps": true,
-    "exclude": [
-        "jest.config.ts",
-        ".*\\.spec.tsx?$",
-        ".*\\.test.tsx?$",
-        "./src/jest-setup.ts$",
-        "./**/jest-setup.ts$",
-        ".*.js$"
-    ]
+    "exclude": [".*\\.spec.tsx?$", ".*\\.test.tsx?$", ".*\\.vite.tsx?$", ".*.js$"]
 }

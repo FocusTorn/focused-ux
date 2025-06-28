@@ -33,15 +33,14 @@
         "declarationMap": true,
         "sourceMap": true,
         "noEmitOnError": true,
-        
-
+        "composite": true,
 
         //= ALLOWABLE ===============================================================================
         "allowSyntheticDefaultImports": true,
-        "allowJs": true,
+        "allowJs": false,
         "importHelpers": true,
 
         //= PATH ALIASES ============================================================================
-        "baseUrl": ".",
+        "baseUrl": "."
     }
 }

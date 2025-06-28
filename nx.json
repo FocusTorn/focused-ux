@@ -17,26 +17,66 @@
         }
     },
     "targetDefaults": {
+        //>
         "build": {
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "outputs": ["{options.outputPath}"]
+        },
+        "publish": {
+            "dependsOn": ["build"]
         },
         "@nx/js:swc": {
             "cache": true,
             "dependsOn": ["^build"],
-            "inputs": ["production", "^production"]
+            "inputs": ["production", "^production"],
+            "options": {
+                "outputPath": "{projectRoot}/dist",
+                "main": "{projectRoot}/src/index.ts",
+                "tsConfig": "{projectRoot}/tsconfig.lib.json",
+                "swcrc": "{workspaceRoot}/.swcrc",
+                "stripLeadingPaths": true,
+                "clean": true
+            }
         },
         "@nx/js:tsc": {
             "cache": true,
             "dependsOn": ["^build"],
             "inputs": ["production", "^production"]
+        },
+        "@nx/esbuild:esbuild": {
+            "cache": true,
+            "dependsOn": ["^build"],
+            "inputs": ["production", "^production"],
+            "options": {
+                "outputPath": "{projectRoot}/dist",
+                "tsConfig": "{projectRoot}/tsconfig.json",
+                "platform": "node",
+                "external": ["vscode"]
+            }
         }
     },
+
+    "release": {
+        "projects": ["@fux/ghost-writer-ext"],
+        "projectsRelationship": "independent",
+        "version": {
+            "conventionalCommits": true
+        },
+        "changelog": {
+            "projectChangelogs": true
+        }
+    },
+
     "plugins": [
         {
             "plugin": "@nx/js/typescript",
             "options": {
                 "typecheck": {
                     "targetName": "typecheck"
+                },
+                "build": {
+                    "targetName": "build",
+                    "configName": "tsconfig.lib.json"
                 }
             }
         },

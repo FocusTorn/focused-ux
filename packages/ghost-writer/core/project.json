@@ -4,56 +4,9 @@
     "sourceRoot": "packages/ghost-writer/core/src",
     "projectType": "library",
     "targets": {
-        
         "build": {
-            "executor": "@nx/js:swc",
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "outputPath": "dist/packages/ghost-writer/core",
-                "main": "packages/ghost-writer/core/src/index.ts",
-                "tsConfig": "packages/ghost-writer/core/tsconfig.lib.json",
-                "assets": []
-            }
+            "executor": "@nx/js:swc"
         },
-        
-        // "build": {
-        //     "executor": "nx:run-commands",
-        //     "outputs": ["{options.outputPath}"],
-        //     "options": {
-        //         "outputPath": "dist/packages/ghost-writer/core",
-        //         "commands": [
-        //             "nx run @fux/ghost-writer-core:build-js",
-        //             "nx run @fux/ghost-writer-core:build-dts"
-        //         ],
-        //         "parallel": false
-        //     }
-        // },
-        // "build-js": {
-        //     "executor": "@nx/js:swc",
-        //     "outputs": ["{options.outputPath}"],
-        //     "options": {
-        //         "outputPath": "dist/packages/ghost-writer/core",
-        //         "main": "packages/ghost-writer/core/src/index.ts",
-        //         "tsConfig": "packages/ghost-writer/core/tsconfig.lib.json",
-        //         "assets": [
-        //             "packages/ghost-writer/core/*.md",
-        //             "packages/ghost-writer/core/package.json"
-        //         ],
-        //         "clean": true
-        //     }
-        // },
-        // "build-dts": {
-        //     "executor": "@nx/js:tsc",
-        //     "outputs": ["{options.outputPath}"],
-        //     "options": {
-        //         "outputPath": "dist/packages/ghost-writer/core",
-        //         "main": "packages/ghost-writer/core/src/index.ts",
-        //         "tsConfig": "packages/ghost-writer/core/tsconfig.lib.json",
-        //         "emitDeclarationOnly": true,
-        //         "clean": false
-        //     }
-        // },
-        
         "lint": {}
     }
 }

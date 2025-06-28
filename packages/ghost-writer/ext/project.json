@@ -4,20 +4,14 @@
     "sourceRoot": "packages/ghost-writer/ext/src",
     "projectType": "application",
     "targets": {
+        
         "build": {
             "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
             "defaultConfiguration": "production",
             "options": {
-                "outputPath": "dist/packages/ghost-writer/ext",
                 "main": "packages/ghost-writer/ext/src/extension.ts",
-                "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
-                "assets": [],
-                "bundle": true,
-                "platform": "node",
-                "external": ["vscode"],
-                "format": ["cjs"],
-                "clean": true
+                "declaration": false,
+                "assets": []
             },
             "configurations": {
                 "development": {
@@ -26,6 +20,30 @@
                 "production": {
                     "minify": true
                 }
+            }
+        },
+        
+        "package": {
+            "executor": "nx:run-commands",
+            "dependsOn": [
+                {
+                    "target": "build",
+                    "projects": "self"
+                }
+            ],
+            "outputs": ["{workspaceRoot}/vsix_packages/ghost-writer.vsix"],
+            "options": {
+                "command": "node -e \"require('fs').mkdirSync('../../../vsix_packages', { recursive: true })\" && vsce package --no-dependencies -o ../../../vsix_packages/ghost-writer.vsix",
+                "cwd": "{projectRoot}"
+            }
+        },
+        
+        "publish": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["package"],
+            "options": {
+                "command": "vsce publish",
+                "cwd": "{projectRoot}"
             }
         },
         "lint": {}

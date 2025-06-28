@@ -1,8 +1,9 @@
 {
-  "extends": "../../../tsconfig.base.json",
-  "compilerOptions": {
-    "types": ["node"] // , "vite"
-  },
-  "include": ["src/**/*.ts"], // "src/**/*.vite.ts"
-  "exclude": ["node_modules", "dist"]
+    "extends": "../../../tsconfig.base.json",
+    "files": [],
+    "references": [
+        {
+            "path": "./tsconfig.lib.json"
+        }
+    ]
 }

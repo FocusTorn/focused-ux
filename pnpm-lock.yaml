@@ -17,6 +17,9 @@ importers:
       '@types/vscode':
         specifier: ^1.101.0
         version: 1.101.0
+      strip-json-comments:
+        specifier: ^5.0.2
+        version: 5.0.2
     devDependencies:
       '@antfu/eslint-config':
         specifier: ^4.16.1
@@ -76,14 +79,6 @@ importers:
         specifier: ^8.35.0
         version: 8.35.0(eslint@9.29.0)(typescript@5.8.3)
 
-  dist/packages/_shared/shared-services: {}
-
-  dist/packages/ghost-writer/core:
-    dependencies:
-      '@fux/shared-services':
-        specifier: workspace:*
-        version: link:../../../../packages/_shared/shared-services
-
   packages/_shared/shared-services: {}
 
   packages/_shared/tools: {}
@@ -99,6 +94,9 @@ importers:
       '@fux/ghost-writer-core':
         specifier: workspace:*
         version: link:../core
+      '@fux/shared-services':
+        specifier: workspace:*
+        version: link:../../_shared/shared-services
 
 packages:
 
@@ -3570,6 +3568,10 @@ packages:
   strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
+
+  strip-json-comments@5.0.2:
+    resolution: {integrity: sha512-4X2FR3UwhNUE9G49aIsJW5hRRR3GXGTBTZRMfv568O60ojM8HcWjV/VxAxCDW3SUND33O6ZY66ZuRcdkj73q2g==}
+    engines: {node: '>=14.16'}
 
   strtok3@9.1.1:
     resolution: {integrity: sha512-FhwotcEqjr241ZbjFzjlIYg6c5/L/s4yBGWSMvJ9UoExiSqL+FnFA/CaeZx17WGaZMS/4SOZp8wH18jSS4R4lw==}
@@ -7891,6 +7893,8 @@ snapshots:
       min-indent: 1.0.1
 
   strip-json-comments@3.1.1: {}
+
+  strip-json-comments@5.0.2: {}
 
   strtok3@9.1.1:
     dependencies:
