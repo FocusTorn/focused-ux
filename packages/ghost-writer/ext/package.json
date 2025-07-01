@@ -4,10 +4,12 @@
     "description": "Dynamically generate frequently used code.",
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
-    "version": "0.1.0-dev.1751307981052",
+    "version": "0.1.0-dev.1751377626466",
     "dependencies": {
         "@fux/shared-services": "workspace:*",
-        "@fux/ghost-writer-core": "workspace:*"
+        "@fux/ghost-writer-core": "workspace:*",
+        "reflect-metadata": "^0.2.2",
+        "tsyringe": "^4.10.0"
     },
     "contributes": {
         "commands": [
