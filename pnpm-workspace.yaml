@@ -1,12 +1,20 @@
 packages:
-  - packages/_shared/shared-services
-  - packages/_shared/tools
-  - packages/ghost-writer/core
-  - packages/ghost-writer/ext
+    - packages/ghost-writer/core
+    - packages/ghost-writer/ext
+
+    - packages/note-hub/core
+    - packages/note-hub/ext
+
+    - packages/project-butler/core
+    - packages/project-butler/ext
+
+    - packages/_shared/shared-services
+    - packages/_shared/tools
+    - packages/_shared/workspace-tools
 
 onlyBuiltDependencies:
-  - '@swc/core'
-  - '@vscode/vsce-sign'
-  - esbuild
-  - keytar
-  - nx
+    - '@swc/core'
+    - '@vscode/vsce-sign'
+    - esbuild
+    - keytar
+    - nx

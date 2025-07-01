@@ -3,9 +3,35 @@
     "compileOnSave": false,
     "files": [],
     "references": [
-        { "path": "packages/_shared/shared-services" },
-        { "path": "packages/_shared/tools" },
-        { "path": "packages/ghost-writer/core" },
-        { "path": "packages/ghost-writer/ext" }
+        {
+            "path": "packages/_shared/shared-services"
+        },
+        {
+            "path": "packages/_shared/tools"
+        },
+        {
+            "path": "packages/ghost-writer/core"
+        },
+        {
+            "path": "packages/ghost-writer/ext"
+        },
+        {
+            "path": "packages/terminal-butler/core"
+        },
+        {
+            "path": "packages/terminal-butler/ext"
+        },
+        {
+            "path": "packages/note-hub/core"
+        },
+        {
+            "path": "packages/note-hub/ext"
+        },
+        {
+            "path": "packages/chrono-copy/core"
+        },
+        {
+            "path": "packages/chrono-copy/ext"
+        }
     ]
 }

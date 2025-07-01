@@ -17,7 +17,6 @@
         }
     },
     "targetDefaults": {
-        //>
         "build": {
             "dependsOn": ["^build"],
             "outputs": ["{options.outputPath}"]
@@ -51,11 +50,12 @@
                 "outputPath": "{projectRoot}/dist",
                 "tsConfig": "{projectRoot}/tsconfig.json",
                 "platform": "node",
-                "external": ["vscode"]
+                "bundle": true,
+                "external": ["vscode"],
+                "thirdParty": false
             }
         }
     },
-
     "release": {
         "projects": ["@fux/ghost-writer-ext"],
         "projectsRelationship": "independent",
@@ -66,7 +66,6 @@
             "projectChangelogs": true
         }
     },
-
     "plugins": [
         {
             "plugin": "@nx/js/typescript",
@@ -88,7 +87,11 @@
             "include": [
                 "packages/_shared/shared-services/**/*",
                 "packages/ghost-writer/core/**/*",
-                "packages/ghost-writer/ext/**/*"
+                "packages/ghost-writer/ext/**/*",
+                "packages/project-butler/core/**/*",
+                "packages/project-butler/ext/**/*",
+                "packages/note-hub/core/**/*",
+                "packages/note-hub/ext/**/*"
             ]
         }
     ]

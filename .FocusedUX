@@ -6,6 +6,46 @@
 
 # TODO CCP Need to add an option to not count tokens within explorer display
 
+
+TerminalButler:
+  packageJson-order:
+    - displayName
+    - description
+    - publisher
+    - repository
+    - version
+    
+    - bin
+    - scripts
+    
+    - sideEffects
+    - dependencies
+    - devDependencies
+    - peerDependencies
+    
+    - contributes
+    - activationEvents
+    
+    - license
+    - icon
+    - categories
+    - keywords
+    - engines
+    
+    - private
+    - type
+    - module
+
+    - main
+    - types
+    - workspaces
+    - exports
+
+
+
+
+
+
 # ┌────────────────────────────────────────────────────────────────────────────┐
 # │                           Context Cherry Picker                            │
 # └────────────────────────────────────────────────────────────────────────────┘

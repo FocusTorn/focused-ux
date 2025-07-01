@@ -1,14 +1,15 @@
 {
     "name": "@fux/source",
     "version": "0.0.0",
-    "license": "MIT",
-    "type": "module",
-    "private": true,
     "dependencies": {
+        "@types/js-yaml": "^4.0.9",
         "@swc/helpers": "~0.5.11",
-        "@types/node": "^24.0.4",
-        "@types/vscode": "^1.101.0",
-        "strip-json-comments": "^5.0.2"
+        
+        "js-yaml": "^4.1.0",
+        "strip-json-comments": "^5.0.2",
+        
+        "reflect-metadata": "^0.2.2",
+        "tsyringe": "^4.10.0"
     },
     "devDependencies": {
         "@antfu/eslint-config": "^4.16.1",
@@ -16,12 +17,12 @@
         "@nx/esbuild": "^21.2.1",
         "@nx/eslint": "^21.2.1",
         "@nx/js": "^21.2.1",
-        "@nx/release": "^21.2.1",
         "@nx/workspace": "^21.2.1",
         "@seahax/eslint-plugin-wrap": "^0.6.7",
         "@swc/cli": "~0.6.0",
         "@swc/core": "~1.5.7",
         "@types/node": "^24.0.4",
+        "@types/vscode": "^1.101.0",
         "@typescript-eslint/parser": "^8.35.0",
         "esbuild": "^0.25.5",
         "eslint": "^9.29.0",
@@ -33,6 +34,9 @@
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.35.0"
     },
+    "license": "MIT",
+    "private": true,
+    "type": "module",
     "workspaces": [
         "packages/*"
     ]

@@ -28,7 +28,6 @@
         }, //<
         "files.exclude": { //>
             "**/node_modules/**": true,
-            "**/.turbo": true
             // "**/dist": true,
             // "**/coverage": true
         }, //<

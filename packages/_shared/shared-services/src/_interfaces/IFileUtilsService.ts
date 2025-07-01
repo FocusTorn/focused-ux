@@ -9,6 +9,12 @@ import type { Uri } from 'vscode'
 //--------------------------------------------------------------------------------------------------------------<<
 
 export interface IFileUtilsService { //>
+	readFile: (filePath: string, encoding?: BufferEncoding) => Promise<string>
+	writeFile: (
+		filePath: string,
+		data: string,
+		options?: import('node:fs').WriteFileOptions,
+	) => Promise<void>
 	createFileBackup: (fileUri: Uri) => Promise<void>
 	readJsonFileSync: <T = any>(filePath: string, encoding?: BufferEncoding) => T | undefined
 	readJsonFileAsync: <T = any>(filePath: string, encoding?: BufferEncoding) => Promise<T | undefined>
@@ -16,12 +22,11 @@ export interface IFileUtilsService { //>
 	iFspWriteFile: (
 		path: import('node:fs').PathLike | import('node:fs/promises').FileHandle,
 		data: string | Uint8Array,
-		options?: import('node:fs').WriteFileOptions
+		options?: import('node:fs').WriteFileOptions,
 	) => Promise<void>
 	iFspAccess: (path: import('node:fs').PathLike, mode?: number) => Promise<void>
 	iFspMkdir: (
 		path: import('node:fs').PathLike,
-		options?: import('node:fs').MakeDirectoryOptions
+		options?: import('node:fs').MakeDirectoryOptions,
 	) => Promise<string | undefined>
-	// Add other file utility methods if they exist in the service
 } //<

@@ -1,20 +1,53 @@
 {
     "version": "0.2.0",
     "configurations": [
-        { "name": "Ghost Writer", //>
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
+        {
+            "name": "Ghost Writer",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
                 "--profile=Clean",
-				"--extensionDevelopmentPath=${workspaceFolder}/packages/ghost-writer/ext",
-				"${workspaceFolder}" 
-			],
-			// "outFiles": [
-			// 	"${workspaceFolder}/packages/ghost-writer/ext/dist/**/*.js",
-			// 	"${workspaceFolder}/packages/shared/shared-services/dist/**/*.js" 
-			// ],
-			"sourceMaps": true,
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/ghost-writer/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true,
             "preLaunchTask": "Build Ghost Writer"
-		}, //<
+        },
+        {
+            "name": "Terminal Butler",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/terminal-butler/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true,
+            "preLaunchTask": "Build Terminal Butler"
+        },
+        {
+            "name": "NoteHub",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/note-hub/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true,
+            "preLaunchTask": "Build NoteHub"
+        },
+        {
+            "name": "ChronoCopy",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/chrono-copy/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true,
+            "preLaunchTask": "Build ChronoCopy"
+        }
     ]
 }

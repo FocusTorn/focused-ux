@@ -1,13 +1,55 @@
+
+
 # ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
 # │                                  Custom PNPM Aliases for the Focused-UX Monorepo                                   │
+# ├────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+# │                                                                                                                    │
+# │ SYNOPSIS                                                                                                           │
+# │   This script creates short, convenient PowerShell aliases for interacting with packages in a pnpm/Nx monorepo.    │
+# │   It dynamically generates functions and aliases based on a simple key-value mapping in an external JSON file,      │
+# │   dramatically simplifying long commands like `pnpm nx build @fux/my-package --some-flag`.                         │
+# │                                                                                                                    │
+# │ DESCRIPTION                                                                                                        │
+# │   The script reads its configuration from `pnpm_aliases.json`. For each entry, it generates a corresponding         │
+# │   PowerShell function (e.g., `Invoke-tbCommand`) and sets a short alias (e.g., `tb`) to point to it.               │
+# │                                                                                                                    │
+# │   The core logic intelligently distinguishes between three types of commands:                                      │
+# │     1. Package Management (`add`, `remove`): Routes to `pnpm add/remove --filter <package-name>`.                  │
+# │     2. Script Execution (`run`, `exec`): Routes to `pnpm run/exec --filter <package-name>`.                        │
+# │     3. Nx Tasks (default): Routes to `nx <task> <project-name>`.                                                   │
+# │                                                                                                                    │
+# │ SWITCHES                                                                                                           │
+# │   --debug (-d): Prints detailed debug information, including resolved names and the final command string.          │
+# │                                                                                                                    │
+# │ USAGE EXAMPLES                                                                                                     │
+# │   Assuming an alias `cc` is mapped to `chrono-copy`:                                                               │
+# │                                                                                                                    │
+# │   1. Run an Nx 'build' task (uses derived project name `@fux/chrono-copy-ext`):                                    │
+# │        cc build --prod                                                                                             │
+# │        -> nx build @fux/chrono-copy-ext --prod                                                                     │
+# │                                                                                                                    │
+# │   2. Add a new dependency (uses derived package name `chrono-copy`):                                               │
+# │        cc add dayjs                                                                                                │
+# │        -> pnpm add dayjs --filter=chrono-copy --reporter=default                                                   │
+# │                                                                                                                    │
+# │   3. View the command and debug info without running it:                                                           │
+# │        cc build --debug                                                                                            │
+# │        [DEBUG] Alias 'cc' called with args: build                                                                  │
+# │          ├─ Resolved Package Name: chrono-copy                                                                     │
+# │          └─ Resolved Project Name: @fux/chrono-copy-ext                                                            │
+# │          - Routing to: Nx Task (nx <target>)                                                                       │
+# │        -> nx build @fux/chrono-copy-ext                                                                            │
+# │                                                                                                                    │
+# │ CONFIGURATION                                                                                                      │
+# │   To add or modify an alias, edit `pnpm_aliases.json`. For extensions, use the base name (e.g., "my-app"). For      │
+# │   other packages, use the full name (e.g., "@fux/my-lib"). The script must be re-sourced.                           │
+# │                                                                                                                    │
 # └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-# ======================================================================================================================
-# Private Helper Function to Execute Shell Commands
-# This centralizes the display and execution logic for pnpm commands.
-# The leading underscore is a convention for "private" functions not meant to be called directly by the user.
-# ======================================================================================================================
-function _Invoke-Process {
+# ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+# │                                 Private Helper Function to Execute Shell Commands                                  │
+# └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+function _Invoke-Process { #>
     param(
         [Parameter(Mandatory=$true)]
         [string]$Executable,
@@ -20,11 +62,10 @@ function _Invoke-Process {
         [ScriptBlock]$FilterBlock,
 
         [Parameter(Mandatory=$true)]
-        [switch]$ShowCommandSwitch
+        [bool]$IsDebug
     )
 
-    # Step 1: Build the display string from the provided arguments and filter
-    if ($ShowCommandSwitch.IsPresent) {
+    if ($IsDebug) {
         $displayString = "$Executable $($PreArgs -join ' ')"
         if ($PostArgs.Count -gt 0) { $displayString += " -- $($PostArgs -join ' ')" }
         if ($FilterBlock) {
@@ -33,7 +74,6 @@ function _Invoke-Process {
         Write-Host "$($PSStyle.Dim)-> $displayString$($PSStyle.Reset)"
     }
 
-    # Step 2: Execute the command safely using splatting and the provided filter
     $OutputEncoding = [System.Text.Encoding]::UTF8
     if ($FilterBlock) {
         if ($PostArgs.Count -gt 0) {
@@ -48,313 +88,174 @@ function _Invoke-Process {
             & $Executable @PreArgs
         }
     }
-}
+} #<
 
+# ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+# │                                          Private Command Handler Functions                                         │
+# └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+function _Invoke-PnpmPackageManagement { #>
+    param(
+        [string]$PnpmPackageName,
+        [string[]]$CommandArgs,
+        [bool]$IsDebug
+    )
+    if ($CommandArgs.Count -lt 2) { Write-Host "Please provide a package to $($CommandArgs[0])."; return }
 
-# ======================================================================================================================
-# Main Public Function
-# ======================================================================================================================
-function Invoke-NxCommand {
+    $filter = { $_ -notmatch 'Lockfile only installation|deprecated subdependencies found' }
+    $pnpmArgs = @(
+        $CommandArgs[0],
+        $CommandArgs[1..($CommandArgs.Count - 1)],
+        "--filter=$PnpmPackageName",
+        "--reporter=default"
+    )
+    _Invoke-Process -Executable 'pnpm' -PreArgs $pnpmArgs -IsDebug:$IsDebug
+} #<
+
+function _Invoke-PnpmScriptExecution { #>
+    param(
+        [string]$PnpmPackageName,
+        [string[]]$CommandArgs,
+        [bool]$IsDebug
+    )
+    $subCommand = $CommandArgs[0]
+    $subCommandArgs = $CommandArgs[1..($CommandArgs.Count - 1)]
+    if ($subCommandArgs.Count -eq 0) { Write-Host "Please provide a script/command to '$subCommand'."; return }
+
+    $filter = { $_ -notmatch 'deprecated subdependencies found' }
+    $taskOrExecName, $pnpmFlags, $taskArgs = $null, @(), @()
+    foreach ($arg in $subCommandArgs) {
+        if ($arg -match '^-' -and $arg -ne '-d' -and $arg -ne '--debug') { $pnpmFlags += $arg }
+        elseif ($taskOrExecName -eq $null) { $taskOrExecName = $arg }
+        else { $taskArgs += $arg }
+    }
+    if ($taskOrExecName -eq $null) { Write-Host "No script/command name specified after '$subCommand'."; return }
+    
+    $pnpmPreArgs = @($subCommand, $taskOrExecName) + $pnpmFlags + "--filter=$PnpmPackageName"
+    $pnpmPostArgs = $taskArgs
+    _Invoke-Process -Executable 'pnpm' -PreArgs $pnpmPreArgs -PostArgs $pnpmPostArgs -FilterBlock $filter -IsDebug:$IsDebug
+} #<
+
+function _Invoke-NxTask { #>
+    param(
+        [string]$NxProjectName,
+        [string[]]$CommandArgs,
+        [bool]$IsDebug
+    )
+    $target, $nxFlags, $targetArgs = $null, @(), @()
+    foreach ($arg in $CommandArgs) {
+        if ($arg.StartsWith("--") -and $arg -ne '--debug') { $nxFlags += $arg }
+        elseif ($target -eq $null) { $target = $arg }
+        else { $targetArgs += $arg }
+    }
+    if ($target -eq $null) { Write-Host "No Nx target specified (e.g., 'build', 'lint')."; return }
+
+    $nxPreArgs = @($target, $NxProjectName) + $nxFlags + $targetArgs
+    _Invoke-Process -Executable 'nx' -PreArgs $nxPreArgs -IsDebug:$IsDebug
+} #<
+
+# ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+# │                                                Main Public Function                                                │
+# └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+function Invoke-NxCommand { #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
         [string]$Alias,
         
-        [Parameter()]
-        [Alias('show')]
-        [switch]$ShowCommand,
-
         [Parameter(Position=0, ValueFromRemainingArguments=$true)]
         [string[]]$CommandArgs
     )
 
-    if ($CommandArgs.Count -eq 0) { Write-Host "Please provide a command for '$Alias'."; return }
-    $packageName = $packageAliases[$Alias]
+    $isDebug = $PSBoundParameters.ContainsKey('Debug')
 
-    # --- add/remove block ---
-    if ($CommandArgs[0] -in 'add', 'remove') {
-        if ($CommandArgs.Count -lt 2) { Write-Host "Please provide a package to $($CommandArgs[0])."; return }
+    # Filter out our custom --debug/-d switch from the arguments passed to sub-commands
+    $filteredCommandArgs = $CommandArgs | Where-Object { $_ -ne '--debug' -and $_ -ne '-d' }
 
-        $filter = { $_ -notmatch 'Lockfile only installation|deprecated subdependencies found' }
-        $pnpmArgs = @(
-            $CommandArgs[0],
-            $CommandArgs[1..($CommandArgs.Count - 1)],
-            "--filter=$packageName",
-            "--reporter=default"
-        )
-        _Invoke-Process -Executable 'pnpm' -PreArgs $pnpmArgs -FilterBlock $filter -ShowCommandSwitch:$ShowCommand
+    if ($filteredCommandArgs.Count -eq 0) { Write-Host "Please provide a command for '$Alias'."; return }
 
-    # --- run/exec block ---
-    } elseif ($CommandArgs[0] -in 'run', 'exec') {
-        $subCommand = $CommandArgs[0]
-        $subCommandArgs = $CommandArgs[1..($CommandArgs.Count - 1)]
-        if ($subCommandArgs.Count -eq 0) { Write-Host "Please provide a script/command to '$subCommand'."; return }
-
-        $filter = { $_ -notmatch 'deprecated subdependencies found' }
-        $taskOrExecName, $pnpmFlags, $taskArgs = $null, @(), @()
-        foreach ($arg in $subCommandArgs) {
-            if ($arg -match '^-') { $pnpmFlags += $arg }
-            elseif ($taskOrExecName -eq $null) { $taskOrExecName = $arg }
-            else { $taskArgs += $arg }
-        }
-        if ($taskOrExecName -eq $null) { Write-Host "No script/command name specified after '$subCommand'."; return }
-        
-        $pnpmPreArgs = @($subCommand, $taskOrExecName) + $pnpmFlags + "--filter=$packageName"
-        $pnpmPostArgs = $taskArgs
-        _Invoke-Process -Executable 'pnpm' -PreArgs $pnpmPreArgs -PostArgs $pnpmPostArgs -FilterBlock $filter -ShowCommandSwitch:$ShowCommand
-
-    # --- nx block ---
-    } else {
-        # This block handles all other commands by passing them to Nx.
-        $target, $nxFlags, $targetArgs = $null, @(), @()
-        foreach ($arg in $CommandArgs) {
-            if ($arg.StartsWith("--")) { $nxFlags += $arg }
-            elseif ($target -eq $null) { $target = $arg }
-            else { $targetArgs += $arg }
-        }
-        if ($target -eq $null) { Write-Host "No Nx target specified (e.g., 'build', 'lint')."; return }
-
-        $nxPreArgs = @('nx', $target, $packageName) + $nxFlags + $targetArgs
-        _Invoke-Process -Executable 'pnpm' -PreArgs $nxPreArgs -ShowCommandSwitch:$ShowCommand
+    if ($isDebug) {
+        Write-Host "$($PSStyle.Dim)[DEBUG] Alias '$Alias' called with args: $($filteredCommandArgs -join ' ')$($PSStyle.Reset)"
     }
+
+    # --- Resolve package and project names based on alias configuration ---
+    $aliasValue = $packageAliases.($Alias)
+    $pnpmPackageName = $null
+    $nxProjectName = $null
+
+    if ($aliasValue.StartsWith("@fux/")) {
+        # It's a full project name, likely a core library or shared package
+        $pnpmPackageName = $aliasValue
+        $nxProjectName = $aliasValue
+    } else {
+        # It's a shorthand for an extension package
+        $pnpmPackageName = $aliasValue
+        $nxProjectName = "@fux/$($aliasValue)-ext"
+    }
+
+    if (-not $pnpmPackageName -or -not $nxProjectName) {
+        Write-Error "Alias '$Alias' is misconfigured or could not be resolved from pnpm_aliases.json."
+        return
+    }
+
+    if ($isDebug) {
+        Write-Host "$($PSStyle.Dim)  ├─ Resolved Package Name: $pnpmPackageName$($PSStyle.Reset)"
+        Write-Host "$($PSStyle.Dim)  └─ Resolved Project Name: $nxProjectName$($PSStyle.Reset)"
+    }
+
+    # --- Route to the appropriate command handler ---
+    $firstArg = $filteredCommandArgs[0]
+    if ($firstArg -in 'add', 'remove') {
+        if ($isDebug) { Write-Host "$($PSStyle.Dim)  - Routing to: Package Management (pnpm add/remove)$($PSStyle.Reset)" }
+        _Invoke-PnpmPackageManagement -PnpmPackageName $pnpmPackageName -CommandArgs $filteredCommandArgs -IsDebug:$isDebug
+    } elseif ($firstArg -in 'run', 'exec') {
+        if ($isDebug) { Write-Host "$($PSStyle.Dim)  - Routing to: Script Execution (pnpm run/exec)$($PSStyle.Reset)" }
+        _Invoke-PnpmScriptExecution -PnpmPackageName $pnpmPackageName -CommandArgs $filteredCommandArgs -IsDebug:$isDebug
+    } else {
+        if ($isDebug) { Write-Host "$($PSStyle.Dim)  - Routing to: Nx Task (nx <target>)$($PSStyle.Reset)" }
+        _Invoke-NxTask -NxProjectName $nxProjectName -CommandArgs $filteredCommandArgs -IsDebug:$isDebug
+    }
+} #<
+
+
+# ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+# │                                           Alias to Package Name Mapping                                            │
+# └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+$jsonPath = Join-Path $PSScriptRoot "pnpm_aliases.json"
+
+if (-not (Test-Path $jsonPath)) {
+    throw "Alias definition file not found at '$jsonPath'. Please ensure 'pnpm_aliases.json' exists."
 }
 
+$packageAliases = Get-Content -Path $jsonPath -Raw | ConvertFrom-Json
 
-# ┌────────────────────────────────────────────────────────────────────────────┐
-# │                         Alias to Package Name Mapping                      │
-# └────────────────────────────────────────────────────────────────────────────┘
-$packageAliases = @{
-    "serv"   = "@fux/shared-services";
-    "gwc"    = "@fux/ghost-writer-core";
-    "gw"     = "@fux/ghost-writer-ext";
-    "tools"  = "@fux/tools";
-}
-
-# ┌────────────────────────────────────────────────────────────────────────────┐
-# │                         Dynamic Alias Registration                         │
-# └────────────────────────────────────────────────────────────────────────────┘
-$packageAliases.GetEnumerator() | ForEach-Object {
+$packageAliases.psobject.Properties | ForEach-Object { #>
     $aliasName = $_.Name
+    $aliasValue = $_.Value
+    
+    # Determine the name for the alias description, preferring the user-facing project name.
+    $descriptionPackageName = if ($aliasValue.StartsWith("@fux/")) {
+        $aliasValue
+    } else {
+        "@fux/$($aliasValue)-ext"
+    }
     $functionName = "Invoke-$($aliasName)Command"
-    $description = "Nx alias for $($_.Value)"
+    $description = "Nx alias for $descriptionPackageName"
 
+    # This template creates an intelligent wrapper function for each alias.
+    # It captures all arguments to pass them cleanly to the main Invoke-NxCommand router.
     $functionTemplate = @'
 function {0} {{
+    [CmdletBinding()]
     param(
-        [Parameter()]
-        [Alias('show')]
-        [switch]$ShowCommand,
-
         [Parameter(ValueFromRemainingArguments=$true)]
         [string[]]$CommandArgs
     )
-    Invoke-NxCommand -Alias '{1}' -ShowCommand:$ShowCommand @CommandArgs
+    # Splatting $PSBoundParameters correctly passes all arguments, including -Debug if present,
+    # to the target command, which will handle them.
+    Invoke-NxCommand -Alias '{1}' @PSBoundParameters
 }}
 '@
     $functionScript = $functionTemplate -f $functionName, $aliasName
     Invoke-Expression -Command $functionScript
     Set-Alias -Name $aliasName -Value $functionName -Description $description
-}
-
-
-
-# ┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
-# └───────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-
-
-
-# # ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-# # │                                  Custom PNPM Aliases for the Focused-UX Monorepo                                   │
-# # └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-# # ======================================================================================================================
-# # Private Helper Function to Execute Shell Commands
-# # This centralizes the display and execution logic for both pnpm and turbo commands.
-# # The leading underscore is a convention for "private" functions not meant to be called directly by the user.
-# # ======================================================================================================================
-# function _Invoke-Process {
-#     param(
-#         [Parameter(Mandatory=$true)]
-#         [string]$Executable,
-
-#         [Parameter(Mandatory=$true)]
-#         [string[]]$PreArgs,
-
-#         [string[]]$PostArgs,
-
-#         [ScriptBlock]$FilterBlock,
-
-#         [Parameter(Mandatory=$true)]
-#         [switch]$ShowCommandSwitch
-#     )
-
-#     # Step 1: Build the display string from the provided arguments and filter
-#     if ($ShowCommandSwitch.IsPresent) {
-#         $displayString = "$Executable $($PreArgs -join ' ')"
-#         if ($PostArgs.Count -gt 0) { $displayString += " -- $($PostArgs -join ' ')" }
-#         if ($FilterBlock) {
-#             $displayString += " *>&1 | Where-Object $($FilterBlock.ToString())"
-#         }
-#         Write-Host "$($PSStyle.Dim)-> $displayString$($PSStyle.Reset)"
-#     }
-
-#     # Step 2: Execute the command safely using splatting and the provided filter
-#     $OutputEncoding = [System.Text.Encoding]::UTF8
-#     if ($FilterBlock) {
-#         if ($PostArgs.Count -gt 0) {
-#             & $Executable @PreArgs -- @PostArgs *>&1 | Where-Object $FilterBlock
-#         } else {
-#             & $Executable @PreArgs *>&1 | Where-Object $FilterBlock
-#         }
-#     } else {
-#         if ($PostArgs.Count -gt 0) {
-#             & $Executable @PreArgs -- @PostArgs
-#         } else {
-#             & $Executable @PreArgs
-#         }
-#     }
-# }
-
-
-# # ======================================================================================================================
-# # Main Public Function
-# # ======================================================================================================================
-# function Invoke-TurboCommand {
-#     [CmdletBinding()]
-#     param(
-#         [Parameter(Mandatory=$true)]
-#         [string]$Alias,
-        
-#         # Added 'show' as a user-friendly alias to avoid conflict with the common -Debug parameter.
-#         [Parameter()]
-#         [Alias('show')]
-#         [switch]$ShowCommand,
-
-#         [Parameter(Position=0, ValueFromRemainingArguments=$true)]
-#         [string[]]$CommandArgs
-#     )
-
-#     # The parameter binder now handles removing --show/--showcommand, so manual filtering is no longer needed.
-
-#     if ($CommandArgs.Count -eq 0) { Write-Host "Please provide a command for '$Alias'."; return }
-#     $packageName = $packageAliases[$Alias]
-
-#     # --- add/remove block ---
-#     if ($CommandArgs[0] -in 'add', 'remove') {
-#         if ($CommandArgs.Count -lt 2) { Write-Host "Please provide a package to $($CommandArgs[0])."; return }
-
-#         # Logic specific to add/remove
-#         $filter = { $_ -notmatch 'Lockfile only installation|deprecated subdependencies found' }
-#         $pnpmArgs = @(
-#             $CommandArgs[0],
-#             $CommandArgs[1..($CommandArgs.Count - 1)],
-#             "--filter=$packageName",
-#             "--reporter=default"
-#         )
-
-#         # Call the helper to display and execute
-#         _Invoke-Process -Executable 'pnpm' -PreArgs $pnpmArgs -FilterBlock $filter -ShowCommandSwitch:$ShowCommand
-
-#     # --- run/exec block ---
-#     } elseif ($CommandArgs[0] -in 'run', 'exec') {
-#         $subCommand = $CommandArgs[0]
-#         $subCommandArgs = $CommandArgs[1..($CommandArgs.Count - 1)]
-#         if ($subCommandArgs.Count -eq 0) { Write-Host "Please provide a script/command to '$subCommand'."; return }
-
-#         # Logic specific to run/exec (parsing for '--')
-#         $filter = { $_ -notmatch 'deprecated subdependencies found' }
-#         $taskOrExecName, $pnpmFlags, $taskArgs = $null, @(), @()
-#         foreach ($arg in $subCommandArgs) {
-#             if ($arg -match '^-') { $pnpmFlags += $arg }
-#             elseif ($taskOrExecName -eq $null) { $taskOrExecName = $arg }
-#             else { $taskArgs += $arg }
-#         }
-#         if ($taskOrExecName -eq $null) { Write-Host "No script/command name specified after '$subCommand'."; return }
-        
-#         $pnpmPreArgs = @($subCommand, $taskOrExecName) + $pnpmFlags + "--filter=$packageName"
-#         $pnpmPostArgs = $taskArgs
-
-#         # Call the helper to display and execute
-#         _Invoke-Process -Executable 'pnpm' -PreArgs $pnpmPreArgs -PostArgs $pnpmPostArgs -FilterBlock $filter -ShowCommandSwitch:$ShowCommand
-
-#     # --- turbo block ---
-#     } else {
-#         # This block handles all other commands by passing them to Turbo.
-#         $task, $turboFlags, $taskArgs = $null, @(), @()
-#         foreach ($arg in $CommandArgs) {
-#             if ($arg.StartsWith("--")) { $turboFlags += $arg }
-#             elseif ($task -eq $null) { $task = $arg }
-#             else { $taskArgs += $arg }
-#         }
-#         if ($task -eq $null) { Write-Host "No task specified (e.g., 'build', 'lint')."; return }
-#         if (-not ($turboFlags -like "--output-logs*")) { $turboFlags += "--output-logs=new-only" }
-
-#         $turboPreArgs = @('run', $task) + $turboFlags + "--filter=$packageName" + $taskArgs
-
-#         # Call the helper to display and execute
-#         _Invoke-Process -Executable 'turbo' -PreArgs $turboPreArgs -ShowCommandSwitch:$ShowCommand
-#     }
-# }
-
-
-# # ┌────────────────────────────────────────────────────────────────────────────┐
-# # │                         Alias to Package Name Mapping                      │
-# # └────────────────────────────────────────────────────────────────────────────┘
-# $packageAliases = @{
-#     "tbc"    = "@fux/terminal-butler-core";
-#     "tb"     = "fux-terminal-butler";
-#     "ccc"    = "@fux/chrono-copy-core";
-#     "cc"     = "fux-chrono-copy";
-#     "ccpc"   = "@fux/context-cherry-picker-core";
-#     "ccp"    = "fux-context-cherry-picker";
-#     "dconc"  = "@fux/dynamicons-core";
-#     "dcon"   = "fux-dynamicons";
-#     "gwc"    = "@fux/ghost-writer-core";
-#     "gw"     = "fux-ghost-writer";
-#     "nhc"    = "@fux/notes-hub-core";
-#     "nh"     = "fux-notes-hub";
-
-#     "esb"    = "@fux/config-esbuild";
-#     "esl"    = "@fux/config-eslint";
-#     "serv"   = "@fux/shared-services";
-# }
-
-# # ┌────────────────────────────────────────────────────────────────────────────┐
-# # │                         Dynamic Alias Registration                         │
-# # └────────────────────────────────────────────────────────────────────────────┘
-# $packageAliases.GetEnumerator() | ForEach-Object {
-#     $aliasName = $_.Name
-#     $functionName = "Invoke-$($aliasName)Command"
-#     $description = "Turbo alias for $($_.Value)"
-
-#     # This template creates an intelligent wrapper function that explicitly handles
-#     # the --showcommand/--show switch to avoid parameter binding conflicts.
-#     $functionTemplate = @'
-# function {0} {{
-#     param(
-#         [Parameter()]
-#         [Alias('show')]
-#         [switch]$ShowCommand,
-
-#         [Parameter(ValueFromRemainingArguments=$true)]
-#         [string[]]$CommandArgs
-#     )
-#     # Explicitly pass the ShowCommand switch and splat the remaining arguments.
-#     Invoke-TurboCommand -Alias '{1}' -ShowCommand:$ShowCommand @CommandArgs
-# }}
-# '@
-#     $functionScript = $functionTemplate -f $functionName, $aliasName
-
-#     # Execute the string to define the function in the current scope
-#     Invoke-Expression -Command $functionScript
-
-#     # Set the alias to point to the newly created function
-#     Set-Alias -Name $aliasName -Value $functionName -Description $description
-# }
-
-
-
-# # ┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
-# # └───────────────────────────────────────────────────────────────────────────────────────────────────┘
-
+} #<

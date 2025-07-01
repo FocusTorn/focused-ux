@@ -3,7 +3,6 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import process from 'node:process'
 
-
 const [packageName] = process.argv.slice(2)
 if (!packageName) {
     console.error('Error: Package name argument is required.')
@@ -11,7 +10,7 @@ if (!packageName) {
 }
 
 const workspaceRoot = resolve(process.cwd())
-const packageDir = join(workspaceRoot, 'packages/ghost-writer/ext')
+const packageDir = join(workspaceRoot, `packages/${packageName}/ext`)
 const packageJsonPath = join(packageDir, 'package.json')
 const vsixOutputDir = join(workspaceRoot, 'vsix_packages')
 
@@ -24,7 +23,7 @@ try {
     const devVersion = `${baseVersion}-dev.${Date.now()}`
     packageJson.version = devVersion
     writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 4) + '\n')
-    console.log(`Temporarily set version to: ${devVersion}`)
+    // console.log(`Temporarily set version to: ${devVersion}`)
 
     // 2. Ensure the output directory exists
     mkdirSync(vsixOutputDir, { recursive: true })

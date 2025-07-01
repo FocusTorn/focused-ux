@@ -37,7 +37,7 @@ import type { IWindow } from '../_vscode_abstractions/IWindow.js'
 //--------------------------------------------------------------------------------------------------------------<<
 
 @injectable()
-export class FileUtilsService implements IFileUtilsService { //>
+export class FileUtilsService implements IFileUtilsService {
 
 	constructor(
 		@inject('IWindow') private readonly iWindow: IWindow,
@@ -56,6 +56,25 @@ export class FileUtilsService implements IFileUtilsService { //>
 		@inject('iFspMkdir') private readonly iFspMkdir_node: typeof fspMkdirType,
 	) {}
 
+	public async readFile(
+		filePath: string,
+		encoding: BufferEncoding = 'utf-8',
+	): Promise<string> { //>
+		const absolutePath = this.iPathIsAbsolute(filePath) ? filePath : this.iPathResolve(filePath)
+
+		return this.iFspReadFile_node(absolutePath, { encoding })
+	} //<
+
+	public async writeFile(
+		filePath: string,
+		data: string,
+		options?: WriteFileOptions,
+	): Promise<void> { //>
+		const absolutePath = this.iPathIsAbsolute(filePath) ? filePath : this.iPathResolve(filePath)
+
+		return this.iFspWriteFile_node(absolutePath, data, options)
+	} //<
+
 	public async createFileBackup(fileUri: Uri): Promise<void> { //>
 		try {
 			const sourcePath = fileUri.fsPath
@@ -72,7 +91,8 @@ export class FileUtilsService implements IFileUtilsService { //>
 					backupFileName = `${baseName}.bak${backupNumber}`
 					destinationPath = this.iPathNormalize(this.iPathJoin(directory, backupFileName))
 				}
-			} catch (error: any) {
+			}
+			catch (error: any) {
 				if (error.code !== 'ENOENT') {
 					throw error
 				}
@@ -80,7 +100,8 @@ export class FileUtilsService implements IFileUtilsService { //>
 
 			await this.iFspCopyFile_node(sourcePath, destinationPath)
 			this.iWindow.showInformationMessage(`Backup created: ${backupFileName}`)
-		} catch (error) {
+		}
+		catch (error) {
 			this.iCommonUtils.errMsg(`Error creating backup for ${fileUri.fsPath}`, error)
 		}
 	} //<
@@ -95,7 +116,8 @@ export class FileUtilsService implements IFileUtilsService { //>
 			const contentWithoutComments = stripJsonComments(fileContent.toString())
 
 			return JSON.parse(contentWithoutComments) as T
-		} catch (error) {
+		}
+		catch (error) {
 			this.iCommonUtils.errMsg(`Error reading or parsing JSON file synchronously: ${filePath}`, error)
 			return undefined
 		}
@@ -111,7 +133,8 @@ export class FileUtilsService implements IFileUtilsService { //>
 			const contentWithoutComments = stripJsonComments(fileContent.toString())
 
 			return JSON.parse(contentWithoutComments) as T
-		} catch (error) {
+		}
+		catch (error) {
 			this.iCommonUtils.errMsg(`Error reading or parsing JSON file asynchronously: ${filePath}`, error)
 			return undefined
 		}

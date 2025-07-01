@@ -1,10 +1,14 @@
 {
     "name": "ghost-writer",
-    "displayName": "Ghost Writer",
+    "displayName": "F-UX: Ghost Writer",
     "description": "Dynamically generate frequently used code.",
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
-    "version": "0.1.0",
+    "version": "0.1.0-dev.1751307981052",
+    "dependencies": {
+        "@fux/shared-services": "workspace:*",
+        "@fux/ghost-writer-core": "workspace:*"
+    },
     "contributes": {
         "commands": [
             {
@@ -58,7 +62,12 @@
             }
         }
     },
-    "icon": "./assets/logo3.png",
+    "activationEvents": [
+        "onCommand:fux-ghost-writer.storeCodeFragment",
+        "onCommand:fux-ghost-writer.insertImportStatement",
+        "onCommand:fux-ghost-writer.logSelectedVariable"
+    ],
+    "icon": "./assets/gw-logo.png",
     "categories": [
         "Programming Languages",
         "Snippets"
@@ -75,19 +84,10 @@
         "developer tools",
         "focused ux"
     ],
+    "private": true,
+    "type": "module",
     "main": "./dist/extension.js",
     "engines": {
         "vscode": "^1.100.0"
-    },
-    "activationEvents": [
-        "onCommand:fux-ghost-writer.storeCodeFragment",
-        "onCommand:fux-ghost-writer.insertImportStatement",
-        "onCommand:fux-ghost-writer.logSelectedVariable"
-    ],
-    "private": true,
-    "type": "module",
-    "dependencies": {
-        "@fux/shared-services": "workspace:*",
-        "@fux/ghost-writer-core": "workspace:*"
     }
 }

@@ -18,5 +18,9 @@
             "types": "./dist/*.d.ts",
             "import": "./dist/*.js"
         }
+    },
+    "dependencies": {
+        "strip-json-comments": "^5.0.2",
+        "tsyringe": "^4.10.0"
     }
 }
