@@ -1,0 +1,16 @@
+import { inject, singleton } from 'tsyringe'
+// import type { IWindow, IWorkspace } from '@fux/shared-services'
+// import type { I<%= pascalCaseName %>Service } from '@fux/<%= name %>-core'
+// import { constants } from './_config/constants.js'
+
+@singleton()
+export class <%= pascalCaseName %>Module {
+	constructor(
+		// @inject('I<%= pascalCaseName %>Service') private readonly service: I<%= pascalCaseName %>Service,
+		// @inject('IWindow') private readonly window: IWindow,
+		// @inject('IWorkspace') private readonly workspace: IWorkspace,
+	) {}
+
+    // public async handleSomeCommand(): Promise<void> {
+	// }
+}

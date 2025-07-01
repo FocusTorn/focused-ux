@@ -1,0 +1,126 @@
+{
+    "name": "project-butler",
+    "displayName": "F-UX: Project Butler",
+    "description": "Your personal assistant for automating terminal and project actions.",
+    "publisher": "NewRealityDesigns",
+    "repository": "https://github.com/FocusTorn/focused-ux",
+    "version": "0.1.0-dev.1751319877271",
+    "private": true,
+    "type": "module",
+    "main": "./dist/extension.js",
+    "engines": {
+        "vscode": "^1.100.0"
+    },
+    "dependencies": {
+        "@fux/project-butler-core": "workspace:*",
+        "@fux/shared-services": "workspace:*",
+        "reflect-metadata": "^0.2.2",
+        "tsyringe": "^4.10.0"
+    },
+    "activationEvents": [
+        "onCommand:fux-project-butler.updateTerminalPath",
+        "onCommand:fux-project-butler.enterPoetryShell",
+        "onCommand:fux-project-butler.formatPackageJson",
+        "onCommand:fux-project-butler.createBackup",
+        "onCommand:fux-project-butler.hotswap"
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "command": "fux-project-butler.updateTerminalPath",
+                "title": "CD to Path",
+                "category": "Project Butler"
+            },
+            {
+                "command": "fux-project-butler.enterPoetryShell",
+                "title": "Enter Poetry Shell",
+                "category": "Project Butler"
+            },
+            {
+                "command": "fux-project-butler.formatPackageJson",
+                "title": "Format package.json",
+                "category": "Project Butler"
+            },
+            {
+                "command": "fux-project-butler.createBackup",
+                "title": "Create File Backup",
+                "category": "Project Butler"
+            },
+            {
+                "command": "fux-project-butler.hotswap",
+                "title": "Hotswap VSIX",
+                "category": "Project Butler"
+            }
+        ],
+        "submenus": [
+            {
+                "id": "fux-project-butler.submenu",
+                "label": "Project Butler"
+            }
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "submenu": "fux-project-butler.submenu",
+                    "when": "resourceLangId || explorerResourceIsFolder",
+                    "group": "navigation"
+                },
+                {
+                    "command": "fux-project-butler.createBackup",
+                    "when": "resourceUri",
+                    "group": "9_cutcopypaste@0"
+                }
+            ],
+            "fux-project-butler.submenu": [
+                {
+                    "command": "fux-project-butler.formatPackageJson",
+                    "when": "resourceFilename == package.json",
+                    "group": "1_format@1"
+                },
+                {
+                    "command": "fux-project-butler.hotswap",
+                    "when": "resourceExtname == .vsix",
+                    "group": "2_hotswap@1"
+                },
+                {
+                    "command": "fux-project-butler.updateTerminalPath",
+                    "group": "3_path@1"
+                },
+                {
+                    "command": "fux-project-butler.enterPoetryShell",
+                    "group": "3_path@2"
+                }
+            ],
+            "editor/title": [
+                {
+                    "command": "fux-project-butler.formatPackageJson",
+                    "when": "resourceFilename == package.json",
+                    "group": "navigation"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "fux-project-butler.formatPackageJson",
+                    "when": "resourceFilename == package.json",
+                    "group": "navigation"
+                }
+            ]
+        }
+    },
+    "icon": "assets/pb-logo.png",
+    "categories": [
+        "Other"
+    ],
+    "keywords": [
+        "terminal",
+        "shell",
+        "automation",
+        "backup",
+        "file",
+        "copy",
+        "versioning",
+        "hotswap",
+        "developer tools",
+        "focused ux"
+    ]
+}

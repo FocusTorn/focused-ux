@@ -1,0 +1,11 @@
+{
+    "name": "@fux/workspace-tools",
+    "version": "0.0.1",
+    "private": true,
+    "type": "commonjs",
+    "generators": "./generators.json",
+    "dependencies": {
+        "@nx/devkit": "19.4.1",
+        "nx": "19.4.1"
+    }
+}

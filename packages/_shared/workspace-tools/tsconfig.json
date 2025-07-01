@@ -1,0 +1,15 @@
+{
+    "extends": "../../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "../../../dist/out-tsc",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "types": ["node"],
+        "composite": false,
+        "declaration": false,
+        "sourceMap": false,
+        "declarationMap": false
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules"]
+}

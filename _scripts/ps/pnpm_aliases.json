@@ -1,0 +1,17 @@
+{
+    "serv": "@fux/shared-services",
+    "tools": "@fux/shared-tools",
+    "wst": "@fux/workspace-tools",
+
+    "ccpc": "@fux/context-cherry-picker-core",
+    "ccp": "context-cherry-picker",
+
+    "gwc": "@fux/ghost-writer-core",
+    "gw": "ghost-writer",
+
+    "nhc": "@fux/note-hub-core",
+    "nh": "note-hub",
+
+    "pbc": "@fux/project-butler-core",
+    "pb": "project-butler"
+}

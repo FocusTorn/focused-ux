@@ -1,0 +1,12 @@
+{
+    "extends": "../../../tsconfig.base.json",
+    "compilerOptions": {
+        "declarationMap": false,
+        "baseUrl": ".",
+        "rootDir": "src",
+        "outDir": "./out-tsc/app"
+    },
+    "include": ["./src/**/*.ts"],
+    "exclude": ["node_modules", "dist"],
+    "references": [{ "path": "../core" }, { "path": "../../_shared/shared-services" }]
+}
