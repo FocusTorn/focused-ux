@@ -1,10 +1,13 @@
-import { inject, injectable } from 'tsyringe'
 import type { ExtensionContext } from 'vscode'
 import type { IStorageService } from '@fux/ghost-writer-core'
 
-@injectable()
 export class StorageAdapter implements IStorageService {
-	constructor(@inject('ExtensionContext') private readonly context: ExtensionContext) {}
+
+	private readonly context: ExtensionContext
+
+	constructor(deps: { extensionContext: ExtensionContext }) {
+		this.context = deps.extensionContext
+	}
 
 	async update(key: string, value: any): Promise<void> {
 		await this.context.globalState.update(key, value)
@@ -13,4 +16,5 @@ export class StorageAdapter implements IStorageService {
 	async get<T>(key: string): Promise<T | undefined> {
 		return this.context.globalState.get<T>(key)
 	}
+
 }

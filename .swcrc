@@ -12,7 +12,11 @@
         },
         "keepClassNames": true,
         "externalHelpers": true,
-        "loose": true
+        "loose": true,
+        "minify": {
+            "mangle": false,
+            "compress": false
+        }
     },
     "module": {
         "type": "nodenext"

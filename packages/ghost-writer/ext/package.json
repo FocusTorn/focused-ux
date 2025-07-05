@@ -8,8 +8,8 @@
     "dependencies": {
         "@fux/shared-services": "workspace:*",
         "@fux/ghost-writer-core": "workspace:*",
-        "reflect-metadata": "^0.2.2",
-        "tsyringe": "^4.10.0"
+        "awilix": "^12.0.5",
+        "esbuild": "^0.25.5"
     },
     "contributes": {
         "commands": [
@@ -65,6 +65,8 @@
         }
     },
     "activationEvents": [
+        "onStartupFinished",
+
         "onCommand:fux-ghost-writer.storeCodeFragment",
         "onCommand:fux-ghost-writer.insertImportStatement",
         "onCommand:fux-ghost-writer.logSelectedVariable"
@@ -88,7 +90,7 @@
     ],
     "private": true,
     "type": "module",
-    "main": "./dist/extension.js",
+    "main": "./dist/extension.cjs",
     "engines": {
         "vscode": "^1.100.0"
     }

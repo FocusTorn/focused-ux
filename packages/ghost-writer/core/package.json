@@ -15,8 +15,6 @@
         }
     },
     "dependencies": {
-        "@fux/shared-services": "workspace:*",
-        "reflect-metadata": "^0.2.2",
-        "tsyringe": "^4.10.0"
+        "@fux/shared-services": "workspace:*"
     }
 }

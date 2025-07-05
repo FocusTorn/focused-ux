@@ -3,48 +3,41 @@
 # │                                                                                                │
 # └────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-
 # TODO CCP Need to add an option to not count tokens within explorer display
 
-
 TerminalButler:
-  packageJson-order:
-    - displayName
-    - description
-    - publisher
-    - repository
-    - version
-    
-    - bin
-    - scripts
-    
-    - sideEffects
-    - dependencies
-    - devDependencies
-    - peerDependencies
-    
-    - contributes
-    - activationEvents
-    
-    - license
-    - icon
-    - categories
-    - keywords
-    - engines
-    
-    - private
-    - type
-    - module
+    packageJson-order:
+        - displayName
+        - description
+        - publisher
+        - repository
+        - version
 
-    - main
-    - types
-    - workspaces
-    - exports
+        - bin
+        - scripts
 
+        - sideEffects
+        - dependencies
+        - devDependencies
+        - peerDependencies
 
+        - contributes
+        - activationEvents
 
+        - license
+        - icon
+        - categories
+        - keywords
+        - engines
 
+        - private
+        - type
+        - module
 
+        - main
+        - types
+        - workspaces
+        - exports
 
 # ┌────────────────────────────────────────────────────────────────────────────┐
 # │                           Context Cherry Picker                            │
@@ -59,21 +52,21 @@ ContextCherryPicker:
 
     #==========================================================================================================
     file_groups:
-        config:
-            initially_visible: false
+        conf:
+            initially_visible: true
             items:
                 # - '**/prettier.config.js'
                 - '**/.FocusedUX'
                 - '**/.prettierignore'
                 - '**/eslint.config.js'
-                
+
                 # - '**/svgo.config.mjs'
                 # - '**/.editorconfig'
                 # - '**/.npmrc'
                 # - '**/knip.json'
                 # - '**/vitest.config.ts'
-                
-        build:
+
+        bld:
             initially_visible: false
             items:
                 - '**/dist'
@@ -81,20 +74,20 @@ ContextCherryPicker:
                 - '**/.turbo'
                 - '**/.nx'
                 - '**/tmp'
-        test:
+        tst:
             initially_visible: false
             items:
                 - '**/test'
                 - '**/coverage'
                 - '**/.vscode-test.mjs'
-        ignores:
+        ign:
             initially_visible: false
             items:
                 - '**/.gitignore'
                 - '**/.vscodeignore'
                 - '**/.npmignore'
                 - '**/.turbignore'
-        documents:
+        docs:
             initially_visible: false
             items:
                 - '**/LICENSE.*'

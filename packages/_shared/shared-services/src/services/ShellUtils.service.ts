@@ -1,27 +1,18 @@
 // ESLint & Imports -->>
 
-//= TSYRINGE ==================================================================================================
-import { inject, injectable } from 'tsyringe'
-
 //= NODE JS ===================================================================================================
 import * as cp from 'node:child_process'
-import * as process from 'node:process'
 
 //= IMPLEMENTATION TYPES ======================================================================================
-import type { IShellUtilsService } from '../_interfaces/IShellUtilsService.js'
-
-//= INJECTED TYPES ============================================================================================
-import type { IWindow } from '../_vscode_abstractions/IWindow.js'
-import type { ICommonUtilsService } from '../_interfaces/ICommonUtilsService.js'
+import type { IShellUtilsService, IWindow, ICommonUtilsService } from '../interfaces.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-@injectable()
 export class ShellUtilsService implements IShellUtilsService {
 
 	constructor(
-		@inject('IWindow') private readonly iWindow: IWindow,
-		@inject('ICommonUtilsService') private readonly iCommonUtils: ICommonUtilsService,
+		private readonly iWindow: IWindow,
+		private readonly commonUtils: ICommonUtilsService,
 	) {}
 
 	public async executeCommand( //>
@@ -39,14 +30,15 @@ export class ShellUtilsService implements IShellUtilsService {
 			spawnedProcess.on('close', (code: number | null) => {
 				if (code !== 0) {
 					reject(new Error(`Command "${command}" exited with code ${code}`))
-				} else {
+				}
+				else {
 					resolve()
 				}
 			})
 		})
 	} //<
 
-		public async getCDCommand( //>
+	public async getCDCommand( //>
 		path: string | undefined,
 		enterPoetryShell = false,
 	): Promise<string | undefined> {
@@ -61,6 +53,7 @@ export class ShellUtilsService implements IShellUtilsService {
 
 		if (enterPoetryShell) {
 			let poetryCommand = 'poetry shell'
+
 			try {
 				// Verify poetry is installed to provide a better error message.
 				cp.execSync('poetry --version', { stdio: 'ignore' })

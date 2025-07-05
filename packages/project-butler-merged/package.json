@@ -1,0 +1,86 @@
+{
+    "name": "project-butler-merged",
+    "displayName": "F-UX: Project Butler (Merged)",
+    "description": "A collection of project management and workflow utilities for VS Code.",
+    "publisher": "NewRealityDesigns",
+    "repository": "https://github.com/FocusTorn/focused-ux",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "./dist/extension.js",
+    "engines": {
+        "vscode": "^1.101.0"
+    },
+    "activationEvents": [
+        "onCommand:fux-project-butler-merged.updateTerminalPath",
+        "onCommand:fux-project-butler-merged.enterPoetryShell",
+        "onCommand:fux-project-butler-merged.formatPackageJson",
+        "onCommand:fux-project-butler-merged.createBackup",
+        "onCommand:fux-project-butler-merged.hotswap"
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "command": "fux-project-butler-merged.updateTerminalPath",
+                "title": "Project Butler (M): CD to Here in Terminal",
+                "category": "Focused-UX"
+            },
+            {
+                "command": "fux-project-butler-merged.enterPoetryShell",
+                "title": "Project Butler (M): Open Poetry Shell",
+                "category": "Focused-UX"
+            },
+            {
+                "command": "fux-project-butler-merged.formatPackageJson",
+                "title": "Project Butler (M): Format package.json",
+                "category": "Focused-UX"
+            },
+            {
+                "command": "fux-project-butler-merged.createBackup",
+                "title": "Project Butler (M): Create Backup of File",
+                "category": "Focused-UX"
+            },
+            {
+                "command": "fux-project-butler-merged.hotswap",
+                "title": "Project Butler (M): Hotswap VSIX",
+                "category": "Focused-UX"
+            }
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "command": "fux-project-butler-merged.updateTerminalPath",
+                    "group": "fux-terminal"
+                },
+                {
+                    "command": "fux-project-butler-merged.enterPoetryShell",
+                    "group": "fux-terminal"
+                },
+                {
+                    "when": "resourceFilename == package.json",
+                    "command": "fux-project-butler-merged.formatPackageJson",
+                    "group": "fux-format"
+                },
+                {
+                    "when": "resourceExtname != .vsix",
+                    "command": "fux-project-butler-merged.createBackup",
+                    "group": "fux-file"
+                },
+                {
+                    "when": "resourceExtname == .vsix",
+                    "command": "fux-project-butler-merged.hotswap",
+                    "group": "fux-package"
+                }
+            ]
+        }
+    },
+    "dependencies": {
+        "@fux/shared-services": "workspace:*",
+        "awilix": "^12.0.5"
+    },
+    "devDependencies": {
+        "@types/node": "^24.0.10",
+        "@types/vscode": "^1.101.0",
+        "typescript": "^5.8.3"
+    }
+}

@@ -1,11 +1,9 @@
 {
     "compilerOptions": {
-        
         // "customConditions": ["development"],
         // "noEmit": false,
         // "composite": true,
         // "emitDeclarationOnly": true,
-        
 
         //= ESM AND NODENEXT ========================================================================
         "target": "ES2022",
@@ -26,7 +24,8 @@
 
         //= DECORATORS ==============================================================================
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
+        "emitDeclarationOnly": true,
+        "emitDecoratorMetadata": false,
 
         //= FOR MONOREPOS WITH PROJECT REFERENCES ===================================================
         "declaration": true,
@@ -41,6 +40,14 @@
         "importHelpers": true,
 
         //= PATH ALIASES ============================================================================
-        "baseUrl": "."
+        "baseUrl": ".",
+        "paths": {
+            "@fux/shared-services": ["packages/_shared/shared-services/dist"],
+            "@fux/shared-services/*": ["packages/_shared/shared-services/dist/*"],
+            "@fux/ghost-writer-core": ["packages/ghost-writer/core/dist"],
+            "@fux/note-hub-core": ["packages/note-hub/core/dist"],
+            "@fux/project-butler-core": ["packages/project-butler/core/dist"],
+            "@fux/solo-format-package-json-core": ["packages/solo-format-package-json/core/dist"]
+        }
     }
 }

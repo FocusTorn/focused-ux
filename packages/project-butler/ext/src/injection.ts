@@ -1,31 +1,39 @@
-import { container } from 'tsyringe'
+import { asClass, createContainer, InjectionMode } from 'awilix'
+import type { AwilixContainer } from 'awilix'
 import type { ExtensionContext } from 'vscode'
 import {
-	SharedServicesModule,
+	registerSharedDependencies,
 	CommonUtilsService,
-	ShellUtilsService,
-	PathUtilsService,
 	FileUtilsService,
+	PathUtilsService,
+	ShellUtilsService,
 	WorkspaceUtilsService,
 } from '@fux/shared-services'
-import type {
-	ICommonUtilsService,
-	IShellUtilsService,
-	IPathUtilsService,
-	IFileUtilsService,
-	IWorkspaceUtilsService,
-} from '@fux/shared-services'
 import { ProjectButlerService } from '@fux/project-butler-core'
-import type { IProjectButlerService } from '@fux/project-butler-core'
 import { ProjectButlerModule } from './ProjectButler.module.js'
 
-export function registerDependencies(context: ExtensionContext): void {
-	SharedServicesModule.registerDependencies(container, context)
-	container.registerSingleton<IPathUtilsService>('IPathUtilsService', PathUtilsService)
-	container.registerSingleton<ICommonUtilsService>('ICommonUtilsService', CommonUtilsService)
-	container.registerSingleton<IShellUtilsService>('IShellUtilsService', ShellUtilsService)
-	container.registerSingleton<IFileUtilsService>('IFileUtilsService', FileUtilsService)
-	container.registerSingleton<IWorkspaceUtilsService>('IWorkspaceUtilsService', WorkspaceUtilsService)
-	container.registerSingleton<IProjectButlerService>('IProjectButlerService', ProjectButlerService)
-	container.registerSingleton(ProjectButlerModule)
+export function createDIContainer(context: ExtensionContext): AwilixContainer {
+	const container = createContainer({
+		injectionMode: InjectionMode.PROXY,
+	})
+
+	// 1. Register foundational dependencies (VS Code adapters, node primitives)
+	registerSharedDependencies(container, context)
+
+	// 2. Register shared utility services needed by this extension
+	container.register({
+		commonUtils: asClass(CommonUtilsService).singleton(),
+		fileUtils: asClass(FileUtilsService).singleton(),
+		pathUtils: asClass(PathUtilsService).singleton(),
+		shellUtils: asClass(ShellUtilsService).singleton(),
+		workspaceUtils: asClass(WorkspaceUtilsService).singleton(),
+	})
+
+	// 3. Register this extension's specific services and module
+	container.register({
+		projectButlerService: asClass(ProjectButlerService).singleton(),
+		projectButlerModule: asClass(ProjectButlerModule).singleton(),
+	})
+
+	return container
 }

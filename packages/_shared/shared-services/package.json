@@ -20,7 +20,7 @@
         }
     },
     "dependencies": {
-        "strip-json-comments": "^5.0.2",
-        "tsyringe": "^4.10.0"
+        "awilix": "^12.0.5",
+        "strip-json-comments": "^5.0.2"
     }
 }

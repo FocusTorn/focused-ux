@@ -1,31 +1,47 @@
-import { container } from 'tsyringe'
+// ESLint & Imports -->>
+
+//= AWILIX ====================================================================================================
+import { asClass } from 'awilix'
+import type { AwilixContainer } from 'awilix'
+
+//= VSCODE ====================================================================================================
 import type { ExtensionContext } from 'vscode'
-import { SharedServicesModule, PathUtilsService, CommonUtilsService } from '@fux/shared-services'
-import type { IPathUtilsService, ICommonUtilsService } from '@fux/shared-services'
+
+//= SHARED SERVICES ===========================================================================================
+import { createDIContainer as createSharedDIContainer } from '@fux/shared-services'
+
+//= GHOST-WRITER CORE =========================================================================================
 import {
 	ClipboardService,
-	ImportGeneratorService,
 	ConsoleLoggerService,
-	type IClipboardService,
-	type IImportGeneratorService,
-	type IConsoleLoggerService,
-	type IStorageService,
+	ImportGeneratorService,
 } from '@fux/ghost-writer-core'
-import { StorageAdapter } from './services/Storage.adapter.js'
+
+//= GHOST-WRITER EXT ==========================================================================================
 import { GhostWriterModule } from './GhostWriter.module.js'
+import { StorageAdapter } from './services/Storage.adapter.js'
 
-export function registerDependencies(context: ExtensionContext): void {
-	// 1. Register shared services and primitives
-	SharedServicesModule.registerDependencies(container, context)
-	container.registerSingleton<IPathUtilsService>('IPathUtilsService', PathUtilsService)
-	container.registerSingleton<ICommonUtilsService>('ICommonUtilsService', CommonUtilsService)
+//--------------------------------------------------------------------------------------------------------------<<
 
-	// 2. Register this extension's services and adapters
-	container.registerSingleton<IStorageService>('IStorageService', StorageAdapter)
-	container.registerSingleton<IClipboardService>('IClipboardService', ClipboardService)
-	container.registerSingleton<IImportGeneratorService>('IImportGeneratorService', ImportGeneratorService)
-	container.registerSingleton<IConsoleLoggerService>('IConsoleLoggerService', ConsoleLoggerService)
+export function createDIContainer(context: ExtensionContext): AwilixContainer { //>
+	// 1. Create the base container from shared services, which includes all common
+	//    services, adapters, and primitives.
+	const container = createSharedDIContainer(context)
 
-    // 3. Register the module itself
-    container.registerSingleton(GhostWriterModule)
-}
+	// 2. Register Ghost Writer Core Services
+	container.register({
+		clipboardService: asClass(ClipboardService).singleton(),
+		consoleLoggerService: asClass(ConsoleLoggerService).singleton(),
+		importGeneratorService: asClass(ImportGeneratorService).singleton(),
+	})
+
+	// 3. Register Ghost Writer Extension Adapters & Main Module
+	container.register({
+		// This adapter implements IStorageService for the core services to use
+		storageService: asClass(StorageAdapter).singleton(),
+		// The main module that orchestrates the extension's features
+		ghostWriterModule: asClass(GhostWriterModule).singleton(),
+	})
+
+	return container
+} //<

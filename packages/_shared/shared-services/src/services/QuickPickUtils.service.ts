@@ -1,24 +1,17 @@
 // ESLint & Imports -->>
 
-//= TSYRINGE ==================================================================================================
-import { inject, injectable } from 'tsyringe'
-
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
 import type { QuickPickItem, QuickPickOptions } from 'vscode'
 
 //= IMPLEMENTATION TYPES ======================================================================================
-import type { IQuickPickUtilsService } from '../_interfaces/IQuickPickUtilsService.js'
-
-//= INJECTED TYPES ============================================================================================
-import type { IWindow } from '../_vscode_abstractions/IWindow.js'
+import type { IQuickPickUtilsService, IWindow } from '../interfaces.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-@injectable()
-export class QuickPickUtilsService implements IQuickPickUtilsService { //>
+export class QuickPickUtilsService implements IQuickPickUtilsService {
 
 	constructor(
-		@inject('IWindow') private readonly iWindow: IWindow,
+		private readonly iWindow: IWindow,
 	) {}
 
 	public async showQuickPickSingle<T extends QuickPickItem, K extends keyof T>( //>
@@ -46,7 +39,8 @@ export class QuickPickUtilsService implements IQuickPickUtilsService { //>
 				quickPick.dispose()
 				if (selectedItem) {
 					resolve(defaultKey ? selectedItem[defaultKey] : (selectedItem as unknown as T[K]))
-				} else {
+				}
+				else {
 					resolve(undefined)
 				}
 			})

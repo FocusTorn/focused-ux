@@ -1,13 +1,9 @@
 // ESLint & Imports -->>
 
-//= TSYRINGE ==================================================================================================
-import { inject, injectable } from 'tsyringe'
-
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
 import type { Uri } from 'vscode'
 
 //= NODE JS ===================================================================================================
-import type * as nodePath from 'node:path'
 import type {
 	access as fspAccessType,
 	copyFile as fspCopyFileType,
@@ -22,47 +18,51 @@ import type {
 	readFileSync as nodeFsReadFileSyncType,
 } from 'node:fs'
 
-// import type { Buffer } from 'node:buffer'
-
 //= MISC ======================================================================================================
 import stripJsonComments from 'strip-json-comments'
 
 //= IMPLEMENTATION TYPES ======================================================================================
-import type { IFileUtilsService } from '../_interfaces/IFileUtilsService.js'
-import type { ICommonUtilsService } from '../_interfaces/ICommonUtilsService.js'
-
-//= INJECTED TYPES ============================================================================================
-import type { IWindow } from '../_vscode_abstractions/IWindow.js'
+import type {
+	IFileUtilsService,
+	ICommonUtilsService,
+	IPathUtilsService,
+	IWindow,
+} from '../interfaces.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-@injectable()
 export class FileUtilsService implements IFileUtilsService {
 
+	private readonly _iFspAccess: typeof fspAccessType
+	private readonly _iFspCopyFile: typeof fspCopyFileType
+	private readonly _iFspWriteFile: typeof fspWriteFileType
+	private readonly _iFspMkdir: typeof fspMkdirType
+
 	constructor(
-		@inject('IWindow') private readonly iWindow: IWindow,
-		@inject('ICommonUtilsService') private readonly iCommonUtils: ICommonUtilsService,
-		@inject('iPathBasename') private readonly iPathBasename: typeof nodePath.basename,
-		@inject('iPathDirname') private readonly iPathDirname: typeof nodePath.dirname,
-		@inject('iPathJoin') private readonly iPathJoin: typeof nodePath.join,
-		@inject('iPathNormalize') private readonly iPathNormalize: typeof nodePath.normalize,
-		@inject('iPathIsAbsolute') private readonly iPathIsAbsolute: typeof nodePath.isAbsolute,
-		@inject('iPathResolve') private readonly iPathResolve: typeof nodePath.resolve,
-		@inject('iFspAccess') private readonly iFspAccess_node: typeof fspAccessType,
-		@inject('iFspCopyFile') private readonly iFspCopyFile_node: typeof fspCopyFileType,
-		@inject('iFsReadFileSync') private readonly iFsReadFileSync_node: typeof nodeFsReadFileSyncType,
-		@inject('iFspReadFile') private readonly iFspReadFile_node: typeof fspReadFileType,
-		@inject('iFspWriteFile') private readonly iFspWriteFile_node: typeof fspWriteFileType,
-		@inject('iFspMkdir') private readonly iFspMkdir_node: typeof fspMkdirType,
-	) {}
+		private readonly iWindow: IWindow,
+		private readonly commonUtils: ICommonUtilsService,
+		private readonly pathUtils: IPathUtilsService,
+		iFspAccess: typeof fspAccessType,
+		iFspCopyFile: typeof fspCopyFileType,
+		private readonly iFsReadFileSync: typeof nodeFsReadFileSyncType,
+		private readonly iFspReadFile: typeof fspReadFileType,
+		iFspWriteFile: typeof fspWriteFileType,
+		iFspMkdir: typeof fspMkdirType,
+	) {
+		this._iFspAccess = iFspAccess
+		this._iFspCopyFile = iFspCopyFile
+		this._iFspWriteFile = iFspWriteFile
+		this._iFspMkdir = iFspMkdir
+	}
 
 	public async readFile(
 		filePath: string,
 		encoding: BufferEncoding = 'utf-8',
 	): Promise<string> { //>
-		const absolutePath = this.iPathIsAbsolute(filePath) ? filePath : this.iPathResolve(filePath)
+		// Use santizePath which normalizes and resolves if necessary
+		const absolutePath = this.pathUtils.santizePath(filePath)
 
-		return this.iFspReadFile_node(absolutePath, { encoding })
+		return this.iFspReadFile(absolutePath, { encoding })
 	} //<
 
 	public async writeFile(
@@ -70,39 +70,44 @@ export class FileUtilsService implements IFileUtilsService {
 		data: string,
 		options?: WriteFileOptions,
 	): Promise<void> { //>
-		const absolutePath = this.iPathIsAbsolute(filePath) ? filePath : this.iPathResolve(filePath)
+		const absolutePath = this.pathUtils.santizePath(filePath)
 
-		return this.iFspWriteFile_node(absolutePath, data, options)
+		return this._iFspWriteFile(absolutePath, data, options)
 	} //<
 
 	public async createFileBackup(fileUri: Uri): Promise<void> { //>
 		try {
 			const sourcePath = fileUri.fsPath
-			const baseName = this.iPathBasename(sourcePath)
-			const directory = this.iPathDirname(sourcePath)
+			const baseName = this.pathUtils.iPathBasename(sourcePath)
+			const directory = this.pathUtils.iPathDirname(sourcePath)
 			let backupNumber = 1
-			let backupFileName = `${baseName}.bak`
-			let destinationPath = this.iPathNormalize(this.iPathJoin(directory, backupFileName))
+			let backupFileName: string
+			let destinationPath: string
+			let fileExists = false
 
-			try {
-				while (true) {
-					await this.iFspAccess_node(destinationPath)
+			do {
+				backupFileName = `${baseName}.bak${backupNumber > 1 ? backupNumber : ''}`
+				destinationPath = this.pathUtils.iPathJoin(directory, backupFileName)
+				try {
+					await this._iFspAccess(destinationPath)
+					fileExists = true
 					backupNumber++
-					backupFileName = `${baseName}.bak${backupNumber}`
-					destinationPath = this.iPathNormalize(this.iPathJoin(directory, backupFileName))
 				}
-			}
-			catch (error: any) {
-				if (error.code !== 'ENOENT') {
-					throw error
+				catch (error: any) {
+					if (error.code === 'ENOENT') {
+						fileExists = false
+					}
+					else {
+						throw error
+					}
 				}
-			}
+			} while (fileExists)
 
-			await this.iFspCopyFile_node(sourcePath, destinationPath)
+			await this._iFspCopyFile(sourcePath, destinationPath)
 			this.iWindow.showInformationMessage(`Backup created: ${backupFileName}`)
 		}
 		catch (error) {
-			this.iCommonUtils.errMsg(`Error creating backup for ${fileUri.fsPath}`, error)
+			this.commonUtils.errMsg(`Error creating backup for ${fileUri.fsPath}`, error)
 		}
 	} //<
 
@@ -111,14 +116,14 @@ export class FileUtilsService implements IFileUtilsService {
 		encoding: BufferEncoding = 'utf-8',
 	): T | undefined { //>
 		try {
-			const absolutePath = this.iPathIsAbsolute(filePath) ? filePath : this.iPathResolve(filePath)
-			const fileContent = this.iFsReadFileSync_node(absolutePath, encoding)
+			const absolutePath = this.pathUtils.santizePath(filePath)
+			const fileContent = this.iFsReadFileSync(absolutePath, encoding)
 			const contentWithoutComments = stripJsonComments(fileContent.toString())
 
 			return JSON.parse(contentWithoutComments) as T
 		}
 		catch (error) {
-			this.iCommonUtils.errMsg(`Error reading or parsing JSON file synchronously: ${filePath}`, error)
+			this.commonUtils.errMsg(`Error reading or parsing JSON file synchronously: ${filePath}`, error)
 			return undefined
 		}
 	} //<
@@ -128,14 +133,14 @@ export class FileUtilsService implements IFileUtilsService {
 		encoding: BufferEncoding = 'utf-8',
 	): Promise<T | undefined> { //>
 		try {
-			const absolutePath = this.iPathIsAbsolute(filePath) ? filePath : this.iPathResolve(filePath)
-			const fileContent = await this.iFspReadFile_node(absolutePath, { encoding })
+			const absolutePath = this.pathUtils.santizePath(filePath)
+			const fileContent = await this.iFspReadFile(absolutePath, { encoding })
 			const contentWithoutComments = stripJsonComments(fileContent.toString())
 
 			return JSON.parse(contentWithoutComments) as T
 		}
 		catch (error) {
-			this.iCommonUtils.errMsg(`Error reading or parsing JSON file asynchronously: ${filePath}`, error)
+			this.commonUtils.errMsg(`Error reading or parsing JSON file asynchronously: ${filePath}`, error)
 			return undefined
 		}
 	} //<
@@ -156,18 +161,22 @@ export class FileUtilsService implements IFileUtilsService {
 		data: string | Uint8Array,
 		options?: WriteFileOptions,
 	): Promise<void> { //>
-		return this.iFspWriteFile_node(path, data, options)
+		return this._iFspWriteFile(path, data, options)
 	} //<
 
 	public async iFspAccess(path: PathLike, mode?: number): Promise<void> { //>
-		return this.iFspAccess_node(path, mode)
+		return this._iFspAccess(path, mode)
 	} //<
 
 	public async iFspMkdir(
 		path: PathLike,
 		options?: MakeDirectoryOptions,
 	): Promise<string | undefined> { //>
-		return this.iFspMkdir_node(path, options)
+		return this._iFspMkdir(path, options)
 	} //<
+
+	public async iFspCopyFile(src: string, dest: string): Promise<void> {
+		return this._iFspCopyFile(src, dest)
+	}
 
 } // <

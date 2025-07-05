@@ -189,7 +189,16 @@ function Invoke-NxCommand { #>
     } else {
         # It's a shorthand for an extension package
         $pnpmPackageName = $aliasValue
-        $nxProjectName = "@fux/$($aliasValue)-ext"
+        
+        
+        
+        
+        # $nxProjectName = "@fux/$($aliasValue)-ext"
+        $nxProjectName = "$($aliasValue)"
+        
+        
+        
+        
     }
 
     if (-not $pnpmPackageName -or -not $nxProjectName) {
@@ -236,7 +245,11 @@ $packageAliases.psobject.Properties | ForEach-Object { #>
     $descriptionPackageName = if ($aliasValue.StartsWith("@fux/")) {
         $aliasValue
     } else {
-        "@fux/$($aliasValue)-ext"
+        
+        # "@fux/$($aliasValue)-ext"
+        
+        $aliasValue
+        
     }
     $functionName = "Invoke-$($aliasName)Command"
     $description = "Nx alias for $descriptionPackageName"

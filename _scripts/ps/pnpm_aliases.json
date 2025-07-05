@@ -13,5 +13,7 @@
     "nh": "note-hub",
 
     "pbc": "@fux/project-butler-core",
-    "pb": "project-butler"
+    "pb": "project-butler",
+    "pbm": "project-butler-merged",
+    "pbb": "project-butler-base"
 }

@@ -4,34 +4,34 @@
     "files": [],
     "references": [
         {
-            "path": "packages/_shared/shared-services"
+            "path": "./packages/_shared/shared-services"
         },
         {
-            "path": "packages/_shared/tools"
+            "path": "./packages/_shared/tools"
         },
         {
-            "path": "packages/ghost-writer/core"
+            "path": "./packages/ghost-writer/core"
         },
         {
-            "path": "packages/ghost-writer/ext"
+            "path": "./packages/ghost-writer/ext"
         },
         {
-            "path": "packages/terminal-butler/core"
+            "path": "./packages/note-hub/core"
         },
         {
-            "path": "packages/terminal-butler/ext"
+            "path": "./packages/note-hub/ext"
         },
         {
-            "path": "packages/note-hub/core"
+            "path": "./packages/project-butler/core"
         },
         {
-            "path": "packages/note-hub/ext"
+            "path": "./packages/project-butler/ext"
         },
         {
-            "path": "packages/chrono-copy/core"
+            "path": "./packages/project-butler-merged"
         },
         {
-            "path": "packages/chrono-copy/ext"
+            "path": "./packages/project-butler-base"
         }
     ]
 }

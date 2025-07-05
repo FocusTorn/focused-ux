@@ -1,17 +1,15 @@
-import 'reflect-metadata'
-import { container } from 'tsyringe'
 import type { ExtensionContext, Disposable, Uri } from 'vscode'
 import * as vscode from 'vscode'
-import { registerDependencies } from './injection.js'
-import { ProjectButlerModule } from './ProjectButler.module.js'
+import { createDIContainer } from './injection.js'
+import type { ProjectButlerModule } from './ProjectButler.module.js'
 import { constants } from './_config/constants.js'
 
 export function activate(context: ExtensionContext): void {
 	console.log(`[${constants.extension.name}] Activating...`)
 
-	registerDependencies(context)
+	const container = createDIContainer(context)
 
-	const projectButlerModule = container.resolve(ProjectButlerModule)
+	const projectButlerModule = container.resolve<ProjectButlerModule>('projectButlerModule')
 
 	const disposables: Disposable[] = [
 		vscode.commands.registerCommand(constants.commands.updateTerminalPath, (uri?: Uri) =>

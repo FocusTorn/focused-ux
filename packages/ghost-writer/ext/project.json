@@ -6,19 +6,21 @@
     "targets": {
         "build": {
             "executor": "@nx/esbuild:esbuild",
-            "defaultConfiguration": "production",
+            "outputs": ["{options.outputPath}"],
             "options": {
                 "main": "packages/ghost-writer/ext/src/extension.ts",
-                "declaration": false,
-                "assets": [
-                    {
-                        "glob": "**/*",
-                        "input": "packages/ghost-writer/ext/assets",
-                        "output": "assets"
-                    }
-                ],
-                "external": ["vscode"]
-                
+                "outputPath": "packages/ghost-writer/ext/dist",
+                "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
+        
+                "assets": [],
+                "bundle": true,
+                "platform": "node",
+                "format": ["cjs"],
+                "external": ["vscode"],
+                "esbuildOptions": {
+                    "sourcemap": true,
+                    "target": "es2022"
+                }
             },
             "configurations": {
                 "development": {
@@ -29,6 +31,41 @@
                 }
             }
         },
+        
+        
+        // "build": {
+        //     "executor": "@nx/esbuild:esbuild",
+        //     "outputs": ["{options.outputPath}"],
+        //     "defaultConfiguration": "production",
+        //     "options": {
+        //         "main": "packages/ghost-writer/ext/src/extension.ts",
+        //         "outputPath": "packages/ghost-writer/ext/dist",
+        //         "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
+        //         "platform": "browser",
+        //         "bundle": true,
+        //         "external": ["vscode"],
+        //         "thirdParty": true,
+        //         "plugins": [
+        //             "./_scripts/esbuild/node-alias.plugin.cjs",
+        //             "./_scripts/esbuild/polyfill.plugin.cjs"
+        //         ],
+        //         "assets": [
+        //             {
+        //                 "glob": "**/*",
+        //                 "input": "packages/ghost-writer/ext/assets",
+        //                 "output": "assets"
+        //             }
+        //         ]
+        //     },
+        //     "configurations": {
+        //         "development": {
+        //             "minify": false
+        //         },
+        //         "production": {
+        //             "minify": true
+        //         }
+        //     }
+        // },
         "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
@@ -56,70 +93,3 @@
         "lint": {}
     }
 }
-
-
-
-
-
-
-// {
-//     "name": "@fux/ghost-writer-ext",
-//     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-//     "sourceRoot": "packages/ghost-writer/ext/src",
-//     "projectType": "application",
-//     "targets": {
-//         "build": {
-//             "executor": "nx:run-commands",
-//             "options": {
-//                 "command": "node _scripts/pre-target-cleanup.js {projectRoot} \"nx run {projectName}:_build\""
-//             }
-//         },
-//         "_build": {
-//             "executor": "@nx/esbuild:esbuild",
-//             "outputs": ["{options.outputPath}"],
-//             "defaultConfiguration": "production",
-//             "options": {
-//                 "main": "packages/ghost-writer/ext/src/extension.ts",
-//                 "declaration": false,
-//                 "assets": [
-//                     {
-//                         "glob": "**/*",
-//                         "input": "packages/ghost-writer/ext/assets",
-//                         "output": "assets"
-//                     }
-//                 ]
-//             },
-//             "configurations": {
-//                 "development": {
-//                     "minify": false
-//                 },
-//                 "production": {
-//                     "minify": true
-//                 }
-//             }
-//         },
-//         "package:dev": {
-//             "executor": "nx:run-commands",
-//             "dependsOn": ["build"],
-//             "options": {
-//                 "command": "node ./_scripts/create-dev-vsix.js ghost-writer"
-//             }
-//         },
-//         "package": {
-//             "executor": "nx:run-commands",
-//             "dependsOn": ["build"],
-//             "outputs": ["{workspaceRoot}/vsix_packages/ghost-writer.vsix"],
-//             "options": {
-//                 "command": "node _scripts/pre-target-cleanup.js {projectRoot} \"vsce package --no-dependencies -o ../../vsix_packages/ghost-writer.vsix\""
-//             }
-//         },
-//         "publish": {
-//             "executor": "nx:run-commands",
-//             "dependsOn": ["package"],
-//             "options": {
-//                 "command": "node _scripts/pre-target-cleanup.js {projectRoot} \"vsce publish\""
-//             }
-//         },
-//         "lint": {}
-//     }
-// }

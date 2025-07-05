@@ -1,0 +1,43 @@
+{
+    "name": "@fux/project-butler-merged",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/project-butler-merged/src",
+    "projectType": "application",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
+            "defaultConfiguration": "production",
+            "options": {
+                "outputPath": "packages/project-butler-merged/dist",
+                "main": "packages/project-butler-merged/src/extension.ts",
+                "tsConfig": "packages/project-butler-merged/tsconfig.json",
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/project-butler-merged/assets",
+                        "output": "assets"
+                    }
+                ],
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": true,
+                "external": ["vscode"],
+                "thirdParty": false,
+                "esbuildOptions": {
+                    "keepNames": true
+                }
+            },
+            "configurations": {
+                "development": {
+                    "minify": false
+                },
+                "production": {
+                    "minify": false
+                }
+            }
+        },
+        "lint": {}
+    }
+}

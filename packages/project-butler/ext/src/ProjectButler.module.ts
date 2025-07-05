@@ -1,65 +1,107 @@
-import { inject, singleton } from 'tsyringe'
-import type { IWindow } from '@fux/shared-services'
+import type { IWindow, IWorkspaceUtilsService, ICommonUtilsService } from '@fux/shared-services'
 import type { IProjectButlerService } from '@fux/project-butler-core'
 import type { Uri } from 'vscode'
 import * as vscode from 'vscode'
 import * as path from 'node:path'
 
-@singleton()
 export class ProjectButlerModule {
 
 	constructor(
-		@inject('IProjectButlerService') private readonly service: IProjectButlerService,
-		@inject('IWindow') private readonly window: IWindow,
-	) {}
-
-	public async handleUpdateTerminalPath(uri?: Uri): Promise<void> {
-		const finalUri = uri || this.window.activeTextEditor?.document.uri
-
-		if (!finalUri) {
-			this.window.showErrorMessage('No file or folder context to update terminal path.')
-			return
-		}
-		await this.service.updateTerminalPath(finalUri)
+		private readonly projectButlerService: IProjectButlerService,
+		private readonly iWindow: IWindow,
+		private readonly workspaceUtils: IWorkspaceUtilsService,
+		private readonly commonUtils: ICommonUtilsService,
+	) {
+		console.log('[ProjectButlerModule] Instantiated.')
 	}
 
-	public async handleEnterPoetryShell(uri?: Uri): Promise<void> {
-		const finalUri = uri || this.window.activeTextEditor?.document.uri
+	public async handleUpdateTerminalPath(uri?: Uri): Promise<void> { //>
+		console.log('[ProjectButlerModule] handleUpdateTerminalPath triggered.')
+		try {
+			const finalUri = uri || this.iWindow.activeTextEditor?.document.uri
 
-		await this.service.enterPoetryShell(finalUri)
-	}
-
-	public async handleFormatPackageJson(uri?: Uri): Promise<void> {
-		const finalUri = uri || this.window.activeTextEditor?.document.uri
-
-		if (!finalUri) {
-			this.window.showErrorMessage('No package.json file selected or active.')
-			return
+			if (!finalUri) {
+				console.error('[ProjectButlerModule] No file or folder context found.')
+				this.iWindow.showErrorMessage('No file or folder context to update terminal path.')
+				return
+			}
+			console.log(`[ProjectButlerModule] Calling service with URI: ${finalUri.fsPath}`)
+			await this.projectButlerService.updateTerminalPath(finalUri)
 		}
-
-		if (!finalUri.fsPath.endsWith('package.json')) {
-			this.window.showErrorMessage('This command can only be run on a package.json file.')
-			return
+		catch (error) {
+			this.commonUtils.errMsg('Failed to update terminal path.', error)
 		}
+	} //<
 
-		await this.service.formatPackageJson(finalUri)
-	}
+	public async handleEnterPoetryShell(uri?: Uri): Promise<void> { //>
+		console.log('[ProjectButlerModule] handleEnterPoetryShell triggered.')
+		try {
+			const finalUri = uri || this.iWindow.activeTextEditor?.document.uri
 
-	public async handleCreateBackup(uri?: Uri): Promise<void> {
-		const finalUri = uri || this.window.activeTextEditor?.document.uri
-
-		if (!finalUri) {
-			this.window.showErrorMessage('No file selected or open to back up.')
-			return
+			if (finalUri) {
+				console.log(`[ProjectButlerModule] Calling service with URI: ${finalUri.fsPath}`)
+			}
+			else {
+				console.log('[ProjectButlerModule] Calling service without a specific URI.')
+			}
+			await this.projectButlerService.enterPoetryShell(finalUri)
 		}
-		await this.service.createBackup(finalUri)
-	}
+		catch (error) {
+			this.commonUtils.errMsg('Failed to enter poetry shell.', error)
+		}
+	} //<
 
-	public async handleHotswap(vsixUri?: Uri): Promise<void> {
+	public async handleFormatPackageJson(uri?: Uri): Promise<void> { //>
+		console.log('[ProjectButlerModule] handleFormatPackageJson triggered.')
+		try {
+			const finalUri = uri || this.iWindow.activeTextEditor?.document.uri
+
+			if (!finalUri) {
+				console.error('[ProjectButlerModule] No package.json file selected or active.')
+				this.iWindow.showErrorMessage('No package.json file selected or active.')
+				return
+			}
+
+			if (!finalUri.fsPath.endsWith('package.json')) {
+				console.error(`[ProjectButlerModule] Not a package.json file: ${finalUri.fsPath}`)
+				this.iWindow.showErrorMessage('This command can only be run on a package.json file.')
+				return
+			}
+
+			console.log(`[ProjectButlerModule] Calling service with URI: ${finalUri.fsPath}`)
+			await this.projectButlerService.formatPackageJson(finalUri)
+		}
+		catch (error) {
+			this.commonUtils.errMsg('Failed to format package.json.', error)
+		}
+	} //<
+
+	public async handleCreateBackup(uri?: Uri): Promise<void> { //>
+		console.log('[ProjectButlerModule] handleCreateBackup triggered.')
+		try {
+			const finalUri = uri || this.iWindow.activeTextEditor?.document.uri
+
+			if (!finalUri) {
+				console.error('[ProjectButlerModule] No file selected or open to back up.')
+				this.iWindow.showErrorMessage('No file selected or open to back up.')
+				return
+			}
+			console.log(`[ProjectButlerModule] Calling service with URI: ${finalUri.fsPath}`)
+			await this.projectButlerService.createBackup(finalUri)
+		}
+		catch (error) {
+			this.commonUtils.errMsg('Failed to create backup.', error)
+		}
+	} //<
+
+	public async handleHotswap(vsixUri?: Uri): Promise<void> { //>
+		console.log('[ProjectButlerModule] handleHotswap triggered.')
 		if (!vsixUri) {
-			this.window.showErrorMessage('Hotswap: This command must be run from a VSIX file in the explorer.')
+			console.error('[ProjectButlerModule] Hotswap command run without a VSIX file URI.')
+			this.iWindow.showErrorMessage('Hotswap: This command must be run from a VSIX file in the explorer.')
 			return
 		}
+		console.log(`[ProjectButlerModule] Hotswapping VSIX: ${vsixUri.fsPath}`)
 
 		const vsixFilename = path.basename(vsixUri.fsPath)
 
@@ -70,7 +112,7 @@ export class ProjectButlerModule {
 		const match = vsixFilename.match(/^(?:([\w-]+)\.)?([\w-]+)-\d+\.\d+\.\d+.*\.vsix$/)
 
 		if (!match) {
-			this.window.showErrorMessage(`Hotswap: Could not parse extension ID from filename: ${vsixFilename}`)
+			this.iWindow.showErrorMessage(`Hotswap: Could not parse extension ID from filename: ${vsixFilename}`)
 			return
 		}
 
@@ -80,7 +122,7 @@ export class ProjectButlerModule {
 		const installed = vscode.extensions.all.find(ext => ext.id.endsWith(`.${extensionBaseName}`))
 
 		if (!installed) {
-			this.window.showWarningMessage(`Hotswap: No currently installed extension found for '${extensionBaseName}'. Will proceed with installation only.`)
+			this.iWindow.showWarningMessage(`Hotswap: No currently installed extension found for '${extensionBaseName}'. Will proceed with installation only.`)
 		}
 
 		const targetExtensionId = installed ? installed.id : `unknown-publisher.${extensionBaseName}`
@@ -109,12 +151,12 @@ export class ProjectButlerModule {
 				},
 			)
 
-			this.window.showInformationMessage(`✅ Hotswap complete: ${extensionBaseName} reinstalled.`)
+			this.iWindow.showInformationMessage(`✅ Hotswap complete: ${extensionBaseName} reinstalled.`)
 		}
 		catch (error: any) {
-			this.window.showErrorMessage(`Hotswap failed: ${error.message}`)
+			this.iWindow.showErrorMessage(`Hotswap failed: ${error.message}`)
 			console.error(error)
 		}
-	}
+	} //<
 
 }

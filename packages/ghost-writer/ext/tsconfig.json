@@ -1,12 +1,54 @@
+// {
+//     "extends": "../../../tsconfig.base.json",
+//     "compilerOptions": {
+//         "declarationMap": false,
+//         "baseUrl": ".",
+//         "rootDir": "src",
+//         "outDir": "./out-tsc/app"
+//     },
+//     "include": ["src/**/*.ts"],
+//     "exclude": ["node_modules", "dist"],
+//     "references": [
+//         {
+//             "path": "../core"
+//         },
+//         {
+//             "path": "../../_shared/shared-services"
+//         }
+//     ]
+// }
+
 {
     "extends": "../../../tsconfig.base.json",
     "compilerOptions": {
-        "declarationMap": false,
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "target": "ES2022",
+        "lib": ["ES2022"],
+        "declaration": false,
+        
+        
         "baseUrl": ".",
         "rootDir": "src",
-        "outDir": "./out-tsc/app"
+        
+        // "outDir": "./dist",
+        "outDir": "./out-tsc/app",
+        
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "noImplicitAny": true,
+        "sourceMap": true,
+        "declarationMap": false
     },
-    "include": ["./src/**/*.ts"],
+    "include": ["src/**/*.ts"],
     "exclude": ["node_modules", "dist"],
-    "references": [{ "path": "../core" }, { "path": "../../_shared/shared-services" }]
+    "references": [
+        {
+            "path": "../core"
+        },
+        {
+            "path": "../../_shared/shared-services"
+        }
+    ]
 }

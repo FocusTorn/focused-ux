@@ -1,8 +1,5 @@
 // ESLint & Imports -->>
 
-//= TSYRINGE ==================================================================================================
-import { injectable } from 'tsyringe'
-
 //--------------------------------------------------------------------------------------------------------------<<
 
 export interface TreeFormatterNode { //>
@@ -16,7 +13,6 @@ export interface ITreeFormatterService { //>
 	formatTree: (rootNode: TreeFormatterNode) => string
 } //<
 
-@injectable()
 export class TreeFormatterService implements ITreeFormatterService {
 
 	private _generateTreeString(node: TreeFormatterNode, prefix: string): string { //>

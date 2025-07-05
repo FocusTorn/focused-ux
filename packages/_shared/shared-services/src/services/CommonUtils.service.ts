@@ -1,21 +1,14 @@
 // ESLint & Imports -->>
 
-//= TSYRINGE ==================================================================================================
-import { inject, injectable } from 'tsyringe'
-
 //= IMPLEMENTATION TYPES ======================================================================================
-import type { ICommonUtilsService } from '../_interfaces/ICommonUtilsService.js'
-
-//= INJECTED TYPES ============================================================================================
-import type { IWindow } from '../_vscode_abstractions/IWindow.js'
+import type { ICommonUtilsService, IWindow } from '../interfaces.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-@injectable()
-export class CommonUtilsService implements ICommonUtilsService { //>
+export class CommonUtilsService implements ICommonUtilsService {
 
 	constructor(
-		@inject('IWindow') private readonly iWindow: IWindow,
+		private readonly iWindow: IWindow,
 	) {}
 
 	public delay( //>

@@ -1,21 +1,29 @@
-import { inject, injectable } from 'tsyringe'
 import type { IPathUtilsService, ICommonUtilsService } from '@fux/shared-services'
 import type { StoredFragment } from '../../clipboard/_interfaces/IClipboardService.js'
 import type { IImportGeneratorService } from '../_interfaces/IImportGeneratorService.js'
 
-@injectable()
 export class ImportGeneratorService implements IImportGeneratorService {
+
+	private readonly deps: {
+		pathUtils: IPathUtilsService
+		commonUtils: ICommonUtilsService
+	}
+
 	constructor(
-		@inject('IPathUtilsService') private readonly pathUtils: IPathUtilsService,
-		@inject('ICommonUtilsService') private readonly commonUtils: ICommonUtilsService,
-	) {}
+		deps: {
+			pathUtils: IPathUtilsService
+			commonUtils: ICommonUtilsService
+		},
+	) {
+		this.deps = deps
+	}
 
 	public generate(currentFilePath: string, fragment: StoredFragment): string | undefined {
 		const { text: name, sourceFilePath } = fragment
-		const relativePath = this.pathUtils.getDottedPath(sourceFilePath, currentFilePath)
+		const relativePath = this.deps.pathUtils.getDottedPath(sourceFilePath, currentFilePath)
 
 		if (!relativePath) {
-			this.commonUtils.errMsg('Could not determine relative path for import.')
+			this.deps.commonUtils.errMsg('Could not determine relative path for import.')
 			return undefined
 		}
 
@@ -23,4 +31,5 @@ export class ImportGeneratorService implements IImportGeneratorService {
 
 		return `import { ${name} } from '${pathWithoutExt}.js'\n`
 	}
+
 }

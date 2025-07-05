@@ -7,10 +7,15 @@ packages:
 
     - packages/project-butler/core
     - packages/project-butler/ext
+    - packages/project-butler-merged
+    - packages/project-butler-base
 
     - packages/_shared/shared-services
     - packages/_shared/tools
     - packages/_shared/workspace-tools
+
+    - packages/solo-format-package-json/core
+    - packages/solo-format-package-json/ext
 
 onlyBuiltDependencies:
     - '@swc/core'

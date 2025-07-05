@@ -34,7 +34,8 @@
                 "tsConfig": "{projectRoot}/tsconfig.lib.json",
                 "swcrc": "{workspaceRoot}/.swcrc",
                 "stripLeadingPaths": true,
-                "clean": true
+                "clean": true,
+                "minify": false
             }
         },
         "@nx/js:tsc": {
@@ -44,15 +45,18 @@
         },
         "@nx/esbuild:esbuild": {
             "cache": true,
-            "dependsOn": ["^build"],
             "inputs": ["production", "^production"],
             "options": {
                 "outputPath": "{projectRoot}/dist",
                 "tsConfig": "{projectRoot}/tsconfig.json",
-                "platform": "node",
+                "platform": "browser",
                 "bundle": true,
                 "external": ["vscode"],
-                "thirdParty": false
+                "thirdParty": true,
+                "plugins": [
+                    "./_scripts/esbuild/node-alias.plugin.cjs",
+                    "./_scripts/esbuild/polyfill.plugin.cjs"
+                ]
             }
         }
     },
@@ -90,8 +94,11 @@
                 "packages/ghost-writer/ext/**/*",
                 "packages/project-butler/core/**/*",
                 "packages/project-butler/ext/**/*",
+                "packages/project-butler-merged/**/*",
+                "packages/project-butler-base/**/*",
                 "packages/note-hub/core/**/*",
-                "packages/note-hub/ext/**/*"
+                "packages/note-hub/ext/**/*",
+                "packages/solo-format-package-json/**/*"
             ]
         }
     ]

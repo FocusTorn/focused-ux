@@ -8,7 +8,10 @@
             "executor": "@nx/js:swc",
             "outputs": ["{options.outputPath}"],
             "options": {
-                "main": "packages/_shared/shared-services/src/index.ts"
+                "outputPath": "packages/_shared/shared-services/dist",
+                "main": "packages/_shared/shared-services/src/index.ts",
+                "tsConfig": "packages/_shared/shared-services/tsconfig.lib.json",
+                "assets": []
             }
         },
         "lint": {}

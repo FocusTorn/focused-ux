@@ -1,27 +1,18 @@
 // ESLint & Imports -->>
 
-//= TSYRINGE ==================================================================================================
-import { inject, injectable } from 'tsyringe'
-
-//= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { Uri } from 'vscode'
-
 //= IMPLEMENTATION TYPES ======================================================================================
 import type {
 	IWorkspaceUtilsService,
 	WorkspaceInfo,
-} from '../_interfaces/IWorkspaceUtilsService.js'
-
-//= INJECTED TYPES ============================================================================================
-import type { IWorkspace } from '../_vscode_abstractions/IWorkspace.js'
+	IWorkspace,
+} from '../interfaces.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-@injectable()
-export class WorkspaceUtilsService implements IWorkspaceUtilsService { //>
+export class WorkspaceUtilsService implements IWorkspaceUtilsService {
 
 	constructor(
-		@inject('IWorkspace') private readonly iWorkspace: IWorkspace,
+		private readonly iWorkspace: IWorkspace,
 	) {}
 
 	public getWorkspaceInfo(): WorkspaceInfo { //>
@@ -29,10 +20,10 @@ export class WorkspaceUtilsService implements IWorkspaceUtilsService { //>
 		const inWorkspace = !!workspaceFolders && workspaceFolders.length > 0
 		const multiRoot = inWorkspace && workspaceFolders.length > 1
 		const workspaceName = inWorkspace ? this.iWorkspace.name : undefined
-		let primaryUri: Uri | undefined
+		let primaryUri: import('vscode').Uri | undefined
 		let primaryName: string | undefined
-		const multiRootByIndex: Uri[] = []
-		const multiRootByName: { [key: string]: Uri } = {}
+		const multiRootByIndex: import('vscode').Uri[] = []
+		const multiRootByName: { [key: string]: import('vscode').Uri } = {}
 		let safeWorkspaceName: string = 'default'
 		let isRemote: boolean = false
 		let remoteUserAndHost: string | undefined
@@ -49,15 +40,19 @@ export class WorkspaceUtilsService implements IWorkspaceUtilsService { //>
 
 					if (folder.uri?.scheme === 'vscode-remote') {
 						isRemote = true
+
 						const authority = folder.uri.authority
+
 						if (authority) {
 							const parts = authority.split('+')
+
 							remoteUserAndHost = parts[0]
 						}
 					}
 				}
 			})
-		} else {
+		}
+		else {
 			safeWorkspaceName = `no_workspace_open`
 		}
 

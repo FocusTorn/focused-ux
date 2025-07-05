@@ -1,8 +1,5 @@
 // ESLint & Imports -->>
 
-//= TSYRINGE ==================================================================================================
-import { injectable } from 'tsyringe'
-
 //= MISC ======================================================================================================
 import { encode } from 'gpt-tokenizer'
 
@@ -12,7 +9,6 @@ export interface ITokenizerService { //>
 	calculateTokens: (text: string) => number
 } //<
 
-@injectable()
 export class TokenizerService implements ITokenizerService { //>
 
 	public calculateTokens(text: string): number { //>

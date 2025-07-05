@@ -1,37 +1,38 @@
 // ESLint & Imports -->>
 
-//= TSYRINGE ==================================================================================================
-import { inject, injectable } from 'tsyringe'
-
 //= NODE JS ===================================================================================================
 import type * as nodePath from 'node:path'
-import type { statSync as nodeFsStatSyncType } from 'node:fs'
 
 //= IMPLEMENTATION TYPES ======================================================================================
-import type { IPathUtilsService } from '../_interfaces/IPathUtilsService.js'
-import type { ICommonUtilsService } from '../_interfaces/ICommonUtilsService.js'
+import type { IPathUtilsService } from '../interfaces.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-@injectable()
 export class PathUtilsService implements IPathUtilsService {
 
+	private readonly _iPathJoin: typeof nodePath.join
+	private readonly _iPathBasename: typeof nodePath.basename
+	private readonly _iPathDirname: typeof nodePath.dirname
+
 	constructor(
-		@inject('ICommonUtilsService') private readonly iCommonUtils: ICommonUtilsService,
-		@inject('iPathNormalize') private readonly nodePathNormalize: typeof nodePath.normalize,
-		@inject('iPathIsAbsolute') private readonly nodePathIsAbsolute: typeof nodePath.isAbsolute,
-		@inject('iPathResolve') private readonly nodePathResolve: typeof nodePath.resolve,
-		@inject('iPathDirname') private readonly nodePathDirname: typeof nodePath.dirname,
-		@inject('iPathRelative') private readonly nodePathRelative: typeof nodePath.relative,
-		@inject('iPathBasename') private readonly nodePathBasename: typeof nodePath.basename,
-		@inject('iPathJoin') private readonly nodePathJoin_constructor: typeof nodePath.join,
-		@inject('iFsStatSync') private readonly iFsStatSync: typeof nodeFsStatSyncType,
-	) {}
+		private readonly iPathNormalize: typeof nodePath.normalize,
+		private readonly iPathIsAbsolute: typeof nodePath.isAbsolute,
+		private readonly iPathResolve: typeof nodePath.resolve,
+		iPathDirname: typeof nodePath.dirname,
+		private readonly iPathRelative: typeof nodePath.relative,
+		iPathBasename: typeof nodePath.basename,
+		iPathJoin: typeof nodePath.join,
+		private readonly iPathExtname: typeof nodePath.extname,
+	) {
+		this._iPathDirname = iPathDirname
+		this._iPathBasename = iPathBasename
+		this._iPathJoin = iPathJoin
+	}
 
 	public santizePath( //>
 		uncleanPath: string,
 	): string {
-		const normalPath = this.nodePathNormalize(uncleanPath)
+		const normalPath = this.iPathNormalize(uncleanPath)
 		let cleanPath = normalPath.replace(/\\/g, '/')
 
 		cleanPath = cleanPath.replace(/\/+/g, '/')
@@ -42,25 +43,18 @@ export class PathUtilsService implements IPathUtilsService {
 	public getNormalizedDirectory( //>
 		filePath: string,
 	): string {
-		const isAbsolute = this.nodePathIsAbsolute(filePath)
-		const resolvedPath = isAbsolute ? filePath : this.nodePathResolve(filePath)
+		const isAbsolute = this.iPathIsAbsolute(filePath)
+		const resolvedPath = isAbsolute ? filePath : this.iPathResolve(filePath)
 		const posixPath = resolvedPath.replace(/\\/g, '/')
-		const normalPath = this.nodePathNormalize(posixPath)
+		const normalPath = this.iPathNormalize(posixPath)
 
-		try {
-			const stats = this.iFsStatSync(normalPath)
-
-			return stats.isDirectory() ? normalPath : this.nodePathDirname(normalPath)
-		} catch (error: any) {
-			if (error.code === 'ENOENT') {
-				return this.nodePathDirname(normalPath)
-			}
-			this.iCommonUtils.errMsg(
-				`Error in getNormalizedDirectory for ${filePath}. Falling back to dirname.`,
-				error,
-			)
-			return this.nodePathDirname(normalPath)
+		// Heuristic: if it has an extension, it's a file, so return its directory.
+		// Otherwise, assume it's a directory. This avoids a direct file system read.
+		if (this.iPathExtname(normalPath)) {
+			return this._iPathDirname(normalPath)
 		}
+
+		return normalPath
 	} //<
 
 	public getDottedPath( //>
@@ -71,60 +65,61 @@ export class PathUtilsService implements IPathUtilsService {
 			const targetDirNormal = this.getNormalizedDirectory(targetPath)
 			const pointingDirNormal = this.getNormalizedDirectory(pointingPath)
 
-			let relativeDirPath = this.nodePathRelative(pointingDirNormal, targetDirNormal)
+			let relativeDirPath = this.iPathRelative(pointingDirNormal, targetDirNormal)
 
 			relativeDirPath = relativeDirPath.replace(/\\/g, '/')
 
 			let finalPath: string
 
-			const normalizedTargetPathForStat = this.nodePathIsAbsolute(targetPath)
-				? targetPath
-				: this.nodePathResolve(targetPath)
-			let isTargetDirectoryLike = targetPath.replace(/\\/g, '/').endsWith('/')
-
-			if (!isTargetDirectoryLike) {
-				try {
-					if (this.iFsStatSync(normalizedTargetPathForStat).isDirectory()) {
-						isTargetDirectoryLike = true
-					}
-				} catch { /* ignore */ }
-			}
+			// Heuristic: if the original path ends with a slash, treat it as a directory.
+			const isTargetDirectoryLike = targetPath.replace(/\\/g, '/').endsWith('/')
 
 			if (isTargetDirectoryLike) {
 				if (relativeDirPath === '') {
 					finalPath = './'
-				} else {
+				}
+				else {
 					finalPath = relativeDirPath.endsWith('/') ? relativeDirPath : `${relativeDirPath}/`
 					if (!finalPath.startsWith('.') && !finalPath.startsWith('/')) {
 						finalPath = `./${finalPath}`
 					}
 				}
-			} else {
-				const targetBasename = this.nodePathBasename(targetPath)
+			}
+			else {
+				const targetBasename = this._iPathBasename(targetPath)
 
 				if (relativeDirPath === '') {
 					finalPath = `./${targetBasename}`
-				} else {
-					finalPath = this.nodePathJoin_constructor(relativeDirPath, targetBasename).replace(/\\/g, '/')
+				}
+				else {
+					finalPath = this._iPathJoin(relativeDirPath, targetBasename).replace(/\\/g, '/')
 					if (!finalPath.startsWith('.') && !finalPath.startsWith('/')) {
 						finalPath = `./${finalPath}`
 					}
 				}
 			}
 			return finalPath
-		} catch (error) {
-			this.iCommonUtils.errMsg(
-				`Error in getDottedPath for target '${targetPath}' from '${pointingPath}'`,
-				error,
+		}
+		catch (error) {
+			// Throw the error to be handled by the calling service.
+			throw new Error(
+				`Error in getDottedPath for target '${targetPath}' from '${pointingPath}': ${error}`,
 			)
-			return null
 		}
 	} //<
 
 	public iPathJoin( //>
 		...paths: string[]
 	): string {
-		return this.nodePathJoin_constructor(...paths)
+		return this._iPathJoin(...paths)
 	} //<
+
+	public iPathBasename(p: string, ext?: string): string {
+		return this._iPathBasename(p, ext)
+	}
+
+	public iPathDirname(p: string): string {
+		return this._iPathDirname(p)
+	}
 
 }

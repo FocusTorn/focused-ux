@@ -1,28 +1,19 @@
 // ESLint & Imports -->>
 
-//= TSYRINGE ==================================================================================================
-import { inject, injectable } from 'tsyringe'
-
 //= NODE JS ===================================================================================================
 import * as readline from 'node:readline'
 import type { ReadStream, createReadStream as nodeCreateReadStreamType } from 'node:fs'
 
 //= IMPLEMENTATION TYPES ======================================================================================
-import type { IFrontmatterUtilsService } from '../_interfaces/IFrontmatterUtilsService.js'
-
-//= INJECTED TYPES ============================================================================================
-import type { ICommonUtilsService } from '../_interfaces/ICommonUtilsService.js'
+import type { IFrontmatterUtilsService, ICommonUtilsService } from '../interfaces.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-@injectable()
-export class FrontmatterUtilsService implements IFrontmatterUtilsService { //>
+export class FrontmatterUtilsService implements IFrontmatterUtilsService {
 
 	constructor(
-		@inject('ICommonUtilsService') private readonly iCommonUtils: ICommonUtilsService,
-		@inject(
-			'iFsCreateReadStream',
-		) private readonly iFsCreateReadStream: typeof nodeCreateReadStreamType,
+		private readonly commonUtils: ICommonUtilsService,
+		private readonly iFsCreateReadStream: typeof nodeCreateReadStreamType,
 	) {}
 
 	public async getFrontmatter( //>
@@ -66,7 +57,7 @@ export class FrontmatterUtilsService implements IFrontmatterUtilsService { //>
 			}
 
 			fileStream.on('error', (err: Error) => {
-				this.iCommonUtils.errMsg('File stream error in getFrontmatter_extractContent', err)
+				this.commonUtils.errMsg('File stream error in getFrontmatter_extractContent', err)
 				cleanupAndResolve(undefined)
 			})
 
@@ -79,12 +70,15 @@ export class FrontmatterUtilsService implements IFrontmatterUtilsService { //>
 					if (frontmatterStarted) {
 						cleanupAndResolve(frontmatterContent.trimEnd())
 						return
-					} else {
+					}
+					else {
 						frontmatterStarted = true
 					}
-				} else if (frontmatterStarted) {
+				}
+				else if (frontmatterStarted) {
 					frontmatterContent += `${line}\n`
-				} else if (line.trim() !== '' && lineCount > 1) {
+				}
+				else if (line.trim() !== '' && lineCount > 1) {
 					cleanupAndResolve(undefined)
 					return
 				}

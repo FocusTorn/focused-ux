@@ -1,7 +1,5 @@
 // ESLint & Imports -->>
 
-import "reflect-metadata"
-
 //= SERVICE IMPLEMENTATIONS ===================================================================================
 export { TreeFormatterService } from './services/TreeFormatter.service.js'
 

@@ -1,17 +1,18 @@
-import 'reflect-metadata'
-import { container } from 'tsyringe'
+import { window } from 'vscode'
 import type { ExtensionContext, Disposable } from 'vscode'
 import * as vscode from 'vscode'
-import { registerDependencies } from './injection.js'
-import { GhostWriterModule } from './GhostWriter.module.js'
+import { createDIContainer } from './injection.js'
+import type { GhostWriterModule } from './GhostWriter.module.js'
 import { constants } from './_config/constants.js'
 
 export function activate(context: ExtensionContext): void {
+	window.showInformationMessage(`✅ Ghost Writer Loaded.`)
+
 	console.log(`[${constants.extension.name}] Activating...`)
 
-	registerDependencies(context)
+	const container = createDIContainer(context)
 
-	const ghostWriterModule = container.resolve(GhostWriterModule)
+	const ghostWriterModule = container.resolve<GhostWriterModule>('ghostWriterModule')
 
 	const disposables: Disposable[] = [
 		vscode.commands.registerCommand(

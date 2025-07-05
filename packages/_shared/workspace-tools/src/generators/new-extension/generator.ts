@@ -40,7 +40,7 @@ export async function newExtensionGenerator(
 	generateFiles(
 		tree,
 		path.join(__dirname, 'files'),
-		`packages/${name}`,
+		`packages/${name}`, // This will be packages/extName
 		templateOptions,
 	)
 

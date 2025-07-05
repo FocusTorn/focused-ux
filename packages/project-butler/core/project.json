@@ -5,7 +5,14 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "executor": "@nx/js:swc"
+            "executor": "@nx/js:swc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "packages/project-butler/core/dist",
+                "main": "packages/project-butler/core/src/index.ts",
+                "tsConfig": "packages/project-butler/core/tsconfig.lib.json",
+                "assets": []
+            }
         },
         "lint": {}
     }
