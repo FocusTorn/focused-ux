@@ -31,7 +31,7 @@
             "path": "./packages/project-butler-merged"
         },
         {
-            "path": "./packages/project-butler-base"
+            "path": "./packages/project-butler-all/project-butler-base"
         }
     ]
 }

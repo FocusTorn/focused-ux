@@ -1,7 +1,7 @@
 {
-    "name": "@fux/project-butler-ext",
+    "name": "@fux/project-butler-base",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/project-butler/ext/src",
+    "sourceRoot": "packages/project-butler-all/project-butler-base/src",
     "projectType": "application",
     "targets": {
         "build": {
@@ -10,13 +10,13 @@
             "dependsOn": ["^build"],
             "defaultConfiguration": "production",
             "options": {
-                "outputPath": "packages/project-butler/ext/dist",
-                "main": "packages/project-butler/ext/src/extension.ts",
-                "tsConfig": "packages/project-butler/ext/tsconfig.json",
+                "outputPath": "packages/project-butler-all/project-butler-base/dist",
+                "main": "packages/project-butler-all/project-butler-base/src/extension.ts",
+                "tsConfig": "packages/project-butler-all/project-butler-base/tsconfig.json",
                 "assets": [
                     {
                         "glob": "**/*",
-                        "input": "packages/project-butler/ext/assets",
+                        "input": "packages/project-butler-all/project-butler-base/assets",
                         "output": "assets"
                     }
                 ],
@@ -34,7 +34,7 @@
                     "minify": false
                 },
                 "production": {
-                    "minify": true
+                    "minify": false
                 }
             }
         },
@@ -42,15 +42,15 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node ./_scripts/create-dev-vsix.js project-butler"
+                "command": "node ./_scripts/create-dev-vsix.js project-butler-all/project-butler-base"
             }
         },
         "package": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
-            "outputs": ["{workspaceRoot}/vsix_packages/project-butler.vsix"],
+            "outputs": ["{workspaceRoot}/vsix_packages/project-butler-base.vsix"],
             "options": {
-                "command": "vsce package --no-dependencies -o ../../vsix_packages/project-butler.vsix",
+                "command": "vsce package --no-dependencies -o ../../../vsix_packages/project-butler-base.vsix",
                 "cwd": "{projectRoot}"
             }
         },

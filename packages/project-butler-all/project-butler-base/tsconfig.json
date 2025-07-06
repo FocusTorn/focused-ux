@@ -5,9 +5,10 @@
         "declarationMap": false,
         "baseUrl": ".",
         "rootDir": "src",
-        "outDir": "./out-tsc/app"
+        "outDir": "./out-tsc/app",
+        "paths": {}
     },
     "include": ["./src/**/*.ts"],
     "exclude": ["node_modules", "dist"],
-    "references": [{ "path": "../core" }, { "path": "../../_shared/shared-services" }]
+    "references": []
 }

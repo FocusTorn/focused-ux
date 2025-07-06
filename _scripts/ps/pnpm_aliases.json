@@ -15,5 +15,5 @@
     "pbc": "@fux/project-butler-core",
     "pb": "project-butler",
     "pbm": "project-butler-merged",
-    "pbb": "project-butler-base"
+    "pbb": "@fux/project-butler-base"
 }

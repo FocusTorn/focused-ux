@@ -8,7 +8,7 @@ packages:
     - packages/project-butler/core
     - packages/project-butler/ext
     - packages/project-butler-merged
-    - packages/project-butler-base
+    - packages/project-butler-all/project-butler-base
 
     - packages/_shared/shared-services
     - packages/_shared/tools

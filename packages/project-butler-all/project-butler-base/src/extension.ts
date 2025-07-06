@@ -29,7 +29,6 @@ async function updateTerminalPath(uri?: Uri): Promise<void> {
 		const cdCommand = `cd "${pathToSend}"`
 
 		const terminal = vscode.window.activeTerminal || vscode.window.createTerminal()
-
 		terminal.sendText(cdCommand)
 		terminal.show()
 	}
@@ -88,7 +87,6 @@ async function enterPoetryShell(uri?: Uri): Promise<void> {
 
 		if (finalUri) {
 			const stats = await fs.stat(finalUri.fsPath)
-
 			pathToSend = stats.isDirectory() ? finalUri.fsPath : path.dirname(finalUri.fsPath)
 			command = `cd "${pathToSend}" && poetry shell`
 		}
@@ -120,7 +118,6 @@ async function formatPackageJson(uri?: Uri): Promise<void> {
 		}
 
 		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
-
 		if (!workspaceRoot) {
 			vscode.window.showErrorMessage('Could not find workspace root. Cannot format package.json.')
 			return
@@ -192,12 +189,20 @@ async function hotswap(vsixUri?: Uri): Promise<void> {
 				progress.report({ message: `Installing from ${vsixFilename}...` })
 				await vscode.commands.executeCommand('workbench.extensions.installExtension', vsixUri)
 
-				progress.report({ message: 'Complete!' })
+				progress.report({ message: 'Installation complete.' })
 				await new Promise(resolve => setTimeout(resolve, 1500))
 			},
 		)
 
-		vscode.window.showInformationMessage(`✅ Hotswap complete: ${extensionBaseName} reinstalled.`)
+		const choice = await vscode.window.showInformationMessage(
+			`✅ Hotswap complete: ${extensionBaseName} reinstalled. A reload is required.`,
+			{ modal: true },
+			'Reload Window',
+		)
+
+		if (choice === 'Reload Window') {
+			await vscode.commands.executeCommand('workbench.action.reloadWindow')
+		}
 	}
 	catch (error: any) {
 		vscode.window.showErrorMessage(`Hotswap failed: ${error.message}`)
