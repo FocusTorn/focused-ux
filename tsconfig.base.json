@@ -47,6 +47,7 @@
             "@fux/ghost-writer-core": ["packages/ghost-writer/core/dist"],
             "@fux/note-hub-core": ["packages/note-hub/core/dist"],
             "@fux/project-butler-core": ["packages/project-butler/core/dist"],
+            "@fux/project-butler-dc-core": ["packages/project-butler-all/project-butler-dc/core/dist"],
             "@fux/solo-format-package-json-core": ["packages/solo-format-package-json/core/dist"]
         }
     }

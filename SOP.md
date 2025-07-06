@@ -13,10 +13,10 @@ This dual approach necessitates a strict separation of concerns.
 
 The monorepo consists of four primary package archetypes, each with a distinct purpose and configuration.
 
-- **`core` (Library):** A framework-agnostic library containing a feature's abstract business logic. It is built to be tree-shakeable and is consumed by `ext` packages and the orchestrator.
-- **`ext` (Application):** A lightweight VS Code extension that depends on a `core` package. It contains only VS Code-specific implementation and is bundled into a final, executable artifact.
 - **`shared-services` (Library):** A library containing shared services and abstractions (e.g., file utilities, VS Code API wrappers) intended for runtime use by other packages.
 - **`shared-tools` (Tooling):** A library containing shared build scripts, utilities, or other development-time logic. It is built like a `core` library and consumed as a `devDependency` by other packages.
+- **`core` (Library):** A framework-agnostic library containing a feature's abstract business logic. It is built to be tree-shakeable and is consumed by `ext` packages and the orchestrator.
+- **`ext` (Application):** A lightweight VS Code extension that depends on a `core` package. It contains only VS Code-specific implementation and is bundled into a final, executable artifact.
 
 ---
 

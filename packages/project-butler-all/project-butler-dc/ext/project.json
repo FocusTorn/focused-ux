@@ -1,0 +1,28 @@
+{
+    "name": "@fux/project-butler-dc-ext",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/project-butler-all/project-butler-dc/ext/src",
+    "projectType": "application",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
+            "defaultConfiguration": "production",
+            "options": {
+                "outputPath": "packages/project-butler-all/project-butler-dc/ext/dist",
+                "main": "packages/project-butler-all/project-butler-dc/ext/src/extension.ts",
+                "tsConfig": "packages/project-butler-all/project-butler-dc/ext/tsconfig.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": true,
+                "external": ["vscode"],
+                "thirdParty": false,
+                "esbuildOptions": {
+                    "keepNames": true
+                }
+            }
+        },
+        "lint": {}
+    }
+}

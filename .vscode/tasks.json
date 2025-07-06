@@ -65,6 +65,19 @@
                 "reveal": "never"
             },
             "group": "build"
+        },
+        {
+            "label": "Build ProjectButler (DC)",
+            "type": "shell",
+            "command": "nx run @fux/project-butler-dc-ext:build:production",
+            "problemMatcher": ["$tsc-watch", "$ts-esbuild-watch"],
+            "presentation": {
+                "panel": "shared",
+                "group": "satPrelaunch",
+                "clear": true,
+                "reveal": "never"
+            },
+            "group": "build"
         }
     ]
 }

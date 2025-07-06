@@ -96,6 +96,8 @@
                 "packages/project-butler/ext/**/*",
                 "packages/project-butler-merged/**/*",
                 "packages/project-butler-all/project-butler-base/**/*",
+                "packages/project-butler-all/project-butler-dc/core/**/*",
+                "packages/project-butler-all/project-butler-dc/ext/**/*",
                 "packages/note-hub/core/**/*",
                 "packages/note-hub/ext/**/*",
                 "packages/solo-format-package-json/**/*"

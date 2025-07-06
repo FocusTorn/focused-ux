@@ -1,0 +1,12 @@
+{
+    "name": "@fux/project-butler-dc-core",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/project-butler-all/project-butler-dc/core/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/js:swc"
+        },
+        "lint": {}
+    }
+}

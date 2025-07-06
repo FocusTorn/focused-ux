@@ -159,14 +159,7 @@ importers:
         specifier: ^4.10.0
         version: 4.10.0
 
-  packages/project-butler-merged:
-    dependencies:
-      '@fux/shared-services':
-        specifier: workspace:*
-        version: link:../_shared/shared-services
-      awilix:
-        specifier: ^12.0.5
-        version: 12.0.5
+  packages/project-butler-all/project-butler-base:
     devDependencies:
       '@types/node':
         specifier: ^24.0.10
@@ -178,27 +171,13 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
-  packages/project-butler/core:
-    dependencies:
-      '@fux/shared-services':
-        specifier: workspace:*
-        version: link:../../_shared/shared-services
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
-    devDependencies:
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
+  packages/project-butler-all/project-butler-dc/core: {}
 
-  packages/project-butler/ext:
+  packages/project-butler-all/project-butler-dc/ext:
     dependencies:
-      '@fux/project-butler-core':
+      '@fux/project-butler-dc-core':
         specifier: workspace:*
         version: link:../core
-      '@fux/shared-services':
-        specifier: workspace:*
-        version: link:../../_shared/shared-services
       awilix:
         specifier: ^12.0.5
         version: 12.0.5

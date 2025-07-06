@@ -55,11 +55,23 @@
             "request": "launch",
             "args": [
                 "--profile=Clean",
-                "--extensionDevelopmentPath=${workspaceFolder}/packages/project-butler-base",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/project-butler-all/project-butler-base",
                 "${workspaceFolder}"
             ],
             "sourceMaps": true,
             "preLaunchTask": "Build ProjectButler (Base)"
+        },
+        {
+            "name": "ProjectButler (DC)",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/project-butler-all/project-butler-dc/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true,
+            "preLaunchTask": "Build ProjectButler (DC)"
         }
     ]
 }
