@@ -19,18 +19,6 @@
             "path": "./packages/note-hub/core"
         },
         {
-            "path": "./packages/note-hub/ext"
-        },
-        {
-            "path": "./packages/project-butler/core"
-        },
-        {
-            "path": "./packages/project-butler/ext"
-        },
-        {
-            "path": "./packages/project-butler-merged"
-        },
-        {
             "path": "./packages/project-butler-all/project-butler-base"
         },
         {

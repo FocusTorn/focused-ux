@@ -1,5 +1,6 @@
 // Interfaces
 export * from './_interfaces/IStorageService.js'
+export * from './_interfaces/IUtilServices.js'
 export * from './features/clipboard/_interfaces/IClipboardService.js'
 export * from './features/import-generator/_interfaces/IImportGeneratorService.js'
 export * from './features/console-logger/_interfaces/IConsoleLoggerService.js'

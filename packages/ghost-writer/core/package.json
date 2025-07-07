@@ -13,8 +13,5 @@
             "types": "./dist/*.d.ts",
             "import": "./dist/*.js"
         }
-    },
-    "dependencies": {
-        "@fux/shared-services": "workspace:*"
     }
 }

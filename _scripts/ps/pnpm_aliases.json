@@ -7,7 +7,7 @@
     "ccp": "context-cherry-picker",
 
     "gwc": "@fux/ghost-writer-core",
-    "gw": "ghost-writer",
+    "gw": "@fux/ghost-writer-ext",
 
     "nhc": "@fux/note-hub-core",
     "nh": "note-hub",

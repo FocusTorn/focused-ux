@@ -7,20 +7,27 @@
         "build": {
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
+            "defaultConfiguration": "production",
             "options": {
                 "main": "packages/ghost-writer/ext/src/extension.ts",
                 "outputPath": "packages/ghost-writer/ext/dist",
                 "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
-        
-                "assets": [],
-                "bundle": true,
                 "platform": "node",
                 "format": ["cjs"],
+                "bundle": true,
                 "external": ["vscode"],
                 "esbuildOptions": {
                     "sourcemap": true,
-                    "target": "es2022"
-                }
+                    "target": "es2022",
+                    "keepNames": true
+                },
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/ghost-writer/ext/assets",
+                        "output": "assets"
+                    }
+                ]
             },
             "configurations": {
                 "development": {
@@ -31,46 +38,11 @@
                 }
             }
         },
-        
-        
-        // "build": {
-        //     "executor": "@nx/esbuild:esbuild",
-        //     "outputs": ["{options.outputPath}"],
-        //     "defaultConfiguration": "production",
-        //     "options": {
-        //         "main": "packages/ghost-writer/ext/src/extension.ts",
-        //         "outputPath": "packages/ghost-writer/ext/dist",
-        //         "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
-        //         "platform": "browser",
-        //         "bundle": true,
-        //         "external": ["vscode"],
-        //         "thirdParty": true,
-        //         "plugins": [
-        //             "./_scripts/esbuild/node-alias.plugin.cjs",
-        //             "./_scripts/esbuild/polyfill.plugin.cjs"
-        //         ],
-        //         "assets": [
-        //             {
-        //                 "glob": "**/*",
-        //                 "input": "packages/ghost-writer/ext/assets",
-        //                 "output": "assets"
-        //             }
-        //         ]
-        //     },
-        //     "configurations": {
-        //         "development": {
-        //             "minify": false
-        //         },
-        //         "production": {
-        //             "minify": true
-        //         }
-        //     }
-        // },
         "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node ./_scripts/create-dev-vsix.js ghost-writer"
+                "command": "node ./_scripts/create-dev-vsix.js ghost-writer/ext"
             }
         },
         "package": {

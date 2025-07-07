@@ -1,47 +1,54 @@
-// ESLint & Imports -->>
-
-//= AWILIX ====================================================================================================
-import { asClass } from 'awilix'
+import { asClass, asValue, createContainer, InjectionMode } from 'awilix'
 import type { AwilixContainer } from 'awilix'
-
-//= VSCODE ====================================================================================================
 import type { ExtensionContext } from 'vscode'
-
-//= SHARED SERVICES ===========================================================================================
-import { createDIContainer as createSharedDIContainer } from '@fux/shared-services'
-
-//= GHOST-WRITER CORE =========================================================================================
 import {
 	ClipboardService,
 	ConsoleLoggerService,
 	ImportGeneratorService,
+	
 } from '@fux/ghost-writer-core'
-
-//= GHOST-WRITER EXT ==========================================================================================
-import { GhostWriterModule } from './GhostWriter.module.js'
+import type { IStorageService, ICommonUtilsService, IPathUtilsService } from '@fux/ghost-writer-core'
 import { StorageAdapter } from './services/Storage.adapter.js'
+import { CommonUtilsAdapter } from './services/adapters/CommonUtils.adapter.js'
+import { PathUtilsAdapter } from './services/adapters/PathUtils.adapter.js'
+import { WindowAdapter } from './services/adapters/Window.adapter.js'
+import { WorkspaceAdapter } from './services/adapters/Workspace.adapter.js'
 
-//--------------------------------------------------------------------------------------------------------------<<
-
-export function createDIContainer(context: ExtensionContext): AwilixContainer { //>
-	// 1. Create the base container from shared services, which includes all common
-	//    services, adapters, and primitives.
-	const container = createSharedDIContainer(context)
-
-	// 2. Register Ghost Writer Core Services
-	container.register({
-		clipboardService: asClass(ClipboardService).singleton(),
-		consoleLoggerService: asClass(ConsoleLoggerService).singleton(),
-		importGeneratorService: asClass(ImportGeneratorService).singleton(),
+export function createDIContainer(context: ExtensionContext): AwilixContainer {
+	const container = createContainer({
+		injectionMode: InjectionMode.PROXY,
 	})
 
-	// 3. Register Ghost Writer Extension Adapters & Main Module
+	// Register VSCode Primitives
 	container.register({
-		// This adapter implements IStorageService for the core services to use
+		extensionContext: asValue(context),
+	})
+
+	// Register Local Adapters
+	container.register({
 		storageService: asClass(StorageAdapter).singleton(),
-		// The main module that orchestrates the extension's features
-		ghostWriterModule: asClass(GhostWriterModule).singleton(),
+		window: asClass(WindowAdapter).singleton(),
+		workspace: asClass(WorkspaceAdapter).singleton(),
+		pathUtils: asClass(PathUtilsAdapter).singleton(),
+		commonUtils: asClass(CommonUtilsAdapter).singleton(),
+	})
+
+	// Manually construct core services
+	const clipboardService = new ClipboardService(
+		container.resolve<IStorageService>('storageService'),
+	)
+	const consoleLoggerService = new ConsoleLoggerService()
+	const importGeneratorService = new ImportGeneratorService(
+		container.resolve<IPathUtilsService>('pathUtils'),
+		container.resolve<ICommonUtilsService>('commonUtils'),
+	)
+
+	// Register service instances as values
+	container.register({
+		clipboardService: asValue(clipboardService),
+		consoleLoggerService: asValue(consoleLoggerService),
+		importGeneratorService: asValue(importGeneratorService),
 	})
 
 	return container
-} //<
+}

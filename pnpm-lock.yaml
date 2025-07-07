@@ -114,20 +114,13 @@ importers:
         specifier: 21.2.2
         version: 21.2.2(@swc-node/register@1.10.10(@swc/core@1.12.9(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.12.9(@swc/helpers@0.5.17))
 
-  packages/ghost-writer/core:
-    dependencies:
-      '@fux/shared-services':
-        specifier: workspace:*
-        version: link:../../_shared/shared-services
+  packages/ghost-writer/core: {}
 
   packages/ghost-writer/ext:
     dependencies:
       '@fux/ghost-writer-core':
         specifier: workspace:*
         version: link:../core
-      '@fux/shared-services':
-        specifier: workspace:*
-        version: link:../../_shared/shared-services
       awilix:
         specifier: ^12.0.5
         version: 12.0.5

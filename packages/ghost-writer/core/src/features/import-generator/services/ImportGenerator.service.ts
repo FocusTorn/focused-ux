@@ -1,29 +1,20 @@
-import type { IPathUtilsService, ICommonUtilsService } from '@fux/shared-services'
 import type { StoredFragment } from '../../clipboard/_interfaces/IClipboardService.js'
 import type { IImportGeneratorService } from '../_interfaces/IImportGeneratorService.js'
+import type { IPathUtilsService, ICommonUtilsService } from '../../../_interfaces/IUtilServices.js'
 
 export class ImportGeneratorService implements IImportGeneratorService {
 
-	private readonly deps: {
-		pathUtils: IPathUtilsService
-		commonUtils: ICommonUtilsService
-	}
-
 	constructor(
-		deps: {
-			pathUtils: IPathUtilsService
-			commonUtils: ICommonUtilsService
-		},
-	) {
-		this.deps = deps
-	}
+		private readonly pathUtils: IPathUtilsService,
+		private readonly commonUtils: ICommonUtilsService,
+	) {}
 
 	public generate(currentFilePath: string, fragment: StoredFragment): string | undefined {
 		const { text: name, sourceFilePath } = fragment
-		const relativePath = this.deps.pathUtils.getDottedPath(sourceFilePath, currentFilePath)
+		const relativePath = this.pathUtils.getDottedPath(sourceFilePath, currentFilePath)
 
 		if (!relativePath) {
-			this.deps.commonUtils.errMsg('Could not determine relative path for import.')
+			this.commonUtils.errMsg('Could not determine relative path for import.')
 			return undefined
 		}
 

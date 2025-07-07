@@ -50,5 +50,5 @@
             "@fux/project-butler-dc-core": ["packages/project-butler-all/project-butler-dc/core/dist"],
             "@fux/solo-format-package-json-core": ["packages/solo-format-package-json/core/dist"]
         }
-    }
+    },
 }
