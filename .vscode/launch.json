@@ -13,7 +13,34 @@
             "sourceMaps": true,
             "preLaunchTask": "Build GhostWriter"
         },
+       
         {
+            "name": "Context Cherry Picker",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/context-cherry-picker/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true,
+            "preLaunchTask": "Build Context Cherry Picker"
+        },
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+         {
             "name": "NoteHub",
             "type": "extensionHost",
             "request": "launch",
@@ -25,53 +52,7 @@
             "sourceMaps": true,
             "preLaunchTask": "Build NoteHub"
         },
-        {
-            "name": "ProjectButler",
-            "type": "extensionHost",
-            "request": "launch",
-            "args": [
-                "--profile=Clean",
-                "--extensionDevelopmentPath=${workspaceFolder}/packages/project-butler/ext",
-                "${workspaceFolder}"
-            ],
-            "sourceMaps": true,
-            "preLaunchTask": "Build ProjectButler"
-        },
-        {
-            "name": "ProjectButler (Merged)",
-            "type": "extensionHost",
-            "request": "launch",
-            "args": [
-                "--profile=Clean",
-                "--extensionDevelopmentPath=${workspaceFolder}/packages/project-butler-merged",
-                "${workspaceFolder}"
-            ],
-            "sourceMaps": true,
-            "preLaunchTask": "Build ProjectButler (Merged)"
-        },
-        {
-            "name": "ProjectButler (Base)",
-            "type": "extensionHost",
-            "request": "launch",
-            "args": [
-                "--profile=Clean",
-                "--extensionDevelopmentPath=${workspaceFolder}/packages/project-butler-all/project-butler-base",
-                "${workspaceFolder}"
-            ],
-            "sourceMaps": true,
-            "preLaunchTask": "Build ProjectButler (Base)"
-        },
-        {
-            "name": "ProjectButler (DC)",
-            "type": "extensionHost",
-            "request": "launch",
-            "args": [
-                "--profile=Clean",
-                "--extensionDevelopmentPath=${workspaceFolder}/packages/project-butler-all/project-butler-dc/ext",
-                "${workspaceFolder}"
-            ],
-            "sourceMaps": true,
-            "preLaunchTask": "Build ProjectButler (DC)"
-        }
+        
+        
     ]
 }

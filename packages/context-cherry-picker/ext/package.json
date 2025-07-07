@@ -1,0 +1,160 @@
+{
+    "name": "@fux/context-cherry-picker-ext",
+    "displayName": "F-UX: Context Cherry Picker",
+    "description": "A standalone extension for advanced context selection and formatting.",
+    "publisher": "NewRealityDesigns",
+    "repository": "https://github.com/FocusTorn/focused-ux",
+    "version": "0.2.0",
+    "dependencies": {
+        "@fux/context-cherry-picker-core": "workspace:*",
+        "awilix": "^12.0.5"
+    },
+    "devDependencies": {
+        "@types/node": "latest",
+        "@types/vscode": "^1.100.0",
+        "typescript": "^5.8.3"
+    },
+    "contributes": {
+        "commands": [
+            {
+                "command": "ccp.saveCheckedState",
+                "title": "CCP: Save Checked State",
+                "category": "Context Cherry Picker",
+                "icon": "$(save)"
+            },
+            {
+                "command": "ccp.refreshExplorer",
+                "title": "CCP: Refresh Explorer",
+                "category": "Context Cherry Picker",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "ccp.deleteSavedState",
+                "title": "CCP: Delete Saved State",
+                "category": "Context Cherry Picker",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "ccp.loadSavedState",
+                "title": "CCP: Load Saved State",
+                "category": "Context Cherry Picker",
+                "icon": "$(bookmark)"
+            },
+            {
+                "command": "ccp.clearAllCheckedInExplorer",
+                "title": "CCP: Clear All Checked Items",
+                "category": "Context Cherry Picker",
+                "icon": "$(clear-all)"
+            },
+            {
+                "command": "ccp.copyContextOfCheckedItems",
+                "title": "CCP: Copy Context of Checked Items",
+                "category": "Context Cherry Picker",
+                "icon": "$(clippy)"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "CCP",
+                    "title": "Context Cherry Picker",
+                    "icon": "assets/ccp_activity_bar_icon.svg"
+                }
+            ]
+        },
+        "views": {
+            "CCP": [
+                {
+                    "id": "ccp.quickSettingsView",
+                    "name": "Quick Settings",
+                    "type": "webview",
+                    "icon": "$(settings-gear)"
+                },
+                {
+                    "id": "ccp.explorerView",
+                    "name": "Context Explorer",
+                    "type": "tree",
+                    "icon": "$(files)"
+                },
+                {
+                    "id": "ccp.savedStatesView",
+                    "name": "Saved States",
+                    "type": "tree",
+                    "icon": "$(save-all)"
+                }
+            ]
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "ccp.copyContextOfCheckedItems",
+                    "when": "view == ccp.explorerView",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "ccp.saveCheckedState",
+                    "when": "view == ccp.explorerView",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "ccp.clearAllCheckedInExplorer",
+                    "when": "view == ccp.explorerView",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "ccp.refreshExplorer",
+                    "when": "view == ccp.explorerView",
+                    "group": "navigation@4"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "ccp.loadSavedState",
+                    "when": "view == ccp.savedStatesView && viewItem == savedStateEntry",
+                    "group": "inline@1"
+                },
+                {
+                    "command": "ccp.deleteSavedState",
+                    "when": "view == ccp.savedStatesView && viewItem == savedStateEntry",
+                    "group": "inline@2"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "Context Cherry Picker",
+            "properties": {
+                "ccp.ignoreGlobs": {
+                    "type": "array",
+                    "default": [],
+                    "description": "Glob patterns for files/folders to completely ignore. Overridden by .FocusedUX if present."
+                },
+                "ccp.google.apiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "API Key for Google Generative AI services.",
+                    "scope": "application"
+                }
+            }
+        }
+    },
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "icon": "assets/cherry-logo.png",
+    "categories": [
+        "Other",
+        "AI"
+    ],
+    "keywords": [
+        "context",
+        "cherry pick",
+        "developer tools",
+        "focused ux"
+    ],
+    "engines": {
+        "vscode": "^1.100.0"
+    },
+    "private": true,
+    "type": "module",
+    "main": "./dist/extension.cjs"
+}

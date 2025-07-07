@@ -16,6 +16,9 @@ packages:
     - packages/_shared/tools
     - packages/_shared/workspace-tools
 
+    - packages/context-cherry-picker/core
+    - packages/context-cherry-picker/ext
+
     - packages/solo-format-package-json/core
     - packages/solo-format-package-json/ext
 

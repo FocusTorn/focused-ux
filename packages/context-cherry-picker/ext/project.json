@@ -1,0 +1,49 @@
+{
+    "name": "@fux/context-cherry-picker-ext",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/context-cherry-picker/ext/src",
+    "projectType": "application",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "defaultConfiguration": "production",
+            "options": {
+                "main": "packages/context-cherry-picker/ext/src/extension.ts",
+                "outputPath": "packages/context-cherry-picker/ext/dist",
+                "tsConfig": "packages/context-cherry-picker/ext/tsconfig.json",
+                "platform": "node",
+                "format": ["cjs"],
+                "bundle": true,
+                "external": ["vscode"],
+                "esbuildOptions": {
+                    "sourcemap": true,
+                    "target": "es2022",
+                    "keepNames": true
+                },
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/context-cherry-picker/ext/assets",
+                        "output": "assets"
+                    }
+                ]
+            },
+            "configurations": {
+                "development": {
+                    "minify": false
+                },
+                "production": {
+                    "minify": true
+                }
+            }
+        },
+        "package:dev": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node ./_scripts/create-dev-vsix.js context-cherry-picker/ext"
+            }
+        }
+    }
+}

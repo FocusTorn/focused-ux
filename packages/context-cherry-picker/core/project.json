@@ -1,0 +1,12 @@
+{
+    "name": "@fux/context-cherry-picker-core",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/context-cherry-picker/core/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/js:swc"
+        },
+        "lint": {}
+    }
+}

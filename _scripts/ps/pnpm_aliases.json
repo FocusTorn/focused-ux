@@ -4,21 +4,28 @@
     "wst": "@fux/workspace-tools",
 
     "ccpc": "@fux/context-cherry-picker-core",
-    "ccp": "context-cherry-picker",
+    "ccp": "@fux/context-cherry-picker-ext",
 
     "gwc": "@fux/ghost-writer-core",
     "gw": "@fux/ghost-writer-ext",
 
-    "nhc": "@fux/note-hub-core",
-    "nh": "note-hub",
-
-    "pbc": "@fux/project-butler-core",
-    "pb": "project-butler",
-    "pbm": "project-butler-merged",
-    "pbb": "@fux/project-butler-base",
     
-    "pbdc": "@fux/project-butler-dc-ext",
-    "pbdcc": "@fux/project-butler-dc-core"
+    "pbc": "@fux/project-butler-dc-ext",
+    "pb": "@fux/project-butler-dc-core",
+    
+    
+    
+    
+    
+    "nhc": "@fux/note-hub-core",
+    "nh": "note-hub"
     
     
 }
+
+
+// "pbc": "@fux/project-butler-core",
+// "pb": "project-butler",
+// "pbm": "project-butler-merged",
+// "pbb": "@fux/project-butler-base",
+    
