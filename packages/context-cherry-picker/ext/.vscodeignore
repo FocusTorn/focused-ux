@@ -1,6 +1,6 @@
 
 #= Do not exclude the following files =========================================== 
-!assets/*-logo.png
+!assets
 
 !CHANGELOG.md
 !LICENSE.txt

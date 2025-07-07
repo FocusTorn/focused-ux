@@ -1,95 +1,94 @@
-TerminalButler:
-    packageJson-order:
-        - displayName
-        - description
-        - publisher
-        - repository
-        - version
-        - bin
-        - scripts
-        - sideEffects
-        - dependencies
-        - devDependencies
-        - peerDependencies
-        - contributes
-        - activationEvents
-        - license
-        - icon
-        - categories
-        - keywords
-        - engines
-        - private
-        - type
-        - module
-        - main
-        - types
-        - workspaces
-        - exports
 ContextCherryPicker:
-    settings:
-        message_show_seconds:
-            - 3
-    quick_settings_panel:
-        project_structure_contents:
-            visible: true
-            filter: selected
-        default_status_message:
-            visible: false
-            style: drop
-        file_groups:
-            conf:
-                initially_visible: true
-                items:
-                    - '**/.FocusedUX'
-                    - '**/.prettierignore'
-                    - '**/eslint.config.js'
-            bld:
-                initially_visible: false
-                items:
-                    - '**/dist'
-                    - '**/tsconfig.tsbuildinfo'
-                    - '**/.turbo'
-                    - '**/.nx'
-                    - '**/tmp'
-            tst:
-                initially_visible: false
-                items:
-                    - '**/test'
-                    - '**/coverage'
-                    - '**/.vscode-test.mjs'
-            ign:
-                initially_visible: false
-                items:
-                    - '**/.gitignore'
-                    - '**/.vscodeignore'
-                    - '**/.npmignore'
-                    - '**/.turbignore'
-            docs:
-                initially_visible: false
-                items:
-                    - '**/LICENSE.*'
-                    - '**/README.*'
-            locks:
-                initially_visible: false
-                items:
-                    - '**/pnpm-lock.yaml'
-                    - '**/package-lock.json'
-    ignore:
-        - '**/node_modules'
-        - .git
-        - '**/.yalc'
-        - '**/yalc.lock'
-        - assets
-        - vsix_packages
-        - '**/*.png'
-        - '**/*.jpg'
-        - '**/*.jpeg'
-        - '**/*.svg'
-        - '**/*.bak*'
-    project_tree:
-        always_show: null
-        always_hide: null
-        show_if_selected: null
-    context_explorer:
-        ignore: null
-        hide_children: null
+  settings:
+    message_show_seconds:
+      - 3
+  quick_settings_panel:
+    project_structure_contents:
+      visible: true
+      filter: selected
+    default_status_message:
+      visible: false
+      style: drop
+    file_groups:
+      conf:
+        initially_visible: true
+        items:
+          - '**/.FocusedUX'
+          - '**/.prettierignore'
+          - '**/eslint.config.js'
+      bld:
+        initially_visible: false
+        items:
+          - '**/dist'
+          - '**/tsconfig.tsbuildinfo'
+          - '**/.turbo'
+          - '**/.nx'
+          - '**/tmp'
+      tst:
+        initially_visible: false
+        items:
+          - '**/test'
+          - '**/coverage'
+          - '**/.vscode-test.mjs'
+      ign:
+        initially_visible: false
+        items:
+          - '**/.gitignore'
+          - '**/.vscodeignore'
+          - '**/.npmignore'
+          - '**/.turbignore'
+      docs:
+        initially_visible: false
+        items:
+          - '**/LICENSE.*'
+          - '**/README.*'
+      locks:
+        initially_visible: false
+        items:
+          - '**/pnpm-lock.yaml'
+          - '**/package-lock.json'
+  ignore:
+    - '**/node_modules'
+    - .git
+    - _removed
+    - assets
+    - vsix_packages
+    - '**/*.png'
+    - '**/*.jpg'
+    - '**/*.jpeg'
+    - '**/*.svg'
+    - '**/*.bak*'
+  project_tree:
+    always_show: null
+    always_hide: null
+    show_if_selected: null
+  context_explorer:
+    ignore: null
+    hide_children: null
+TerminalButler:
+  packageJson-order:
+    - displayName
+    - description
+    - publisher
+    - repository
+    - version
+    - bin
+    - scripts
+    - sideEffects
+    - dependencies
+    - devDependencies
+    - peerDependencies
+    - contributes
+    - activationEvents
+    - license
+    - icon
+    - categories
+    - keywords
+    - engines
+    - private
+    - type
+    - module
+    - main
+    - types
+    - workspaces
+    - exports
