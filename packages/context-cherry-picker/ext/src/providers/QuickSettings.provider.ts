@@ -30,9 +30,14 @@ export class QuickSettingsViewProvider implements WebviewViewProvider {
 			}
 		})
 
-		this.service.onDidUpdateSetting(async () => {
+		this.service.onDidUpdateSetting(async ({ settingId, value }) => {
 			if (this._view) {
-				this._view.webview.html = await this.service.getHtml(this._view.webview.cspSource, getNonce())
+				if (settingId === 'refresh') {
+					this._view.webview.html = await this.service.getHtml(this._view.webview.cspSource, getNonce())
+				}
+				else {
+					this._view.webview.postMessage({ command: 'settingUpdated', settingId, value })
+				}
 			}
 		})
 

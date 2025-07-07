@@ -11,7 +11,7 @@
     },
     "devDependencies": {
         "@types/node": "latest",
-        "@types/vscode": "^1.100.0",
+        "@types/vscode": "^1.101.0",
         "typescript": "^5.8.3"
     },
     "contributes": {

@@ -120,7 +120,7 @@ importers:
         specifier: ^12.0.5
         version: 12.0.5
       gpt-tokenizer:
-        specifier: ^3.0.0
+        specifier: ^3.0.1
         version: 3.0.1
       js-yaml:
         specifier: ^4.1.0
@@ -142,7 +142,7 @@ importers:
         specifier: latest
         version: 24.0.10
       '@types/vscode':
-        specifier: ^1.100.0
+        specifier: ^1.101.0
         version: 1.101.0
       typescript:
         specifier: ^5.8.3

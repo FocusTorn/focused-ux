@@ -27,7 +27,9 @@ const LARGE_FILE_SIZE_THRESHOLD_BYTES = 500 * 1024 // 500 KB, a more conservativ
 
 interface ProjectYamlConfig { //>
 	ContextCherryPicker?: {
-		file_groups?: FileGroupsConfig
+		quick_settings_panel?: {
+			file_groups?: FileGroupsConfig
+		}
 		ignore?: string[]
 		project_tree?: {
 			always_show?: string[]
@@ -153,8 +155,9 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 
 		const keys = constants.projectConfig.keys
 		const cfg = constants.configKeys
+		const panelKey = constants.projectConfig.keys.quick_settings_panel
 
-		this.fileGroupsConfig = parsedYamlConfig?.ContextCherryPicker?.file_groups
+		this.fileGroupsConfig = parsedYamlConfig?.[ccpKey]?.[panelKey]?.file_groups
 		this.globalIgnoreGlobs = this.getPatternsFromSources(parsedYamlConfig, [ccpKey, keys.ignore], cfg.CCP_IGNORE_PATTERNS, [])
 		this.contextExplorerIgnoreGlobs = this.getPatternsFromSources(parsedYamlConfig, [ccpKey, keys.context_explorer, keys.ignore], cfg.CCP_CONTEXT_EXPLORER_IGNORE_GLOBS, [])
 		this.contextExplorerHideChildrenGlobs = this.getPatternsFromSources(parsedYamlConfig, [ccpKey, keys.context_explorer, keys.hide_children], cfg.CCP_CONTEXT_EXPLORER_HIDE_CHILDREN_GLOBS, [])
@@ -174,7 +177,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 		if (this.fileGroupsConfig) {
 			for (const groupName in this.fileGroupsConfig) {
 				const group = this.fileGroupsConfig[groupName]
-				const settingId = `${constants.quickSettings.fileGroupVisibility.idPrefix}.${groupName}`
+				const settingId = `${constants.quickSettingIDs.fileGroupVisibility.idPrefix}.${groupName}`
 				const isVisible = await this.quickSettingsService.getSettingState(settingId)
 
 				if (isVisible === false) {

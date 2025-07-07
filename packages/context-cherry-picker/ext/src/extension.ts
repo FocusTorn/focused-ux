@@ -2,10 +2,11 @@ import type { ExtensionContext, Disposable, TreeView, TreeCheckboxChangeEvent } 
 import * as vscode from 'vscode'
 import { createDIContainer } from './injection.js'
 import { ccpConstants } from '@fux/context-cherry-picker-core'
-import type { SavedStateItem, IContextCherryPickerManager, IFileExplorerService, ISavedStatesService, IQuickSettingsService, FileExplorerItem } from '@fux/context-cherry-picker-core'
+import type { SavedStateItem, IContextCherryPickerManager, IFileExplorerService, ISavedStatesService, IQuickSettingsService, FileExplorerItem, IWindow } from '@fux/context-cherry-picker-core'
 import { FileExplorerViewProvider } from './providers/FileExplorer.provider.js'
 import { SavedStatesViewProvider } from './providers/SavedStates.provider.js'
 import { QuickSettingsViewProvider } from './providers/QuickSettings.provider.js'
+import type { WindowAdapter } from './adapters/Window.adapter.js'
 
 export async function activate(context: ExtensionContext): Promise<void> {
 	console.log(`[${ccpConstants.extension.name}] Activating...`)
@@ -16,6 +17,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 	const fileExplorerService = container.resolve<IFileExplorerService>('fileExplorerService')
 	const savedStatesService = container.resolve<ISavedStatesService>('savedStatesService')
 	const quickSettingsService = container.resolve<IQuickSettingsService>('quickSettingsService')
+	const windowAdapter = container.resolve<IWindow>('window') as WindowAdapter
 
 	const fileExplorerProvider = new FileExplorerViewProvider(fileExplorerService)
 	const savedStatesProvider = new SavedStatesViewProvider(savedStatesService)
@@ -28,6 +30,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		showCollapseAll: true,
 		canSelectMany: true,
 	})
+
+	windowAdapter.setExplorerView(explorerView)
 
 	explorerView.onDidChangeCheckboxState((e: TreeCheckboxChangeEvent<FileExplorerItem>) => {
 		for (const [item, state] of e.items) {

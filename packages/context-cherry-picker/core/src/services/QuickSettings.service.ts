@@ -17,22 +17,33 @@ import type { IContext } from '../_interfaces/IContext.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-const PROJECT_STRUCTURE_SETTING_ID = constants.quickSettings.projectStructureContents.id
+const PROJECT_STRUCTURE_SETTING_ID = constants.quickSettingIDs.projectStructureContents.id
+const STATUS_MESSAGE_SETTING_ID = constants.quickSettingIDs.defaultStatusMessage.id
 
 type ProjectStructureSettingValue = 'none' | 'selected' | 'all'
+type StatusMessageSettingValue = 'none' | 'toast' | 'bar' | 'drop' | 'desc'
 
-interface FileGroup {
-	initially_visible: boolean
-	items: string[]
+interface QuickSettingsPanelConfig {
+	project_structure_contents?: {
+		visible?: boolean
+		filter?: ProjectStructureSettingValue
+	}
+	default_status_message?: {
+		visible?: boolean
+		style?: StatusMessageSettingValue
+	}
+	file_groups?: {
+		[groupName: string]: {
+			initially_visible: boolean
+			items: string[]
+		}
+	}
 }
-interface FileGroupsConfig {
-	[groupName: string]: FileGroup
-}
+
 interface ProjectYamlConfig {
 	ContextCherryPicker?: {
-		file_groups?: FileGroupsConfig
+		quick_settings_panel?: QuickSettingsPanelConfig
 		settings?: {
-			default_project_structure?: (string)[]
 			message_show_seconds?: (number | string)[]
 		}
 	}
@@ -56,28 +67,25 @@ export class QuickSettingsService implements IQuickSettingsService {
 
 	private async _initializeStatesFromConfig(): Promise<void> {
 		const config = await this._getProjectConfig()
-		const keys = constants.projectConfig.keys
-		const ccpConfig = config?.[keys.contextCherryPicker]
+		const panelConfig = config?.ContextCherryPicker?.quick_settings_panel
 
-		let projectStructureValue: ProjectStructureSettingValue = 'all'
-		const validValues: ProjectStructureSettingValue[] = ['none', 'selected', 'all']
-		const defaultValueFromConfig = ccpConfig?.[keys.settings]?.[keys.default_project_structure] as string[] | undefined
+		// Project Structure
+		const projectStructureFilter = panelConfig?.project_structure_contents?.filter || 'all'
 
-		if (defaultValueFromConfig && Array.isArray(defaultValueFromConfig) && defaultValueFromConfig.length > 0) {
-			const configValue = defaultValueFromConfig[0]?.toLowerCase() as ProjectStructureSettingValue
+		this._settingsState.set(PROJECT_STRUCTURE_SETTING_ID, projectStructureFilter)
 
-			if (validValues.includes(configValue)) {
-				projectStructureValue = configValue
-			}
-		}
-		this._settingsState.set(PROJECT_STRUCTURE_SETTING_ID, projectStructureValue)
+		// Status Message
+		const statusMessageStyle = panelConfig?.default_status_message?.style || 'drop'
 
-		const fileGroups = ccpConfig?.[keys.file_groups]
+		this._settingsState.set(STATUS_MESSAGE_SETTING_ID, statusMessageStyle)
+
+		// File Groups
+		const fileGroups = panelConfig?.file_groups
 
 		if (fileGroups) {
 			for (const groupName in fileGroups) {
 				const group = fileGroups[groupName]
-				const settingId = `${constants.quickSettings.fileGroupVisibility.idPrefix}.${groupName}`
+				const settingId = `${constants.quickSettingIDs.fileGroupVisibility.idPrefix}.${groupName}`
 
 				if (!this._settingsState.has(settingId)) {
 					this._settingsState.set(settingId, group.initially_visible ?? false)
@@ -104,13 +112,61 @@ export class QuickSettingsService implements IQuickSettingsService {
 		return undefined
 	}
 
+	private async _writeSettingToConfig(settingId: string, newState: any): Promise<void> {
+		if (!this.workspace.workspaceFolders || this.workspace.workspaceFolders.length === 0)
+			return
+
+		const workspaceRoot = this.workspace.workspaceFolders[0].uri
+		const configFileUri = this.path.join(workspaceRoot, constants.projectConfig.fileName)
+
+		try {
+			const config = await this._getProjectConfig() || {}
+			const ccpKey = constants.projectConfig.keys.contextCherryPicker
+			const panelKey = constants.projectConfig.keys.quick_settings_panel
+
+			if (!config[ccpKey])
+				config[ccpKey] = {}
+			if (!config[ccpKey]![panelKey])
+				config[ccpKey]![panelKey] = {}
+
+			const panelConfig = config[ccpKey]![panelKey]!
+
+			if (settingId === PROJECT_STRUCTURE_SETTING_ID) {
+				if (!panelConfig.project_structure_contents)
+					panelConfig.project_structure_contents = {}
+				panelConfig.project_structure_contents.filter = newState
+			}
+			else if (settingId === STATUS_MESSAGE_SETTING_ID) {
+				if (!panelConfig.default_status_message)
+					panelConfig.default_status_message = {}
+				panelConfig.default_status_message.style = newState
+			}
+			else if (settingId.startsWith(constants.quickSettingIDs.fileGroupVisibility.idPrefix)) {
+				const groupName = settingId.substring(constants.quickSettingIDs.fileGroupVisibility.idPrefix.length + 1)
+
+				if (panelConfig.file_groups && panelConfig.file_groups[groupName]) {
+					panelConfig.file_groups[groupName].initially_visible = newState
+				}
+			}
+
+			const newYamlContent = yaml.dump(config)
+
+			await this.fileSystem.writeFile(configFileUri, new TextEncoder().encode(newYamlContent))
+		}
+		catch (error) {
+			console.error(`[${constants.extension.nickName}] Failed to write to .FocusedUX:`, error)
+		}
+	}
+
 	public async refresh(): Promise<void> {
 		this._initializationPromise = this._initializeStatesFromConfig()
 		await this._initializationPromise
+		this._onDidUpdateSetting.fire({ settingId: 'refresh', value: null })
 	}
 
 	public async updateSettingState(settingId: string, newState: any): Promise<void> {
 		this._settingsState.set(settingId, newState)
+		await this._writeSettingToConfig(settingId, newState)
 		this._onDidUpdateSetting.fire({ settingId, value: newState })
 	}
 
@@ -122,21 +178,56 @@ export class QuickSettingsService implements IQuickSettingsService {
 	public async getHtml(cspSource: string, nonce: string): Promise<string> {
 		await this._initializationPromise
 
-		const currentProjectStructureState = (this._settingsState.get(PROJECT_STRUCTURE_SETTING_ID) || 'all') as ProjectStructureSettingValue
-		const viewHtmlUri = this.path.join(this.context.extensionUri, 'assets', 'views', 'projectStructureQuickSetting.html')
-
 		const config = await this._getProjectConfig()
-		const fileGroups = config?.ContextCherryPicker?.file_groups
+		const panelConfig = config?.ContextCherryPicker?.quick_settings_panel
+
+		let projectStructureSection = ''
+
+		if (panelConfig?.project_structure_contents?.visible) {
+			const currentState = this._settingsState.get(PROJECT_STRUCTURE_SETTING_ID) || 'all'
+
+			projectStructureSection = `
+                <div class="quick-setting-group">
+                    <div class="quick-setting-title">Project Structure Contents</div>
+                    <div class="options-container" data-setting-group-id="${PROJECT_STRUCTURE_SETTING_ID}">
+                        <div class="option-button ${currentState === 'none' ? 'selected' : ''}" data-setting-id="${PROJECT_STRUCTURE_SETTING_ID}" data-value="none">None</div>
+                        <div class="option-button ${currentState === 'selected' ? 'selected' : ''}" data-setting-id="${PROJECT_STRUCTURE_SETTING_ID}" data-value="selected">Selected</div>
+                        <div class="option-button ${currentState === 'all' ? 'selected' : ''}" data-setting-id="${PROJECT_STRUCTURE_SETTING_ID}" data-value="all">All</div>
+                    </div>
+                </div>`
+		}
+
+		let statusMessageSection = ''
+
+		if (panelConfig?.default_status_message?.visible) {
+			const currentState = this._settingsState.get(STATUS_MESSAGE_SETTING_ID) || 'drop'
+
+			statusMessageSection = `
+                <div class="quick-setting-group">
+                    <div class="quick-setting-title">Default Status Message</div>
+                    <div class="options-container" data-setting-group-id="${STATUS_MESSAGE_SETTING_ID}">
+                        <div class="option-button ${currentState === 'none' ? 'selected' : ''}" data-setting-id="${STATUS_MESSAGE_SETTING_ID}" data-value="none">None</div>
+                        <div class="option-button ${currentState === 'toast' ? 'selected' : ''}" data-setting-id="${STATUS_MESSAGE_SETTING_ID}" data-value="toast">Toast</div>
+                        <div class="option-button ${currentState === 'bar' ? 'selected' : ''}" data-setting-id="${STATUS_MESSAGE_SETTING_ID}" data-value="bar">Bar</div>
+                        <div class="option-button ${currentState === 'drop' ? 'selected' : ''}" data-setting-id="${STATUS_MESSAGE_SETTING_ID}" data-value="drop">Drop</div>
+                        <div class="option-button ${currentState === 'desc' ? 'selected' : ''}" data-setting-id="${STATUS_MESSAGE_SETTING_ID}" data-value="desc">Desc</div>
+                    </div>
+                </div>`
+		}
+
 		let fileGroupButtonsHtml = ''
+		const fileGroups = panelConfig?.file_groups
 
 		if (fileGroups) {
 			for (const groupName in fileGroups) {
-				const settingId = `${constants.quickSettings.fileGroupVisibility.idPrefix}.${groupName}`
+				const settingId = `${constants.quickSettingIDs.fileGroupVisibility.idPrefix}.${groupName}`
 				const isSelected = this._settingsState.get(settingId) ? 'selected' : ''
 
 				fileGroupButtonsHtml += `<div class="toggle-button ${isSelected}" data-setting-id="${settingId}">${groupName}</div>`
 			}
 		}
+
+		const viewHtmlUri = this.path.join(this.context.extensionUri, 'assets', 'views', 'projectStructureQuickSetting.html')
 
 		try {
 			const fileContents = await this.fileSystem.readFile(viewHtmlUri)
@@ -144,10 +235,8 @@ export class QuickSettingsService implements IQuickSettingsService {
 
 			htmlContent = htmlContent.replace(/\$\{nonce\}/g, nonce)
 			htmlContent = htmlContent.replace(/\$\{webview.cspSource\}/g, cspSource)
-			htmlContent = htmlContent.replace(/\$\{currentProjectStructureStateSelected.none\}/g, currentProjectStructureState === 'none' ? 'selected' : '')
-			htmlContent = htmlContent.replace(/\$\{currentProjectStructureStateSelected.selected\}/g, currentProjectStructureState === 'selected' ? 'selected' : '')
-			htmlContent = htmlContent.replace(/\$\{currentProjectStructureStateSelected.all\}/g, currentProjectStructureState === 'all' ? 'selected' : '')
-			htmlContent = htmlContent.replace(/\$\{PROJECT_STRUCTURE_SETTING_ID\}/g, PROJECT_STRUCTURE_SETTING_ID)
+			htmlContent = htmlContent.replace(/\$\{projectStructureSection\}/g, projectStructureSection)
+			htmlContent = htmlContent.replace(/\$\{statusMessageSection\}/g, statusMessageSection)
 			htmlContent = htmlContent.replace(/\$\{fileGroupButtonsHtml\}/g, fileGroupButtonsHtml)
 
 			return htmlContent

@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <!-- CSP source will be replaced by the extension -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quick Settings</title>
     <style>
@@ -14,25 +16,34 @@
             padding: 10px;
             background-color: var(--vscode-sideBar-background, #252526);
         }
+
         .quick-setting-group {
             margin-bottom: 15px;
         }
+
         .quick-setting-title {
             margin-bottom: 8px;
             font-size: calc(var(--vscode-font-size) * 0.9);
             font-weight: bold;
             color: var(--vscode-foreground, #CCCCCC);
         }
+
         .options-container {
             display: flex;
-            flex-wrap: wrap; /* Allow items to wrap to the next line */
-            gap: 4px; /* Use gap for consistent spacing */
+            flex-wrap: wrap;
+            /* Allow items to wrap to the next line */
+            gap: 4px;
+            /* Use gap for consistent spacing */
             width: 100%;
             box-sizing: border-box;
         }
-        .option-button, .toggle-button {
-            flex: 1 1 auto; /* Allow growing and shrinking, with an auto basis */
-            padding: 0px 12px; /* Increased horizontal padding */
+
+        .option-button,
+        .toggle-button {
+            flex: 1 1 auto;
+            /* Allow growing and shrinking, with an auto basis */
+            padding: 0px 12px;
+            /* Increased horizontal padding */
             line-height: calc(var(--vscode-font-size) * 1.5);
             font-size: calc(var(--vscode-font-size) * 0.85);
             text-align: center;
@@ -41,29 +52,29 @@
             background-color: var(--vscode-button-secondaryBackground, #3A3D41);
             color: var(--vscode-button-secondaryForeground, #FFFFFF);
             border: 1px solid var(--vscode-button-border, transparent);
-            border-radius: 3px; /* Apply radius to all buttons */
+            border-radius: 3px;
+            /* Apply radius to all buttons */
             position: relative;
         }
-        
-        .option-button.selected, .toggle-button.selected {
+
+        .option-button.selected,
+        .toggle-button.selected {
             background-color: var(--vscode-button-background, #0E639C);
             color: var(--vscode-button-foreground, #FFFFFF);
             z-index: 1;
         }
-        .option-button:hover:not(.selected), .toggle-button:hover:not(.selected) {
+
+        .option-button:hover:not(.selected),
+        .toggle-button:hover:not(.selected) {
             background-color: var(--vscode-button-secondaryHoverBackground, #4D5054);
         }
     </style>
 </head>
+
 <body>
-    <div class="quick-setting-group">
-        <div class="quick-setting-title">Project Structure Contents</div>
-        <div class="options-container" data-setting-group-id="${PROJECT_STRUCTURE_SETTING_ID}">
-            <div class="option-button ${currentProjectStructureStateSelected.none}" data-setting-id="${PROJECT_STRUCTURE_SETTING_ID}" data-value="none">None</div>
-            <div class="option-button ${currentProjectStructureStateSelected.selected}" data-setting-id="${PROJECT_STRUCTURE_SETTING_ID}" data-value="selected">Selected</div>
-            <div class="option-button ${currentProjectStructureStateSelected.all}" data-setting-id="${PROJECT_STRUCTURE_SETTING_ID}" data-value="all">All</div>
-        </div>
-    </div>
+    ${projectStructureSection}
+
+    ${statusMessageSection}
 
     <div class="quick-setting-group">
         <div class="quick-setting-title">Toggle File Group Visibility</div>
@@ -91,12 +102,12 @@
                 return;
             }
             parentContainer.querySelectorAll('.option-button').forEach(btn => {
-                if (btn.dataset.settingId === settingId) { 
+                if (btn.dataset.settingId === settingId) {
                     btn.classList.remove('selected');
                 }
             });
             button.classList.add('selected');
-            
+
             vscode.postMessage({
                 command: 'updateSetting',
                 settingId: settingId,
@@ -132,12 +143,12 @@
         });
 
         window.addEventListener('message', event => {
-            const message = event.data; 
+            const message = event.data;
             switch (message.command) {
                 case 'settingUpdated': {
                     const { settingId, value } = message;
                     const buttonToSelect = document.querySelector(`.option-button[data-setting-id="\${settingId}"][data-value="\${value}"], .toggle-button[data-setting-id="\${settingId}"]`);
-                    
+
                     if (buttonToSelect) {
                         const parentContainer = buttonToSelect.closest('.options-container');
                         if (parentContainer) {
@@ -165,4 +176,5 @@
         });
     </script>
 </body>
+
 </html>

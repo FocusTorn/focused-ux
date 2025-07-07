@@ -8,6 +8,7 @@
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "defaultConfiguration": "production",
+            "dependsOn": ["^build"],
             "options": {
                 "main": "packages/context-cherry-picker/ext/src/extension.ts",
                 "outputPath": "packages/context-cherry-picker/ext/dist",

@@ -1,10 +1,3 @@
-# │                                                                                                │
-# │                             Configuration for Focused UI Extension                             │
-# │                                                                                                │
-# └────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-# TODO CCP Need to add an option to not count tokens within explorer display
-
 TerminalButler:
     packageJson-order:
         - displayName
@@ -12,130 +5,91 @@ TerminalButler:
         - publisher
         - repository
         - version
-
         - bin
         - scripts
-
         - sideEffects
         - dependencies
         - devDependencies
         - peerDependencies
-
         - contributes
         - activationEvents
-
         - license
         - icon
         - categories
         - keywords
         - engines
-
         - private
         - type
         - module
-
         - main
         - types
         - workspaces
         - exports
-
-# ┌────────────────────────────────────────────────────────────────────────────┐
-# │                           Context Cherry Picker                            │
-# └────────────────────────────────────────────────────────────────────────────┘
 ContextCherryPicker:
-    #==========================================================================================================
     settings:
         message_show_seconds:
             - 3
-        default_project_structure:
-            - None
-
-    #==========================================================================================================
-    file_groups:
-        conf:
-            initially_visible: true
-            items:
-                # - '**/prettier.config.js'
-                - '**/.FocusedUX'
-                - '**/.prettierignore'
-                - '**/eslint.config.js'
-
-                # - '**/svgo.config.mjs'
-                # - '**/.editorconfig'
-                # - '**/.npmrc'
-                # - '**/knip.json'
-                # - '**/vitest.config.ts'
-
-        bld:
-            initially_visible: false
-            items:
-                - '**/dist'
-                - '**/tsconfig.tsbuildinfo'
-                - '**/.turbo'
-                - '**/.nx'
-                - '**/tmp'
-        tst:
-            initially_visible: false
-            items:
-                - '**/test'
-                - '**/coverage'
-                - '**/.vscode-test.mjs'
-        ign:
-            initially_visible: false
-            items:
-                - '**/.gitignore'
-                - '**/.vscodeignore'
-                - '**/.npmignore'
-                - '**/.turbignore'
-        docs:
-            initially_visible: false
-            items:
-                - '**/LICENSE.*'
-                - '**/README.*'
-        locks:
-            initially_visible: false
-            items:
-                - '**/pnpm-lock.yaml'
-                - '**/package-lock.json'
-
-    #==========================================================================================================
+    quick_settings_panel:
+        project_structure_contents:
+            visible: true
+            filter: selected
+        default_status_message:
+            visible: false
+            style: drop
+        file_groups:
+            conf:
+                initially_visible: true
+                items:
+                    - '**/.FocusedUX'
+                    - '**/.prettierignore'
+                    - '**/eslint.config.js'
+            bld:
+                initially_visible: false
+                items:
+                    - '**/dist'
+                    - '**/tsconfig.tsbuildinfo'
+                    - '**/.turbo'
+                    - '**/.nx'
+                    - '**/tmp'
+            tst:
+                initially_visible: false
+                items:
+                    - '**/test'
+                    - '**/coverage'
+                    - '**/.vscode-test.mjs'
+            ign:
+                initially_visible: false
+                items:
+                    - '**/.gitignore'
+                    - '**/.vscodeignore'
+                    - '**/.npmignore'
+                    - '**/.turbignore'
+            docs:
+                initially_visible: false
+                items:
+                    - '**/LICENSE.*'
+                    - '**/README.*'
+            locks:
+                initially_visible: false
+                items:
+                    - '**/pnpm-lock.yaml'
+                    - '**/package-lock.json'
     ignore:
-        #= GENERAL ================================================================
         - '**/node_modules'
         - .git
-
-        #= YALC ===================================================================
         - '**/.yalc'
         - '**/yalc.lock'
-
-        #= DIRECTORIES ============================================================
         - assets
         - vsix_packages
-
-        #= EXTENSIONS =============================================================
         - '**/*.png'
         - '**/*.jpg'
         - '**/*.jpeg'
         - '**/*.svg'
-
-        #= FILES ==================================================================
         - '**/*.bak*'
-
-    #==========================================================================================================
     project_tree:
-        always_show:
-        # Always show these in the <project_tree>
-
-        always_hide:
-        # Never show these in the <project_tree>
-
-        show_if_selected:
-        # These will only show in the <project_tree> if selected in <Context Explorer>, else hidden
-
-    #==========================================================================================================
+        always_show: null
+        always_hide: null
+        show_if_selected: null
     context_explorer:
-        ignore:
-        # These will not be shown in the <Context Explorer>
-
-        hide_children:
-        # show this dir, but not any of its children individually in the <Context Explorer>
+        ignore: null
+        hide_children: null

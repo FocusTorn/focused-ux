@@ -3,6 +3,12 @@ import * as vscode from 'vscode'
 
 export class WindowAdapter implements IWindow {
 
+	private _explorerView: vscode.TreeView<any> | undefined
+
+	public setExplorerView(view: vscode.TreeView<any>): void {
+		this._explorerView = view
+	}
+
 	showInformationMessage(message: string): void {
 		vscode.window.showInformationMessage(message)
 	}
@@ -21,6 +27,32 @@ export class WindowAdapter implements IWindow {
 
 	setClipboard(text: string): Promise<void> {
 		return Promise.resolve(vscode.env.clipboard.writeText(text))
+	}
+
+	setStatusBarMessage(message: string, durationInMs: number): void {
+		vscode.window.setStatusBarMessage(message, durationInMs)
+	}
+
+	showDropdownMessage(message: string, durationInMs: number): void {
+		if (!this._explorerView)
+			return
+		this._explorerView.message = message
+		setTimeout(() => {
+			if (this._explorerView && this._explorerView.message === message) {
+				this._explorerView.message = undefined
+			}
+		}, durationInMs)
+	}
+
+	showDescriptionMessage(message: string, durationInMs: number): void {
+		if (!this._explorerView)
+			return
+		this._explorerView.description = message
+		setTimeout(() => {
+			if (this._explorerView && this._explorerView.description === message) {
+				this._explorerView.description = ''
+			}
+		}, durationInMs)
 	}
 
 }

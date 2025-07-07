@@ -2,6 +2,7 @@
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
 import { TreeItemCheckboxState } from 'vscode'
+import * as yaml from 'js-yaml'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IContextCherryPickerManager } from '../_interfaces/IContextCherryPickerManager.js'
@@ -17,6 +18,7 @@ import type { IWindow } from '../_interfaces/IWindow.js'
 import type { IWorkspace } from '../_interfaces/IWorkspace.js'
 import type { IPath } from '../_interfaces/IPath.js'
 import type { IQuickSettingsService } from '../_interfaces/IQuickSettingsService.js'
+import type { IFileSystem } from '../_interfaces/IFileSystem.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -36,6 +38,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		private readonly contextFormatter: IContextFormattingService,
 		private readonly window: IWindow,
 		private readonly workspace: IWorkspace,
+		private readonly fileSystem: IFileSystem,
 		private readonly path: IPath,
 	) {}
 
@@ -57,7 +60,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 
 			await this.storageService.saveState(stateName, itemsToSave)
 			this.savedStatesService.refresh()
-			this.window.showInformationMessage(`💾 State '${stateName}' saved.`)
+			await this.showStatusMessage(`💾 State '${stateName}' saved.`)
 		}
 	}
 
@@ -69,7 +72,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 			return
 		}
 		await this.window.setClipboard(checkedUris.join('\n'))
-		this.window.showInformationMessage('Checked file paths copied to clipboard.')
+		await this.showStatusMessage('Checked file paths copied to clipboard.')
 	}
 
 	public async refreshExplorerView(): Promise<void> {
@@ -125,7 +128,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		let totalTokens = 0
 		const maxTokens = 500000
 
-		const projectStructureQuickSettingMode = await this.getQuickSettingState(constants.quickSettings.projectStructureContents.id) as 'all' | 'selected' | 'none'
+		const projectStructureQuickSettingMode = await this.getQuickSettingState(constants.quickSettingIDs.projectStructureContents.id) as 'all' | 'selected' | 'none'
 
 		console.log(`${LOG_PREFIX} Project Structure Quick Setting Mode:`, projectStructureQuickSettingMode)
 
@@ -141,7 +144,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 
 		if (fileGroups) {
 			for (const groupName in fileGroups) {
-				const settingId = `${constants.quickSettings.fileGroupVisibility.idPrefix}.${groupName}`
+				const settingId = `${constants.quickSettingIDs.fileGroupVisibility.idPrefix}.${groupName}`
 				const isVisible = await this.getQuickSettingState(settingId)
 
 				if (isVisible === false) {
@@ -200,7 +203,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		console.log(`${LOG_PREFIX} Total tokens for final output (estimate): ${totalTokens}`)
 
 		await this.window.setClipboard(finalOutput)
-		this.window.showInformationMessage(`📋 Context copied (~${totalTokens} tokens)`)
+		await this.showStatusMessage(`📋 Context copied (~${totalTokens} tokens)`)
 	}
 
 	public getCheckedExplorerItems(): string[] {
@@ -211,13 +214,64 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		return this.quickSettingsService.getSettingState(settingId)
 	}
 
-	public showStatusMessage(type: 'vsc' | 'drop' | 'desc' | 'replace', message: string, _duration?: number): void {
-		// This method is now primarily for the ext layer to implement,
-		// but we can log a message here for debugging.
-		console.log(`[${LOG_PREFIX}] Status Message (${type}): ${message}`)
-		if (type === 'vsc') {
-			this.window.showInformationMessage(message)
+	public async showStatusMessage(message: string): Promise<void> {
+		const messageType = await this.getQuickSettingState(constants.quickSettingIDs.defaultStatusMessage.id) as 'none' | 'toast' | 'bar' | 'drop' | 'desc'
+		const durationMs = await this._getMessageDuration()
+
+		console.log(`[${LOG_PREFIX}] Status Message (type: ${messageType}): ${message}`)
+
+		switch (messageType) {
+			case 'toast':
+				this.window.showInformationMessage(message)
+				break
+			case 'bar':
+				this.window.setStatusBarMessage(message, durationMs)
+				break
+			case 'drop':
+				this.window.showDropdownMessage(message, durationMs)
+				break
+			case 'desc':
+				this.window.showDescriptionMessage(message, durationMs)
+				break
 		}
+	}
+
+	private async _getMessageDuration(): Promise<number> {
+		const ccpKey = constants.projectConfig.keys.contextCherryPicker
+		const settingsKey = constants.projectConfig.keys.settings
+		const durationKey = constants.projectConfig.keys.message_show_seconds
+		const defaultValue = 1.5 // Default duration in seconds
+
+		if (this.workspace.workspaceFolders && this.workspace.workspaceFolders.length > 0) {
+			const workspaceRoot = this.workspace.workspaceFolders[0].uri
+			const configFileUri = this.path.join(workspaceRoot, constants.projectConfig.fileName)
+
+			try {
+				const fileContents = await this.fileSystem.readFile(configFileUri)
+				const config = yaml.load(new TextDecoder().decode(fileContents)) as any
+
+				let durationFromConfig: unknown = config?.[ccpKey]?.[settingsKey]?.[durationKey]
+
+				if (Array.isArray(durationFromConfig)) {
+					durationFromConfig = durationFromConfig[0]
+				}
+
+				if (typeof durationFromConfig === 'string' || typeof durationFromConfig === 'number') {
+					const parsedDuration = Number(durationFromConfig)
+
+					if (!Number.isNaN(parsedDuration) && parsedDuration > 0) {
+						return parsedDuration * 1000
+					}
+				}
+			}
+			catch (error: any) {
+				if (error.code !== 'FileNotFound') {
+					console.error(`${LOG_PREFIX} Error reading .FocusedUX for message duration:`, error)
+				}
+			}
+		}
+
+		return defaultValue * 1000
 	}
 
 	private _pruneRedundantUris(uris: string[]): string[] {

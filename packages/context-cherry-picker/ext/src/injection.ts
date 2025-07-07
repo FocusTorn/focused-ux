@@ -62,6 +62,7 @@ export function createDIContainer(context: ExtensionContext): AwilixContainer {
 			cradle.contextFormatter,
 			cradle.window,
 			cradle.workspace,
+			cradle.fileSystem,
 			cradle.path,
 		)).singleton(),
 	})

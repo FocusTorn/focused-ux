@@ -14,5 +14,5 @@ export interface IContextCherryPickerManager { //>
 	clearAllCheckedInExplorer: () => Promise<void>
 	copyContextOfCheckedItems: () => Promise<void>
 	getQuickSettingState: (settingId: string) => Promise<any>
-	showStatusMessage: (type: 'vsc' | 'drop' | 'desc' | 'replace', message: string, duration?: number) => void
+	showStatusMessage: (message: string) => Promise<void>
 } //<
