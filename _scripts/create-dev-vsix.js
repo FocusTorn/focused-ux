@@ -24,7 +24,11 @@ const vsixOutputDir = join(workspaceRoot, 'vsix_packages')
 
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
 const originalVersion = packageJson.version
-const packageName = basename(packagePath)
+
+
+// const packageName = basename(packagePath)
+const packageName = packagePath.split('/')[0]
+
 
 try {
     // 1. Generate and apply the temporary dev version

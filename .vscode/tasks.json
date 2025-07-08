@@ -1,7 +1,7 @@
 {
     "version": "2.0.0",
     "tasks": [
-         {
+        {
             "label": "Build Context Cherry Picker",
             "type": "shell",
             "command": "nx run @fux/context-cherry-picker-ext:build:production",
@@ -14,7 +14,7 @@
             },
             "group": "build"
         },
-        
+
         {
             "label": "Build GhostWriter",
             "type": "shell",
@@ -28,11 +28,11 @@
             },
             "group": "build"
         },
-       
+
         {
             "label": "Build Project Butler",
             "type": "shell",
-            "command": "nx run @fux/project-butler-dc-ext:build:production",
+            "command": "nx run @fux/project-butler-ext:build:production",
             "problemMatcher": ["$tsc-watch", "$ts-esbuild-watch"],
             "presentation": {
                 "panel": "shared",
@@ -42,14 +42,8 @@
             },
             "group": "build"
         },
-        
-        
-        
-        
-        
-        
-        
-         {
+
+        {
             "label": "Build NoteHub",
             "type": "shell",
             "command": "nx run @fux/note-hub-ext:build:production",
@@ -61,6 +55,6 @@
                 "reveal": "never"
             },
             "group": "build"
-        },
+        }
     ]
 }

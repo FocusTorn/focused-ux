@@ -1,0 +1,12 @@
+{
+    "name": "@fux/services",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/.shared/services/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/js:swc"
+        },
+        "lint": {}
+    }
+}

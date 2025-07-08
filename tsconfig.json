@@ -3,32 +3,23 @@
     "compileOnSave": false,
     "files": [],
     "references": [
-    {
-        "path": "./packages/_shared/shared-services"
-    },
-    {
-        "path": "./packages/_shared/tools"
-    },
-    {
-        "path": "./packages/ghost-writer/core"
-    },
-    {
-        "path": "./packages/ghost-writer/ext"
-    },
-    {
-        "path": "./packages/context-cherry-picker/core"
-    },
-    {
-        "path": "./packages/context-cherry-picker/ext"
-    },
-    {
-        "path": "./packages/project-butler-all/project-butler-base"
-    },
-    {
-        "path": "./packages/project-butler-all/project-butler-dc/core"
-    },
-    {
-        "path": "./packages/project-butler-all/project-butler-dc/ext"
-    }
-]
+        {
+            "path": "./packages/.shared/services"
+        },
+        {
+            "path": "./packages/.shared/tools"
+        },
+        {
+            "path": "./packages/ghost-writer/core"
+        },
+        {
+            "path": "./packages/ghost-writer/ext"
+        },
+        {
+            "path": "./packages/project-butler/core"
+        },
+        {
+            "path": "./packages/project-butler/ext"
+        }
+    ]
 }

@@ -5,11 +5,17 @@
         "rootDir": "src",
         "outDir": "./out-tsc/app"
     },
-    "include": ["src/**/*.ts"],
+    "include": ["./src/**/*.ts"],
     "exclude": ["node_modules", "dist"],
     "references": [
         {
             "path": "../core"
+        },
+        {
+            "path": "../../.shared/services"
+        },
+        {
+            "path": "../../.shared/tools"
         }
     ]
 }

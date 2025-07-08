@@ -1,3 +1,5 @@
+FocusedUX:
+  info_message_show_seconds: 2
 ContextCherryPicker:
   settings:
     message_show_seconds:
@@ -5,7 +7,7 @@ ContextCherryPicker:
   quick_settings_panel:
     project_structure_contents:
       visible: true
-      filter: selected
+      filter: none
     default_status_message:
       visible: false
       style: drop

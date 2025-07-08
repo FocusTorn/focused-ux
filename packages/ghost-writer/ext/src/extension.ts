@@ -25,18 +25,21 @@ export function activate(context: ExtensionContext): void {
 	// Command Handlers
 	const handleStoreCodeFragment = async (): Promise<void> => {
 		const editor = window.activeTextEditor
+
 		if (!editor) {
 			window.showErrorMessage('No active text editor.')
 			return
 		}
+
 		const selection = editor.selection
 		const selectedText = editor.document.getText(selection)
+
 		if (selectedText.trim()) {
 			await clipboardService.store({
 				text: selectedText,
 				sourceFilePath: editor.document.fileName,
 			})
-			window.showInformationMessage(`Stored fragment: ${selectedText}`)
+			await window.showTimedInformationMessage(`Stored fragment: ${selectedText}`)
 		}
 		else {
 			window.showErrorMessage('No text selected to store.')
@@ -45,19 +48,24 @@ export function activate(context: ExtensionContext): void {
 
 	const handleInsertImportStatement = async (): Promise<void> => {
 		const editor = window.activeTextEditor
+
 		if (!editor) {
 			window.showErrorMessage('No active text editor.')
 			return
 		}
+
 		const fragment = await clipboardService.retrieve()
+
 		if (!fragment) {
 			window.showErrorMessage('No fragment stored in Ghost Writer clipboard.')
 			return
 		}
+
 		const importStatement = importGeneratorService.generate(
 			editor.document.fileName,
 			fragment,
 		)
+
 		if (importStatement) {
 			await editor.edit((editBuilder: TextEditorEdit) => {
 				editBuilder.insert(editor.selection.active, importStatement)
@@ -68,10 +76,12 @@ export function activate(context: ExtensionContext): void {
 
 	const handleLogSelectedVariable = async (): Promise<void> => {
 		const editor = window.activeTextEditor
+
 		if (!editor) {
 			window.showErrorMessage('No active text editor.')
 			return
 		}
+
 		const config = workspace.getConfiguration(constants.extension.configKey)
 		const includeClassName = config.get<boolean>(
 			constants.configKeys.loggerIncludeClassName,
@@ -84,9 +94,11 @@ export function activate(context: ExtensionContext): void {
 
 		for (const selection of editor.selections) {
 			const selectedVar = editor.document.getText(selection)
+
 			if (!selectedVar.trim()) {
 				continue
 			}
+
 			const result = consoleLoggerService.generate({
 				documentContent: editor.document.getText(),
 				fileName: editor.document.fileName,
@@ -95,9 +107,11 @@ export function activate(context: ExtensionContext): void {
 				includeClassName,
 				includeFunctionName,
 			})
+
 			if (result) {
 				await editor.edit((editBuilder: TextEditorEdit) => {
 					const position = new Position(result.insertLine, 0)
+
 					editBuilder.insert(position, result.logStatement)
 				})
 			}
@@ -120,7 +134,7 @@ export function activate(context: ExtensionContext): void {
 	]
 
 	context.subscriptions.push(...disposables)
-	vscode.window.showInformationMessage('✅ Ghost Writer Loaded.')
+	void window.showTimedInformationMessage('✅ Ghost Writer Loaded.')
 	console.log(`[${constants.extension.name}] Activated.`)
 }
 

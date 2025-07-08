@@ -4,9 +4,11 @@
     "description": "Dynamically generate frequently used code.",
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
-    "version": "0.1.0-dev.1751377626466",
+    "version": "0.1.0-dev.1751987710738",
     "dependencies": {
         "@fux/ghost-writer-core": "workspace:*",
+        "@fux/services": "workspace:*",
+        "@fux/tools": "workspace:*",
         "awilix": "^12.0.5",
         "esbuild": "^0.25.5"
     },
@@ -87,7 +89,6 @@
         "focused ux"
     ],
     "private": true,
-    "type": "module",
     "main": "./dist/extension.cjs",
     "engines": {
         "vscode": "^1.100.0"

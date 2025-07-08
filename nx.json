@@ -83,26 +83,17 @@
                 }
             }
         },
+
         {
             "plugin": "@nx/eslint/plugin",
             "options": {
                 "targetName": "lint"
             },
             "include": [
-                "packages/_shared/shared-services/**/*",
                 "packages/ghost-writer/core/**/*",
                 "packages/ghost-writer/ext/**/*",
                 "packages/project-butler/core/**/*",
-                "packages/project-butler/ext/**/*",
-                "packages/project-butler-merged/**/*",
-                "packages/project-butler-all/project-butler-base/**/*",
-                "packages/project-butler-all/project-butler-dc/core/**/*",
-                "packages/project-butler-all/project-butler-dc/ext/**/*",
-                "packages/note-hub/core/**/*",
-                "packages/note-hub/ext/**/*",
-                "packages/context-cherry-picker/core/**/*",
-                "packages/context-cherry-picker/ext/**/*",
-                "packages/solo-format-package-json/**/*"
+                "packages/project-butler/ext/**/*"
             ]
         }
     ]

@@ -31,16 +31,16 @@ importers:
         specifier: ^9.30.1
         version: 9.30.1
       '@nx/esbuild':
-        specifier: ^21.2.2
+        specifier: 21.2.2
         version: 21.2.2(@babel/traverse@7.27.4)(@swc-node/register@1.10.10(@swc/core@1.12.9(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.12.9(@swc/helpers@0.5.17))(esbuild@0.25.5)(nx@21.2.2(@swc-node/register@1.10.10(@swc/core@1.12.9(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.12.9(@swc/helpers@0.5.17)))
       '@nx/eslint':
-        specifier: ^21.2.2
+        specifier: 21.2.2
         version: 21.2.2(@babel/traverse@7.27.4)(@swc-node/register@1.10.10(@swc/core@1.12.9(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.12.9(@swc/helpers@0.5.17))(@zkochan/js-yaml@0.0.7)(eslint@9.30.1)(nx@21.2.2(@swc-node/register@1.10.10(@swc/core@1.12.9(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.12.9(@swc/helpers@0.5.17)))
       '@nx/js':
-        specifier: ^21.2.2
+        specifier: 21.2.2
         version: 21.2.2(@babel/traverse@7.27.4)(@swc-node/register@1.10.10(@swc/core@1.12.9(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.12.9(@swc/helpers@0.5.17))(nx@21.2.2(@swc-node/register@1.10.10(@swc/core@1.12.9(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.12.9(@swc/helpers@0.5.17)))
       '@nx/workspace':
-        specifier: ^21.2.2
+        specifier: 21.2.2
         version: 21.2.2(@swc-node/register@1.10.10(@swc/core@1.12.9(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.12.9(@swc/helpers@0.5.17))
       '@seahax/eslint-plugin-wrap':
         specifier: ^0.6.7
@@ -94,59 +94,24 @@ importers:
         specifier: ^8.35.1
         version: 8.35.1(eslint@9.30.1)(typescript@5.8.3)
 
-  packages/_shared/shared-services:
+  packages/.shared/services:
     dependencies:
-      awilix:
-        specifier: ^12.0.5
-        version: 12.0.5
-      strip-json-comments:
-        specifier: ^5.0.2
-        version: 5.0.2
-
-  packages/_shared/tools: {}
-
-  packages/_shared/workspace-tools:
-    dependencies:
-      '@nx/devkit':
-        specifier: 21.2.2
-        version: 21.2.2(nx@21.2.2(@swc-node/register@1.10.10(@swc/core@1.12.9(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.12.9(@swc/helpers@0.5.17)))
-      nx:
-        specifier: 21.2.2
-        version: 21.2.2(@swc-node/register@1.10.10(@swc/core@1.12.9(@swc/helpers@0.5.17))(@swc/types@0.1.23)(typescript@5.8.3))(@swc/core@1.12.9(@swc/helpers@0.5.17))
-
-  packages/context-cherry-picker/core:
-    dependencies:
-      awilix:
-        specifier: ^12.0.5
-        version: 12.0.5
-      gpt-tokenizer:
-        specifier: ^3.0.1
-        version: 3.0.1
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
-      micromatch:
-        specifier: ^4.0.8
-        version: 4.0.8
-
-  packages/context-cherry-picker/ext:
-    dependencies:
-      '@fux/context-cherry-picker-core':
-        specifier: workspace:*
-        version: link:../core
-      awilix:
-        specifier: ^12.0.5
-        version: 12.0.5
     devDependencies:
-      '@types/node':
-        specifier: latest
-        version: 24.0.10
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@types/vscode':
         specifier: ^1.101.0
         version: 1.101.0
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
+
+  packages/.shared/tools:
+    devDependencies:
+      '@types/vscode':
+        specifier: ^1.101.0
+        version: 1.101.0
 
   packages/ghost-writer/core: {}
 
@@ -155,6 +120,12 @@ importers:
       '@fux/ghost-writer-core':
         specifier: workspace:*
         version: link:../core
+      '@fux/services':
+        specifier: workspace:*
+        version: link:../../.shared/services
+      '@fux/tools':
+        specifier: workspace:*
+        version: link:../../.shared/tools
       awilix:
         specifier: ^12.0.5
         version: 12.0.5
@@ -162,25 +133,23 @@ importers:
         specifier: ^0.25.5
         version: 0.25.5
 
-  packages/project-butler-all/project-butler-base:
-    devDependencies:
-      '@types/node':
-        specifier: ^24.0.10
-        version: 24.0.10
-      '@types/vscode':
-        specifier: ^1.101.0
-        version: 1.101.0
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
-
-  packages/project-butler-all/project-butler-dc/core: {}
-
-  packages/project-butler-all/project-butler-dc/ext:
+  packages/project-butler/core:
     dependencies:
-      '@fux/project-butler-dc-core':
+      '@fux/services':
+        specifier: workspace:*
+        version: link:../../.shared/services
+
+  packages/project-butler/ext:
+    dependencies:
+      '@fux/project-butler-core':
         specifier: workspace:*
         version: link:../core
+      '@fux/services':
+        specifier: workspace:*
+        version: link:../../.shared/services
+      '@fux/tools':
+        specifier: workspace:*
+        version: link:../../.shared/tools
       awilix:
         specifier: ^12.0.5
         version: 12.0.5
@@ -2658,9 +2627,6 @@ packages:
   got@13.0.0:
     resolution: {integrity: sha512-XfBk1CxOOScDcMr9O1yKkNaQyy865NbYs+F7dr4H0LZMVgCj2Le59k6PqbNHoL5ToeaEQUYh6c6yMfVcc6SJxA==}
     engines: {node: '>=16'}
-
-  gpt-tokenizer@3.0.1:
-    resolution: {integrity: sha512-5jdaspBq/w4sWw322SvQj1Fku+CN4OAfYZeeEg8U7CWtxBz+zkxZ3h0YOHD43ee+nZYZ5Ud70HRN0ANcdIj4qg==}
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
@@ -6859,8 +6825,6 @@ snapshots:
       lowercase-keys: 3.0.0
       p-cancelable: 3.0.0
       responselike: 3.0.0
-
-  gpt-tokenizer@3.0.1: {}
 
   graceful-fs@4.2.11: {}
 

@@ -1,7 +1,10 @@
 {
-    "serv": "@fux/shared-services",
-    "tools": "@fux/shared-tools",
-    "wst": "@fux/workspace-tools",
+    // "serv": "@fux/shared-services",
+    // "tools": "@fux/shared-tools",
+    // "wst": "@fux/workspace-tools",
+    
+    "serv": "@fux/services",
+    "tools": "@fux/tools",
 
     "ccpc": "@fux/context-cherry-picker-core",
     "ccp": "@fux/context-cherry-picker-ext",
@@ -10,8 +13,8 @@
     "gw": "@fux/ghost-writer-ext",
 
     
-    "pbc": "@fux/project-butler-dc-ext",
-    "pb": "@fux/project-butler-dc-core",
+    "pbc": "@fux/project-butler-core",
+    "pb": "@fux/project-butler-ext",
     
     
     
