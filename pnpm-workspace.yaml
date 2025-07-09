@@ -5,8 +5,11 @@ packages:
     - packages/project-butler/core
     - packages/project-butler/ext
 
-    - packages/.shared/services
-    - packages/.shared/tools
+    - packages/context-cherry-picker/core
+    - packages/context-cherry-picker/ext
+
+    - packages/_shared/services
+    - packages/_shared/tools
 
 onlyBuiltDependencies:
     - '@swc/core'

@@ -42,10 +42,10 @@
         //= PATH ALIASES ============================================================================
         "baseUrl": ".",
         "paths": {
-            "@fux/services": ["packages/.shared/services/dist"],
-            "@fux/services/*": ["packages/.shared/services/dist/*"],
-            "@fux/tools": ["packages/.shared/tools/dist"],
-            "@fux/tools/*": ["packages/.shared/tools/dist/*"],
+            "@fux/services": ["packages/_shared/services/dist"],
+            "@fux/services/*": ["packages/_shared/services/dist/*"],
+            "@fux/tools": ["packages/_shared/tools/dist"],
+            "@fux/tools/*": ["packages/_shared/tools/dist/*"],
             "@fux/ghost-writer-core": ["packages/ghost-writer/core/dist"],
             "@fux/context-cherry-picker-core": ["packages/context-cherry-picker/core/dist"],
             "@fux/note-hub-core": ["packages/note-hub/core/dist"],

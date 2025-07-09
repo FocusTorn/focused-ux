@@ -1,7 +1,7 @@
 {
     "name": "@fux/tools",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/.shared/tools/src",
+    "sourceRoot": "packages/_shared/tools/src",
     "projectType": "library",
     "targets": {
         "build": {

@@ -65,7 +65,7 @@ export class StorageService implements IStorageService { //>
 		try {
 			const fileContents = await this.fileSystem.readFile(this.storageFileUri)
 
-			return JSON.parse(new TextDecoder().decode(fileContents)) as SavedStatesFileFormat
+			return JSON.parse(fileContents) as SavedStatesFileFormat
 		}
 		catch (error) {
 			console.error(`[${localCcpConstants.extension.nickName}] Error reading storage file ${this.storageFileUri}:`, error)

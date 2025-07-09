@@ -12,10 +12,10 @@
             "path": "../core"
         },
         {
-            "path": "../../.shared/services"
+            "path": "../../_shared/services"
         },
         {
-            "path": "../../.shared/tools"
+            "path": "../../_shared/tools"
         }
     ]
 }

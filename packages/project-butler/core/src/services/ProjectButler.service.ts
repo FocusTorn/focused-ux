@@ -23,7 +23,7 @@ export class ProjectButlerService implements IProjectButlerService {
 			}
 
 			const stats = await this.fileSystem.stat(finalUri)
-			const pathToSend = stats.isDirectory() ? finalUri : path.dirname(finalUri)
+			const pathToSend = stats.type === 'directory' ? finalUri : path.dirname(finalUri)
 			const cdCommand = `cd "${pathToSend}"`
 			const terminal = this.terminalProvider.activeTerminal || this.terminalProvider.createTerminal('F-UX Terminal')
 
@@ -81,7 +81,7 @@ export class ProjectButlerService implements IProjectButlerService {
 
 			if (finalUri) {
 				const stats = await this.fileSystem.stat(finalUri)
-				const pathToSend = stats.isDirectory() ? finalUri : path.dirname(finalUri)
+				const pathToSend = stats.type === 'directory' ? finalUri : path.dirname(finalUri)
 
 				command = `cd "${pathToSend}" && poetry shell`
 			}
@@ -120,7 +120,7 @@ export class ProjectButlerService implements IProjectButlerService {
             
 			const command = `node "${scriptPath}" "${finalUri}"`
 
-			this.process.exec(command, { cwd: workspaceRoot }, (error, _stdout, stderr) => {
+			this.process.exec(command, { cwd: workspaceRoot }, (error: Error | null, _stdout: string, stderr: string) => {
 				if (error) {
 					this.window.showErrorMessage(`Failed to format package.json: ${stderr || error.message}`)
 				}

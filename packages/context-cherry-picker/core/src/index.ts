@@ -7,7 +7,7 @@ export type { IContextFormattingService } from './_interfaces/IContextFormatting
 export type { IFileContentProviderService, FileContentResult } from './_interfaces/IFileContentProviderService.js'
 export type { IFileExplorerItem } from './_interfaces/IFileExplorerItem.js'
 export type { IFileExplorerService } from './_interfaces/IFileExplorerService.js'
-export type { IFileSystem, FileStat, DirectoryEntry } from './_interfaces/IFileSystem.js'
+export type { IFileSystem, DirectoryEntry } from './_interfaces/IFileSystem.js'
 export type { IFileUtilsService } from './_interfaces/IFileUtilsService.js'
 export type { IGoogleGenAiService, IGoogleGenAiCountTokensResult } from './_interfaces/IGoogleGenAiService.js'
 export type { IPath } from './_interfaces/IPath.js'
@@ -40,6 +40,3 @@ export { TreeFormatterService } from './services/TreeFormatter.service.js'
 
 // Constants
 export { constants as ccpConstants } from './_config/constants.js'
-
-
-

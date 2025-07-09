@@ -1,6 +1,8 @@
 import { createContainer, asClass, asValue, asFunction, InjectionMode } from 'awilix'
 import type { AwilixContainer } from 'awilix'
 import type { ExtensionContext } from 'vscode'
+import { ConfigurationService } from '@fux/services'
+import type { IConfigurationService, IProcess as ISharedProcess } from '@fux/services'
 
 // Core Services
 import {
@@ -30,13 +32,36 @@ export function createDIContainer(context: ExtensionContext): AwilixContainer {
 		injectionMode: InjectionMode.PROXY,
 	})
 
-	// Adapters
+	// Adapters for CCP's own interfaces
 	container.register({
 		context: asValue(new ContextAdapter(context)),
 		fileSystem: asClass(FileSystemAdapter).singleton(),
 		path: asClass(PathAdapter).singleton(),
-		window: asClass(WindowAdapter).singleton(),
 		workspace: asClass(WorkspaceAdapter).singleton(),
+	})
+
+	// Create an adapter for the shared IProcess interface
+	const sharedProcessAdapter: ISharedProcess = {
+		getWorkspaceRoot: () => container.resolve<WorkspaceAdapter>('workspace').workspaceFolders?.[0]?.uri,
+		exec: () => { throw new Error('exec not implemented for this adapter') },
+	}
+
+	// Manually construct shared services
+	const configurationService = new ConfigurationService(
+		container.resolve<FileSystemAdapter>('fileSystem'),
+		sharedProcessAdapter,
+	)
+
+	// Register shared services
+	container.register({
+		configurationService: asValue(configurationService),
+	})
+
+	// Manually construct adapters that need shared services
+	const windowAdapter = new WindowAdapter(container.resolve<IConfigurationService>('configurationService'))
+
+	container.register({
+		window: asValue(windowAdapter),
 	})
 
 	// Core Services
@@ -62,8 +87,8 @@ export function createDIContainer(context: ExtensionContext): AwilixContainer {
 			cradle.contextFormatter,
 			cradle.window,
 			cradle.workspace,
-			cradle.fileSystem,
 			cradle.path,
+			cradle.configurationService,
 		)).singleton(),
 	})
 

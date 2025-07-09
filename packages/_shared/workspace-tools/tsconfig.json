@@ -6,7 +6,6 @@
         "moduleResolution": "node",
         "types": ["node"],
         "composite": false,
-        "declaration": false,
         "sourceMap": false,
         "declarationMap": false
     },

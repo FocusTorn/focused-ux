@@ -8,6 +8,10 @@ import { SavedStatesViewProvider } from './providers/SavedStates.provider.js'
 import { QuickSettingsViewProvider } from './providers/QuickSettings.provider.js'
 import type { WindowAdapter } from './adapters/Window.adapter.js'
 
+
+// FIX The filter quick settings ignores directories starting with a ., EG.  '.shared'
+
+
 export async function activate(context: ExtensionContext): Promise<void> {
 	console.log(`[${ccpConstants.extension.name}] Activating...`)
 

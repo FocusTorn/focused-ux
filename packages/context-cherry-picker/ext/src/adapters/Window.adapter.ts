@@ -1,9 +1,13 @@
 import type { IWindow } from '@fux/context-cherry-picker-core'
 import * as vscode from 'vscode'
+import type { IConfigurationService } from '@fux/services'
+import { showTimedInformationMessage as showTimedInformationMessageUtil } from '@fux/tools'
 
 export class WindowAdapter implements IWindow {
 
 	private _explorerView: vscode.TreeView<any> | undefined
+
+	constructor(private readonly configurationService: IConfigurationService) {}
 
 	public setExplorerView(view: vscode.TreeView<any>): void {
 		this._explorerView = view
@@ -29,30 +33,54 @@ export class WindowAdapter implements IWindow {
 		return Promise.resolve(vscode.env.clipboard.writeText(text))
 	}
 
-	setStatusBarMessage(message: string, durationInMs: number): void {
-		vscode.window.setStatusBarMessage(message, durationInMs)
+	public async showTimedInformationMessage(message: string, duration?: number): Promise<void> {
+		const finalDurationMs = await this._getDuration(duration)
+
+		await showTimedInformationMessageUtil(message, finalDurationMs)
 	}
 
-	showDropdownMessage(message: string, durationInMs: number): void {
+	async setStatusBarMessage(message: string, durationInMs?: number): Promise<void> {
+		const finalDurationMs = await this._getDuration(durationInMs)
+
+		vscode.window.setStatusBarMessage(message, finalDurationMs)
+	}
+
+	async showDropdownMessage(message: string, durationInMs?: number): Promise<void> {
 		if (!this._explorerView)
 			return
+
+		const finalDurationMs = await this._getDuration(durationInMs)
+
 		this._explorerView.message = message
 		setTimeout(() => {
 			if (this._explorerView && this._explorerView.message === message) {
 				this._explorerView.message = undefined
 			}
-		}, durationInMs)
+		}, finalDurationMs)
 	}
 
-	showDescriptionMessage(message: string, durationInMs: number): void {
+	async showDescriptionMessage(message: string, durationInMs?: number): Promise<void> {
 		if (!this._explorerView)
 			return
+
+		const finalDurationMs = await this._getDuration(durationInMs)
+
 		this._explorerView.description = message
 		setTimeout(() => {
 			if (this._explorerView && this._explorerView.description === message) {
 				this._explorerView.description = ''
 			}
-		}, durationInMs)
+		}, finalDurationMs)
+	}
+
+	private async _getDuration(duration?: number): Promise<number> {
+		if (duration !== undefined) {
+			return duration
+		}
+
+		const durationSeconds = await this.configurationService.get<number>('ContextCherryPicker.settings.message_show_seconds', 1.5)
+
+		return durationSeconds * 1000
 	}
 
 }

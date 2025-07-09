@@ -23,7 +23,7 @@ import type { IPath } from '../_interfaces/IPath.js'
 //--------------------------------------------------------------------------------------------------------------<<
 
 const LARGE_FILE_TOKEN_THRESHOLD = 500_000
-const LARGE_FILE_SIZE_THRESHOLD_BYTES = 500 * 1024 // 500 KB, a more conservative threshold
+const _LARGE_FILE_SIZE_THRESHOLD_BYTES = 500 * 1024 // 500 KB, a more conservative threshold
 
 interface ProjectYamlConfig { //>
 	ContextCherryPicker?: {
@@ -143,8 +143,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 			const configFileUri = this.path.join(workspaceRoot, constants.projectConfig.fileName)
 
 			try {
-				const fileContents = await this.fileSystem.readFile(configFileUri)
-				const yamlContent = new TextDecoder().decode(fileContents)
+				const yamlContent = await this.fileSystem.readFile(configFileUri)
 
 				parsedYamlConfig = yaml.load(yamlContent) as ProjectYamlConfig
 			}
@@ -341,14 +340,14 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 			const stat = await this.fileSystem.stat(uri)
 
 			if (stat.type === 'file') {
-				if (stat.size > LARGE_FILE_SIZE_THRESHOLD_BYTES)
-					return Infinity
+				// if (stat.size > LARGE_FILE_SIZE_THRESHOLD_BYTES)
+				// 	return Infinity
 
 				const content = await this.fileSystem.readFile(uri)
 
-				return this.tokenizerService.calculateTokens(new TextDecoder().decode(content))
+				return this.tokenizerService.calculateTokens(content)
 			}
-			else if (stat.type === 'directory') {
+			else {
 				const entries = await this.fileSystem.readDirectory(uri)
 				const promises = entries.map(async (entry) => {
 					const childUri = this.path.join(uri, entry.name)

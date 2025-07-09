@@ -54,8 +54,7 @@ export class FileContentProviderService implements IFileContentProviderService {
 				}
 
 				try {
-					const fileContentBytes = await this.fileSystem.readFile(uri)
-					const fileContent = new TextDecoder().decode(fileContentBytes)
+					const fileContent = await this.fileSystem.readFile(uri)
 					const fileEntryString = `<file name="${entry.name}" path="/${entry.relativePath}">\n${fileContent}\n</file>\n`
 					const tokensForThisFile = this._localEstimateTokens(fileEntryString)
 

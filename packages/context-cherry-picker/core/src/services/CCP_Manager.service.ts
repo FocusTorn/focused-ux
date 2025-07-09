@@ -2,7 +2,6 @@
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
 import { TreeItemCheckboxState } from 'vscode'
-import * as yaml from 'js-yaml'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IContextCherryPickerManager } from '../_interfaces/IContextCherryPickerManager.js'
@@ -18,7 +17,7 @@ import type { IWindow } from '../_interfaces/IWindow.js'
 import type { IWorkspace } from '../_interfaces/IWorkspace.js'
 import type { IPath } from '../_interfaces/IPath.js'
 import type { IQuickSettingsService } from '../_interfaces/IQuickSettingsService.js'
-import type { IFileSystem } from '../_interfaces/IFileSystem.js'
+import type { IConfigurationService } from '@fux/services'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -38,15 +37,15 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		private readonly contextFormatter: IContextFormattingService,
 		private readonly window: IWindow,
 		private readonly workspace: IWorkspace,
-		private readonly fileSystem: IFileSystem,
 		private readonly path: IPath,
+		private readonly configurationService: IConfigurationService,
 	) {}
 
 	public async saveCurrentCheckedState(): Promise<void> {
 		const checkedItems = this.getCheckedExplorerItems()
 
 		if (checkedItems.length === 0) {
-			this.window.showInformationMessage('No items are checked to save.')
+			await this.window.showTimedInformationMessage('No items are checked to save.')
 			return
 		}
 
@@ -68,7 +67,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		const checkedUris = this.getCheckedExplorerItems()
 
 		if (checkedUris.length === 0) {
-			this.window.showInformationMessage('No file paths to copy.')
+			await this.window.showTimedInformationMessage('No file paths to copy.')
 			return
 		}
 		await this.window.setClipboard(checkedUris.join('\n'))
@@ -118,7 +117,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		const workspaceFolders = this.workspace.workspaceFolders
 
 		if (!workspaceFolders || workspaceFolders.length === 0) {
-			this.window.showInformationMessage('No workspace folder open.')
+			await this.window.showTimedInformationMessage('No workspace folder open.')
 			return
 		}
 		this.projectRootUri = workspaceFolders[0].uri
@@ -216,13 +215,14 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 
 	public async showStatusMessage(message: string): Promise<void> {
 		const messageType = await this.getQuickSettingState(constants.quickSettingIDs.defaultStatusMessage.id) as 'none' | 'toast' | 'bar' | 'drop' | 'desc'
-		const durationMs = await this._getMessageDuration()
+		const durationSeconds = await this.configurationService.get<number>('ContextCherryPicker.settings.message_show_seconds', 1.5)
+		const durationMs = durationSeconds * 1000
 
 		console.log(`[${LOG_PREFIX}] Status Message (type: ${messageType}): ${message}`)
 
 		switch (messageType) {
 			case 'toast':
-				this.window.showInformationMessage(message)
+				await this.window.showTimedInformationMessage(message, durationMs)
 				break
 			case 'bar':
 				this.window.setStatusBarMessage(message, durationMs)
@@ -234,44 +234,6 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 				this.window.showDescriptionMessage(message, durationMs)
 				break
 		}
-	}
-
-	private async _getMessageDuration(): Promise<number> {
-		const ccpKey = constants.projectConfig.keys.contextCherryPicker
-		const settingsKey = constants.projectConfig.keys.settings
-		const durationKey = constants.projectConfig.keys.message_show_seconds
-		const defaultValue = 1.5 // Default duration in seconds
-
-		if (this.workspace.workspaceFolders && this.workspace.workspaceFolders.length > 0) {
-			const workspaceRoot = this.workspace.workspaceFolders[0].uri
-			const configFileUri = this.path.join(workspaceRoot, constants.projectConfig.fileName)
-
-			try {
-				const fileContents = await this.fileSystem.readFile(configFileUri)
-				const config = yaml.load(new TextDecoder().decode(fileContents)) as any
-
-				let durationFromConfig: unknown = config?.[ccpKey]?.[settingsKey]?.[durationKey]
-
-				if (Array.isArray(durationFromConfig)) {
-					durationFromConfig = durationFromConfig[0]
-				}
-
-				if (typeof durationFromConfig === 'string' || typeof durationFromConfig === 'number') {
-					const parsedDuration = Number(durationFromConfig)
-
-					if (!Number.isNaN(parsedDuration) && parsedDuration > 0) {
-						return parsedDuration * 1000
-					}
-				}
-			}
-			catch (error: any) {
-				if (error.code !== 'FileNotFound') {
-					console.error(`${LOG_PREFIX} Error reading .FocusedUX for message duration:`, error)
-				}
-			}
-		}
-
-		return defaultValue * 1000
 	}
 
 	private _pruneRedundantUris(uris: string[]): string[] {

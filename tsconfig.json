@@ -4,10 +4,10 @@
     "files": [],
     "references": [
         {
-            "path": "./packages/.shared/services"
+            "path": "./packages/_shared/services"
         },
         {
-            "path": "./packages/.shared/tools"
+            "path": "./packages/_shared/tools"
         },
         {
             "path": "./packages/ghost-writer/core"
@@ -20,6 +20,12 @@
         },
         {
             "path": "./packages/project-butler/ext"
+        },
+        {
+            "path": "./packages/context-cherry-picker/core"
+        },
+        {
+            "path": "./packages/context-cherry-picker/ext"
         }
     ]
 }

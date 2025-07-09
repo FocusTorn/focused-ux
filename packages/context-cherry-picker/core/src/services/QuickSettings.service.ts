@@ -100,8 +100,7 @@ export class QuickSettingsService implements IQuickSettingsService {
 			const configFileUri = this.path.join(workspaceRoot, constants.projectConfig.fileName)
 
 			try {
-				const fileContents = await this.fileSystem.readFile(configFileUri)
-				const yamlContent = new TextDecoder().decode(fileContents)
+				const yamlContent = await this.fileSystem.readFile(configFileUri)
 
 				return yaml.load(yamlContent) as ProjectYamlConfig
 			}
@@ -230,16 +229,16 @@ export class QuickSettingsService implements IQuickSettingsService {
 		const viewHtmlUri = this.path.join(this.context.extensionUri, 'assets', 'views', 'projectStructureQuickSetting.html')
 
 		try {
-			const fileContents = await this.fileSystem.readFile(viewHtmlUri)
-			let htmlContent = new TextDecoder().decode(fileContents)
+			const htmlContent = await this.fileSystem.readFile(viewHtmlUri)
 
-			htmlContent = htmlContent.replace(/\$\{nonce\}/g, nonce)
-			htmlContent = htmlContent.replace(/\$\{webview.cspSource\}/g, cspSource)
-			htmlContent = htmlContent.replace(/\$\{projectStructureSection\}/g, projectStructureSection)
-			htmlContent = htmlContent.replace(/\$\{statusMessageSection\}/g, statusMessageSection)
-			htmlContent = htmlContent.replace(/\$\{fileGroupButtonsHtml\}/g, fileGroupButtonsHtml)
+			const finalHtml = htmlContent
+				.replace(/\$\{nonce\}/g, nonce)
+				.replace(/\$\{webview.cspSource\}/g, cspSource)
+				.replace(/\$\{projectStructureSection\}/g, projectStructureSection)
+				.replace(/\$\{statusMessageSection\}/g, statusMessageSection)
+				.replace(/\$\{fileGroupButtonsHtml\}/g, fileGroupButtonsHtml)
 
-			return htmlContent
+			return finalHtml
 		}
 		catch (error) {
 			console.error(`[${constants.extension.nickName}] Failed to read HTML file ${viewHtmlUri}:`, error)

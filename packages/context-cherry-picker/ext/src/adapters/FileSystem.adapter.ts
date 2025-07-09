@@ -1,49 +1,50 @@
-import type { IFileSystem, FileStat, DirectoryEntry } from '@fux/context-cherry-picker-core/'
-import * as vscode from 'vscode'
-import { Uri } from 'vscode'
-
-function fromVSCodeFileType(type: vscode.FileType): 'file' | 'directory' | 'unknown' {
-	if (type & vscode.FileType.File)
-		return 'file'
-	if (type & vscode.FileType.Directory)
-		return 'directory'
-	return 'unknown'
-}
+import type { IFileSystem, FileStats, DirectoryEntry } from '@fux/services'
+import * as fs from 'node:fs/promises'
 
 export class FileSystemAdapter implements IFileSystem {
 
-	async stat(uri: string): Promise<FileStat> {
-		const statResult = await vscode.workspace.fs.stat(Uri.file(uri))
+	public async stat(path: string): Promise<FileStats> {
+		const stats = await fs.stat(path)
 
 		return {
-			type: fromVSCodeFileType(statResult.type),
-			size: statResult.size,
+			type: stats.isDirectory() ? 'directory' : 'file',
+			size: stats.size,
 		}
 	}
 
-	async readDirectory(uri: string): Promise<DirectoryEntry[]> {
-		const entries = await vscode.workspace.fs.readDirectory(Uri.file(uri))
+	public access(path: string): Promise<void> {
+		return fs.access(path)
+	}
 
-		return entries.reduce<DirectoryEntry[]>((acc, [name, type]) => {
-			const entryType = fromVSCodeFileType(type)
+	public copyFile(src: string, dest: string): Promise<void> {
+		return fs.copyFile(src, dest)
+	}
 
-			if (entryType !== 'unknown') {
-				acc.push({ name, type: entryType })
+	public readFile(path: string): Promise<string> {
+		return fs.readFile(path, 'utf-8')
+	}
+
+	public async readDirectory(path: string): Promise<DirectoryEntry[]> {
+		const dirents = await fs.readdir(path, { withFileTypes: true })
+		const entries: DirectoryEntry[] = []
+
+		for (const dirent of dirents) {
+			if (dirent.isFile()) {
+				entries.push({ name: dirent.name, type: 'file' })
 			}
-			return acc
-		}, [])
+			else if (dirent.isDirectory()) {
+				entries.push({ name: dirent.name, type: 'directory' })
+			}
+		}
+		return entries
 	}
 
-	readFile(uri: string): Promise<Uint8Array> {
-		return Promise.resolve(vscode.workspace.fs.readFile(Uri.file(uri)))
+	public writeFile(path: string, content: Uint8Array): Promise<void> {
+		return fs.writeFile(path, content)
 	}
 
-	writeFile(uri: string, content: Uint8Array): Promise<void> {
-		return Promise.resolve(vscode.workspace.fs.writeFile(Uri.file(uri), content))
-	}
-
-	createDirectory(uri: string): Promise<void> {
-		return Promise.resolve(vscode.workspace.fs.createDirectory(Uri.file(uri)))
+	public async createDirectory(path: string): Promise<void> {
+		await fs.mkdir(path, { recursive: true })
 	}
 
 }
