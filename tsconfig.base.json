@@ -48,6 +48,7 @@
             "@fux/tools/*": ["packages/_shared/tools/dist/*"],
             "@fux/ghost-writer-core": ["packages/ghost-writer/core/dist"],
             "@fux/context-cherry-picker-core": ["packages/context-cherry-picker/core/dist"],
+            "@fux/dynamicons-core": ["packages/dynamicons/core/dist"],
             "@fux/note-hub-core": ["packages/note-hub/core/dist"],
             "@fux/project-butler-core": ["packages/project-butler/core/dist"],
             "@fux/project-butler-dc-core": [

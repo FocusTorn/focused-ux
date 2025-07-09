@@ -7,7 +7,7 @@ ContextCherryPicker:
   quick_settings_panel:
     project_structure_contents:
       visible: true
-      filter: selected
+      filter: none
     default_status_message:
       visible: false
       style: drop
@@ -52,6 +52,7 @@ ContextCherryPicker:
   ignore:
     - '**/node_modules'
     - .git
+    - '**/workspace-tools'
     - _removed
     - assets
     - vsix_packages

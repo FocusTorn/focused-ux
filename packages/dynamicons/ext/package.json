@@ -1,0 +1,158 @@
+{
+    "name": "fux-dynamicons",
+    "displayName": "F-UX: Dynamicons",
+    "description": "A dynamic and customizable icon theme for a focused user experience.",
+    "publisher": "NewRealityDesigns",
+    "repository": "https://github.com/FocusTorn/focused-ux",
+    "version": "0.2.0",
+    "private": true,
+    "main": "./dist/extension.cjs",
+    "engines": {
+        "vscode": "^1.101.0"
+    },
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "icon": "assets/logo.jpeg",
+    "categories": [
+        "Themes"
+    ],
+    "keywords": [
+        "icon theme",
+        "theme",
+        "icons",
+        "dynamicons",
+        "focused ux"
+    ],
+    "dependencies": {
+        "@fux/dynamicons-core": "workspace:*",
+        "@fux/services": "workspace:*",
+        "@fux/tools": "workspace:*",
+        "awilix": "^12.0.5"
+    },
+    "devDependencies": {
+        "@types/node": "latest",
+        "@types/vscode": "^1.101.0",
+        "typescript": "^5.8.3"
+    },
+    "contributes": {
+        "themes": [
+            {
+                "label": "Focused UX Color Theme",
+                "uiTheme": "vs-dark",
+                "path": "assets/themes/focused-ux-colors.theme.json"
+            }
+        ],
+        "iconThemes": [
+            {
+                "id": "dynamicons-theme",
+                "label": "Dynamicons",
+                "path": "./assets/themes/dynamicons.theme.json",
+                "_watch": true
+            }
+        ],
+        "commands": [
+            {
+                "command": "dynamicons.activateIconTheme",
+                "title": "Dynamicons: Activate Icon Theme",
+                "category": "Dynamicons"
+            },
+            {
+                "command": "dynamicons.assignIcon",
+                "title": "Assign Icon to File/Folder...",
+                "category": "Dynamicons",
+                "icon": "$(symbol-color)"
+            },
+            {
+                "command": "dynamicons.revertIcon",
+                "title": "Revert Icon Assignment",
+                "category": "Dynamicons",
+                "icon": "$(discard)"
+            },
+            {
+                "command": "dynamicons.toggleExplorerArrows",
+                "title": "Dynamicons: Toggle Explorer Arrow Visibility",
+                "category": "Dynamicons"
+            },
+            {
+                "command": "dynamicons.showUserFileIconAssignments",
+                "title": "Dynamicons: Show User File Icon Assignments",
+                "category": "Dynamicons"
+            },
+            {
+                "command": "dynamicons.showUserFolderIconAssignments",
+                "title": "Dynamicons: Show User Folder Icon Assignments",
+                "category": "Dynamicons"
+            },
+            {
+                "command": "dynamicons.refreshIconTheme",
+                "title": "Dynamicons: Refresh Icon Theme",
+                "category": "Dynamicons",
+                "icon": "$(refresh)"
+            }
+        ],
+        "submenus": [
+            {
+                "id": "dynamicons.actionsSubmenu",
+                "label": "Dynamicons: Icon Actions"
+            }
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "submenu": "dynamicons.actionsSubmenu",
+                    "group": "navigation",
+                    "when": "explorerResourceIsFolder || resourceFilename"
+                }
+            ],
+            "dynamicons.actionsSubmenu": [
+                {
+                    "command": "dynamicons.assignIcon",
+                    "group": "1_assign"
+                },
+                {
+                    "command": "dynamicons.revertIcon",
+                    "group": "1_assign"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "Dynamicons Icon Theme",
+            "properties": {
+                "dynamicons.userIconsDirectory": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Path to a directory containing custom user-provided SVG icons. These icons can be assigned using the 'Assign Icon' command.",
+                    "scope": "window"
+                },
+                "dynamicons.customIconMappings": {
+                    "type": "object",
+                    "default": {},
+                    "description": "User-defined custom icon mappings. Keys are typically 'file:filename.ext', 'folder:foldername', or 'language:languageId'. Values are icon definition keys (e.g., '_file', '_usr-myCustomIcon'). Managed by commands; direct editing not recommended.",
+                    "scope": "window"
+                },
+                "dynamicons.hideExplorerArrows": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ],
+                    "default": true,
+                    "description": "Set to true to hide explorer arrows, false to show them. Set to null to use VS Code default. Requires theme refresh/reload.",
+                    "scope": "window"
+                },
+                "dynamicons.baseThemeFileName": {
+                    "type": "string",
+                    "default": "base.theme.json",
+                    "description": "The name of the base theme manifest file within the extension's theme assets directory. Used as a template for the generated theme.",
+                    "scope": "window"
+                },
+                "dynamicons.generatedThemeFileName": {
+                    "type": "string",
+                    "default": "dynamicons.theme.json",
+                    "description": "The name of the final generated theme manifest file within the extension's theme assets directory. This is the file VS Code will load.",
+                    "scope": "window"
+                }
+            }
+        }
+    }
+}

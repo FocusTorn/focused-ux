@@ -1,8 +1,22 @@
 {
     "version": "0.2.0",
     "configurations": [
-        {
-            "name": "GhostWriter",
+        
+        { "name": "Dynamicons", //>
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/dynamicons/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true,
+            "preLaunchTask": "Build Dynamicons"
+        }, //<
+
+        
+        
+        { "name": "GhostWriter", //>
             "type": "extensionHost",
             "request": "launch",
             "args": [
@@ -12,10 +26,9 @@
             ],
             "sourceMaps": true,
             "preLaunchTask": "Build GhostWriter"
-        },
-       
-        {
-            "name": "Context Cherry Picker",
+        }, //<
+
+        { "name": "Context Cherry Picker", //>
             "type": "extensionHost",
             "request": "launch",
             "args": [
@@ -25,34 +38,24 @@
             ],
             "sourceMaps": true,
             "preLaunchTask": "Build Context Cherry Picker"
-        },
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-         {
-            "name": "NoteHub",
-            "type": "extensionHost",
-            "request": "launch",
-            "args": [
-                "--profile=Clean",
-                "--extensionDevelopmentPath=${workspaceFolder}/packages/note-hub/ext",
-                "${workspaceFolder}"
-            ],
-            "sourceMaps": true,
-            "preLaunchTask": "Build NoteHub"
-        },
-        
-        
+        }, //<
+
     ]
 }
+
+
+
+
+
+        // { "name": "NoteHub", //>
+        //     "type": "extensionHost",
+        //     "request": "launch",
+        //     "args": [
+        //         "--profile=Clean",
+        //         "--extensionDevelopmentPath=${workspaceFolder}/packages/note-hub/ext",
+        //         "${workspaceFolder}"
+        //     ],
+        //     "sourceMaps": true,
+        //     "preLaunchTask": "Build NoteHub"
+        // } //<
+    

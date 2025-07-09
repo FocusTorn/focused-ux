@@ -1,0 +1,67 @@
+{
+    "name": "@fux/dynamicons-ext",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/dynamicons/ext/src",
+    "projectType": "application",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "defaultConfiguration": "production",
+            "dependsOn": ["^build"],
+            "options": {
+                "main": "packages/dynamicons/ext/src/extension.ts",
+                "outputPath": "packages/dynamicons/ext/dist",
+                "tsConfig": "packages/dynamicons/ext/tsconfig.json",
+                "platform": "node",
+                "format": ["cjs"],
+                "bundle": true,
+                "external": ["vscode"],
+                "esbuildOptions": {
+                    "sourcemap": true,
+                    "target": "es2022",
+                    "keepNames": true
+                },
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/dynamicons/ext/assets",
+                        "output": "assets"
+                    }
+                ]
+            },
+            "configurations": {
+                "development": {
+                    "minify": false
+                },
+                "production": {
+                    "minify": true
+                }
+            }
+        },
+        "package:dev": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node ./_scripts/create-dev-vsix.js dynamicons/ext"
+            }
+        },
+        "package": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "outputs": ["{workspaceRoot}/vsix_packages/dynamicons.vsix"],
+            "options": {
+                "command": "vsce package --no-dependencies -o ../../../vsix_packages/dynamicons.vsix",
+                "cwd": "{projectRoot}"
+            }
+        },
+        "publish": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["package"],
+            "options": {
+                "command": "vsce publish",
+                "cwd": "{projectRoot}"
+            }
+        }
+    }
+}

@@ -6,19 +6,19 @@
     "serv": "@fux/services",
     "tools": "@fux/tools",
 
+    
+    
     "ccpc": "@fux/context-cherry-picker-core",
     "ccp": "@fux/context-cherry-picker-ext",
 
+    "dconc": "@fux/dynamicons-core",
+    "dcon": "@fux/dynamicons-ext",
+    
     "gwc": "@fux/ghost-writer-core",
     "gw": "@fux/ghost-writer-ext",
-
     
     "pbc": "@fux/project-butler-core",
     "pb": "@fux/project-butler-ext",
-    
-    
-    
-    
     
     "nhc": "@fux/note-hub-core",
     "nh": "note-hub"

@@ -1,0 +1,26 @@
+{
+    "name": "@fux/dynamicons-core",
+    "version": "0.1.0",
+    "dependencies": {},
+    "devDependencies": {
+        "@fux/services": "workspace:*",
+        "@types/node": "^24.0.0",
+        "@types/vscode": "^1.101.0",
+        "puppeteer": "^24.10.0",
+        "sharp": "^0.34.2",
+        "strip-json-comments": "^5.0.2",
+        "svgo": "^3.3.2",
+        "tsx": "^4.20.1",
+        "typescript": "^5.8.3"
+    },
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    }
+}
