@@ -134,7 +134,9 @@ export function activate(context: ExtensionContext): void {
 	]
 
 	context.subscriptions.push(...disposables)
-	void window.showTimedInformationMessage('✅ Ghost Writer Loaded.')
+    
+	// void window.showTimedInformationMessage('✅ Ghost Writer Loaded.')
+    
 	console.log(`[${constants.extension.name}] Activated.`)
 }
 

@@ -13,7 +13,7 @@ ContextCherryPicker:
       style: drop
     file_groups:
       conf:
-        initially_visible: false
+        initially_visible: true
         items:
           - '**/.FocusedUX'
           - '**/.prettierignore'
