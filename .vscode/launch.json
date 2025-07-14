@@ -1,8 +1,8 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
-        { "name": "Dynamicons", //>
+        {
+            "name": "Dynamicons", //>
             "type": "extensionHost",
             "request": "launch",
             "args": [
@@ -14,9 +14,8 @@
             "preLaunchTask": "Build Dynamicons"
         }, //<
 
-        
-        
-        { "name": "GhostWriter", //>
+        {
+            "name": "GhostWriter", //>
             "type": "extensionHost",
             "request": "launch",
             "args": [
@@ -28,7 +27,8 @@
             "preLaunchTask": "Build GhostWriter"
         }, //<
 
-        { "name": "Context Cherry Picker", //>
+        {
+            "name": "Context Cherry Picker", //>
             "type": "extensionHost",
             "request": "launch",
             "args": [
@@ -40,22 +40,29 @@
             "preLaunchTask": "Build Context Cherry Picker"
         }, //<
 
+        {
+            "name": "AI Agent Interactor", //>
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/ai-agent-interactor/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true,
+            "preLaunchTask": "Build AI Agent Interactor"
+        } //<
     ]
 }
 
-
-
-
-
-        // { "name": "NoteHub", //>
-        //     "type": "extensionHost",
-        //     "request": "launch",
-        //     "args": [
-        //         "--profile=Clean",
-        //         "--extensionDevelopmentPath=${workspaceFolder}/packages/note-hub/ext",
-        //         "${workspaceFolder}"
-        //     ],
-        //     "sourceMaps": true,
-        //     "preLaunchTask": "Build NoteHub"
-        // } //<
-    
+// { "name": "NoteHub", //>
+//     "type": "extensionHost",
+//     "request": "launch",
+//     "args": [
+//         "--profile=Clean",
+//         "--extensionDevelopmentPath=${workspaceFolder}/packages/note-hub/ext",
+//         "${workspaceFolder}"
+//     ],
+//     "sourceMaps": true,
+//     "preLaunchTask": "Build NoteHub"
+// } //<

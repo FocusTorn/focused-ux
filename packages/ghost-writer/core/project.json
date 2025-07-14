@@ -4,9 +4,6 @@
     "sourceRoot": "packages/ghost-writer/core/src",
     "projectType": "library",
     "targets": {
-        "build": {
-            "executor": "@nx/js:swc"
-        },
         "lint": {}
     }
 }

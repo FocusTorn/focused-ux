@@ -22,7 +22,7 @@ ContextCherryPicker:
         initially_visible: false
         items:
           - '**/**/dist'
-          - '**/tsconfig.tsbuildinfo'
+          - '**/tsconfig.*.tsbuildinfo'
           - '**/.turbo'
           - '**/.nx'
           - '**/tmp'

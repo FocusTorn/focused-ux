@@ -1,13 +1,10 @@
-
 {
     "name": "@fux/context-cherry-picker-ext",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/context-cherry-picker/ext/src",
     "projectType": "application",
     "targets": {
-        
-        
-        "build": { //>
+        "build": {
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "defaultConfiguration": "production",
@@ -41,17 +38,15 @@
                     "minify": true
                 }
             }
-        }, //<
-        
-        "package:dev": { //>
+        },
+        "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
                 "command": "node ./_scripts/create-dev-vsix.js context-cherry-picker/ext"
             }
-        }, //<
-        
-        "package": { //>
+        },
+        "package": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "outputs": ["{workspaceRoot}/vsix_packages/context-cherry-picker.vsix"],
@@ -59,16 +54,14 @@
                 "command": "vsce package --no-dependencies -o ../../vsix_packages/context-cherry-picker.vsix",
                 "cwd": "{projectRoot}"
             }
-        }, //<
-        
-        "publish": { //>
+        },
+        "publish": {
             "executor": "nx:run-commands",
             "dependsOn": ["package"],
             "options": {
                 "command": "vsce publish",
                 "cwd": "{projectRoot}"
             }
-        } //<
-    
+        }
     }
 }

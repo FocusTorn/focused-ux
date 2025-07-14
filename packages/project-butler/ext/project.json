@@ -5,7 +5,6 @@
     "projectType": "application",
     "targets": {
         "build-other": {
-            //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "defaultConfiguration": "production",
@@ -14,12 +13,8 @@
                 "outputPath": "packages/project-butler/ext/ext/dist",
                 "main": "packages/project-butler/ext/src/extension.ts",
                 "tsConfig": "packpackages/project-butler/ext/tsconfig.json",
-
                 "platform": "node",
-
-                // "format": ["cjs"],
                 "format": ["esm"],
-
                 "bundle": true,
                 "external": ["vscode"],
                 "esbuildOptions": {
@@ -43,10 +38,8 @@
                     "minify": true
                 }
             }
-        }, //<
-
+        },
         "build": {
-            //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "dependsOn": ["^build"],
@@ -55,30 +48,23 @@
                 "outputPath": "packages/project-butler/ext/dist",
                 "main": "packages/project-butler/ext/src/extension.ts",
                 "tsConfig": "packages/project-butler/ext/tsconfig.json",
-
                 "platform": "node",
                 "format": ["cjs"],
-
                 "bundle": true,
                 "external": ["vscode"],
-
                 "esbuildOptions": {
                     "keepNames": true
                 }
             }
-        }, //<
-
+        },
         "package:dev": {
-            //>
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
                 "command": "node ./_scripts/create-dev-vsix.js project-butler/ext"
             }
-        }, //<
-
+        },
         "package": {
-            //>
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "outputs": ["{workspaceRoot}/vsix_packages/project-butler-dc.vsix"],
@@ -86,18 +72,15 @@
                 "command": "vsce package --no-dependencies -o ../../vsix_packages/context-cherry-picker.vsix",
                 "cwd": "{projectRoot}"
             }
-        }, //<
-
+        },
         "publish": {
-            //>
             "executor": "nx:run-commands",
             "dependsOn": ["package"],
             "options": {
                 "command": "vsce publish",
                 "cwd": "{projectRoot}"
             }
-        }, //<
-
+        },
         "lint": {}
     }
 }

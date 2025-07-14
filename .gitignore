@@ -37,8 +37,6 @@ npm-debug.log
 testem.log
 /typings
 
-/.fux_note-hub/
-
 #= SYSTEM FILES ============================================= 
 .DS_Store
 *.pem

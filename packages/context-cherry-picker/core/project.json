@@ -4,9 +4,6 @@
     "sourceRoot": "packages/context-cherry-picker/core/src",
     "projectType": "library",
     "targets": {
-        "build": {
-            "executor": "@nx/js:swc"
-        },
         "lint": {}
     }
 }

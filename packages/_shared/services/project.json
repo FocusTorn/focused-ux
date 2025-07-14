@@ -4,9 +4,6 @@
     "sourceRoot": "packages/_shared/services/src",
     "projectType": "library",
     "targets": {
-        "build": {
-            "executor": "@nx/js:swc"
-        },
         "lint": {}
     }
 }

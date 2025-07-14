@@ -1,0 +1,43 @@
+{
+    "name": "@fux/ai-agent-interactor-ext",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/ai-agent-interactor/ext/src",
+    "projectType": "application",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "defaultConfiguration": "production",
+            "dependsOn": ["^build"],
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/ai-agent-interactor/ext/src/extension.ts",
+                "outputPath": "packages/ai-agent-interactor/ext/dist",
+                "tsConfig": "packages/ai-agent-interactor/ext/tsconfig.json",
+                "platform": "node",
+                "format": ["cjs"],
+                "bundle": true,
+                "external": ["vscode"],
+                "esbuildOptions": {
+                    "sourcemap": true,
+                    "target": "es2022",
+                    "keepNames": true
+                }
+            },
+            "configurations": {
+                "development": {
+                    "minify": false
+                },
+                "production": {
+                    "minify": true
+                }
+            }
+        },
+        "package:dev": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node ./_scripts/create-dev-vsix.js ai-agent-interactor/ext"
+            }
+        }
+    }
+}

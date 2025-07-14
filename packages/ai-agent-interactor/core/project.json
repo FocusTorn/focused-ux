@@ -1,0 +1,12 @@
+{
+    "name": "@fux/ai-agent-interactor-core",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/ai-agent-interactor/core/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/js:swc"
+        },
+        "lint": {}
+    }
+}

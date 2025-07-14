@@ -26,6 +26,18 @@
         },
         {
             "path": "./packages/context-cherry-picker/ext"
+        },
+        {
+            "path": "./packages/ai-agent-interactor/core"
+        },
+        {
+            "path": "./packages/ai-agent-interactor/ext"
+        },
+        {
+            "path": "./packages/dynamicons/core"
+        },
+        {
+            "path": "./packages/dynamicons/ext"
         }
     ]
 }

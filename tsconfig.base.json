@@ -1,18 +1,10 @@
 {
     "compilerOptions": {
-        // "customConditions": ["development"],
-        // "noEmit": false,
-        // "composite": true,
-        // "emitDeclarationOnly": true,
-
-        //= ESM AND NODENEXT ========================================================================
         "target": "ES2022",
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
         "lib": ["ES2022"],
         "skipLibCheck": true,
-
-        //== STRONG TYPESCRIPT ======================================================================
         "strict": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
@@ -21,40 +13,17 @@
         "noFallthroughCasesInSwitch": true,
         "noImplicitOverride": true,
         "noImplicitReturns": true,
-
-        //= DECORATORS ==============================================================================
         "experimentalDecorators": true,
-        "emitDeclarationOnly": true,
         "emitDecoratorMetadata": false,
-
-        //= FOR MONOREPOS WITH PROJECT REFERENCES ===================================================
         "declaration": true,
         "declarationMap": true,
         "sourceMap": true,
         "noEmitOnError": true,
         "composite": true,
-
-        //= ALLOWABLE ===============================================================================
         "allowSyntheticDefaultImports": true,
         "allowJs": false,
         "importHelpers": true,
-
-        //= PATH ALIASES ============================================================================
         "baseUrl": ".",
-        "paths": {
-            "@fux/services": ["packages/_shared/services/dist"],
-            "@fux/services/*": ["packages/_shared/services/dist/*"],
-            "@fux/tools": ["packages/_shared/tools/dist"],
-            "@fux/tools/*": ["packages/_shared/tools/dist/*"],
-            "@fux/ghost-writer-core": ["packages/ghost-writer/core/dist"],
-            "@fux/context-cherry-picker-core": ["packages/context-cherry-picker/core/dist"],
-            "@fux/dynamicons-core": ["packages/dynamicons/core/dist"],
-            "@fux/note-hub-core": ["packages/note-hub/core/dist"],
-            "@fux/project-butler-core": ["packages/project-butler/core/dist"],
-            "@fux/project-butler-dc-core": [
-                "packages/project-butler-all/project-butler-dc/core/dist"
-            ],
-            "@fux/solo-format-package-json-core": ["packages/solo-format-package-json/core/dist"]
-        }
+        "paths": {}
     }
 }
