@@ -53,3 +53,6 @@ Thumbs.db
 .github/instructions/nx.instructions.md
 
 
+
+# Ignored by F-UX Notes Hub
+/.fux_note-hub/
