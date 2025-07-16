@@ -13,10 +13,7 @@
             "path": "../core"
         },
         {
-            "path": "../../_shared/services"
-        },
-        {
-            "path": "../../_shared/tools"
+            "path": "../../_utilities"
         }
     ]
 }

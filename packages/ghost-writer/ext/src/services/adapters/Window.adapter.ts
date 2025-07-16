@@ -1,8 +1,8 @@
 import type { TextEditor } from 'vscode'
 import * as vscode from 'vscode'
 import type { IWindow } from '../../_interfaces/IVSCode.js'
-import type { IConfigurationService } from '@fux/services'
-import { showTimedInformationMessage as showTimedInformationMessageUtil } from '@fux/tools'
+import type { IConfigurationService } from '@fux/utilities'
+import { showTimedInformationMessage as showTimedInformationMessageUtil } from '@fux/utilities'
 
 export class WindowAdapter implements IWindow {
 

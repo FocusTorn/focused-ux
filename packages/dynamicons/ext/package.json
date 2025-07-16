@@ -26,8 +26,7 @@
     ],
     "dependencies": {
         "@fux/dynamicons-core": "workspace:*",
-        "@fux/services": "workspace:*",
-        "@fux/tools": "workspace:*",
+        "@fux/utilities": "workspace:*",
         "awilix": "^12.0.5"
     },
     "devDependencies": {

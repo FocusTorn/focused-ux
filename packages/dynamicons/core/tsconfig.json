@@ -6,7 +6,7 @@
             "path": "./tsconfig.lib.json"
         },
         {
-            "path": "../../_shared/services"
+            "path": "../../_utilities"
         }
     ]
 }

@@ -1,19 +1,16 @@
 packages:
-    - packages/ghost-writer/core
-    - packages/ghost-writer/ext
-
-    - packages/project-butler/core
-    - packages/project-butler/ext
-
-    - packages/context-cherry-picker/core
-    - packages/context-cherry-picker/ext
-
-    - packages/_shared/services
-    - packages/_shared/tools
-
+    - 'packages/ghost-writer/core'
+    - 'packages/ghost-writer/ext'
+    - 'packages/project-butler/core'
+    - 'packages/project-butler/ext'
+    - 'packages/context-cherry-picker/core'
+    - 'packages/context-cherry-picker/ext'
+    - 'packages/_utilities'
+    - 'packages/*'
+    - 'packages'
 onlyBuiltDependencies:
     - '@swc/core'
     - '@vscode/vsce-sign'
-    - esbuild
-    - keytar
-    - nx
+    - 'esbuild'
+    - 'keytar'
+    - 'nx'

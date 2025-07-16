@@ -1,8 +1,9 @@
-import type { IProcess } from '@fux/services'
+import type { IProcess } from '@fux/utilities'
 import { exec } from 'node:child_process'
 import * as vscode from 'vscode'
 
 export class ProcessAdapter implements IProcess {
+
 	public exec(
 		command: string,
 		options: { cwd: string },
@@ -14,4 +15,5 @@ export class ProcessAdapter implements IProcess {
 	public getWorkspaceRoot(): string | undefined {
 		return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
 	}
+
 }

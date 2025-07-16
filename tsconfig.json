@@ -38,6 +38,15 @@
         },
         {
             "path": "./packages/dynamicons/ext"
+        },
+        {
+            "path": "./packages/auto-shared"
+        },
+        {
+            "path": "./packages"
+        },
+        {
+            "path": "./packages/_utilities"
         }
     ]
 }

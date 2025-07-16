@@ -9,7 +9,7 @@
     "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts", "src/scripts/**/*.ts"],
     "references": [
         {
-            "path": "../../_shared/services/tsconfig.lib.json"
+            "path": "../../_utilities/tsconfig.lib.json"
         }
     ]
 }

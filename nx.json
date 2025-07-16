@@ -5,7 +5,12 @@
     "defaultRunner": "nx/tasks-runners/default",
     "namedInputs": {
         "default": ["{projectRoot}/**/*", "sharedGlobals"],
-        "production": ["default"],
+        "production": [
+            "default",
+            "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+            "!{projectRoot}/tsconfig.spec.json",
+            "!{projectRoot}/src/test-setup.[jt]s"
+        ],
         "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
     },
     "tasksRunnerOptions": {
@@ -39,6 +44,9 @@
                     "./_scripts/esbuild/polyfill.plugin.cjs"
                 ]
             }
+        },
+        "test": {
+            "dependsOn": ["^build"]
         }
     },
     "release": {
@@ -62,7 +70,8 @@
                     "targetName": "build",
                     "configName": "tsconfig.lib.json"
                 }
-            }
+            },
+            "exclude": ["packages/*"]
         },
         {
             "plugin": "@nx/eslint/plugin",
@@ -75,6 +84,29 @@
                 "packages/project-butler/core/**/*",
                 "packages/project-butler/ext/**/*"
             ]
+        },
+        {
+            "plugin": "@nx/vite/plugin",
+            "options": {
+                "buildTargetName": "build",
+                "testTargetName": "test",
+                "serveTargetName": "serve",
+                "devTargetName": "dev",
+                "previewTargetName": "preview",
+                "serveStaticTargetName": "serve-static",
+                "typecheckTargetName": "typecheck",
+                "buildDepsTargetName": "build-deps",
+                "watchDepsTargetName": "watch-deps"
+            }
+        },
+        {
+            "plugin": "@nx/js/typescript",
+            "include": ["packages/*"],
+            "options": {
+                "typecheck": {
+                    "targetName": "typecheck"
+                }
+            }
         }
     ]
 }

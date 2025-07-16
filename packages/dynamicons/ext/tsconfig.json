@@ -9,10 +9,7 @@
     "exclude": ["node_modules", "dist"],
     "references": [
         {
-            "path": "../../_shared/tools"
-        },
-        {
-            "path": "../../_shared/services"
+            "path": "../../_utilities"
         },
         {
             "path": "../core"

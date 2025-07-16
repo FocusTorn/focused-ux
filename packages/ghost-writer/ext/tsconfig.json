@@ -4,18 +4,12 @@
         "declarationMap": false,
         "rootDir": "src",
         "outDir": "./out-tsc/app"
-    },
-    "include": ["./src/**/*.ts"],
-    "exclude": ["node_modules", "dist"],
-    "references": [
         {
-            "path": "../core"
+            "path": "../../_utilities"
+        }
         },
         {
-            "path": "../../_shared/services"
-        },
-        {
-            "path": "../../_shared/tools"
+            "path": "../../_utilities"
         }
     ]
 }

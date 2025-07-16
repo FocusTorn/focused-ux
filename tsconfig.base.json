@@ -24,6 +24,9 @@
         "allowJs": false,
         "importHelpers": true,
         "baseUrl": ".",
-        "paths": {}
+        "paths": {
+            "@fux/utilities": ["packages/_utilities/src/index.ts"],
+            "@fux/utilities/*": ["packages/_utilities/src/*"]
+        }
     }
 }

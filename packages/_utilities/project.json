@@ -1,0 +1,9 @@
+{
+    "name": "@fux/utilities",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/_utilities/src",
+    "projectType": "library",
+    "targets": {
+        "lint": {}
+    }
+}

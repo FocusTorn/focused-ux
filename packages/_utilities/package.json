@@ -1,17 +1,18 @@
 {
-    "name": "@fux/project-butler-core",
-    "version": "0.1.0",
+    "name": "@fux/utilities",
+    "version": "0.0.1",
     "private": true,
     "type": "module",
-    "main": "./src/index.ts",
+    "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
             "import": "./dist/index.js"
+        },
+        "./*": {
+            "types": "./dist/*.d.ts",
+            "import": "./dist/*.js"
         }
-    },
-    "dependencies": {
-        "@fux/utilities": "workspace:*"
     }
 }
