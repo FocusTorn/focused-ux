@@ -5,7 +5,12 @@
         "rootDir": "src",
         "types": ["node"]
     },
-    "include": ["src/**/*.ts"],
+    "include": [
+        "src/**/*.ts",
+        "src/_interfaces/**/*.ts",
+        "src/_config/**/*.ts",
+        "src/services/**/*.ts"
+    ],
     "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts", "src/scripts/**/*.ts"],
     "references": [
         {

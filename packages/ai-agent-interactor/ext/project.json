@@ -17,11 +17,9 @@
                 "format": ["cjs"],
                 "bundle": true,
                 "external": ["vscode"],
-                "esbuildOptions": {
-                    "sourcemap": true,
-                    "target": "es2022",
-                    "keepNames": true
-                }
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true
             },
             "configurations": {
                 "development": {

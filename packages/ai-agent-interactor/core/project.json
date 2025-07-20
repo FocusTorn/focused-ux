@@ -5,7 +5,19 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "executor": "@nx/js:swc"
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/ai-agent-interactor/core/src/index.ts",
+                "outputPath": "packages/ai-agent-interactor/core/dist",
+                "tsConfig": "packages/ai-agent-interactor/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true
+            }
         },
         "lint": {}
     }

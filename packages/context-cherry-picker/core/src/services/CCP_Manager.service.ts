@@ -17,7 +17,7 @@ import type { IWindow } from '../_interfaces/IWindow.js'
 import type { IWorkspace } from '../_interfaces/IWorkspace.js'
 import type { IPath } from '../_interfaces/IPath.js'
 import type { IQuickSettingsService } from '../_interfaces/IQuickSettingsService.js'
-import type { IConfigurationService } from '@fux/services'
+import type { IConfigurationService } from '@fux/utilities'
 
 //--------------------------------------------------------------------------------------------------------------<<
 

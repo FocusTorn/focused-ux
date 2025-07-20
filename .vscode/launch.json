@@ -15,7 +15,7 @@
         }, //<
 
         {
-            "name": "GhostWriter", //>
+            "name": "Ghost Writer", //>
             "type": "extensionHost",
             "request": "launch",
             "args": [
@@ -24,7 +24,7 @@
                 "${workspaceFolder}"
             ],
             "sourceMaps": true,
-            "preLaunchTask": "Build GhostWriter"
+            "preLaunchTask": "Build Ghost Writer"
         }, //<
 
         {

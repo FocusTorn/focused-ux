@@ -4,6 +4,22 @@
     "sourceRoot": "packages/context-cherry-picker/core/src",
     "projectType": "library",
     "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/context-cherry-picker/core/src/index.ts",
+                "outputPath": "packages/context-cherry-picker/core/dist",
+                "tsConfig": "packages/context-cherry-picker/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "thirdParty": false
+            }
+        },
         "lint": {}
     }
 }

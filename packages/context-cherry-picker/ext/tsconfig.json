@@ -3,13 +3,17 @@
     "compilerOptions": {
         "composite": true,
         "outDir": "./dist",
-        "rootDir": "src"
+        "rootDir": "src",
+        "types": ["node", "vscode"]
     },
     "include": ["src/**/*.ts"],
     "exclude": ["node_modules", "dist"],
     "references": [
         {
             "path": "../../_utilities"
+        },
+        {
+            "path": "../core"
         }
     ]
 }

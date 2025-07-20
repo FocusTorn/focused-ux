@@ -2,41 +2,25 @@
     "name": "@fux/ghost-writer-ext",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/ghost-writer/ext/src",
-    "projectType": "application",
+    "projectType": "library",
     "targets": {
         "build": {
             "executor": "@nx/esbuild:esbuild",
-            "defaultConfiguration": "production",
             "dependsOn": ["^build"],
             "outputs": ["{options.outputPath}"],
             "options": {
-                "main": "packages/ghost-writer/ext/src/extension.ts",
                 "outputPath": "packages/ghost-writer/ext/dist",
-                "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
-                "platform": "node",
+                "main": "packages/ghost-writer/ext/src/extension.ts",
+                "tsConfig": "packages/ghost-writer/ext/tsconfig.lib.json",
                 "format": ["cjs"],
                 "bundle": true,
                 "external": ["vscode"],
-                "esbuildOptions": {
-                    "sourcemap": true,
-                    "target": "es2022",
-                    "keepNames": true
-                },
-                "assets": [
-                    {
-                        "glob": "**/*",
-                        "input": "packages/ghost-writer/ext/assets",
-                        "output": "assets"
-                    }
-                ]
-            },
-            "configurations": {
-                "development": {
-                    "minify": false
-                },
-                "production": {
-                    "minify": true
-                }
+                "outExtension": { ".js": ".cjs" },
+                "minify": true,
+                "sourcemap": false,
+                "treeShaking": true,
+                "metafile": true,
+                "declarationRootDir": "packages/ghost-writer/ext/src"
             }
         },
         "package:dev": {
@@ -64,5 +48,7 @@
             }
         },
         "lint": {}
-    }
+    },
+
+    "tags": []
 }

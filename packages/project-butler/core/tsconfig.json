@@ -3,10 +3,10 @@
     "files": [],
     "references": [
         {
-            "path": "./tsconfig.lib.json"
+            "path": "../../_utilities"
         },
         {
-            "path": "../../_shared/services"
+            "path": "./tsconfig.lib.json"
         }
     ]
 }

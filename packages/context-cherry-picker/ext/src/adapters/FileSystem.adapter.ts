@@ -1,4 +1,4 @@
-import type { IFileSystem, FileStats, DirectoryEntry } from '@fux/services'
+import type { IFileSystem, FileStats, DirectoryEntry } from '@fux/utilities'
 import * as fs from 'node:fs/promises'
 
 export class FileSystemAdapter implements IFileSystem {

@@ -30,7 +30,7 @@
         }, //<
 
         {
-            "label": "Build GhostWriter", //>
+            "label": "Build Ghost Writer", //>
             "type": "shell",
             "command": "nx run @fux/ghost-writer-ext:build:production",
             "problemMatcher": ["$tsc-watch", "$ts-esbuild-watch"],

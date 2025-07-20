@@ -4,6 +4,20 @@
     "sourceRoot": "packages/ghost-writer/core/src",
     "projectType": "library",
     "targets": {
-        "lint": {}
-    }
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "dependsOn": ["^build"],
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "packages/ghost-writer/core/dist",
+                "main": "packages/ghost-writer/core/src/index.ts",
+                "tsConfig": "packages/ghost-writer/core/tsconfig.lib.json",
+                "format": ["esm"],
+                "bundle": false,
+                "declarationRootDir": "packages/ghost-writer/core/src",
+                "thirdParty": false
+            }
+        }
+    },
+    "tags": []
 }

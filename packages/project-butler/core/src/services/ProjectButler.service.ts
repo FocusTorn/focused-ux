@@ -1,4 +1,4 @@
-import type { IFileSystem, IProcess } from '@fux/services'
+import type { IFileSystem, IProcess } from '@fux/utilities'
 import type { IProjectButlerService } from '../_interfaces/IProjectButlerService.js'
 import type { ITerminalProvider } from '../_interfaces/ITerminal.js'
 import type { IWindow } from '../_interfaces/IWindow.js'

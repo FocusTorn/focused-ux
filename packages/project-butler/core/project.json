@@ -4,6 +4,22 @@
     "sourceRoot": "packages/project-butler/core/src",
     "projectType": "library",
     "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/project-butler/core/src/index.ts",
+                "outputPath": "packages/project-butler/core/dist",
+                "tsConfig": "packages/project-butler/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "thirdParty": false
+            }
+        },
         "lint": {}
     }
 }

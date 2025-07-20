@@ -1,9 +1,20 @@
+// {
+//     "extends": "../../tsconfig.base.json",
+//     "compilerOptions": {
+//         "composite": true
+//     },
+//     "include": ["src"],
+//     "references": [{ "path": "./tsconfig.lib.json" }]
+// }
+
+
 {
     "extends": "../../tsconfig.base.json",
-    "compilerOptions": {
-        "composite": true
-    },
     "files": [],
-    "include": ["src/**/*.ts"],
-    "references": [{ "path": "./tsconfig.lib.json" }]
+    "include": [],
+    "references": [
+        {
+            "path": "./tsconfig.lib.json"
+        }
+    ]
 }

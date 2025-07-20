@@ -35,14 +35,10 @@
             "options": {
                 "outputPath": "{projectRoot}/dist",
                 "tsConfig": "{projectRoot}/tsconfig.json",
-                "platform": "browser",
+                "platform": "node",
                 "bundle": true,
                 "external": ["vscode"],
-                "thirdParty": true,
-                "plugins": [
-                    "./_scripts/esbuild/node-alias.plugin.cjs",
-                    "./_scripts/esbuild/polyfill.plugin.cjs"
-                ]
+                "thirdParty": true
             }
         },
         "test": {
@@ -50,9 +46,15 @@
         }
     },
     "release": {
-        "projects": ["@fux/ghost-writer-ext"],
+        "projects": [
+            "@fux/ghost-writer-ext",
+            "@fux/utilities2",
+            "@fux/ghost-writer-core",
+            "@fux/ghost-writer-ext"
+        ],
         "projectsRelationship": "independent",
         "version": {
+            "preVersionCommand": "pnpm dlx nx run-many -t build",
             "conventionalCommits": true
         },
         "changelog": {
@@ -70,8 +72,7 @@
                     "targetName": "build",
                     "configName": "tsconfig.lib.json"
                 }
-            },
-            "exclude": ["packages/*"]
+            }
         },
         {
             "plugin": "@nx/eslint/plugin",
@@ -82,7 +83,13 @@
                 "packages/ghost-writer/core/**/*",
                 "packages/ghost-writer/ext/**/*",
                 "packages/project-butler/core/**/*",
-                "packages/project-butler/ext/**/*"
+                "packages/project-butler/ext/**/*",
+                "packages/context-cherry-picker/core/**/*",
+                "packages/context-cherry-picker/ext/**/*",
+                "packages/ai-agent-interactor/core/**/*",
+                "packages/ai-agent-interactor/ext/**/*",
+                "packages/dynamicons/core/**/*",
+                "packages/dynamicons/ext/**/*"
             ]
         },
         {

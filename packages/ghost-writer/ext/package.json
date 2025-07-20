@@ -1,15 +1,17 @@
 {
-    "name": "ghost-writer",
+    "name": "fux-ghost-writer",
     "displayName": "F-UX: Ghost Writer",
     "description": "Dynamically generate frequently used code.",
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
-    "version": "0.1.0-dev.1751987710738",
+    "version": "0.1.0-dev.1752955424618",
     "dependencies": {
+        "typescript": "^5.8.3"
+    },
+    "devDependencies": {
         "@fux/ghost-writer-core": "workspace:*",
         "@fux/utilities": "workspace:*",
-        "awilix": "^12.0.5",
-        "esbuild": "^0.25.5"
+        "awilix": "^12.0.5"
     },
     "contributes": {
         "commands": [

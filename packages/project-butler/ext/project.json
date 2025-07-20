@@ -4,24 +4,22 @@
     "sourceRoot": "packages/project-butler/ext/src",
     "projectType": "application",
     "targets": {
-        "build-other": {
+        "build": {
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "defaultConfiguration": "production",
             "dependsOn": ["^build"],
             "options": {
-                "outputPath": "packages/project-butler/ext/ext/dist",
                 "main": "packages/project-butler/ext/src/extension.ts",
-                "tsConfig": "packpackages/project-butler/ext/tsconfig.json",
+                "outputPath": "packages/project-butler/ext/dist",
+                "tsConfig": "packages/project-butler/ext/tsconfig.json",
                 "platform": "node",
-                "format": ["esm"],
+                "format": ["cjs"],
                 "bundle": true,
                 "external": ["vscode"],
-                "esbuildOptions": {
-                    "sourcemap": true,
-                    "target": "es2022",
-                    "keepNames": true
-                },
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
                 "assets": [
                     {
                         "glob": "**/*",
@@ -36,24 +34,6 @@
                 },
                 "production": {
                     "minify": true
-                }
-            }
-        },
-        "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build"],
-            "defaultConfiguration": "production",
-            "options": {
-                "outputPath": "packages/project-butler/ext/dist",
-                "main": "packages/project-butler/ext/src/extension.ts",
-                "tsConfig": "packages/project-butler/ext/tsconfig.json",
-                "platform": "node",
-                "format": ["cjs"],
-                "bundle": true,
-                "external": ["vscode"],
-                "esbuildOptions": {
-                    "keepNames": true
                 }
             }
         },

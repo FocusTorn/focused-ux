@@ -1,8 +1,0 @@
-// Interfaces
-// export * from './_interfaces/I<%= pascalCaseName %>Service.js'
-
-// Services
-// export { <%= pascalCaseName %>Service } from './services/<%= pascalCaseName %>.service.js'
-
-// Constants
-export { <%= name %>Constants } from './_config/constants.js'
