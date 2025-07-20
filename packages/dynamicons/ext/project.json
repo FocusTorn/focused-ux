@@ -5,37 +5,7 @@
     "projectType": "application",
     "targets": {
         "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "defaultConfiguration": "production",
-            "dependsOn": ["^build"],
-            "options": {
-                "main": "packages/dynamicons/ext/src/extension.ts",
-                "outputPath": "packages/dynamicons/ext/dist",
-                "tsConfig": "packages/dynamicons/ext/tsconfig.json",
-                "platform": "node",
-                "format": ["cjs"],
-                "bundle": true,
-                "external": ["vscode"],
-                "sourcemap": true,
-                "target": "es2022",
-                "keepNames": true,
-                "assets": [
-                    {
-                        "glob": "**/*",
-                        "input": "packages/dynamicons/ext/assets",
-                        "output": "assets"
-                    }
-                ]
-            },
-            "configurations": {
-                "development": {
-                    "minify": false
-                },
-                "production": {
-                    "minify": true
-                }
-            }
+            "extends": "build:extension"
         },
         "package:dev": {
             "executor": "nx:run-commands",
@@ -61,5 +31,6 @@
                 "cwd": "{projectRoot}"
             }
         }
-    }
+    },
+    "tags": ["type:extension"]
 }

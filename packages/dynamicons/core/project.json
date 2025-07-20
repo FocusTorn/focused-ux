@@ -5,20 +5,7 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "main": "packages/dynamicons/core/src/index.ts",
-                "outputPath": "packages/dynamicons/core/dist",
-                "tsConfig": "packages/dynamicons/core/tsconfig.lib.json",
-                "platform": "node",
-                "format": ["esm"],
-                "bundle": false,
-                "sourcemap": true,
-                "target": "es2022",
-                "keepNames": true,
-                "thirdParty": false
-            }
+            "extends": "build:core"
         },
         "build-assets": {
             "executor": "nx:run-commands",
@@ -28,5 +15,6 @@
             }
         },
         "lint": {}
-    }
+    },
+    "tags": ["type:core"]
 }

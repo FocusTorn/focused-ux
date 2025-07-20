@@ -6,20 +6,16 @@
         "outDir": "dist",
         "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
         "emitDeclarationOnly": true,
-        "declaration": true,
-        "declarationMap": true,
         "types": ["node"]
     },
-    "include": [
-        "src/**/*.ts",
-        "src/_interfaces/**/*.ts",
-        "src/_config/**/*.ts",
-        "src/services/**/*.ts"
-    ],
-    "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts", "src/scripts/**/*.ts"],
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts"],
     "references": [
         {
             "path": "../../_utilities/tsconfig.lib.json"
+        },
+        {
+            "path": "../core/tsconfig.lib.json"
         }
     ]
 }

@@ -5,30 +5,7 @@
     "projectType": "application",
     "targets": {
         "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "defaultConfiguration": "production",
-            "dependsOn": ["^build"],
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "main": "packages/ai-agent-interactor/ext/src/extension.ts",
-                "outputPath": "packages/ai-agent-interactor/ext/dist",
-                "tsConfig": "packages/ai-agent-interactor/ext/tsconfig.json",
-                "platform": "node",
-                "format": ["cjs"],
-                "bundle": true,
-                "external": ["vscode"],
-                "sourcemap": true,
-                "target": "es2022",
-                "keepNames": true
-            },
-            "configurations": {
-                "development": {
-                    "minify": false
-                },
-                "production": {
-                    "minify": true
-                }
-            }
+            "extends": "build:extension"
         },
         "package:dev": {
             "executor": "nx:run-commands",
@@ -36,6 +13,24 @@
             "options": {
                 "command": "node ./_scripts/create-dev-vsix.js ai-agent-interactor/ext"
             }
+        },
+        "package": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "outputs": ["{workspaceRoot}/vsix_packages/ai-agent-interactor.vsix"],
+            "options": {
+                "command": "vsce package --no-dependencies -o ../../../vsix_packages/ai-agent-interactor.vsix",
+                "cwd": "{projectRoot}"
+            }
+        },
+        "publish": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["package"],
+            "options": {
+                "command": "vsce publish",
+                "cwd": "{projectRoot}"
+            }
         }
-    }
+    },
+    "tags": ["type:extension"]
 }

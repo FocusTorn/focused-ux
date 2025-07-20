@@ -5,23 +5,7 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "dependsOn": ["^build"],
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "outputPath": "packages/ghost-writer/ext/dist",
-                "main": "packages/ghost-writer/ext/src/extension.ts",
-                "tsConfig": "packages/ghost-writer/ext/tsconfig.lib.json",
-                "format": ["cjs"],
-                "bundle": true,
-                "external": ["vscode"],
-                "outExtension": { ".js": ".cjs" },
-                "minify": true,
-                "sourcemap": false,
-                "treeShaking": true,
-                "metafile": true,
-                "declarationRootDir": "packages/ghost-writer/ext/src"
-            }
+            "extends": "build:extension"
         },
         "package:dev": {
             "executor": "nx:run-commands",
@@ -49,6 +33,5 @@
         },
         "lint": {}
     },
-
-    "tags": []
+    "tags": ["type:extension"]
 }

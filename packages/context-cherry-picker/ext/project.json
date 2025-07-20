@@ -5,37 +5,7 @@
     "projectType": "application",
     "targets": {
         "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "defaultConfiguration": "production",
-            "dependsOn": ["^build"],
-            "options": {
-                "main": "packages/context-cherry-picker/ext/src/extension.ts",
-                "outputPath": "packages/context-cherry-picker/ext/dist",
-                "tsConfig": "packages/context-cherry-picker/ext/tsconfig.json",
-                "platform": "node",
-                "format": ["cjs"],
-                "bundle": true,
-                "external": ["vscode"],
-                "sourcemap": true,
-                "target": "es2022",
-                "keepNames": true,
-                "assets": [
-                    {
-                        "glob": "**/*",
-                        "input": "packages/context-cherry-picker/ext/assets",
-                        "output": "assets"
-                    }
-                ]
-            },
-            "configurations": {
-                "development": {
-                    "minify": false
-                },
-                "production": {
-                    "minify": true
-                }
-            }
+            "extends": "build:extension"
         },
         "package:dev": {
             "executor": "nx:run-commands",
@@ -49,7 +19,7 @@
             "dependsOn": ["build"],
             "outputs": ["{workspaceRoot}/vsix_packages/context-cherry-picker.vsix"],
             "options": {
-                "command": "vsce package --no-dependencies -o ../../vsix_packages/context-cherry-picker.vsix",
+                "command": "vsce package --no-dependencies -o ../../../vsix_packages/context-cherry-picker.vsix",
                 "cwd": "{projectRoot}"
             }
         },
@@ -61,5 +31,6 @@
                 "cwd": "{projectRoot}"
             }
         }
-    }
+    },
+    "tags": ["type:extension"]
 }
