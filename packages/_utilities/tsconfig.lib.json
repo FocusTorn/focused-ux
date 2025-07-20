@@ -1,18 +1,3 @@
-// {
-//     "extends": "../../tsconfig.base.json",
-//     "compilerOptions": {
-//         "outDir": "dist",
-//         "rootDir": "src",
-//         "types": ["node"],
-//         "composite": true,
-//         "declaration": true,
-//         "declarationMap": true
-//     },
-//     "include": ["src"],
-//     "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts"]
-// }
-
-
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
@@ -20,9 +5,11 @@
         "rootDir": "src",
         "outDir": "dist",
         "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
-        "emitDeclarationOnly": true,
+        "declaration": true,
+        "declarationMap": true,
         "types": ["node"]
     },
     "include": ["src/**/*.ts"],
+    "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts"],
     "references": []
 }

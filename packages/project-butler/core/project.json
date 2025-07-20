@@ -6,17 +6,15 @@
     "targets": {
         "build": {
             "executor": "@nx/esbuild:esbuild",
+            "dependsOn": ["^build"],
             "outputs": ["{options.outputPath}"],
             "options": {
-                "main": "packages/project-butler/core/src/index.ts",
                 "outputPath": "packages/project-butler/core/dist",
+                "main": "packages/project-butler/core/src/index.ts",
                 "tsConfig": "packages/project-butler/core/tsconfig.lib.json",
-                "platform": "node",
                 "format": ["esm"],
                 "bundle": false,
-                "sourcemap": true,
-                "target": "es2022",
-                "keepNames": true,
+                "declarationRootDir": "packages/project-butler/core/src",
                 "thirdParty": false
             }
         },

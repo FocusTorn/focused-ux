@@ -12,14 +12,18 @@
             "options": {
                 "main": "packages/project-butler/ext/src/extension.ts",
                 "outputPath": "packages/project-butler/ext/dist",
-                "tsConfig": "packages/project-butler/ext/tsconfig.json",
+                "tsConfig": "packages/project-butler/ext/tsconfig.lib.json",
                 "platform": "node",
                 "format": ["cjs"],
                 "bundle": true,
                 "external": ["vscode"],
-                "sourcemap": true,
+                "outExtension": { ".js": ".cjs" },
+                "sourcemap": false,
                 "target": "es2022",
                 "keepNames": true,
+                "treeShaking": true,
+                "metafile": true,
+                "declarationRootDir": "packages/project-butler/ext/src",
                 "assets": [
                     {
                         "glob": "**/*",
