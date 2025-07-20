@@ -5,5 +5,15 @@
         "rootDir": "./src"
     },
     "include": ["src/**/*"],
-    "references": [{ "path": "./tsconfig.lib.json" }, { "path": "../core/tsconfig.lib.json" }]
+    "references": [
+        {
+            "path": "../../_utilities"
+        },
+        {
+            "path": "../core"
+        },
+        {
+            "path": "./tsconfig.lib.json"
+        }
+    ]
 }

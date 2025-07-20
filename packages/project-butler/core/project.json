@@ -5,18 +5,13 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "dependsOn": ["^build"],
-            "outputs": ["{options.outputPath}"],
+            "executor": "nx:run-commands",
             "options": {
-                "outputPath": "packages/project-butler/core/dist",
-                "main": "packages/project-butler/core/src/index.ts",
-                "tsConfig": "packages/project-butler/core/tsconfig.lib.json",
-                "format": ["esm"],
-                "bundle": false,
-                "declarationRootDir": "packages/project-butler/core/src",
-                "thirdParty": false
+                "command": "nx run @fux/project-butler-core:build:core"
             }
+        },
+        "build:core": {
+            "extends": "build:core"
         },
         "lint": {}
     }

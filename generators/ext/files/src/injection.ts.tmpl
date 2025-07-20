@@ -1,0 +1,22 @@
+import { asClass, asValue, createContainer, InjectionMode } from 'awilix'
+import type { AwilixContainer } from 'awilix'
+import type { ExtensionContext } from 'vscode'
+
+export function createDIContainer(context: ExtensionContext): AwilixContainer {
+  const container = createContainer({
+    injectionMode: InjectionMode.CLASSIC,
+  })
+
+  // Register VSCode context
+  container.register({
+    context: asValue(context),
+  })
+
+  // Register services from core package
+  // ExampleService: asClass(ExampleService),
+
+  // Register adapters
+  // ExampleAdapter: asClass(ExampleAdapter),
+
+  return container
+} 
