@@ -4,7 +4,7 @@
     "description": "A standalone extension for advanced context selection and formatting.",
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
-    "version": "0.2.0-dev.1751895026516",
+    "version": "0.2.0-dev.1753014885369",
     "dependencies": {
         "@fux/context-cherry-picker-core": "workspace:*",
         "@fux/utilities": "workspace:*",

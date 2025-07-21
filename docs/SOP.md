@@ -248,3 +248,20 @@ nx g @fux/ext --name=my-feature --displayName="F-UX: My Feature" --description="
 - **Tree-shaking**: Individual exports enable better optimization
 
 For detailed generator documentation, see `generators/README.md`.
+
+---
+
+## Nx Workspace Maintenance & Best Practices
+
+All contributors must follow the Nx optimizations and best practices outlined in [docs/Nx_Optimizations.md](./Nx_Optimizations.md). This document covers:
+
+- DRY global build targets for all packages
+- Smart caching and named inputs
+- Efficient asset management
+- Use of Nx affected commands in CI
+- Regular Nx upgrades and cache maintenance
+- Dependency visualization and documentation
+
+**Always consult the Nx_Optimizations.md file before making changes to build targets, project structure, or CI workflows.**
+
+---

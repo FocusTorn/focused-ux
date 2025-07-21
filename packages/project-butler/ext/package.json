@@ -78,6 +78,7 @@
         "onCommand:fux-project-butler-dc.formatPackageJson",
         "onCommand:fux-project-butler-dc.hotswap"
     ],
+    "license": "SEE LICENSE IN ../../../LICENSE.txt",
     "icon": "./assets/pb-logo.png",
     "categories": [
         "Other"

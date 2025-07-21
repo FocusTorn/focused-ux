@@ -1,0 +1,204 @@
+---
+alwaysApply: true
+---
+
+# AI Interaction Rules
+
+## 1. :: General Principles <!-- Start Fold -->
+
+- Always proceed with the next logical troubleshooting or generation step unless the user explicitly requests confirmation.
+- Only ask for confirmation before running commands if the user has not opted out.
+- Never ask for confirmation or offer to apply a change for safe, non-destructive actions or debugging steps. Always proceed and apply the change automatically, then summarize the action after.
+- Do not include any language such as “Would you like me to...” or “If you want, I can...” for safe, non-destructive actions. Instead, take the action and inform the user.
+- If a deviation from this rule occurs, immediately update this file to clarify and reinforce the behavior.
+- Do not ask for confirmation before making safe, non-destructive changes (such as config or code edits) unless the user explicitly requests confirmation.
+- When a root cause and solution are clear, proceed to implement the solution immediately and summarize the action taken after the change.
+
+###### END: General Principles <!-- Close Fold -->
+
+## 2. :: Command Execution <!-- Start Fold -->
+
+- Use `--skip-nx-cache` for troubleshooting Nx build issues unless otherwise specified.
+- Prefer `pnpm` over `npm` for all package management tasks.
+
+###### END: Command Execution <!-- Close Fold -->
+
+## 3. :: Communication <!-- Start Fold -->
+
+- Do not display "Example fix" or similar code blocks; instead, directly apply the fix when a root cause is found, unless explicitly asked for an example or preview.
+- Only provide code snippets or manual instructions if the user requests to see them, or if the change is potentially destructive.
+- Avoid open-ended confirmation questions unless required for safety.
+- Summarize findings before taking destructive actions.
+
+###### END: Communication <!-- Close Fold -->
+
+## 4. :: Safety <!-- Start Fold -->
+
+- Never run commands that delete user data without explicit confirmation.
+- If unsure about a user’s intent, ask for clarification.
+
+###### END: Safety <!-- Close Fold -->
+
+## 5. :: Guideline Deviation Remediation (Reference-Module) <!-- Start Fold -->
+
+### 5.1. :: General Protocol
+
+- **Directive**: When a deviation from the guidelines is identified, the cause of the deviation MUST be corrected before continuing on to correct the code in question. The following process MUST be followed reflexively.
+    1.  **Assess Error Source:** The source of the error MUST be assessed.
+        - If the error was introduced by the AI in the current context, the subsequent steps in this protocol MUST be followed.
+        - If the error was pre-existing in the user's code, the error MUST be addressed using standard correction procedures, and this deviation protocol does not apply.
+
+    2.  **Acknowledge Error:** The deviation or AI-introduced error MUST be clearly acknowledged, and what was done incorrectly MUST be detailed.
+    3.  **Propose Guideline Improvement:** A guideline gap MUST be assumed. The ambiguity or omission that contributed to the error MUST be identified. Concrete changes to the relevant guideline document MUST be proposed. Strengthening positive rules MUST be prioritized over adding negative clarifications.
+    4.  **Present Guideline Change:** The proposed guideline improvement MUST be presented in a complete, formatted code block as per the breadcrumb rules.
+    5.  **Correct the Code:** The AI's next action depends on how the deviation was identified.
+    - **User-Initiated Deviation Keyword:** If the user's prompt that triggered this protocol began with the keyword `deviation:` (case-insensitive), the AI MUST ask for confirmation before presenting the corrected code.
+    - **All Other Cases:** In all other cases (e.g., self-correction, user pointing out an error without the keyword), the AI MUST immediately proceed to present the corrected code in the same response, following the guideline change.
+
+    - **Directive**: A failure to follow this process is itself a deviation that must be addressed in the next turn by proposing an improvement to this section.
+
+#### 5.1.1. :: Integrity of Acknowledgement
+
+- **Directive**: All acknowledgements of error MUST be based exclusively on the facts of the interaction and the provided context. The AI MUST NEVER fabricate or hallucinate justifications for its errors, such as referencing files, rules, or context that was not provided. A violation of this rule constitutes a critical failure.
+
+### 5.2. :: Correction Persistence
+
+- **Directive**: When a code correction is identified and fixed, the correction MUST be persistently reflected in the internal working model of that file for all subsequent operations.
+- **Directive**: If a previously fixed error is re-introduced, this lapse MUST be acknowledged as a deviation from this rule and the fix MUST be re-applied.
+
+### 5.3. :: Completeness of Correction
+
+- **Directive**: When presenting a code correction, the AI MUST ensure that ALL related changes required to fix the identified issue are included in the response.
+- **Directive**: A partial or incomplete fix is a deviation. Before finalizing the response, the AI MUST perform a self-audit to confirm that the proposed changes constitute a complete solution to the problem described. This includes reverting all incorrect modifications made in previous turns if the root cause was misdiagnosed.
+
+### 5.4. :: Action Completeness Verification
+
+- **Directive**: When an action requires operating on a set of files (e.g., reverting changes, applying a pattern), the AI MUST perform a final verification step before presenting the response.
+- **Directive**: This verification MUST involve explicitly listing all files that were intended to be part of the operation and comparing that list against the files actually included in the drafted response. Any discrepancy MUST be corrected. This is to prevent incomplete or partial application of a required action.
+
+### 5.5. :: Prohibition of Error Re-introduction
+
+- **Directive**: An error or anti-pattern that has been previously identified and for which a correction has been proposed MUST NEVER be re-introduced in a subsequent response within the same session.
+- **Directive**: Before proposing a solution, the AI MUST perform a self-correction check to ensure the proposed changes do not re-introduce a previously failed state. A re-introduction of a known error is a critical failure of the Core Operating Loop.
+
+### 5.6. :: Abstracted Error Pattern Recognition
+
+- **Directive**: When a logical error is identified and corrected, the AI MUST attempt to abstract the anti-pattern and its solution. Before generating new code that involves a similar logical structure, the AI MUST perform a self-check to ensure it is not re-introducing the previously identified anti-pattern, even if the specific variable or function names are different. A failure to apply a known-correct pattern to a new but structurally identical problem is a deviation.
+
+### 5.7. :: Holistic Configuration Auditing
+
+- **Directive**: When a persistent error is identified as originating from workspace configuration (e.g., build failures, sync errors, module resolution issues), the AI **MUST** perform a holistic audit of all relevant top-level configuration files in a single, unified response. This includes, but is not limited to, `nx.json`, the root `tsconfig.json`, and the package manager's workspace file (e.g., `pnpm-workspace.yaml`). The goal is to ensure that project discovery, dependencies, and build settings are consistent across all files and reflect the actual state of the workspace. Partial or sequential fixes to configuration files in this scenario are a deviation.
+- **Directive**: The findings and corrective actions from the audit **MUST** be presented in a clearly marked summary section at the end of the response, following all code blocks.
+
+### 5.8. :: Holistic Refactoring Verification
+
+- **Directive**: When a refactoring action involves changing a fundamental pattern (e.g., switching from explicit to inferred build targets), the change **MUST** be applied consistently to **all** projects that follow that pattern.
+- **Rationale**: Applying a new architectural pattern to only one of several similar projects will lead to an inconsistent and broken workspace. A holistic audit **MUST** be performed to identify all affected projects and ensure they are all updated in a single, atomic operation. A partial refactoring is a deviation.
+
+###### END: Guideline Deviation Remediation (Reference-Module) <!-- Close Fold -->
+
+## 6. :: Custom User Preferences <!-- Start Fold -->
+
+- [memory:3794743] The user prefers automatic troubleshooting steps without confirmation.
+
+###### END: Custom User Preferences <!-- Close Fold -->
+
+# AI Interaction Rules
+
+## 1. :: General Principles <!-- Start Fold -->
+
+- Always proceed with the next logical troubleshooting or generation step unless the user explicitly requests confirmation.
+- Only ask for confirmation before running commands if the user has not opted out.
+- Never ask for confirmation before taking any safe, non-destructive, or documentation-related action. Proceed automatically and summarize the action after.
+- If a deviation from this rule occurs, immediately update this file to clarify and reinforce the behavior.
+- Do not ask for confirmation before making safe, non-destructive changes (such as config or code edits) unless the user explicitly requests confirmation.
+- When a root cause and solution are clear, proceed to implement the solution immediately and summarize the action taken after the change.
+
+###### END: General Principles <!-- Close Fold -->
+
+## 2. :: Command Execution <!-- Start Fold -->
+
+- Use `--skip-nx-cache` for troubleshooting Nx build issues unless otherwise specified.
+- Prefer `pnpm` over `npm` for all package management tasks.
+
+###### END: Command Execution <!-- Close Fold -->
+
+## 3. :: Communication <!-- Start Fold -->
+
+- Do not display "Example fix" or similar code blocks; instead, directly apply the fix when a root cause is found, unless explicitly asked for an example or preview.
+- Only provide code snippets or manual instructions if the user requests to see them, or if the change is potentially destructive.
+- Avoid open-ended confirmation questions unless required for safety.
+- Summarize findings before taking destructive actions.
+
+###### END: Communication <!-- Close Fold -->
+
+## 4. :: Safety <!-- Start Fold -->
+
+- Never run commands that delete user data without explicit confirmation.
+- If unsure about a user’s intent, ask for clarification.
+
+###### END: Safety <!-- Close Fold -->
+
+## 5. :: Guideline Deviation Remediation (Reference-Module) <!-- Start Fold -->
+
+### 5.1. :: General Protocol
+
+- **Directive**: When a deviation from the guidelines is identified, the cause of the deviation MUST be corrected before continuing on to correct the code in question. The following process MUST be followed reflexively.
+    1.  **Assess Error Source:** The source of the error MUST be assessed.
+        - If the error was introduced by the AI in the current context, the subsequent steps in this protocol MUST be followed.
+        - If the error was pre-existing in the user's code, the error MUST be addressed using standard correction procedures, and this deviation protocol does not apply.
+
+    2.  **Acknowledge Error:** The deviation or AI-introduced error MUST be clearly acknowledged, and what was done incorrectly MUST be detailed.
+    3.  **Propose Guideline Improvement:** A guideline gap MUST be assumed. The ambiguity or omission that contributed to the error MUST be identified. Concrete changes to the relevant guideline document MUST be proposed. Strengthening positive rules MUST be prioritized over adding negative clarifications.
+    4.  **Present Guideline Change:** The proposed guideline improvement MUST be presented in a complete, formatted code block as per the breadcrumb rules.
+    5.  **Correct the Code:** The AI's next action depends on how the deviation was identified.
+    - **User-Initiated Deviation Keyword:** If the user's prompt that triggered this protocol began with the keyword `deviation:` (case-insensitive), the AI MUST ask for confirmation before presenting the corrected code.
+    - **All Other Cases:** In all other cases (e.g., self-correction, user pointing out an error without the keyword), the AI MUST immediately proceed to present the corrected code in the same response, following the guideline change.
+
+    - **Directive**: A failure to follow this process is itself a deviation that must be addressed in the next turn by proposing an improvement to this section.
+
+#### 5.1.1. :: Integrity of Acknowledgement
+
+- **Directive**: All acknowledgements of error MUST be based exclusively on the facts of the interaction and the provided context. The AI MUST NEVER fabricate or hallucinate justifications for its errors, such as referencing files, rules, or context that was not provided. A violation of this rule constitutes a critical failure.
+
+### 5.2. :: Correction Persistence
+
+- **Directive**: When a code correction is identified and fixed, the correction MUST be persistently reflected in the internal working model of that file for all subsequent operations.
+- **Directive**: If a previously fixed error is re-introduced, this lapse MUST be acknowledged as a deviation from this rule and the fix MUST be re-applied.
+
+### 5.3. :: Completeness of Correction
+
+- **Directive**: When presenting a code correction, the AI MUST ensure that ALL related changes required to fix the identified issue are included in the response.
+- **Directive**: A partial or incomplete fix is a deviation. Before finalizing the response, the AI MUST perform a self-audit to confirm that the proposed changes constitute a complete solution to the problem described. This includes reverting all incorrect modifications made in previous turns if the root cause was misdiagnosed.
+
+### 5.4. :: Action Completeness Verification
+
+- **Directive**: When an action requires operating on a set of files (e.g., reverting changes, applying a pattern), the AI MUST perform a final verification step before presenting the response.
+- **Directive**: This verification MUST involve explicitly listing all files that were intended to be part of the operation and comparing that list against the files actually included in the drafted response. Any discrepancy MUST be corrected. This is to prevent incomplete or partial application of a required action.
+
+### 5.5. :: Prohibition of Error Re-introduction
+
+- **Directive**: An error or anti-pattern that has been previously identified and for which a correction has been proposed MUST NEVER be re-introduced in a subsequent response within the same session.
+- **Directive**: Before proposing a solution, the AI MUST perform a self-correction check to ensure the proposed changes do not re-introduce a previously failed state. A re-introduction of a known error is a critical failure of the Core Operating Loop.
+
+### 5.6. :: Abstracted Error Pattern Recognition
+
+- **Directive**: When a logical error is identified and corrected, the AI MUST attempt to abstract the anti-pattern and its solution. Before generating new code that involves a similar logical structure, the AI MUST perform a self-check to ensure it is not re-introducing the previously identified anti-pattern, even if the specific variable or function names are different. A failure to apply a known-correct pattern to a new but structurally identical problem is a deviation.
+
+### 5.7. :: Holistic Configuration Auditing
+
+- **Directive**: When a persistent error is identified as originating from workspace configuration (e.g., build failures, sync errors, module resolution issues), the AI **MUST** perform a holistic audit of all relevant top-level configuration files in a single, unified response. This includes, but is not limited to, `nx.json`, the root `tsconfig.json`, and the package manager's workspace file (e.g., `pnpm-workspace.yaml`). The goal is to ensure that project discovery, dependencies, and build settings are consistent across all files and reflect the actual state of the workspace. Partial or sequential fixes to configuration files in this scenario are a deviation.
+- **Directive**: The findings and corrective actions from the audit **MUST** be presented in a clearly marked summary section at the end of the response, following all code blocks.
+
+### 5.8. :: Holistic Refactoring Verification
+
+- **Directive**: When a refactoring action involves changing a fundamental pattern (e.g., switching from explicit to inferred build targets), the change **MUST** be applied consistently to **all** projects that follow that pattern.
+- **Rationale**: Applying a new architectural pattern to only one of several similar projects will lead to an inconsistent and broken workspace. A holistic audit **MUST** be performed to identify all affected projects and ensure they are all updated in a single, atomic operation. A partial refactoring is a deviation.
+
+###### END: Guideline Deviation Remediation (Reference-Module) <!-- Close Fold -->
+
+## 6. :: Custom User Preferences <!-- Start Fold -->
+
+- [memory:3794743] The user prefers automatic troubleshooting steps without confirmation.
+
+###### END: Custom User Preferences <!-- Close Fold -->

@@ -5,12 +5,6 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "nx run @fux/project-butler-core:build:core"
-            }
-        },
-        "build:core": {
             "extends": "build:core"
         },
         "lint": {}

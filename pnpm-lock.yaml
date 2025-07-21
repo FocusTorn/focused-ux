@@ -230,7 +230,7 @@ importers:
         specifier: latest
         version: 24.0.14
       '@types/vscode':
-        specifier: ^1.101.0
+        specifier: ^1.99.3
         version: 1.101.0
       typescript:
         specifier: ^5.8.3
@@ -240,6 +240,10 @@ importers:
 
   packages/ghost-writer/ext:
     dependencies:
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+    devDependencies:
       '@fux/ghost-writer-core':
         specifier: workspace:*
         version: link:../core
@@ -258,16 +262,16 @@ importers:
 
   packages/project-butler/ext:
     dependencies:
+      awilix:
+        specifier: ^12.0.5
+        version: 12.0.5
+    devDependencies:
       '@fux/project-butler-core':
         specifier: workspace:*
         version: link:../core
       '@fux/utilities':
         specifier: workspace:*
         version: link:../../_utilities
-      awilix:
-        specifier: ^12.0.5
-        version: 12.0.5
-    devDependencies:
       '@types/node':
         specifier: ^24.0.10
         version: 24.0.10

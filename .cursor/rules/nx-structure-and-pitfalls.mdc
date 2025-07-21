@@ -1,0 +1,59 @@
+---
+alwaysApply: true
+---
+
+# Nx Project Structure & Pitfalls <!-- Start Fold -->
+
+## 1. :: Required Nx Project Structure <!-- Start Fold -->
+
+- All Nx projects (core and ext) must use DRY config by extending global targets (`build:core`, `build:extension`) in `nx.json`.
+- Each `project.json` should specify only the unique fields (e.g., `main`, `outputPath`, `tsConfig`) unless a project has truly custom requirements.
+- Example minimal build target:
+    ```json
+    "build": {
+      "extends": "build:extension"
+    }
+    ```
+- Core packages should use:
+    ```json
+    "build": {
+      "extends": "build:core"
+    }
+    ```
+- All new packages must follow this structure unless explicitly documented otherwise.
+
+###### END: Required Nx Project Structure <!-- Close Fold -->
+
+## 2. :: DRY Global Targets <!-- Start Fold -->
+
+- Global targets in `nx.json` define the executor, options, and configurations for all core and extension builds.
+- Only project-specific paths should be overridden in each `project.json`.
+- This approach reduces boilerplate and ensures consistency across the monorepo.
+
+###### END: DRY Global Targets <!-- Close Fold -->
+
+## 3. :: Common Pitfalls & Lessons Learned <!-- Start Fold -->
+
+- **Nx 21.x and earlier:** The `extends` mechanism may not always work as expected. If a build target resolves to `nx:noop` or does not produce output, explicitly set the executor and options.
+- **Executor Resolution:** Always verify that the build target uses the correct executor (`@nx/esbuild:esbuild` for builds). If not, revert to explicit config or upgrade Nx.
+- **Testing After Changes:** After simplifying a config, always run a build to ensure the output is correct and the executor is not `nx:noop`.
+- **Migration Issues:** Legacy or migrated projects may have extra boilerplate. Refactor to DRY config when possible.
+- **Dependency Output:** Ensure core packages emit JavaScript output (`index.js`) in `dist/` for extension builds to resolve dependencies.
+
+###### END: Common Pitfalls & Lessons Learned <!-- Close Fold -->
+
+## 4. :: References & Further Reading <!-- Start Fold -->
+
+- See [docs/Nx_Optimizations.md](../docs/Nx_Optimizations.md) for detailed best practices.
+- See [docs/SOP.md](../docs/SOP.md) for contributor guidelines.
+- See `.cursor/rules/interaction-rules.mdc` for AI and automation interaction rules.
+
+###### END: References & Further Reading <!-- Close Fold -->
+
+###### END: Nx Project Structure & Pitfalls <!-- Close Fold -->
+
+description:
+globs:
+alwaysApply: false
+
+---

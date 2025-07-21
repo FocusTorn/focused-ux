@@ -40,7 +40,7 @@ ContextCherryPicker:
           - '**/.npmignore'
           - '**/.turbignore'
       docs:
-        initially_visible: false
+        initially_visible: true
         items:
           - '**/LICENSE.*'
           - '**/README.*'

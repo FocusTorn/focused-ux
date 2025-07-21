@@ -5,17 +5,7 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "outputPath": "packages/_utilities/dist",
-                "main": "packages/_utilities/src/index.ts",
-                "tsConfig": "packages/_utilities/tsconfig.lib.json",
-                "bundle": false,
-                "format": ["esm"],
-                "declarationRootDir": "packages/_utilities/src",
-                "keepNames": true
-            }
+            "extends": "build:core"
         }
     },
     "tags": []
