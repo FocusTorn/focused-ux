@@ -2,9 +2,7 @@
     "extends": "../../../tsconfig.base.json",
     "files": [],
     "references": [
-        {
-            "path": "../../_utilities"
-        },
+        { "path": "../../all-shared" },
         {
             "path": "./tsconfig.lib.json"
         }

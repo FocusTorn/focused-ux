@@ -12,5 +12,7 @@
     "pb": "@fux/project-butler-ext",
     
     "nhc": "@fux/note-hub-core",
-    "nh": "@fux/note-hub-ext"
+    "nh": "@fux/note-hub-ext",
+    
+    "shared": "@fux/shared"
 }

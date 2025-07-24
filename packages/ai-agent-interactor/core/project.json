@@ -5,6 +5,7 @@
     "projectType": "library",
     "targets": {
         "build": {
+            "dependsOn": ["clean:dist"],
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "options": {
@@ -16,9 +17,30 @@
                 "bundle": false,
                 "sourcemap": true,
                 "target": "es2022",
-                "keepNames": true
+                "keepNames": true,
+                "declarationRootDir": "packages/ai-agent-interactor/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true
             }
         },
-        "lint": {}
-    }
+        "verify:dist:hash": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "node ../../../scripts/verify-dist-hash.cjs",
+                "cwd": "packages/ai-agent-interactor/core"
+            }
+        },
+        "build:with-verify": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    "nx run @fux/ai-agent-interactor-core:build",
+                    "nx run @fux/ai-agent-interactor-core:verify:dist:hash"
+                ]
+            }
+        },
+        "lint": {},
+        "clean:dist": { "extends": "clean:dist" }
+    },
+    "tags": []
 }

@@ -1,0 +1,52 @@
+{
+  "name": "fux-<%= name %>",
+  "displayName": "<%= displayName %>",
+  "description": "<%= description %>",
+  "publisher": "NewRealityDesigns",
+  "repository": "https://github.com/FocusTorn/focused-ux",
+  "version": "0.1.0-dev.<%= Date.now() %>",
+  "dependencies": {
+    "awilix": "^12.0.5"
+  },
+  "devDependencies": {
+    "@fux/note-hub-core": "workspace:*",
+    "@fux/utilities": "workspace:*",
+    "@types/node": "^24.0.10",
+    "@types/vscode": "^1.101.0",
+    "typescript": "^5.8.3"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "<%= commandPrefix %>.example",
+        "title": "[F-UX] <%= displayName %>: Example Command",
+        "category": "F-UX: <%= displayName %>"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "<%= commandPrefix %>.example",
+          "group": "1_modification"
+        }
+      ]
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:<%= commandPrefix %>.example"
+  ],
+  "icon": "./assets/icon.png",
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "focused ux",
+    "f-ux"
+  ],
+  "engines": {
+    "vscode": "^1.101.0"
+  },
+  "private": true,
+  "main": "./dist/extension.cjs"
+}

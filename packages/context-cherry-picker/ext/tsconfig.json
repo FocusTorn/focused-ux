@@ -3,9 +3,7 @@
     "files": [],
     "include": [],
     "references": [
-        {
-            "path": "../../_utilities"
-        },
+        { "path": "../../all-shared" },
         {
             "path": "../core"
         },

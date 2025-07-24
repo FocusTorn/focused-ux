@@ -1,0 +1,33 @@
+import type { ExtensionContext, Disposable } from 'vscode'
+import * as vscode from 'vscode'
+import { createDIContainer } from './injection.js'
+import { constants } from './_config/constants.js'
+
+export function activate(context: ExtensionContext): void {
+  console.log(`[${constants.extension.name}] Activating...`)
+
+  const container = createDIContainer(context)
+
+  // Resolve services from the container
+  // const exampleService = container.resolve<IExampleService>('exampleService')
+
+  // Command Handlers
+  const handleExampleCommand = async (): Promise<void> => {
+    // Implement your command logic here
+    // exampleService.doSomething();
+    vscode.window.showInformationMessage('Example command executed!')
+  }
+
+  const disposables: Disposable[] = [
+    vscode.commands.registerCommand(
+      constants.commands.example,
+      handleExampleCommand,
+    ),
+  ]
+
+  context.subscriptions.push(...disposables)
+  
+  console.log(`[${constants.extension.name}] Activated.`)
+}
+
+export function deactivate(): void {} 

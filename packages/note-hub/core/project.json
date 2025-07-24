@@ -1,0 +1,46 @@
+{
+    "name": "@fux/note-hub-core",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/note-hub/core/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "dependsOn": ["clean:dist"],
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/note-hub/core/src/index.ts",
+                "outputPath": "packages/note-hub/core/dist",
+                "tsConfig": "packages/note-hub/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "packages/note-hub/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true
+            }
+        },
+        "verify:dist:hash": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "node ../../../scripts/verify-dist-hash.cjs",
+                "cwd": "packages/note-hub/core"
+            }
+        },
+        "build:with-verify": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    "nx run @fux/note-hub-core:build",
+                    "nx run @fux/note-hub-core:verify:dist:hash"
+                ]
+            }
+        },
+        "lint": {},
+        "clean:dist": { "extends": "clean:dist" }
+    },
+    "tags": []
+}

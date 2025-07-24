@@ -4,13 +4,17 @@
         "composite": true,
         "declarationMap": false,
         "rootDir": "src",
-        "outDir": "./out-tsc/app"
+        "outDir": "./out-tsc/app",
+        "paths": {
+            "@fux/shared": ["../../../libs/shared/src/index.ts"],
+            "@fux/shared/*": ["../../../libs/shared/src/*"]
+        }
     },
     "include": ["./src/**/*.ts"],
     "exclude": ["node_modules", "dist"],
     "references": [
         {
-            "path": "../../_utilities"
+            "path": "../../libs/shared"
         },
         {
             "path": "../core"

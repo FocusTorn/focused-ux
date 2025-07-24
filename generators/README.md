@@ -11,7 +11,7 @@ Creates a shared library package that provides common functionality to other pac
 **Usage:**
 
 ```bash
-nx g @fux/shared --name=utilities --description="Common utilities and services"
+nx g ./generators:shared --name=utilities --description="Common utilities and services"
 ```
 
 **Creates:**
@@ -28,7 +28,7 @@ Creates a core library package that contains business logic for a specific featu
 **Usage:**
 
 ```bash
-nx g @fux/core --name=ghost-writer --description="Ghost Writer core functionality"
+nx g ./generators:core --name=ghost-writer --description="Ghost Writer core functionality"  --directory=packages/ghost-writer
 ```
 
 **Creates:**
@@ -45,7 +45,7 @@ Creates a VSCode extension package that provides the UI and VSCode-specific impl
 **Usage:**
 
 ```bash
-nx g @fux/ext --name=ghost-writer --displayName="F-UX: Ghost Writer" --description="Dynamically generate frequently used code" --corePackage=ghost-writer
+nx g ./generators:ext --name=ghost-writer --displayName="F-UX: Ghost Writer" --description="Dynamically generate frequently used code" --corePackage=ghost-writer --directory=packages/ghost-writer
 ```
 
 **Creates:**
@@ -124,13 +124,13 @@ packages/package-name/ext/
 1. **Create the core package:**
 
     ```bash
-    nx g @fux/core --name=my-feature --description="My feature core functionality"
+    nx g ./generators:core --name=my-feature --description="My feature core functionality"
     ```
 
 2. **Create the extension package:**
 
     ```bash
-    nx g @fux/ext --name=my-feature --displayName="F-UX: My Feature" --description="My feature extension" --corePackage=my-feature
+    nx g ./generators:ext --name=my-feature --displayName="F-UX: My Feature" --description="My feature extension" --corePackage=my-feature
     ```
 
 3. **Build both packages:**
@@ -161,3 +161,12 @@ These targets include all the optimizations we've discovered:
 - ESBuild bundling with tree-shaking
 - Asset copying
 - Minification for production
+
+---
+
+## Notes
+
+- These generators are now invoked using the local path syntax (`./generators:core`, `./generators:ext`, `./generators:shared`).
+- The previous `@fux/core`, `@fux/ext`, and `@fux/shared` commands are no longer valid unless the generators are published as a package and installed as a plugin.
+
+---

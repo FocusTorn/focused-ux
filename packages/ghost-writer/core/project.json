@@ -5,8 +5,41 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "extends": "build:core"
-        }
+            // "dependsOn": ["clean:dist"],
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/ghost-writer/core/src/index.ts",
+                "outputPath": "packages/ghost-writer/core/dist",
+                "tsConfig": "packages/ghost-writer/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "packages/ghost-writer/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true
+            }
+        },
+        "verify:dist:hash": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "node ../../../scripts/verify-dist-hash.cjs",
+                "cwd": "packages/ghost-writer/core"
+            }
+        },
+        "build:with-verify": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    "nx run @fux/ghost-writer-core:build",
+                    "nx run @fux/ghost-writer-core:verify:dist:hash"
+                ]
+            }
+        },
+        "clean:dist": { "extends": "clean:dist" }
     },
     "tags": []
 }

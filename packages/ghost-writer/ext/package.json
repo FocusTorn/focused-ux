@@ -6,12 +6,13 @@
     "repository": "https://github.com/FocusTorn/focused-ux",
     "version": "0.1.0-dev.1752955424618",
     "dependencies": {
-        "typescript": "^5.8.3"
+        "@fux/ghost-writer-core": "workspace:*",
+        "@fux/shared": "workspace:*",
+        "awilix": "^12.0.5",
+        "js-yaml": "^4.1.0"
     },
     "devDependencies": {
-        "@fux/ghost-writer-core": "workspace:*",
-        "@fux/utilities": "workspace:*",
-        "awilix": "^12.0.5"
+        "typescript": "^5.8.3"
     },
     "contributes": {
         "commands": [

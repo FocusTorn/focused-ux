@@ -1,28 +1,13 @@
 packages:
-  - packages/ghost-writer/core
-  - packages/ghost-writer/ext
-  - packages/ghostwriter/core
-  
-  - packages/project-butler/core
-  - packages/project-butler/ext
-  
-  - packages/context-cherry-picker/core
-  - packages/context-cherry-picker/ext
-  
-  - packages/ai-agent-interactor/core
-  - packages/ai-agent-interactor/ext
-  
-  - packages/dynamicons/core
-  - packages/dynamicons/ext
-  
-  - packages/_utilities
-  
-  
+    - 'packages/*/*'
+    - 'libs/*'
+
 onlyBuiltDependencies:
-  - '@swc/core'
-  - '@vscode/vsce-sign'
-  - esbuild
-  - keytar
-  - nx
-  - puppeteer
-  - sharp
+    - '@swc/core'
+    - '@vscode/vsce-sign'
+    - esbuild
+    - keytar
+    - nx
+    - oxc-resolver
+    - puppeteer
+    - sharp

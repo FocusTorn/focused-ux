@@ -12,6 +12,6 @@
         }
     },
     "dependencies": {
-        "@fux/utilities": "workspace:*"
+        "@fux/shared": "workspace:*"
     }
 }

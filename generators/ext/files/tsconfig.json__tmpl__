@@ -1,0 +1,19 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "references": [
+    {
+      "path": "../../_utilities"
+    },
+    {
+      "path": "../<%= corePackage %>"
+    },
+    {
+      "path": "./tsconfig.lib.json"
+    }
+  ]
+}

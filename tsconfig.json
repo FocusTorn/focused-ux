@@ -1,5 +1,12 @@
 {
     "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@fux/ghost-writer-core": ["packages/ghost-writer/core/src/index.ts"],
+            "@fux/shared": ["libs/shared/src/index.ts"]
+        }
+    },
     "compileOnSave": false,
     "files": [],
     "exclude": ["_scripts/**/*", "node_modules", "dist", "**/dist/**/*"],
@@ -35,7 +42,13 @@
             "path": "./packages/dynamicons/ext"
         },
         {
-            "path": "./packages/_utilities"
+            "path": "./packages/all-shared"
+        },
+        {
+            "path": "./generators"
+        },
+        {
+            "path": "./libs/shared"
         }
     ]
 }

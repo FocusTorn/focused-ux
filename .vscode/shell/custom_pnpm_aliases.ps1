@@ -160,7 +160,7 @@ function _Invoke-NxTask { #>
 
 function _Invoke-NxRunMany { #>
     param(
-        [string]$RunType, # 'ext' or 'core'
+        [string]$RunType, # 'ext', 'core', or 'all'
         [string[]]$CommandArgs, # These are now pre-expanded
         [bool]$IsDebug
     )
@@ -173,26 +173,32 @@ function _Invoke-NxRunMany { #>
     if ($target -eq $null) { Write-Host "No Nx target specified for '$RunType' (e.g., 'build', 'lint')."; return }
 
     $packageAliases = Get-PnpmAliasCache
-    $suffix = "-$RunType"
     $projectsToRun = @()
-    foreach ($key in $packageAliases.PSObject.Properties.Name) {
-        $aliasValue = $packageAliases.$key
-        $pnpmPackageName, $nxProjectName, $customSuffix = $null, $null, $null
-        if ($aliasValue -is [PSCustomObject] -and $aliasValue.PSObject.Properties["name"]) {
-            $pnpmPackageName = $aliasValue.name
-            $customSuffix = $aliasValue.suffix
-        } else { $pnpmPackageName = $aliasValue }
-        if ($pnpmPackageName.StartsWith("@fux/")) { $nxProjectName = $pnpmPackageName }
-        elseif ($customSuffix) { $nxProjectName = "@fux/$($pnpmPackageName)-$customSuffix" }
-        else { $nxProjectName = "@fux/$($pnpmPackageName)" }
-        if ($nxProjectName.EndsWith($suffix)) { $projectsToRun += $nxProjectName }
+    if ($RunType -eq 'all') {
+        foreach ($key in $packageAliases.PSObject.Properties.Name) {
+            $aliasValue = $packageAliases.$key
+            $pnpmPackageName = $aliasValue
+            if ($pnpmPackageName.StartsWith("@fux/")) {
+                $projectsToRun += $pnpmPackageName
+            } else {
+                $projectsToRun += "@fux/$pnpmPackageName"
+            }
+        }
+    } else {
+        $suffix = "-$RunType"
+        foreach ($key in $packageAliases.PSObject.Properties.Name) {
+            $aliasValue = $packageAliases.$key
+            $pnpmPackageName = $aliasValue
+            $nxProjectName = $pnpmPackageName.StartsWith("@fux/") ? $pnpmPackageName : "@fux/$pnpmPackageName"
+            if ($nxProjectName.EndsWith($suffix)) { $projectsToRun += $nxProjectName }
+        }
     }
-    if ($projectsToRun.Count -eq 0) { Write-Host "No projects found with suffix '$suffix'."; return }
+    if ($projectsToRun.Count -eq 0) { Write-Host "No projects found for '$RunType'."; return }
 
     $parallelCount = $projectsToRun.Count
     $projectList = $projectsToRun -join ','
     $nxPreArgs = @('run-many', "--target=$target", "--projects=$projectList", "--parallel=$parallelCount") + $nxFlags + $targetArgs
-    
+
     if ($IsDebug) {
         Write-Host "$($PSStyle.Dim)  ├─ Projects: $projectList"
         Write-Host "$($PSStyle.Dim)  └─ Parallelism: $parallelCount"
@@ -231,8 +237,9 @@ $NxTargetShortcuts = @{ #>
     p = 'package'
     pd = 'package:dev'
     pub = 'publish'
-    
-    
+
+    c = 'clean'
+    cd = 'clean:dist'
 } #<
 
 
@@ -309,18 +316,28 @@ function Invoke-NxCommand { #>
         Write-Host "$($PSStyle.Dim)[DEBUG] Alias '$Alias' called with args: $($filteredCommandArgs -join ' ')$($PSStyle.Reset)"
     }
 
+    # Map -s to --skip-nx-cache and -v to --verbose
+    $finalArgs = @()
+    foreach ($arg in $filteredCommandArgs) {
+        switch ($arg) {
+            '-s' { $finalArgs += '--skip-nx-cache' }
+            '-v' { $finalArgs += '--verbose' }
+            default { $finalArgs += $arg }
+        }
+    }
+
     # Route to the correct handler based on the alias.
-    if ($Alias -in 'ext', 'core') {
-        _Invoke-NxRunMany -RunType $Alias -CommandArgs $filteredCommandArgs -IsDebug:$isDebug
+    if ($Alias -in 'ext', 'core', 'all') {
+        _Invoke-NxRunMany -RunType $Alias -CommandArgs $finalArgs -IsDebug:$isDebug
         return
     }
 
-    if ($filteredCommandArgs.Count -eq 0) {
+    if ($finalArgs.Count -eq 0) {
         Write-Host "Please provide a command for '$Alias'."
         return
     }
 
-    $firstArg = $filteredCommandArgs[0]
+    $firstArg = $finalArgs[0]
 
     $packageAliases = Get-PnpmAliasCache
     $aliasValue = $packageAliases.$Alias
@@ -353,13 +370,13 @@ function Invoke-NxCommand { #>
     }
     if ($firstArg -in 'add', 'remove') {
         if ($isDebug) { Write-Host "$($PSStyle.Dim)  - Routing to: Package Management (pnpm add/remove)$($PSStyle.Reset)" }
-        _Invoke-PnpmPackageManagement -PnpmPackageName $pnpmPackageName -CommandArgs $filteredCommandArgs -IsDebug:$isDebug
+        _Invoke-PnpmPackageManagement -PnpmPackageName $pnpmPackageName -CommandArgs $finalArgs -IsDebug:$isDebug
     } elseif ($firstArg -in 'run', 'exec') {
         if ($isDebug) { Write-Host "$($PSStyle.Dim)  - Routing to: Script Execution (pnpm run/exec)$($PSStyle.Reset)" }
-        _Invoke-PnpmScriptExecution -PnpmPackageName $pnpmPackageName -CommandArgs $filteredCommandArgs -IsDebug:$isDebug
+        _Invoke-PnpmScriptExecution -PnpmPackageName $pnpmPackageName -CommandArgs $finalArgs -IsDebug:$isDebug
     } else {
         if ($isDebug) { Write-Host "$($PSStyle.Dim)  - Routing to: Nx Task (nx <target>)$($PSStyle.Reset)" }
-        _Invoke-NxTask -NxProjectName $nxProjectName -CommandArgs $filteredCommandArgs -IsDebug:$isDebug
+        _Invoke-NxTask -NxProjectName $nxProjectName -CommandArgs $finalArgs -IsDebug:$isDebug
     }
 } #<
 
@@ -374,6 +391,7 @@ function Show-PnpmAliases { #>
     Write-Host "`n  Meta Aliases (run-many):"
     Write-Host ("  " + "ext".PadRight(8) + "→ " + "Run command on all '-ext' packages.")
     Write-Host ("  " + "core".PadRight(8) + "→ " + "Run command on all '-core' packages.")
+    Write-Host ("  " + "all".PadRight(8) + "→ " + "Run command on all aliased packages.")
     Write-Host "`n  Package Aliases:"
     foreach ($alias in $packageAliases.PSObject.Properties.Name) {
         $val = $packageAliases.$alias
@@ -419,5 +437,6 @@ foreach ($alias in $packageAliases.PSObject.Properties.Name) { #>
 # Create meta-aliases for run-many commands
 New-PnpmAliasFunction 'ext'
 New-PnpmAliasFunction 'core'
+New-PnpmAliasFunction 'all'
 
 # Write-Host "[DEBUG] All alias wrapper functions redefined."

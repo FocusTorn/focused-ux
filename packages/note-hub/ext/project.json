@@ -1,0 +1,38 @@
+{
+    "name": "@fux/note-hub-ext",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/note-hub/ext/src",
+    "projectType": "application",
+    "targets": {
+        "build": {
+            "extends": "build:extension"
+        },
+        "package:dev": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node ./_scripts/create-dev-vsix.js note-hub/ext"
+            }
+        },
+        "package": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "outputs": ["{workspaceRoot}/vsix_packages/note-hub.vsix"],
+            "options": {
+                "command": "vsce package --no-dependencies -o ../../vsix_packages/note-hub.vsix",
+                "cwd": "{projectRoot}"
+            }
+        },
+        "publish": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["package"],
+            "options": {
+                "command": "vsce publish",
+                "cwd": "{projectRoot}"
+            }
+        },
+        "lint": {},
+        "clean:dist": { "extends": "clean:dist" }
+    },
+    "tags": ["type:extension"]
+}

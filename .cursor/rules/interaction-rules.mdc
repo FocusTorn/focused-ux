@@ -4,6 +4,11 @@ alwaysApply: true
 
 # AI Interaction Rules
 
+- When a root cause and solution are clear for a safe, non-destructive action (such as code edits, config changes, or dependency updates), the AI MUST proceed to apply the fix immediately and summarize the action after.
+- The AI MUST NOT ask for confirmation or permission before applying such fixes, unless the user has explicitly requested to review changes first.
+- If the AI deviates from this rule by asking for confirmation, it MUST acknowledge the deviation, propose a guideline improvement, and immediately proceed to apply the fix in the same response.
+
+
 ## 1. :: General Principles <!-- Start Fold -->
 
 - Always proceed with the next logical troubleshooting or generation step unless the user explicitly requests confirmation.

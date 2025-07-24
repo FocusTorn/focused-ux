@@ -1,0 +1,42 @@
+{
+    "name": "@fux/shared",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/shared/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "libs/shared/src/index.ts",
+                "outputPath": "libs/shared/dist",
+                "tsConfig": "libs/shared/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "libs/shared/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": ["js-yaml"]
+            }
+        },
+        "verify:dist:hash": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "node ../../scripts/verify-dist-hash.cjs",
+                "cwd": "libs/shared"
+            }
+        },
+        "build:with-verify": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": ["nx run @fux/shared:build", "nx run @fux/shared:verify:dist:hash"]
+            }
+        },
+        "clean:dist": { "extends": "clean:dist" }
+    },
+    "tags": []
+}

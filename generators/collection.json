@@ -1,0 +1,19 @@
+{
+    "generators": {
+        "core": {
+            "factory": "./core/generator#default",
+            "schema": "./core/schema.json",
+            "description": "Create a core package"
+        },
+        "ext": {
+            "factory": "./ext/generator#default",
+            "schema": "./ext/schema.json",
+            "description": "Create an extension package"
+        },
+        "shared": {
+            "factory": "./shared/generator#default",
+            "schema": "./shared/schema.json",
+            "description": "Create a shared package"
+        }
+    }
+}

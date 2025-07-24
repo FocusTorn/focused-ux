@@ -1,10 +1,15 @@
 {
     "extends": "../../../tsconfig.base.json",
+    "compilerOptions": {
+        "paths": {
+            "@fux/shared": ["../../../libs/shared/src/index.ts"],
+            "@fux/shared/*": ["../../../libs/shared/src/*"],
+            "@fux/shared/src/*": ["../../../libs/shared/src/*"]
+        }
+    },
     "files": [],
     "references": [
-        {
-            "path": "../../_utilities"
-        },
+        { "path": "../../all-shared" },
         {
             "path": "./tsconfig.lib.json"
         }

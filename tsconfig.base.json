@@ -15,8 +15,6 @@
         "noImplicitReturns": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "declaration": true,
-        "declarationMap": true,
         "sourceMap": true,
         "noEmitOnError": true,
         "composite": true,
@@ -27,8 +25,8 @@
         "useDefineForClassFields": true,
         "baseUrl": ".",
         "paths": {
-            "@fux/utilities": ["packages/_utilities/src/index.ts"],
-            "@fux/utilities/*": ["packages/_utilities/src/*"]
+            "@fux/ghost-writer-core": ["packages/ghost-writer/core/dist"],
+            "@fux/shared": ["libs/shared/dist"]
         }
     }
 }

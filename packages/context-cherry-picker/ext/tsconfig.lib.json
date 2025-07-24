@@ -15,7 +15,7 @@
             "path": "../core/tsconfig.lib.json"
         },
         {
-            "path": "../../_utilities/tsconfig.lib.json"
+            "path": "../../all-shared/tsconfig.lib.json"
         }
     ]
 }

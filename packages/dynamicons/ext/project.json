@@ -30,7 +30,8 @@
                 "command": "vsce publish",
                 "cwd": "{projectRoot}"
             }
-        }
+        },
+        "clean:dist": { "extends": "clean:dist" }
     },
     "tags": ["type:extension"]
 }

@@ -4,8 +4,93 @@
     "sourceRoot": "packages/ghost-writer/ext/src",
     "projectType": "library",
     "targets": {
+        // "build": {
+        //     "dependsOn": ["@fux/ghost-writer-core:build", "@fux/shared:build"],
+        //     "executor": "@nx/esbuild:esbuild",
+        //     "outputs": ["{options.outputPath}"],
+        //     "options": {
+        //         "main": "packages/ghost-writer/ext/src/extension.ts",
+        //         "outputPath": "packages/ghost-writer/ext/dist",
+        //         "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
+        //         "platform": "node",
+        //         "format": ["cjs"],
+        //         "bundle": true,
+        //         "external": ["vscode"],
+        //         "outExtension": { ".js": ".cjs" },
+        //         "sourcemap": false,
+        //         "target": "es2022",
+        //         "keepNames": true,
+        //         "treeShaking": true,
+        //         "metafile": true,
+        //         "declarationRootDir": "packages/ghost-writer/ext/src",
+        //         "assets": [
+        //             {
+        //                 "glob": "**/*",
+        //                 "input": "packages/ghost-writer/ext/assets",
+        //                 "output": "assets"
+        //             }
+        //         ],
+        //         "deleteOutputPath": true
+        //     },
+        //     "configurations": {
+        //         "development": { "minify": false },
+        //         "production": { "minify": true }
+        //     },
+        //     "postTargets": ["clean:types"]
+        // },
+        
         "build": {
-            "extends": "build:extension"
+    "dependsOn": ["@fux/ghost-writer-core:build", "@fux/shared:build"],
+    "executor": "@nx/esbuild:esbuild",
+    "outputs": ["{options.outputPath}"],
+    "options": {
+        "main": "packages/ghost-writer/ext/src/extension.ts",
+        "outputPath": "packages/ghost-writer/ext/dist",
+        "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
+        "platform": "node",
+        "format": ["cjs"],
+        "bundle": true,
+        "external": ["vscode"],
+        "outExtension": { ".js": ".cjs" },
+        "sourcemap": false,
+        "declaration": false,
+        "target": "es2022",
+        "keepNames": true,
+        "treeShaking": true,
+        "metafile": true,
+        "declarationRootDir": "packages/ghost-writer/ext/src",
+        "assets": [
+            {
+                "glob": "**/*",
+                "input": "packages/ghost-writer/ext/assets",
+                "output": "assets"
+            }
+        ],
+        "deleteOutputPath": true
+    },
+    "configurations": {
+        "development": { "minify": false },
+        "production": { "minify": true }
+    },
+    "postTargets": ["clean:types"]
+},        
+        
+
+        "verify:dist:hash": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "node ../../../scripts/verify-dist-hash.cjs",
+                "cwd": "packages/ghost-writer/ext"
+            }
+        },
+        "build:with-verify": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    "nx run @fux/ghost-writer-ext:build",
+                    "nx run @fux/ghost-writer-ext:verify:dist:hash"
+                ]
+            }
         },
         "package:dev": {
             "executor": "nx:run-commands",
@@ -31,7 +116,8 @@
                 "cwd": "{projectRoot}"
             }
         },
-        "lint": {}
+        "lint": {},
+        "clean:dist": { "extends": "clean:dist" }
     },
-    "tags": ["type:extension"]
+    "tags": []
 }

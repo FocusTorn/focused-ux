@@ -5,9 +5,42 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "extends": "build:core"
+            "dependsOn": ["clean:dist"],
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/context-cherry-picker/core/src/index.ts",
+                "outputPath": "packages/context-cherry-picker/core/dist",
+                "tsConfig": "packages/context-cherry-picker/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "packages/context-cherry-picker/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true
+            }
         },
-        "lint": {}
+        "verify:dist:hash": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "node ../../../scripts/verify-dist-hash.cjs",
+                "cwd": "packages/context-cherry-picker/core"
+            }
+        },
+        "build:with-verify": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    "nx run @fux/context-cherry-picker-core:build",
+                    "nx run @fux/context-cherry-picker-core:verify:dist:hash"
+                ]
+            }
+        },
+        "lint": {},
+        "clean:dist": { "extends": "clean:dist" }
     },
-    "tags": ["type:core"]
+    "tags": []
 }

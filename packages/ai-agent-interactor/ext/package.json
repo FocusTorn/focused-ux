@@ -12,7 +12,7 @@
     },
     "dependencies": {
         "@fux/ai-agent-interactor-core": "workspace:*",
-        "@fux/utilities": "workspace:*",
+        "@fux/shared": "workspace:*",
         "awilix": "^12.0.5"
     },
     "activationEvents": [

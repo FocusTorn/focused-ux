@@ -84,10 +84,15 @@
                 "outputPath": "{projectRoot}/dist",
                 "main": "{projectRoot}/src/index.ts",
                 "tsConfig": "{projectRoot}/tsconfig.lib.json",
+                "platform": "node",
                 "format": ["esm"],
                 "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
                 "declarationRootDir": "{projectRoot}/src",
-                "thirdParty": false
+                "thirdParty": false,
+                "deleteOutputPath": true
             }
         },
         "build:extension": {
@@ -115,7 +120,8 @@
                         "input": "{projectRoot}/assets",
                         "output": "assets"
                     }
-                ]
+                ],
+                "deleteOutputPath": true
             },
             "configurations": {
                 "development": {
@@ -125,14 +131,41 @@
                     "minify": true
                 }
             }
+        },
+        "build:shared": {
+            "executor": "@nx/esbuild:esbuild",
+            "dependsOn": ["^build"],
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "{projectRoot}/dist",
+                "main": "{projectRoot}/src/index.ts",
+                "tsConfig": "{projectRoot}/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "{projectRoot}/src",
+                "thirdParty": false,
+                "deleteOutputPath": true
+            }
+        },
+        "clean:dist": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx rimraf dist",
+                "cwd": "{projectRoot}"
+            }
         }
     },
     "release": {
         "projects": [
-            "@fux/ghost-writer-ext",
-            "@fux/utilities2",
             "@fux/ghost-writer-core",
-            "@fux/ghost-writer-ext"
+            "@fux/ghost-writer-ext",
+            "@fux/note-hub-core",
+            "@fux/note-hub-ext",
+            "@fux/libs/shared"
         ],
         "projectsRelationship": "independent",
         "version": {

@@ -3,15 +3,17 @@ import type { AwilixContainer } from 'awilix'
 import type { ExtensionContext } from 'vscode'
 import { ClipboardService, ConsoleLoggerService, ImportGeneratorService } from '@fux/ghost-writer-core'
 import type { IPathUtilsService, IStorageService } from '@fux/ghost-writer-core'
-import { ConfigurationService } from '@fux/utilities'
-import type { IFileSystem, IProcess } from '@fux/utilities'
+import {
+	CommonUtilsAdapter,
+	ConfigurationService,
+	FileSystemAdapter,
+	PathUtilsAdapter,
+	ProcessAdapter,
+	WindowAdapter,
+	WorkspaceAdapter,
+} from '@fux/shared'
+import type { IFileSystem, IProcess } from '@fux/shared'
 import { StorageAdapter } from './services/Storage.adapter.js'
-import { CommonUtilsAdapter } from './services/adapters/CommonUtils.adapter.js'
-import { FileSystemAdapter } from './services/adapters/FileSystem.adapter.js'
-import { PathUtilsAdapter } from './services/adapters/PathUtils.adapter.js'
-import { ProcessAdapter } from './services/adapters/Process.adapter.js'
-import { WindowAdapter } from './services/adapters/Window.adapter.js'
-import { WorkspaceAdapter } from './services/adapters/Workspace.adapter.js'
 
 export function createDIContainer(context: ExtensionContext): AwilixContainer {
 	const container = createContainer({

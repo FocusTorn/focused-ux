@@ -51,18 +51,19 @@
             ],
             "sourceMaps": true,
             "preLaunchTask": "Build AI Agent Interactor"
+        }, //<
+
+        {
+            "name": "Note Hub", //>
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/note-hub/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true,
+            "preLaunchTask": "Build NoteHub"
         } //<
     ]
 }
-
-// { "name": "NoteHub", //>
-//     "type": "extensionHost",
-//     "request": "launch",
-//     "args": [
-//         "--profile=Clean",
-//         "--extensionDevelopmentPath=${workspaceFolder}/packages/note-hub/ext",
-//         "${workspaceFolder}"
-//     ],
-//     "sourceMaps": true,
-//     "preLaunchTask": "Build NoteHub"
-// } //<
