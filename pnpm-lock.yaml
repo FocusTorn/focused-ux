@@ -257,12 +257,6 @@ importers:
 
   packages/ghost-writer/ext:
     dependencies:
-      awilix:
-        specifier: ^12.0.5
-        version: 12.0.5
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -273,6 +267,12 @@ importers:
       '@fux/shared':
         specifier: workspace:*
         version: link:../../../libs/shared
+      awilix:
+        specifier: ^12.0.5
+        version: 12.0.5
+      js-yaml:
+        specifier: ^4.1.0
+        version: 4.1.0
 
   packages/note-hub/core:
     dependencies:

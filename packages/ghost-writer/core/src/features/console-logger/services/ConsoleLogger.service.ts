@@ -1,5 +1,14 @@
-import ts from 'typescript'
+import type * as ts from 'typescript'
 import type { ConsoleLoggerGenerateOptions, ConsoleLoggerResult, IConsoleLoggerService } from '../_interfaces/IConsoleLoggerService.js'
+
+let tsModule: any
+
+function getTS(): typeof import('typescript') {
+	if (!tsModule)
+		// eslint-disable-next-line ts/no-require-imports
+		tsModule = require('typescript')
+	return tsModule
+}
 
 class LogMessageHelper {
 
@@ -8,7 +17,7 @@ class LogMessageHelper {
 
 	constructor(documentContent: string, fileName: string) {
 		this.documentContent = documentContent
-		this.sourceFile = ts.createSourceFile(fileName, documentContent, ts.ScriptTarget.Latest, true)
+		this.sourceFile = getTS().createSourceFile(fileName, documentContent, getTS().ScriptTarget.Latest, true)
 	}
 
 	private getLineAndCharacterOfPosition(pos: number): { line: number, character: number } {
@@ -65,7 +74,7 @@ class LogMessageHelper {
 			const nodeEndLine = this.getLineAndCharacterOfPosition(node.getEnd()).line
 
 			if (nodeStartLine <= line && nodeEndLine >= line && node.getText(this.sourceFile).includes(varName)) {
-				if (node.kind === ts.SyntaxKind.VariableDeclaration && (node as ts.VariableDeclaration).name.getText(this.sourceFile) === varName) {
+				if (node.kind === getTS().SyntaxKind.VariableDeclaration && (node as any).name.getText(this.sourceFile) === varName) {
 					foundNode = node
 					return
 				}
@@ -73,7 +82,7 @@ class LogMessageHelper {
 					foundNode = node
 				}
 			}
-			ts.forEachChild(node, traverse)
+			getTS().forEachChild(node, traverse)
 		}
 
 		traverse(this.sourceFile)
@@ -84,7 +93,7 @@ class LogMessageHelper {
 		let parent = node.parent
 
 		while (parent) {
-			if (ts.isBlock(parent) || ts.isSourceFile(parent)) {
+			if (getTS().isBlock(parent) || getTS().isSourceFile(parent)) {
 				let statement = node
 
 				while (statement.parent && statement.parent !== parent) {
@@ -92,7 +101,7 @@ class LogMessageHelper {
 				}
 				return this.getLineAndCharacterOfPosition(statement.getEnd()).line + 1
 			}
-			if (ts.isArrowFunction(parent) && parent.body !== node) {
+			if (getTS().isArrowFunction(parent) && parent.body !== node) {
 				return this.getLineAndCharacterOfPosition(node.getEnd()).line + 1
 			}
 			parent = parent.parent

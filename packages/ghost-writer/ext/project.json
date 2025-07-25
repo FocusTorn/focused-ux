@@ -127,7 +127,7 @@
                 "platform": "node",
                 "format": ["cjs"],
                 "bundle": true,
-                "external": ["vscode"],
+                "external": ["vscode", "typescript"],
                 "outExtension": { ".js": ".cjs" },
                 "sourcemap": false,
                 "assets": [
@@ -135,55 +135,29 @@
                         "glob": "**/*",
                         "input": "packages/ghost-writer/ext/assets",
                         "output": "assets"
-                    },
-                    {
-                        "glob": "README.md",
-                        "input": "packages/ghost-writer/ext",
-                        "output": ".."
-                    },
-                    {
-                        "glob": ".vscodeignore",
-                        "input": "packages/ghost-writer/ext",
-                        "output": ".."
-                    },
-                    {
-                        "glob": "LICENSE.txt",
-                        "input": "packages/ghost-writer/ext",
-                        "output": ".."
                     }
-                ],
-                "deleteOutputPath": true
+                ]
             }
         },
-
-        "prepare-package": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
-            "options": {
-                "command": "node _scripts/generate-dist-package-json.js packages/ghost-writer/ext/package.json packages/ghost-writer/ext/dist",
-                "cwd": "{workspaceRoot}"
-            }
-        },
-
         "package": {
             "executor": "nx:run-commands",
-            "dependsOn": ["prepare-package"],
+            "dependsOn": ["build"],
             "outputs": ["{workspaceRoot}/vsix_packages/ghost-writer.vsix"],
             "options": {
-                "command": "vsce package --no-dependencies -o ../../vsix_packages/ghost-writer.vsix",
-                "cwd": "packages/ghost-writer/ext/dist"
+                "command": "vsce package -o ../../vsix_packages/ghost-writer.vsix",
+                "cwd": "packages/ghost-writer/ext"
             }
         },
-
         "package:dev": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "node ./_scripts/create-dev-staged-vsix.js ghost-writer/ext"
+                "command": "node ./_scripts/create-dev-vsix.js ghost-writer/ext"
             }
         },
-
         "lint": {},
-        "clean:dist": { "extends": "clean:dist" }
+        "clean:dist": {
+            "extends": "clean:dist"
+        }
     },
 
     "tags": []
