@@ -26,6 +26,7 @@
         "baseUrl": ".",
         "paths": {
             "@fux/ghost-writer-core": ["packages/ghost-writer/core/dist"],
+            "@fux/project-butler-core": ["packages/project-butler/core/dist"],
             "@fux/shared": ["libs/shared/dist"]
         }
     }

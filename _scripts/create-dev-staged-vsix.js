@@ -25,6 +25,7 @@ const vsixOutputDir = join(workspaceRoot, 'vsix_packages')
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
 const originalVersion = packageJson.version
 const vsixBaseName = packageJson.name
+
 const projectName = `@fux/${packagePath.replace('/', '-')}`
 
 try {
@@ -35,20 +36,21 @@ try {
     writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 4)}\n`)
     console.log(`Temporarily set version to: ${devVersion}`)
 
-    // 2. Run the build to prepare the 'dist' directory
-    const buildCommand = `nx run ${projectName}:build`
-    console.log(`Running build step: ${buildCommand}`)
+    // 2. Run the full build and package preparation steps
+    const buildCommand = `nx run ${projectName}:prepare-package`
+    console.log(`Running build and preparation step: ${buildCommand}`)
     execSync(buildCommand, { stdio: 'inherit' })
 
     // 3. Ensure the final VSIX output directory exists
     mkdirSync(vsixOutputDir, { recursive: true })
 
-    // 4. Run the vsce package command on the project directory
+    // 4. Run the vsce package command on the prepared 'dist' directory
     const vsixOutputPath = join(vsixOutputDir, `${vsixBaseName}-${devVersion}.vsix`)
-    const vsceCommand = `vsce package -o "${vsixOutputPath}"`
+    const packageDistDir = join(packageDir, 'dist')
+    const vsceCommand = `vsce package --no-dependencies -o "${vsixOutputPath}"`
 
-    console.log(`Running: ${vsceCommand} in ${packageDir}`)
-    execSync(vsceCommand, { cwd: packageDir, stdio: 'inherit' })
+    console.log(`Running: ${vsceCommand} in ${packageDistDir}`)
+    execSync(vsceCommand, { cwd: packageDistDir, stdio: 'inherit' })
     console.log(`Successfully created dev package: ${vsixOutputPath}`)
 } catch (error) {
     console.error('An error occurred during the packaging process:', error)

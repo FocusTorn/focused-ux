@@ -4,14 +4,20 @@
     "description": "Dynamically generate frequently used code.",
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
-    "version": "0.1.0-dev.1752955424618",
-    "dependencies": {
+    "version": "0.1.0",
+    "private": true,
+    "main": "./dist/extension.cjs",
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE.txt",
+        ".vscodeignore"
+    ],
+    "devDependencies": {
         "@fux/ghost-writer-core": "workspace:*",
         "@fux/shared": "workspace:*",
         "awilix": "^12.0.5",
-        "js-yaml": "^4.1.0"
-    },
-    "devDependencies": {
+        "js-yaml": "^4.1.0",
         "typescript": "^5.8.3"
     },
     "contributes": {
@@ -73,7 +79,7 @@
         "onCommand:fux-ghost-writer.insertImportStatement",
         "onCommand:fux-ghost-writer.logSelectedVariable"
     ],
-    "icon": "./assets/gw-logo.png",
+    "icon": "assets/gw-logo.png",
     "categories": [
         "Programming Languages",
         "Snippets"
@@ -90,9 +96,8 @@
         "developer tools",
         "focused ux"
     ],
-    "private": true,
-    "main": "./dist/extension.cjs",
     "engines": {
         "vscode": "^1.100.0"
-    }
+    },
+    "license": "MIT"
 }

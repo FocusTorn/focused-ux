@@ -1,4 +1,4 @@
-import type { IProcess } from '@fux/shared/_interfaces/IProcess'
+import type { IProcess } from '@fux/shared'
 import { exec } from 'node:child_process'
 import * as vscode from 'vscode'
 

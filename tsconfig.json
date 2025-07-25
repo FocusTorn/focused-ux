@@ -1,12 +1,6 @@
 {
     "extends": "./tsconfig.base.json",
-    "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-            "@fux/ghost-writer-core": ["packages/ghost-writer/core/src/index.ts"],
-            "@fux/shared": ["libs/shared/src/index.ts"]
-        }
-    },
+    "compilerOptions": {},
     "compileOnSave": false,
     "files": [],
     "exclude": ["_scripts/**/*", "node_modules", "dist", "**/dist/**/*"],

@@ -3,8 +3,9 @@
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "src",
-        "declarationMap": false,
-        "emitDeclarationOnly": false
+        "composite": false,
+        "declaration": false,
+        "declarationMap": false
     },
     "include": ["src/**/*.ts"],
     "references": [{ "path": "../core" }, { "path": "../../../libs/shared" }]

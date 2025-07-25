@@ -1,7 +1,7 @@
 import type { IWindow } from '@fux/project-butler-core'
 import * as vscode from 'vscode'
-import type { IConfigurationService } from '@fux/shared/_interfaces/IConfigurationService'
-import { showTimedInformationMessage as showTimedInformationMessageUtil } from '@fux/shared/vscode/window'
+import type { IConfigurationService } from '@fux/shared'
+import { showTimedInformationMessage as showTimedInformationMessageUtil } from '@fux/shared'
 
 export class VSCodeWindowAdapter implements IWindow {
 
