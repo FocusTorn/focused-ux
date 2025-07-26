@@ -8,6 +8,7 @@
         "emitDeclarationOnly": true,
         "declaration": true,
         "declarationMap": true,
+        "composite": true,
         "types": ["node"]
     },
     "include": [
@@ -17,9 +18,5 @@
         "src/services/**/*.ts"
     ],
     "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts", "src/scripts/**/*.ts"],
-    "references": [
-        {
-            "path": "../../all-shared/tsconfig.lib.json"
-        }
-    ]
+    "references": [{ "path": "../../../libs/shared/tsconfig.lib.json" }]
 }

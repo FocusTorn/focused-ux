@@ -20,7 +20,8 @@
                 "keepNames": true,
                 "declarationRootDir": "packages/ghost-writer/core/src",
                 "thirdParty": false,
-                "deleteOutputPath": true
+                "deleteOutputPath": true,
+                "external": ["awilix", "picomatch", "js-yaml"]
             }
         },
         "verify:dist:hash": {

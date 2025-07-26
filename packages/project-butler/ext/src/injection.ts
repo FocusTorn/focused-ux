@@ -1,4 +1,3 @@
-import { asClass, asValue, createContainer, InjectionMode } from 'awilix'
 import type { AwilixContainer } from 'awilix'
 import { ProjectButlerService } from '@fux/project-butler-core'
 import type { ITerminalProvider } from '@fux/project-butler-core'
@@ -8,8 +7,21 @@ import { FileSystemAdapter } from './_adapters/FileSystem.adapter.js'
 import { ProcessAdapter } from './_adapters/Process.adapter.js'
 import { VSCodeTerminalAdapter } from './_adapters/VSCodeTerminal.adapter.js'
 import { VSCodeWindowAdapter } from './_adapters/VSCodeWindow.adapter.js'
+import { ExtensionContext } from 'vscode'
 
-export function createDIContainer(): AwilixContainer {
+let createContainer: typeof import('awilix').createContainer
+let InjectionMode: typeof import('awilix').InjectionMode
+let asValue: typeof import('awilix').asValue
+let asClass: typeof import('awilix').asClass
+
+export async function createDIContainer(context: ExtensionContext): Promise<AwilixContainer> {
+	if (!createContainer) {
+		const awilixModule = await import('awilix') as typeof import('awilix')
+		createContainer = awilixModule.createContainer
+		InjectionMode = awilixModule.InjectionMode
+		asValue = awilixModule.asValue
+		asClass = awilixModule.asClass
+	}
 	const container = createContainer({
 		injectionMode: InjectionMode.PROXY,
 	})
@@ -23,8 +35,8 @@ export function createDIContainer(): AwilixContainer {
 
 	// Manually construct services that have dependencies to ensure correct wiring
 	const configurationService = new ConfigurationService(
-		container.resolve<IFileSystem>('fileSystem'),
-		container.resolve<IProcess>('process'),
+		container.resolve('fileSystem') as IFileSystem,
+		container.resolve('process') as IProcess,
 	)
 
 	const windowAdapter = new VSCodeWindowAdapter(
@@ -32,10 +44,10 @@ export function createDIContainer(): AwilixContainer {
 	)
 
 	const projectButlerService = new ProjectButlerService(
-		container.resolve<IFileSystem>('fileSystem'),
+		container.resolve('fileSystem') as IFileSystem,
 		windowAdapter,
-		container.resolve<ITerminalProvider>('terminalProvider'),
-		container.resolve<IProcess>('process'),
+		container.resolve('terminalProvider') as ITerminalProvider,
+		container.resolve('process') as IProcess,
 	)
 
 	// Register the manually created instances as values

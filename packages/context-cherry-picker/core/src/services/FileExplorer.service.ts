@@ -6,7 +6,13 @@ import type { Event, Disposable } from 'vscode'
 
 //= MISC ======================================================================================================
 import * as micromatch from 'micromatch'
-import * as yaml from 'js-yaml'
+let yaml: typeof import('js-yaml');
+async function getYaml() {
+  if (!yaml) {
+    yaml = (await import('js-yaml'));
+  }
+  return yaml;
+}
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IFileExplorerService } from '../_interfaces/IFileExplorerService.js'
@@ -145,7 +151,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 			try {
 				const yamlContent = await this.fileSystem.readFile(configFileUri)
 
-				parsedYamlConfig = yaml.load(yamlContent) as ProjectYamlConfig
+				parsedYamlConfig = (await getYaml()).load(yamlContent) as ProjectYamlConfig
 			}
 			catch (_error: any) {
 				// Ignore file not found, warn on others

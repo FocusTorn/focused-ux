@@ -1,18 +1,12 @@
 {
     "extends": "../../../tsconfig.base.json",
     "compilerOptions": {
-        "declarationMap": false,
+        "outDir": "./dist",
         "rootDir": "src",
-        "outDir": "./out-tsc/app"
+        "composite": false,
+        "declaration": false,
+        "declarationMap": false
     },
-    "include": ["./src/**/*.ts"],
-    "exclude": ["node_modules", "dist"],
-    "references": [
-        {
-            "path": "../../all-shared"
-        },
-        {
-            "path": "../core"
-        }
-    ]
+    "include": ["src/**/*.ts"],
+    "references": [{ "path": "../core/tsconfig.lib.json" }, { "path": "../../../libs/shared/tsconfig.lib.json" }]
 }

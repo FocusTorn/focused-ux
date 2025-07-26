@@ -77,25 +77,25 @@
             "inputs": ["lint", "^lint"]
         },
         "build:core": {
-    "executor": "@nx/esbuild:esbuild",
-    "dependsOn": ["^build"],
-    "outputs": ["{options.outputPath}"],
-    "options": {
-        "outputPath": "{projectRoot}/dist",
-        "main": "{projectRoot}/src/index.ts",
-        "tsConfig": "{projectRoot}/tsconfig.lib.json",
-        "platform": "node",
-        "format": ["esm"],
-        "bundle": false,
-        "sourcemap": true,
-        "target": "es2022",
-        "keepNames": true,
-        "declaration": true,
-        "declarationRootDir": "{projectRoot}/src",
-        "thirdParty": false,
-        "deleteOutputPath": true
-    }
-},
+            "executor": "@nx/esbuild:esbuild",
+            "dependsOn": ["^build"],
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "{projectRoot}/dist",
+                "main": "{projectRoot}/src/index.ts",
+                "tsConfig": "{projectRoot}/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declaration": true,
+                "declarationRootDir": "{projectRoot}/src",
+                "thirdParty": false,
+                "deleteOutputPath": true
+            }
+        },
         "build:extension": {
             "executor": "@nx/esbuild:esbuild",
             "dependsOn": ["^build"],
@@ -180,6 +180,7 @@
     "plugins": [
         {
             "plugin": "@nx/js/typescript",
+            "include": ["packages/*/core/**/*", "libs/**/*"],
             "options": {
                 "typecheck": {
                     "targetName": "typecheck"
@@ -216,15 +217,6 @@
                 "typecheckTargetName": "typecheck",
                 "buildDepsTargetName": "build-deps",
                 "watchDepsTargetName": "watch-deps"
-            }
-        },
-        {
-            "plugin": "@nx/js/typescript",
-            "include": ["packages/*"],
-            "options": {
-                "typecheck": {
-                    "targetName": "typecheck"
-                }
             }
         }
     ]

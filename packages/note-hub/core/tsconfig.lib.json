@@ -6,9 +6,10 @@
         "outDir": "dist",
         "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
         "emitDeclarationOnly": true,
-        "types": ["node"]
+        "types": ["node"],
+        "composite": true
     },
     "include": ["src/**/*.ts", "src/**/*.tsx"],
     "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts"],
-    "references": [{ "path": "../../all-shared/tsconfig.lib.json" }]
+    "references": [{ "path": "../../../libs/shared/tsconfig.lib.json" }]
 }

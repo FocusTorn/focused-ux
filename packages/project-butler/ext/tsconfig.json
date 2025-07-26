@@ -1,19 +1,15 @@
 {
     "extends": "../../../tsconfig.base.json",
     "compilerOptions": {
-        "composite": true,
-        "declarationMap": false,
+        "outDir": "./dist",
         "rootDir": "src",
-        "outDir": "./out-tsc/app"
+        "composite": false,
+        "declaration": false,
+        "declarationMap": false
     },
-    "include": ["./src/**/*.ts"],
-    "exclude": ["node_modules", "dist"],
+    "include": ["src/**/*.ts"],
     "references": [
-        {
-            "path": "../../../libs/shared"
-        },
-        {
-            "path": "../core"
-        }
+        { "path": "../core/tsconfig.lib.json" },
+        { "path": "../../../libs/shared/tsconfig.lib.json" }
     ]
 }

@@ -29,10 +29,7 @@ const projectName = `@fux/${packagePath.replace('/', '-')}`
 let devVersion
 let versionChanged = false
 try {
-    // 1. Run the build to prepare the 'dist' directory.
-    const buildCommand = `nx run ${projectName}:build`
-    console.log(`Running build step: ${buildCommand}`)
-    execSync(buildCommand, { stdio: 'inherit' })
+    // 1. Assume build is already done by Nx dependency graph.
 
     // 2. Generate the dev version string in memory.
     const baseVersion = originalVersion.split('-')

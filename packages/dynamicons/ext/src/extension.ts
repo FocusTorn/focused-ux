@@ -1,9 +1,9 @@
 import type { ExtensionContext, Uri } from 'vscode'
 import * as vscode from 'vscode'
+import type { AwilixContainer } from 'awilix'
 import { createDIContainer } from './injection.js'
 import type { Cradle } from './injection.js'
 import { dynamiconsConstants } from '@fux/dynamicons-core'
-import type { AwilixContainer } from 'awilix'
 
 const EXT_NAME = 'dynamicons'
 const CONFIG_PREFIX = dynamiconsConstants.configPrefix
@@ -13,7 +13,7 @@ const CONFIG_KEYS = dynamiconsConstants.configKeys
 const ASSETS_PATHS = dynamiconsConstants.assets
 const DEFAULT_FILENAMES = dynamiconsConstants.defaults
 
-async function getGeneratedThemePath(context: ExtensionContext, container: AwilixContainer<Cradle>): Promise<string> {
+async function getGeneratedThemePath(context: ExtensionContext, container: AwilixContainer): Promise<string> {
 	const path = container.resolve('path')
 	const config = vscode.workspace.getConfiguration(CONFIG_PREFIX)
 	const generatedThemeFileName = config.get<string>(
@@ -24,7 +24,7 @@ async function getGeneratedThemePath(context: ExtensionContext, container: Awili
 	return path.join(context.extensionPath, ASSETS_PATHS.themesPath, generatedThemeFileName)
 }
 
-async function getBaseThemePath(context: ExtensionContext, container: AwilixContainer<Cradle>): Promise<string> {
+async function getBaseThemePath(context: ExtensionContext, container: AwilixContainer): Promise<string> {
 	const path = container.resolve('path')
 	const config = vscode.workspace.getConfiguration(CONFIG_PREFIX)
 	const baseThemeFileName = config.get<string>(
@@ -35,7 +35,7 @@ async function getBaseThemePath(context: ExtensionContext, container: AwilixCont
 	return path.join(context.extensionPath, ASSETS_PATHS.themesPath, baseThemeFileName)
 }
 
-async function ensureThemeAssets(context: ExtensionContext, container: AwilixContainer<Cradle>): Promise<void> {
+async function ensureThemeAssets(context: ExtensionContext, container: AwilixContainer): Promise<void> {
 	const fileSystem = container.resolve('fileSystem')
 	const path = container.resolve('path')
 
@@ -75,15 +75,15 @@ async function ensureThemeAssets(context: ExtensionContext, container: AwilixCon
 	}
 }
 
-async function regenerateAndApplyTheme(context: ExtensionContext, container: AwilixContainer<Cradle>): Promise<void> {
+async function regenerateAndApplyTheme(context: ExtensionContext, container: AwilixContainer): Promise<void> {
 	const iconThemeGeneratorService = container.resolve('iconThemeGeneratorService')
 	const workspaceService = container.resolve('workspace')
 	const path = container.resolve('path')
 
 	const config = workspaceService.getConfiguration(CONFIG_PREFIX)
-	const userIconsDir = config.get<string>(CONFIG_KEYS.userIconsDirectory)
-	const customMappings = config.get<Record<string, string>>(CONFIG_KEYS.customIconMappings)
-	const hideArrows = config.get<boolean | null>(CONFIG_KEYS.hideExplorerArrows)
+	const userIconsDir = config.get(CONFIG_KEYS.userIconsDirectory) as string | undefined
+	const customMappings = config.get(CONFIG_KEYS.customIconMappings) as Record<string, string> | undefined
+	const hideArrows = config.get(CONFIG_KEYS.hideExplorerArrows) as boolean | null | undefined
 
 	const baseThemePath = await getBaseThemePath(context, container)
 	const generatedThemePath = await getGeneratedThemePath(context, container)
@@ -111,12 +111,12 @@ async function regenerateAndApplyTheme(context: ExtensionContext, container: Awi
 	}
 }
 
-async function activateIconThemeIfNeeded(context: ExtensionContext, container: AwilixContainer<Cradle>): Promise<void> {
+async function activateIconThemeIfNeeded(context: ExtensionContext, container: AwilixContainer): Promise<void> {
 	const workspaceService = container.resolve('workspace')
 	const fileSystem = container.resolve('fileSystem')
 
 	const workbenchConfig = workspaceService.getConfiguration('workbench')
-	const currentTheme = workbenchConfig.get<string>('iconTheme')
+	const currentTheme = workbenchConfig.get('iconTheme') as string | undefined
 
 	if (currentTheme !== ICON_THEME_ID) {
 		const generatedThemePath = await getGeneratedThemePath(context, container)
@@ -143,18 +143,18 @@ async function activateIconThemeIfNeeded(context: ExtensionContext, container: A
 export async function activate(context: ExtensionContext): Promise<void> {
 	console.log(`[${EXT_NAME}] Activating...`)
 
-	const container = createDIContainer(context)
-	const iconActionsService = container.resolve('iconActionsService')
+	const container = await createDIContainer(context)
+	const iconActionsService = container.resolve('iconActionsService') as Cradle['iconActionsService']
 
 	await ensureThemeAssets(context, container)
 	await activateIconThemeIfNeeded(context, container)
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand(COMMANDS.activateIconTheme, async () => {
-			const workspaceService = container.resolve('workspace')
+			const workspaceService = container.resolve('workspace') as Cradle['workspace']
 			const workbenchConfig = workspaceService.getConfiguration('workbench')
 
-			await workbenchConfig.update('iconTheme', ICON_THEME_ID, true) // true for global
+			await workbenchConfig.update('iconTheme', ICON_THEME_ID, true)
 			vscode.window.showInformationMessage(`"${ICON_THEME_ID}" icon theme activated.`)
 		}),
 		vscode.commands.registerCommand(COMMANDS.assignIcon, (uri?: Uri, uris?: Uri[]) => {

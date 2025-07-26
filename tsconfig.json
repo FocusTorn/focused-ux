@@ -36,13 +36,16 @@
             "path": "./packages/dynamicons/ext"
         },
         {
-            "path": "./packages/all-shared"
+            "path": "./packages/note-hub/core"
         },
         {
-            "path": "./generators"
+            "path": "./packages/note-hub/ext"
         },
         {
             "path": "./libs/shared"
+        },
+        {
+            "path": "./generators"
         }
     ]
 }

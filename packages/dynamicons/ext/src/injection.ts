@@ -1,4 +1,3 @@
-import { createContainer, asClass, asValue, asFunction, InjectionMode } from 'awilix'
 import type { AwilixContainer } from 'awilix'
 import type { ExtensionContext } from 'vscode'
 
@@ -37,8 +36,22 @@ export interface Cradle {
 	iconActionsService: IIconActionsService
 }
 
-export function createDIContainer(context: ExtensionContext): AwilixContainer<Cradle> {
-	const container = createContainer<Cradle>({
+let createContainer: typeof import('awilix').createContainer
+let InjectionMode: typeof import('awilix').InjectionMode
+let asValue: typeof import('awilix').asValue
+let asClass: typeof import('awilix').asClass
+let asFunction: typeof import('awilix').asFunction
+
+export async function createDIContainer(context: ExtensionContext): Promise<AwilixContainer> {
+	if (!createContainer) {
+		const awilixModule = await import('awilix') as typeof import('awilix')
+		createContainer = awilixModule.createContainer
+		InjectionMode = awilixModule.InjectionMode
+		asValue = awilixModule.asValue
+		asClass = awilixModule.asClass
+		asFunction = awilixModule.asFunction
+	}
+	const container = createContainer({
 		injectionMode: InjectionMode.PROXY,
 	})
 
@@ -56,7 +69,7 @@ export function createDIContainer(context: ExtensionContext): AwilixContainer<Cr
 
 	// 2. Manually construct and register core services using factory functions
 	container.register({
-		iconThemeGeneratorService: asFunction(cradle =>
+		iconThemeGeneratorService: asFunction((cradle: Cradle) =>
 			new IconThemeGeneratorService(
 				cradle.fileSystem,
 				cradle.path,
@@ -64,7 +77,7 @@ export function createDIContainer(context: ExtensionContext): AwilixContainer<Cr
 			),
 		).singleton(),
 
-		iconActionsService: asFunction(cradle =>
+		iconActionsService: asFunction((cradle: Cradle) =>
 			new IconActionsService(
 				cradle.context,
 				cradle.window,

@@ -4,29 +4,18 @@
     "sourceRoot": "packages/project-butler/ext/src",
     "projectType": "application",
     "targets": {
-       
         "build": {
-            "dependsOn": [
-                "@fux/project-butler-core:build",
-                "@fux/shared:build"
-            ],
+            "dependsOn": ["@fux/project-butler-core:build", "@fux/shared:build"],
             "executor": "@nx/esbuild:esbuild",
-            "outputs": [
-                "{options.outputPath}"
-            ],
+            "outputs": ["{options.outputPath}"],
             "options": {
                 "main": "packages/project-butler/ext/src/extension.ts",
                 "outputPath": "packages/project-butler/ext/dist",
                 "tsConfig": "packages/project-butler/ext/tsconfig.json",
                 "platform": "node",
-                "format": [
-                    "cjs"
-                ],
+                "format": ["cjs"],
                 "bundle": true,
-                "external": [
-                    "vscode",
-                    "typescript"
-                ],
+                "external": ["vscode", "awilix", "js-yaml"],
                 "outExtension": {
                     ".js": ".cjs"
                 },
@@ -55,10 +44,7 @@
                 }
             }
         },
-        
-        
-        
-        
+
         "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],

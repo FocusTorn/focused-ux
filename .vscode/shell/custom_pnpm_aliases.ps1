@@ -309,6 +309,29 @@ function Invoke-NxCommand { #>
         Write-Host "$($PSStyle.Dim)  ├─ 2. Args after filtering debug flags: $($argsWithoutDebug -join ', ')"
     }
 
+    # Handle 'ev' subcommand for esbuild-visualizer
+    if ($argsWithoutDebug.Count -eq 1 -and $argsWithoutDebug[0] -eq 'ev') {
+        $packageAliases = Get-PnpmAliasCache
+        $aliasValue = $packageAliases.$Alias
+        if (-not $aliasValue) {
+            Write-Error "Alias '$Alias' is not defined in pnpm_aliases.json."; return
+        }
+        # Determine the extension directory for the alias
+        $extDir = $null
+        if ($aliasValue -is [string] -and $aliasValue -match "@fux/(.+)-ext") {
+            $extDir = $Matches[1]
+        } elseif ($aliasValue -is [string] -and $aliasValue -match "@fux/(.+)") {
+            $extDir = $Matches[1]
+        } else {
+            Write-Error "Cannot determine extension directory for alias '$Alias'."; return
+        }
+        $metaPath = "./packages/$extDir/ext/dist/meta.json"
+        $cmd = "pnpm dlx esbuild-visualizer --metadata $metaPath"
+        Write-Host "[esbuild-visualizer] $cmd"
+        Invoke-Expression $cmd
+        return
+    }
+
     # Expand any shortcuts (e.g., 'b' to 'build') on the cleaned arguments.
     $filteredCommandArgs = Expand-NxTargetAlias -InputArgs $argsWithoutDebug
     if ($isDebug) {

@@ -5,18 +5,42 @@
     "projectType": "application",
     "targets": {
         "build": {
-            "extends": "build:extension"
+            "dependsOn": ["@fux/dynamicons-core:build", "@fux/shared:build"],
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/dynamicons/ext/src/extension.ts",
+                "outputPath": "packages/dynamicons/ext/dist",
+                "tsConfig": "packages/dynamicons/ext/tsconfig.json",
+                "platform": "node",
+                "format": ["cjs"],
+                "bundle": true,
+                "external": ["vscode", "awilix"],
+                "outExtension": { ".js": ".cjs" },
+                "sourcemap": false,
+                "metafile": true,
+                "assets": [],
+                "deleteOutputPath": true
+            }
+        },
+        "copy-assets": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node _scripts/copy-assets-silent.js packages/dynamicons/ext/assets packages/dynamicons/ext/dist/assets",
+                "cwd": "{workspaceRoot}"
+            }
         },
         "package:dev": {
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": ["copy-assets"],
             "options": {
                 "command": "node ./_scripts/create-dev-vsix.js dynamicons/ext"
             }
         },
         "package": {
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": ["copy-assets"],
             "outputs": ["{workspaceRoot}/vsix_packages/dynamicons.vsix"],
             "options": {
                 "command": "vsce package --no-dependencies -o ../../../vsix_packages/dynamicons.vsix",

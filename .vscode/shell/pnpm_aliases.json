@@ -4,15 +4,15 @@
 
     "dcc": "@fux/dynamicons-core",
     "dc": "@fux/dynamicons-ext",
-    
+
     "gwc": "@fux/ghost-writer-core",
     "gw": "@fux/ghost-writer-ext",
-    
+
     "pbc": "@fux/project-butler-core",
     "pb": "@fux/project-butler-ext",
-    
+
     "nhc": "@fux/note-hub-core",
     "nh": "@fux/note-hub-ext",
-    
+
     "shared": "@fux/shared"
 }

@@ -2,7 +2,13 @@ import type { IConfigurationService } from '../_interfaces/IConfigurationService
 import type { IFileSystem } from '../_interfaces/IFileSystem.js'
 import type { IProcess } from '../_interfaces/IProcess.js'
 import * as path from 'node:path'
-import * as yaml from 'js-yaml'
+let yaml: typeof import('js-yaml');
+async function getYaml() {
+  if (!yaml) {
+    yaml = (await import('js-yaml'));
+  }
+  return yaml;
+}
 
 export class ConfigurationService implements IConfigurationService {
 
@@ -22,7 +28,7 @@ export class ConfigurationService implements IConfigurationService {
 
 		try {
 			const fileContent = await this.fileSystem.readFile(configPath)
-			const config = yaml.load(fileContent) as any
+			const config = (await getYaml()).load(fileContent) as any
 
 			// Navigate the object using the dot-separated key path
 			const value = keyPath.split('.').reduce((obj, key) => (obj && obj[key] !== undefined) ? obj[key] : undefined, config)

@@ -1,16 +1,15 @@
 {
     "extends": "../../../tsconfig.base.json",
-    "files": [],
-    "include": [],
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "src",
+        "composite": false,
+        "declaration": false,
+        "declarationMap": false
+    },
+    "include": ["src/**/*.ts"],
     "references": [
-        {
-            "path": "../../_utilities"
-        },
-        {
-            "path": "../core"
-        },
-        {
-            "path": "./tsconfig.lib.json"
-        }
+        { "path": "../core/tsconfig.lib.json" },
+        { "path": "../../../libs/shared/tsconfig.lib.json" }
     ]
 }
