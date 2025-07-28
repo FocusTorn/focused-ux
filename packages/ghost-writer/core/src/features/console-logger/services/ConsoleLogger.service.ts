@@ -1,12 +1,8 @@
 import type * as ts from 'typescript'
+import * as tsModule from 'typescript'
 import type { ConsoleLoggerGenerateOptions, ConsoleLoggerResult, IConsoleLoggerService } from '../_interfaces/IConsoleLoggerService.js'
 
-let tsModule: any
-
 function getTS(): typeof import('typescript') {
-	if (!tsModule)
-		// eslint-disable-next-line ts/no-require-imports
-		tsModule = require('typescript')
 	return tsModule
 }
 
@@ -141,7 +137,7 @@ class LogMessageHelper {
 			const match = lineText.match(functionRegex)
 
 			if (match) {
-				const functionName = match[1] || match[2] || match[3]
+				const functionName = match || match || match
 				const closingLine = this.getClosingBraceLine(i)
 
 				if (lineOfSelectedVar < closingLine) {

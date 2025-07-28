@@ -1,18 +1,18 @@
-
-#= Do not exclude the following files =========================================== 
-!assets/*-logo.png
-
-!CHANGELOG.md
-!LICENSE.txt
-!README.md
-
-!package.json
-!package.nls.json
-!package.nls.*.json
-
-!dist/extension.cjs
-!dist/extension.js
-
-#= Exclude exerything else ====================================================== 
+# 1. Ignore everything by default.
 **/*
 
+# 2. Re-include the bundled extension code.
+!dist/extension.cjs
+!dist/extension.cjs.map
+
+# 3. Re-include the assets.
+!assets/**
+
+# 4. Re-include the production node_modules.
+!node_modules/**
+
+# 5. Re-include essential package metadata.
+!package.json
+!README.md
+!LICENSE.txt
+!CHANGELOG.md

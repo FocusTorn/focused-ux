@@ -1,4 +1,5 @@
 import type { ITokenizerService } from '../_interfaces/ITokenizerService.js'
+import { encode } from 'gpt-tokenizer'
 
 export class TokenizerService implements ITokenizerService {
 
@@ -7,7 +8,6 @@ export class TokenizerService implements ITokenizerService {
 			return 0
 		}
 		try {
-			const { encode } = await import('gpt-tokenizer')
 			return encode(text).length
 		}
 		catch (_error) {

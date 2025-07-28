@@ -1,14 +1,7 @@
 // ESLint & Imports -->>
 
 //= MISC ======================================================================================================
-let micromatch: any;
-
-async function getMicromatch() {
-  if (!micromatch) {
-    micromatch = await import('micromatch');
-  }
-  return micromatch;
-}
+import * as micromatch from 'micromatch'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IContextFormattingService } from '../_interfaces/IContextFormattingService.js'
@@ -41,7 +34,7 @@ export class ContextFormattingService implements IContextFormattingService {
 		outputFilterShowIfSelected: string[],
 		initialCheckedUris: string[],
 	): Promise<string> {
-		const mm = await getMicromatch()
+		const mm = micromatch
 		const entriesForTreeDisplay = Array.from(treeEntriesMap.values()).filter((entry) => {
 			const relativePath = entry.relativePath
 			const isExplicitlySelected = initialCheckedUris.includes(entry.uri)

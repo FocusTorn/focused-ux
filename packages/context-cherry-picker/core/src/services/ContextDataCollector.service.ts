@@ -1,14 +1,7 @@
 // ESLint & Imports -->>
 
 //= MISC ======================================================================================================
-let micromatch: any;
-
-async function getMicromatch() {
-  if (!micromatch) {
-    micromatch = await import('micromatch');
-  }
-  return micromatch;
-}
+import * as micromatch from 'micromatch'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IContextDataCollectorService, CollectionResult } from '../_interfaces/IContextDataCollectorService.js'
@@ -125,7 +118,8 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 		showDirHideContents: string[],
 		initialSelectionSet: Set<string>,
 	): Promise<void> {
-		const mm = await getMicromatch()
+		const mm = micromatch
+
 		for (const uri of urisToScan) {
 			if (!uri.startsWith(this.projectRootUri)) {
 				continue
@@ -174,7 +168,8 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 		hideDirAndContents: string[],
 		showDirHideContents: string[],
 	): Promise<void> {
-		const mm = await getMicromatch()
+		const mm = micromatch
+
 		if (!uri.startsWith(this.projectRootUri)) {
 			return
 		}

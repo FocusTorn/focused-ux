@@ -1,4 +1,5 @@
 import type { AwilixContainer } from 'awilix'
+import { createContainer, InjectionMode, asValue, asClass } from 'awilix'
 import type { ExtensionContext } from 'vscode'
 import { ClipboardService, ConsoleLoggerService, ImportGeneratorService } from '@fux/ghost-writer-core'
 import type { IPathUtilsService, IStorageService } from '@fux/ghost-writer-core'
@@ -14,21 +15,7 @@ import {
 import type { IFileSystem, IProcess } from '@fux/shared'
 import { StorageAdapter } from './services/Storage.adapter.js'
 
-let createContainer: typeof import('awilix').createContainer
-let InjectionMode: typeof import('awilix').InjectionMode
-let asValue: typeof import('awilix').asValue
-let asClass: typeof import('awilix').asClass
-
 export async function createDIContainer(context: ExtensionContext): Promise<AwilixContainer> {
-	if (!createContainer) {
-		const awilixModule = await import('awilix') as typeof import('awilix')
-
-		createContainer = awilixModule.createContainer
-		InjectionMode = awilixModule.InjectionMode
-		asValue = awilixModule.asValue
-		asClass = awilixModule.asClass
-	}
-
 	const container = createContainer({
 		injectionMode: InjectionMode.PROXY,
 	})

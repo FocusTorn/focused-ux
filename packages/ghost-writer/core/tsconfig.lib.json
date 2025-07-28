@@ -6,11 +6,13 @@
         "outDir": "dist",
         "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
         "types": ["node"],
-        
         "declaration": true,
         "declarationMap": true,
-        "composite": true
+        "composite": true,
+        "paths": {
+            "@fux/shared": ["../../../libs/shared/src"]
+        }
     },
     "include": ["src/**/*.ts"],
-    "references": []
+    "references": [{ "path": "../../../libs/shared/tsconfig.lib.json" }]
 }

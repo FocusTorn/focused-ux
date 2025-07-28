@@ -5,13 +5,7 @@ import { EventEmitter } from 'vscode'
 import type { Event } from 'vscode'
 
 //= MISC ======================================================================================================
-let yaml: typeof import('js-yaml');
-async function getYaml() {
-  if (!yaml) {
-    yaml = (await import('js-yaml'));
-  }
-  return yaml;
-}
+import * as yaml from 'js-yaml'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IQuickSettingsService } from '../_interfaces/IQuickSettingsDataProvider.js'
@@ -108,7 +102,7 @@ export class QuickSettingsService implements IQuickSettingsService {
 			try {
 				const yamlContent = await this.fileSystem.readFile(configFileUri)
 
-				return (await getYaml()).load(yamlContent) as ProjectYamlConfig
+				return yaml.load(yamlContent) as ProjectYamlConfig
 			}
 			catch (_error) {
 				// ignore
@@ -154,7 +148,7 @@ export class QuickSettingsService implements IQuickSettingsService {
 				}
 			}
 
-			const newYamlContent = (await getYaml()).dump(config)
+			const newYamlContent = yaml.dump(config)
 
 			await this.fileSystem.writeFile(configFileUri, new TextEncoder().encode(newYamlContent))
 		}

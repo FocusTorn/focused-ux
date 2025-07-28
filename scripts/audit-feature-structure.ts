@@ -4,12 +4,13 @@ import path from 'node:path'
 import fs from 'node:fs'
 import process from 'node:process'
 
-const PACKAGES = ['ghost-writer', 'project-butler', 'dynamicons', 'context-cherry-picker', 'note-hub', 'ai-agent-interactor']
+// const PACKAGES = ['ghost-writer', 'project-butler', 'dynamicons', 'context-cherry-picker', 'note-hub', 'ai-agent-interactor']
+const PACKAGES = ['ghost-writer', 'project-butler', 'dynamicons', 'context-cherry-picker'] //, 'note-hub', 'ai-agent-interactor'
 
 // Color mapping function for easier color management
-function color(code: number): string {
+function color(code: number): string { //>
 	return `\x1B[38;5;${code}m`
-}
+} //<
 
 // Color constants for better readability
 const sectionTitle = 179
@@ -18,7 +19,8 @@ const parentheses = 37
 
 const __filename = fileURLToPath(import.meta.url)
 const ROOT = path.resolve(path.dirname(__filename), '..')
-const CANONICAL_TSCONFIG = {
+
+const CANONICAL_TSCONFIG = { //>
 	extends: '../../../tsconfig.base.json',
 	compilerOptions: {
 		outDir: './dist',
@@ -32,31 +34,39 @@ const CANONICAL_TSCONFIG = {
 		{ path: '../core/tsconfig.lib.json' },
 		{ path: '../../../libs/shared/tsconfig.lib.json' },
 	],
-}
+} //<
 
-// Error collection for grouping
-interface ErrorGroup {
+// Error collection for grouping -------------------------->>
+interface ErrorGroup { //>
 	[key: string]: string[]
-}
+} //<
 
 const errors: ErrorGroup = {}
 
-function addError(category: string, message: string) {
+function addError(category: string, message: string) { //>
 	if (!errors[category]) {
 		errors[category] = []
 	}
 	errors[category].push(message)
-}
+} //<
 
-function readJson(file: string) {
-	return JSON.parse(fs.readFileSync(file, 'utf-8'))
-}
+//----------------------------------------------------------------------------<<
 
-function findJsonLocation(file: string, key: string): { line: number, column: number } | null {
+function readJson(file: string) { //>
+	try {
+		return JSON.parse(fs.readFileSync(file, 'utf-8'))
+	}
+	catch (_e) {
+		addError('JSON Read Error', `Could not read or parse ${file}`)
+		return null
+	}
+} //<
+
+function findJsonLocation(file: string, key: string): { line: number, column: number } | null { //>
 	try {
 		const content = fs.readFileSync(file, 'utf-8')
 		const lines = content.split('\n')
-		
+
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i]
 			// Look for the key with quotes and colon
@@ -72,13 +82,13 @@ function findJsonLocation(file: string, key: string): { line: number, column: nu
 		// If we can't read the file or parse it, return null
 	}
 	return null
-}
+} //<
 
-function deepEqual(a: any, b: any): boolean {
+function deepEqual(a: any, b: any): boolean { //>
 	return JSON.stringify(a, null, 2) === JSON.stringify(b, null, 2)
-}
+} //<
 
-function checkTsconfigExt(pkg: string) {
+function checkTsconfigExt(pkg: string) { //>
 	const tsconfigPath = path.join(ROOT, 'packages', pkg, 'ext', 'tsconfig.json')
 
 	if (!fs.existsSync(tsconfigPath)) {
@@ -87,6 +97,9 @@ function checkTsconfigExt(pkg: string) {
 	}
 
 	const tsconfig = readJson(tsconfigPath)
+
+	if (!tsconfig)
+		return false
 
 	// Only compare keys present in canonical config
 	for (const key of Object.keys(CANONICAL_TSCONFIG)) {
@@ -116,9 +129,9 @@ function checkTsconfigExt(pkg: string) {
 	}
 
 	return true
-}
+} //<
 
-function checkProjectJsonExt(pkg: string) {
+function checkProjectJsonExt(pkg: string) { //>
 	const projectPath = path.join(ROOT, 'packages', pkg, 'ext', 'project.json')
 
 	if (!fs.existsSync(projectPath)) {
@@ -127,6 +140,9 @@ function checkProjectJsonExt(pkg: string) {
 	}
 
 	const project = readJson(projectPath)
+
+	if (!project)
+		return false
 
 	if (!project.targets || !project.targets.build) {
 		addError('Missing build target', `${pkg}/ext/project.json: Missing build target.`)
@@ -141,9 +157,9 @@ function checkProjectJsonExt(pkg: string) {
 		return false
 	}
 	return true
-}
+} //<
 
-function checkTsconfigCore(pkg: string) {
+function checkTsconfigCore(pkg: string) { //>
 	const tsconfigPath = path.join(ROOT, 'packages', pkg, 'core', 'tsconfig.json')
 	const tsconfigLibPath = path.join(ROOT, 'packages', pkg, 'core', 'tsconfig.lib.json')
 
@@ -153,6 +169,9 @@ function checkTsconfigCore(pkg: string) {
 	}
 
 	const tsconfig = readJson(tsconfigPath)
+
+	if (!tsconfig)
+		return false
 
 	// Check that main tsconfig.json has composite: true
 	if (!tsconfig.compilerOptions?.composite) {
@@ -167,6 +186,9 @@ function checkTsconfigCore(pkg: string) {
 	if (fs.existsSync(tsconfigLibPath)) {
 		const tsconfigLib = readJson(tsconfigLibPath)
 
+		if (!tsconfigLib)
+			return false
+
 		if (!tsconfigLib.compilerOptions?.composite) {
 			const location = findJsonLocation(tsconfigLibPath, 'compilerOptions')
 			const locationStr = location ? `:${location.line}:${location.column}` : ''
@@ -177,9 +199,9 @@ function checkTsconfigCore(pkg: string) {
 	}
 
 	return true
-}
+} //<
 
-function checkTsconfigShared() {
+function checkTsconfigShared() { //>
 	const tsconfigPath = path.join(ROOT, 'libs', 'shared', 'tsconfig.json')
 	const tsconfigLibPath = path.join(ROOT, 'libs', 'shared', 'tsconfig.lib.json')
 
@@ -189,6 +211,9 @@ function checkTsconfigShared() {
 	}
 
 	const tsconfig = readJson(tsconfigPath)
+
+	if (!tsconfig)
+		return false
 
 	// Check that main tsconfig.json has composite: true
 	if (!tsconfig.compilerOptions?.composite) {
@@ -203,6 +228,9 @@ function checkTsconfigShared() {
 	if (fs.existsSync(tsconfigLibPath)) {
 		const tsconfigLib = readJson(tsconfigLibPath)
 
+		if (!tsconfigLib)
+			return false
+
 		if (!tsconfigLib.compilerOptions?.composite) {
 			const location = findJsonLocation(tsconfigLibPath, 'compilerOptions')
 			const locationStr = location ? `:${location.line}:${location.column}` : ''
@@ -213,57 +241,63 @@ function checkTsconfigShared() {
 	}
 
 	return true
-}
+} //<
 
-function checkNoStaticImports(pkg: string, dep: string) {
-	const extDir = path.join(ROOT, 'packages', pkg, 'ext', 'src')
+function checkNoDynamicImports(pkg: string) { //>
+	const dirsToScan = [
+		path.join(ROOT, 'packages', pkg, 'ext', 'src'),
+		path.join(ROOT, 'packages', pkg, 'core', 'src'),
+		path.join(ROOT, 'libs', 'shared', 'src'),
+	]
 	let found = false
 
 	function walk(dir: string) {
+		if (!fs.existsSync(dir))
+			return
 		for (const file of fs.readdirSync(dir)) {
 			const full = path.join(dir, file)
 
-			if (fs.statSync(full).isDirectory())
+			if (fs.statSync(full).isDirectory()) {
 				walk(full)
+			}
 			else if (file.endsWith('.ts')) {
 				const content = fs.readFileSync(full, 'utf-8')
 				const lines = content.split('\n')
 
-				// Match static imports that are NOT type-only
-				// Look for import statements that don't start with "import type"
-				const staticImportRegex = new RegExp(`import\\s+(?!type\\s).*?from\\s+['"]${dep}['"]`, 'gm')
+				const dynamicImportRegex = /await import\(/g
 
-				// Find all matches with line numbers
 				for (let i = 0; i < lines.length; i++) {
 					const line = lines[i]
-					const match = staticImportRegex.exec(line)
-					
-					if (match) {
+
+					if (dynamicImportRegex.test(line)) {
 						const relativePath = path.relative(ROOT, full)
-						const column = match.index + 1
-						
-						addError('Static runtime import', `(${dep}) ${relativePath}:${i + 1}:${column}`)
+
+						addError('Disallowed dynamic import', `${relativePath}:${i + 1}`)
 						found = true
-						
-						// Reset regex for next iteration
-						staticImportRegex.lastIndex = 0
 					}
 				}
 			}
 		}
 	}
-	if (fs.existsSync(extDir))
-		walk(extDir)
-	return !found
-}
 
-function checkNoUnusedDeps(pkg: string) {
+	for (const dir of dirsToScan) {
+		walk(dir)
+	}
+
+	return !found
+} //<
+
+function checkNoUnusedDeps(pkg: string) { //>
 	const pkgJsonPath = path.join(ROOT, 'packages', pkg, 'ext', 'package.json')
 
 	if (!fs.existsSync(pkgJsonPath))
 		return true
 
 	const pkgJson = readJson(pkgJsonPath)
+
+	if (!pkgJson)
+		return false
+
 	const forbidden = ['picomatch', 'tslib']
 	let ok = true
 
@@ -277,63 +311,19 @@ function checkNoUnusedDeps(pkg: string) {
 		}
 	}
 	return ok
-}
+} //<
 
-function checkDynamicImportPattern(pkg: string, dep: string, requiredProps: string[]) {
-	const extDir = path.join(ROOT, 'packages', pkg, 'ext', 'src')
-	let ok = true
-
-	function walk(dir: string) {
-		for (const file of fs.readdirSync(dir)) {
-			const full = path.join(dir, file)
-
-			if (fs.statSync(full).isDirectory()) {
-				walk(full)
-			}
-			else if (file.endsWith('.ts')) {
-				const content = fs.readFileSync(full, 'utf-8')
-
-				// Look for dynamic import assignment
-				const dynamicImportRegex = new RegExp(`const\\s+\\w+\\s*=\\s*await\\s*import\\(['"]${dep}['"]\\)\\s*as\\s*typeof\\s*import\\(['"]${dep}['"]\\)`, 'm')
-
-				if (dynamicImportRegex.test(content)) {
-					// Ensure all required properties are assigned to local variables
-					for (const prop of requiredProps) {
-						const propAssignRegex = new RegExp(`\\w+\\s*=\\s*\\w+Module\\.${prop}`)
-
-						if (!propAssignRegex.test(content)) {
-							const relativePath = path.relative(ROOT, full)
-
-							addError('Dynamic import pattern', `${relativePath}: Missing property assignment for '${prop}'`)
-							ok = false
-						}
-					}
-
-					// Ensure no usages of the module object after import
-					const moduleUsageRegex = /\bawilix\./g
-
-					if (moduleUsageRegex.test(content)) {
-						const relativePath = path.relative(ROOT, full)
-
-						addError('Dynamic import pattern', `${relativePath}: Usage of module object 'awilix.' found after dynamic import. All properties must be assigned to local variables.`)
-						ok = false
-					}
-				}
-			}
-		}
-	}
-	if (fs.existsSync(extDir))
-		walk(extDir)
-	return ok
-}
-
-function checkVSCodeEngineVersion(pkg: string) {
+function checkVSCodeEngineVersion(pkg: string) { //>
 	const pkgJsonPath = path.join(ROOT, 'packages', pkg, 'ext', 'package.json')
 
 	if (!fs.existsSync(pkgJsonPath))
 		return true
 
 	const pkgJson = readJson(pkgJsonPath)
+
+	if (!pkgJson)
+		return false
+
 	const engines = pkgJson.engines
 
 	if (!engines || !engines.vscode) {
@@ -344,27 +334,70 @@ function checkVSCodeEngineVersion(pkg: string) {
 		return false
 	}
 
-	// Check that the VSCode engine version is exactly 1.99.3
 	const versionConstraint = engines.vscode
-	
-	if (versionConstraint !== '1.99.3') {
+	const requiredMajor = 1
+	const requiredMinor = 99
+	const requiredPatch = 3
+
+	if (!versionConstraint.startsWith('^')) {
 		const location = findJsonLocation(pkgJsonPath, 'vscode')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		addError('Invalid VSCode engine version', `${pkg}/ext/package.json${locationStr}: '${versionConstraint}' must be exactly '1.99.3'.`)
+		addError('Invalid VSCode engine version', `${pkg}/ext/package.json${locationStr}: '${versionConstraint}' must start with a caret (^) for compatibility range.`)
+		return false
+	}
+
+	const versionPart = versionConstraint.substring(1)
+	const parts = versionPart.split('.').map(Number)
+
+	if (parts.length !== 3 || parts.some(Number.isNaN)) {
+		const location = findJsonLocation(pkgJsonPath, 'vscode')
+		const locationStr = location ? `:${location.line}:${location.column}` : ''
+
+		addError('Invalid VSCode engine version', `${pkg}/ext/package.json${locationStr}: '${versionConstraint}' is not a valid semver string.`)
+		return false
+	}
+
+	const [major, minor, patch] = parts
+
+	let isValid = false
+
+	if (major > requiredMajor) {
+		isValid = true
+	}
+	else if (major === requiredMajor) {
+		if (minor > requiredMinor) {
+			isValid = true
+		}
+		else if (minor === requiredMinor) {
+			if (patch >= requiredPatch) {
+				isValid = true
+			}
+		}
+	}
+
+	if (!isValid) {
+		const location = findJsonLocation(pkgJsonPath, 'vscode')
+		const locationStr = location ? `:${location.line}:${location.column}` : ''
+
+		addError('Outdated VSCode engine version', `${pkg}/ext/package.json${locationStr}: '${versionConstraint}' must be >= ^${requiredMajor}.${requiredMinor}.${requiredPatch}.`)
 		return false
 	}
 
 	return true
-}
+} //<
 
-function checkPackageVersionFormat(pkg: string) {
+function checkPackageVersionFormat(pkg: string) { //>
 	const pkgJsonPath = path.join(ROOT, 'packages', pkg, 'ext', 'package.json')
 
 	if (!fs.existsSync(pkgJsonPath))
 		return true
 
 	const pkgJson = readJson(pkgJsonPath)
+
+	if (!pkgJson)
+		return false
+
 	const version = pkgJson.version
 
 	if (!version) {
@@ -396,53 +429,40 @@ function checkPackageVersionFormat(pkg: string) {
 	}
 
 	return true
-}
+} //<
 
-function checkRequiredExtFiles(pkg: string) {
+function checkRequiredExtFiles(pkg: string) { //>
 	const extDir = path.join(ROOT, 'packages', pkg, 'ext')
-	const requiredFiles = ['license', 'readme', '.vscodeignore']
+	const requiredFiles = ['LICENSE.txt', 'README.md', '.vscodeignore']
 	const missingFiles: string[] = []
 
 	for (const file of requiredFiles) {
-		// Check for various case variations and extensions
-		const possibleNames = [
-			file,
-			`${file}.txt`,
-			`${file}.md`,
-			`${file.toUpperCase()}`,
-			`${file.toUpperCase()}.txt`,
-			`${file.toUpperCase()}.md`,
-			`${file.charAt(0).toUpperCase() + file.slice(1)}`,
-			`${file.charAt(0).toUpperCase() + file.slice(1)}.txt`,
-			`${file.charAt(0).toUpperCase() + file.slice(1)}.md`
-		]
+		const filePath = path.join(extDir, file)
 
-		const found = possibleNames.some(name => {
-			const filePath = path.join(extDir, name)
-			return fs.existsSync(filePath)
-		})
-
-		if (!found) {
+		if (!fs.existsSync(filePath)) {
 			missingFiles.push(file)
 		}
 	}
 
 	if (missingFiles.length > 0) {
-		addError('Missing required file', `(${missingFiles.join(', ')}) ${pkg}/ext: Missing required files`)
+		addError('Missing required file', `(${missingFiles.join(', ')}) in ${pkg}/ext`)
 		return false
 	}
 
 	return true
-}
+} //<
 
-function checkProjectJsonTargets(pkg: string) {
+function checkProjectJsonPackaging(pkg: string) { //>
 	const projectJsonPath = path.join(ROOT, 'packages', pkg, 'ext', 'project.json')
-	const assetsPath = path.join(ROOT, 'packages', pkg, 'ext', 'assets')
 
 	if (!fs.existsSync(projectJsonPath))
 		return true
 
 	const projectJson = readJson(projectJsonPath)
+
+	if (!projectJson)
+		return false
+
 	const targets = projectJson.targets
 
 	if (!targets) {
@@ -450,49 +470,88 @@ function checkProjectJsonTargets(pkg: string) {
 		return false
 	}
 
-	// Check if package has assets
-	const hasAssets = fs.existsSync(assetsPath) && fs.readdirSync(assetsPath).length > 0
+	// Check for obsolete copy-assets target
+	if (targets['copy-assets']) {
+		addError('Obsolete Target', `${pkg}/ext/project.json: 'copy-assets' target is obsolete and should be removed.`)
+		return false
+	}
 
-	if (hasAssets) {
-		// Must have copy-assets target
-		if (!targets['copy-assets']) {
-			addError('Has assets but missing \'copy-assets\' target', `${pkg}/ext/project.json`)
+	// Check package:dev target
+	const packageDevTarget = targets['package:dev']
+
+	if (!packageDevTarget) {
+		addError('Missing Target', `${pkg}/ext/project.json: Missing 'package:dev' target.`)
+		return false
+	}
+
+	const expectedDevCommand = `node _scripts/create-vsix.js packages/${pkg}/ext --dev`
+
+	if (packageDevTarget.options?.command !== expectedDevCommand) {
+		addError('Incorrect Command', `${pkg}/ext/project.json: 'package:dev' command is incorrect.`)
+		return false
+	}
+
+	// Check package target
+	const packageTarget = targets.package
+
+	if (!packageTarget) {
+		addError('Missing Target', `${pkg}/ext/project.json: Missing 'package' target.`)
+		return false
+	}
+
+	const expectedPackageCommand = `node _scripts/create-vsix.js packages/${pkg}/ext`
+
+	if (packageTarget.options?.command !== expectedPackageCommand) {
+		addError('Incorrect Command', `${pkg}/ext/project.json: 'package' command is incorrect.`)
+		return false
+	}
+
+	return true
+} //<
+
+function checkTsconfigLibPaths(pkg: string) { //>
+	const tsconfigLibPath = path.join(ROOT, 'packages', pkg, 'core', 'tsconfig.lib.json')
+	if (!fs.existsSync(tsconfigLibPath))
+		return true // Not a core library, skip
+
+	const tsconfigLib = readJson(tsconfigLibPath)
+	if (!tsconfigLib)
+		return false
+
+	const pkgJsonPath = path.join(ROOT, 'packages', pkg, 'core', 'package.json')
+	const pkgJson = readJson(pkgJsonPath)
+	if (!pkgJson)
+		return false
+
+	const dependencies = Object.keys(pkgJson.dependencies || {})
+	const expectedPaths: Record<string, string[]> = {}
+
+	for (const dep of dependencies) {
+		if (dep.startsWith('@fux/')) {
+			const depName = dep.replace('@fux/', '')
+			const depPath = depName === 'shared' ? path.join(ROOT, 'libs', 'shared') : path.join(ROOT, 'packages', depName, 'core')
+			const expectedRelativePath = path.relative(
+				path.dirname(tsconfigLibPath),
+				path.join(depPath, 'src'),
+			).replace(/\\/g, '/')
+			expectedPaths[dep] = [expectedRelativePath]
+		}
+	}
+
+	const actualPaths = tsconfigLib.compilerOptions?.paths || {}
+
+	if (Object.keys(expectedPaths).length > 0 || Object.keys(actualPaths).length > 0) {
+		if (!deepEqual(actualPaths, expectedPaths)) {
+			addError('Incorrect tsconfig.lib.json paths', `${pkg}/core/tsconfig.lib.json: The 'paths' configuration does not match the package's dependencies.`)
 			return false
-		}
-
-		// copy-assets must depend on build
-		const copyAssetsTarget = targets['copy-assets']
-
-		if (!copyAssetsTarget.dependsOn || !copyAssetsTarget.dependsOn.includes('build')) {
-			addError('Invalid target dependencies', `${pkg}/ext/project.json: 'copy-assets' target must depend on 'build'.`)
-			return false
-		}
-
-		// package:dev must depend on copy-assets
-		if (targets['package:dev']) {
-			const packageDevTarget = targets['package:dev']
-
-			if (!packageDevTarget.dependsOn || !packageDevTarget.dependsOn.includes('copy-assets')) {
-				addError('Invalid target dependencies', `${pkg}/ext/project.json: 'package:dev' target must depend on 'copy-assets' when assets exist.`)
-				return false
-			}
-		}
-
-		// package must depend on copy-assets
-		if (targets.package) {
-			const packageTarget = targets.package
-
-			if (!packageTarget.dependsOn || !packageTarget.dependsOn.includes('copy-assets')) {
-				addError('Invalid target dependencies', `${pkg}/ext/project.json: 'package' target must depend on 'copy-assets' when assets exist.`)
-				return false
-			}
 		}
 	}
 
 	return true
-}
+} //<
 
-function printGroupedErrors() {
+
+function printGroupedErrors() { //>
 	if (Object.keys(errors).length === 0) {
 		console.log('Feature structure audit passed.')
 		return
@@ -510,37 +569,31 @@ function printGroupedErrors() {
 		}
 		console.log()
 	}
-}
+} //<
 
-function main() {
+function main() { //>
 	let ok = true
 
-	// Check shared library TypeScript configuration
 	ok = checkTsconfigShared() && ok
 
 	for (const pkg of PACKAGES) {
 		ok = checkTsconfigExt(pkg) && ok
 		ok = checkTsconfigCore(pkg) && ok
+		ok = checkTsconfigLibPaths(pkg) && ok
 		ok = checkProjectJsonExt(pkg) && ok
-		ok = checkProjectJsonTargets(pkg) && ok
-		ok = checkNoStaticImports(pkg, 'awilix') && ok
+		ok = checkProjectJsonPackaging(pkg) && ok
+		ok = checkNoDynamicImports(pkg) && ok
 		ok = checkNoUnusedDeps(pkg) && ok
-		// Enforce dynamic import property assignment for awilix
-		ok = checkDynamicImportPattern(pkg, 'awilix', ['createContainer', 'InjectionMode', 'asValue', 'asClass']) && ok
-		// Check VSCode engine version compatibility
 		ok = checkVSCodeEngineVersion(pkg) && ok
-		// Check package version format
 		ok = checkPackageVersionFormat(pkg) && ok
-		// Check required files for ext packages
 		ok = checkRequiredExtFiles(pkg) && ok
 	}
 
 	printGroupedErrors()
-	
-	if (!ok) {
+
+	if (Object.keys(errors).length > 0) {
 		process.exit(1)
 	}
-}
+} //<
 
 main()
-

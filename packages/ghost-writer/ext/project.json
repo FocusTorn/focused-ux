@@ -2,30 +2,27 @@
     "name": "@fux/ghost-writer-ext",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/ghost-writer/ext/src",
-    "projectType": "library",
-
+    "projectType": "application",
     "targets": {
         "build": {
-            "dependsOn": ["@fux/ghost-writer-core:build", "@fux/shared:build"],
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
             "options": {
-                "main": "packages/ghost-writer/ext/src/extension.ts",
+                "entryPoints": ["packages/ghost-writer/ext/src/extension.ts"],
                 "outputPath": "packages/ghost-writer/ext/dist",
-                "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
-                "platform": "node",
                 "format": ["cjs"],
+                "platform": "node",
                 "bundle": true,
                 "external": ["vscode", "typescript", "awilix", "js-yaml"],
-                "outExtension": { ".js": ".cjs" },
-                "sourcemap": false,
-                "metafile": true,
-                "deleteOutputPath": true,
+                "sourcemap": true,
+                "main": "packages/ghost-writer/ext/src/extension.ts",
+                "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
                 "assets": [
                     {
                         "glob": "**/*",
-                        "input": "packages/ghost-writer/ext/assets",
-                        "output": "assets"
+                        "input": "packages/ghost-writer/ext/assets/",
+                        "output": "./assets/"
                     }
                 ]
             }
@@ -33,26 +30,18 @@
         "package": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
-            "outputs": ["{workspaceRoot}/vsix_packages/ghost-writer.vsix"],
             "options": {
-                "command": "vsce package -o ../../vsix_packages/ghost-writer.vsix",
-                "cwd": "packages/ghost-writer/ext"
+                "command": "node _scripts/create-vsix.js packages/ghost-writer/ext"
             }
         },
         "package:dev": {
             "executor": "nx:run-commands",
+            "dependsOn": ["build"],
             "options": {
-                "command": "node ./_scripts/create-dev-vsix.js ghost-writer/ext"
+                "command": "node _scripts/create-vsix.js packages/ghost-writer/ext --dev"
             }
         },
-        "lint": {},
-        "clean:dist": {
-            "extends": "clean:dist"
-        },
-        "clean:cache": {
-            "extends": "clean:cache"
-        }
+        "lint": {}
     },
-
     "tags": []
 }

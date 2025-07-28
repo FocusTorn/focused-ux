@@ -286,7 +286,7 @@
     "f-ux"
   ],
   "engines": {
-    "vscode": "1.99.3"
+    "vscode": "^1.99.3"
   },
   "private": true,
   "main": "./dist/extension.cjs"

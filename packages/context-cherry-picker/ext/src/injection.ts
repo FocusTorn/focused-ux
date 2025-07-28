@@ -1,4 +1,5 @@
 import type { AwilixContainer } from 'awilix'
+import { createContainer, InjectionMode, asValue, asClass, asFunction } from 'awilix'
 import type { ExtensionContext } from 'vscode'
 import { ConfigurationService } from '@fux/shared'
 import type { IConfigurationService, IProcess as ISharedProcess } from '@fux/shared'
@@ -27,13 +28,6 @@ import { WindowAdapter } from './adapters/Window.adapter.js'
 import { WorkspaceAdapter } from './adapters/Workspace.adapter.js'
 
 export async function createDIContainer(context: ExtensionContext): Promise<AwilixContainer> {
-	const awilixModule = await import('awilix') as typeof import('awilix')
-	const createContainer = awilixModule.createContainer
-	const InjectionMode = awilixModule.InjectionMode
-	const asValue = awilixModule.asValue
-	const asClass = awilixModule.asClass
-	const asFunction = awilixModule.asFunction
-	
 	const container = createContainer({
 		injectionMode: InjectionMode.PROXY,
 	})

@@ -1,6 +1,16 @@
 {
     "extends": "./tsconfig.base.json",
-    "compilerOptions": {},
+    "compilerOptions": {
+        "paths": {
+            "@fux/ai-agent-interactor-core": ["packages/ai-agent-interactor/core/src"],
+            "@fux/context-cherry-picker-core": ["packages/context-cherry-picker/core/src"],
+            "@fux/dynamicons-core": ["packages/dynamicons/core/src"],
+            "@fux/ghost-writer-core": ["packages/ghost-writer/core/src"],
+            "@fux/note-hub-core": ["packages/note-hub/core/src"],
+            "@fux/project-butler-core": ["packages/project-butler/core/src"],
+            "@fux/shared": ["libs/shared/src"]
+        }
+    },
     "compileOnSave": false,
     "files": [],
     "exclude": ["_scripts/**/*", "node_modules", "dist", "**/dist/**/*"],

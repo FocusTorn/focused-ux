@@ -9,7 +9,10 @@
         "declaration": true,
         "declarationMap": true,
         "composite": true,
-        "types": ["node"]
+        "types": ["node"],
+        "paths": {
+            "@fux/shared": ["../../../libs/shared/src"]
+        }
     },
     "include": [
         "src/**/*.ts",

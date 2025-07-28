@@ -2,50 +2,55 @@
     "name": "@fux/context-cherry-picker-ext",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/context-cherry-picker/ext/src",
-    "projectType": "library",
+    "projectType": "application",
     "targets": {
         "build": {
-            "dependsOn": ["@fux/context-cherry-picker-core:build", "@fux/shared:build"],
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
             "options": {
-                "main": "packages/context-cherry-picker/ext/src/extension.ts",
+                "entryPoints": ["packages/context-cherry-picker/ext/src/extension.ts"],
                 "outputPath": "packages/context-cherry-picker/ext/dist",
-                "tsConfig": "packages/context-cherry-picker/ext/tsconfig.json",
-                "platform": "node",
                 "format": ["cjs"],
+                
+                "metafile": true,
+                
+                "platform": "node",
                 "bundle": true,
                 "external": ["vscode", "awilix", "gpt-tokenizer", "js-yaml", "micromatch"],
-                "outExtension": { ".js": ".cjs" },
-                "sourcemap": false,
-                "metafile": true,
-                "deleteOutputPath": true,
-                "assets": []
+                "sourcemap": true,
+                "main": "packages/context-cherry-picker/ext/src/extension.ts",
+                "tsConfig": "packages/context-cherry-picker/ext/tsconfig.json",
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/context-cherry-picker/ext/assets/",
+                        "output": "./assets/"
+                    }
+                ]
             }
         },
-        "copy-assets": {
+        "package": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/copy-assets-silent.js packages/context-cherry-picker/ext/assets packages/context-cherry-picker/ext/dist/assets",
-                "cwd": "{workspaceRoot}"
+                "command": "node _scripts/create-vsix.js packages/context-cherry-picker/ext"
             }
         },
         "package:dev": {
             "executor": "nx:run-commands",
-            "dependsOn": ["copy-assets"],
+            "dependsOn": ["build"],
             "options": {
-                "command": "node ./_scripts/create-dev-vsix.js context-cherry-picker/ext"
+                "command": "node _scripts/create-vsix.js packages/context-cherry-picker/ext --dev"
             }
         },
-        "lint": {},
-        "clean:dist": {
-            "extends": "clean:dist"
+        "package:dev:only": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "node _scripts/create-vsix.js packages/context-cherry-picker/ext --dev"
+            }
         },
-        "clean:cache": {
-            "extends": "clean:cache"
-        }
+        "lint": {}
     },
-
     "tags": []
 }

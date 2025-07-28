@@ -1,24 +1,18 @@
-# Files to include in the extension package
-# Documentation for this format:
-# https://code.visualstudio.com/api/working-with-extensions/publishing-extension#using-.vscodeignore
-
-
-#= Exclude the following files ==================================================
-
-
-#= Do not exclude the following files ===========================================
-!assets
-
-!CHANGELOG.md
-!LICENSE.txt
-!README.md
-
-!package.json
-!package.nls.json
-!package.nls.*.json
-
-!dist/extension.cjs
-
-
-# Exclude everything else
+# 1. Ignore everything by default.
 **/*
+
+# 2. Re-include the bundled extension code.
+!dist/extension.cjs
+!dist/extension.cjs.map
+
+# 3. Re-include the assets.
+!assets/**
+
+# 4. Re-include the production node_modules.
+!node_modules/**
+
+# 5. Re-include essential package metadata.
+!package.json
+!README.md
+!LICENSE.txt
+!CHANGELOG.md

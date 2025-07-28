@@ -188,14 +188,14 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 - **Framework**: The project uses **awilix** for dependency injection across all packages
 - **Container Setup**: Each extension package includes an `injection.ts` file that sets up the DI container
 - **Service Registration**: All services (core, shared, and adapters) are registered in the DI container
-- **Dynamic Imports**: Awilix must be dynamically imported to avoid bundling issues:
+- **Static Imports**: `awilix` and other externalized packages **MUST** be imported using static, top-level `import` statements to allow the bundler to correctly externalize them.
 
     ```typescript
-    // Correct - dynamic import
-    const { createContainer, asClass, asFunction } = await import('awilix')
-
-    // Incorrect - static import (causes bundling)
+    // Correct - static import
     import { createContainer, asClass, asFunction } from 'awilix'
+
+    // Incorrect - dynamic import (prevents externalization)
+    const { createContainer, asClass, asFunction } = await import('awilix')
     ```
 
 - **Externalization**: Awilix must be listed in `external` in extension build options and in `dependencies` in `package.json`
@@ -203,10 +203,10 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 ### 7.4. :: Externalization of Node Packages
 
 - Any node package used at runtime (e.g., `awilix`, `js-yaml`) must:
-    - Be listed in `external` in ext build options
-    - Be in `dependencies` (not `devDependencies`) in ext `package.json`
-    - Be dynamically imported everywhere (including in shared/core) to avoid accidental bundling
-- **Never use static imports for externalized packages** in any code that may be bundled into an extension
+    - Be listed in `external` in the `ext` package's build options (`project.json`).
+    - Be in `dependencies` (not `devDependencies`) in the `ext` package's `package.json`.
+    - Be imported using **static `import` statements** everywhere (including in `shared`/`core` packages) to ensure the bundler can correctly identify and externalize it.
+- **Never use dynamic `import()` for externalized packages**, as this will cause them to be incorrectly bundled.
 
 ### 7.5. :: Common Build Issues
 
@@ -221,55 +221,43 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 
 #### 7.6.1. :: "File not found" Errors for Source Directories
 
-**Problem**: TypeScript reports errors like:
+**Problem**: The TypeScript language server in VS Code reports errors like:
 
 ```
 File 'd:/path/to/project/libs/shared/src' not found.
-File 'd:/path/to/project/packages/ghost-writer/core/src' not found.
 ```
 
-**Root Cause**: Missing or incomplete path mappings in TypeScript configuration files.
+**Root Cause**: Incorrect or polluted `paths` alias configuration in the TypeScript composite project setup. Placing `paths` in the root `tsconfig.base.json` causes all projects to inherit all paths, leading to resolution errors for projects that do not have a direct dependency on those paths.
 
 **Solution**:
 
-1. **Update `tsconfig.base.json`** to include all missing package path mappings:
+1.  **Remove `paths` from `tsconfig.base.json`**: The `compilerOptions.paths` property **MUST** be removed from the root `tsconfig.base.json` file to prevent path pollution.
+
+2.  **Define `paths` in the Root `tsconfig.json`**: Add all workspace path aliases to the `compilerOptions.paths` property in the **root `tsconfig.json`** file. This provides a global mapping for the IDE and tooling without affecting individual project builds.
 
     ```json
-    {
-        "compilerOptions": {
-            "paths": {
-                "@fux/ghost-writer-core": ["packages/ghost-writer/core/src"],
-                "@fux/project-butler-core": ["packages/project-butler/core/src"],
-                "@fux/shared": ["libs/shared/src"],
-                "@fux/note-hub-core": ["packages/note-hub/core/src"],
-                "@fux/dynamicons-core": ["packages/dynamicons/core/src"],
-                "@fux/context-cherry-picker-core": ["packages/context-cherry-picker/core/src"],
-                "@fux/ai-agent-interactor-core": ["packages/ai-agent-interactor/core/src"]
-            }
+    // In the root tsconfig.json
+    "compilerOptions": {
+        "paths": {
+            "@fux/shared": ["libs/shared/src"],
+            "@fux/ghost-writer-core": ["packages/ghost-writer/core/src"],
+            // ... all other packages
         }
     }
     ```
 
-2. **Update `libs/shared/tsconfig.lib.json`** with explicit path overrides:
+3.  **Define Relative `paths` in Library `tsconfig.lib.json`**: For each `core` or `shared` library, its `tsconfig.lib.json` **MUST** define a `paths` property that maps only its direct workspace dependencies using the correct **relative paths**.
+
     ```json
-    {
-        "compilerOptions": {
-            "paths": {
-                "@fux/ghost-writer-core": ["../../packages/ghost-writer/core/src"],
-                "@fux/project-butler-core": ["../../packages/project-butler/core/src"],
-                "@fux/shared": ["./src"],
-                "@fux/note-hub-core": ["../../packages/note-hub/core/src"],
-                "@fux/dynamicons-core": ["../../packages/dynamicons/core/src"],
-                "@fux/context-cherry-picker-core": [
-                    "../../packages/context-cherry-picker/core/src"
-                ],
-                "@fux/ai-agent-interactor-core": ["../../packages/ai-agent-interactor/core/src"]
-            }
+    // In packages/my-feature/core/tsconfig.lib.json, which depends on @fux/shared
+    "compilerOptions": {
+        "paths": {
+            "@fux/shared": ["../../../libs/shared/src"]
         }
     }
     ```
 
-**Verification**: Run `npx tsc --noEmit` in the affected package directory to confirm the error is resolved.
+**Verification**: After making these changes, restart the VS Code TypeScript server to ensure the errors are resolved. The workspace audit script (`scripts/audit-feature-structure.ts`) also validates this configuration.
 
 #### 7.6.2. :: Path Mapping Best Practices
 

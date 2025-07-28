@@ -5,22 +5,8 @@ import { EventEmitter, TreeItemCheckboxState, TreeItemCollapsibleState } from 'v
 import type { Event, Disposable } from 'vscode'
 
 //= MISC ======================================================================================================
-let micromatch: any;
-let yaml: typeof import('js-yaml');
-
-async function getMicromatch() {
-  if (!micromatch) {
-    micromatch = await import('micromatch');
-  }
-  return micromatch;
-}
-
-async function getYaml() {
-  if (!yaml) {
-    yaml = (await import('js-yaml'));
-  }
-  return yaml;
-}
+import * as micromatch from 'micromatch'
+import * as yaml from 'js-yaml'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IFileExplorerService } from '../_interfaces/IFileExplorerService.js'
@@ -159,7 +145,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 			try {
 				const yamlContent = await this.fileSystem.readFile(configFileUri)
 
-				parsedYamlConfig = (await getYaml()).load(yamlContent) as ProjectYamlConfig
+				parsedYamlConfig = yaml.load(yamlContent) as ProjectYamlConfig
 			}
 			catch (_error: any) {
 				// Ignore file not found, warn on others
@@ -181,7 +167,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 
 	private async isUriHiddenForProviderUi(uri: string): Promise<boolean> {
 		const relativePath = this.workspace.asRelativePath(uri, false).replace(/\\/g, '/')
-		const mm = await getMicromatch()
+		const mm = micromatch
 
 		if (mm.isMatch(relativePath, this.globalIgnoreGlobs))
 			return true
@@ -217,7 +203,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 
 		if (element && element.type === 'directory') {
 			const relativeElementPath = this.workspace.asRelativePath(element.uri, false).replace(/\\/g, '/')
-			const mm = await getMicromatch()
+			const mm = micromatch
 
 			if (mm.isMatch(relativeElementPath, this.contextExplorerHideChildrenGlobs)) {
 				return []
@@ -226,7 +212,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 
 		try {
 			const entries = await this.fileSystem.readDirectory(sourceUri)
-			const mm = await getMicromatch()
+			const mm = micromatch
 			const promises = entries
 				.filter(isFileOrDirectory)
 				.map(async (entry: DirectoryEntry) => {

@@ -1,11 +1,11 @@
 import type { AwilixContainer } from 'awilix'
+import { createContainer, InjectionMode, asValue, asClass, asFunction } from 'awilix'
 import type { ExtensionContext } from 'vscode'
 
 // Core Services & Interfaces
 import {
 	IconActionsService,
 	IconThemeGeneratorService,
-	
 } from '@fux/dynamicons-core'
 import type { IIconActionsService, IIconThemeGeneratorService, ICommands, ICommonUtils, IContext, IFileSystem, IPath, IQuickPick, IWindow, IWorkspace } from '@fux/dynamicons-core'
 
@@ -36,21 +36,7 @@ export interface Cradle {
 	iconActionsService: IIconActionsService
 }
 
-let createContainer: typeof import('awilix').createContainer
-let InjectionMode: typeof import('awilix').InjectionMode
-let asValue: typeof import('awilix').asValue
-let asClass: typeof import('awilix').asClass
-let asFunction: typeof import('awilix').asFunction
-
 export async function createDIContainer(context: ExtensionContext): Promise<AwilixContainer> {
-	if (!createContainer) {
-		const awilixModule = await import('awilix') as typeof import('awilix')
-		createContainer = awilixModule.createContainer
-		InjectionMode = awilixModule.InjectionMode
-		asValue = awilixModule.asValue
-		asClass = awilixModule.asClass
-		asFunction = awilixModule.asFunction
-	}
 	const container = createContainer({
 		injectionMode: InjectionMode.PROXY,
 	})

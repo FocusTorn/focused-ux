@@ -12,10 +12,10 @@
         }
     },
     "dependencies": {
-        "@fux/shared": "workspace:*",
-        "awilix": "^12.0.5"
+        "@fux/shared": "workspace:*"
     },
     "devDependencies": {
+        "awilix": "^12.0.5",
         "@types/js-yaml": "^4.0.9",
         "@types/micromatch": "^4.0.4"
     }
