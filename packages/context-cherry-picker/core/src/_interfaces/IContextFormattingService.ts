@@ -14,5 +14,5 @@ export interface IContextFormattingService { //>
 		outputFilterAlwaysHide: string[],
 		outputFilterShowIfSelected: string[],
 		initialCheckedUris: string[],
-	) => string
+	) => Promise<string>
 } //<

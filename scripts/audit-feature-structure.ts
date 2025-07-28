@@ -4,7 +4,17 @@ import path from 'node:path'
 import fs from 'node:fs'
 import process from 'node:process'
 
-const PACKAGES = ['ghost-writer', 'project-butler', 'dynamicons']
+const PACKAGES = ['ghost-writer', 'project-butler', 'dynamicons', 'context-cherry-picker', 'note-hub', 'ai-agent-interactor']
+
+// Color mapping function for easier color management
+function color(code: number): string {
+	return `\x1B[38;5;${code}m`
+}
+
+// Color constants for better readability
+const sectionTitle = 179
+const filePath = 38
+const parentheses = 37
 
 const __filename = fileURLToPath(import.meta.url)
 const ROOT = path.resolve(path.dirname(__filename), '..')
@@ -22,6 +32,20 @@ const CANONICAL_TSCONFIG = {
 		{ path: '../core/tsconfig.lib.json' },
 		{ path: '../../../libs/shared/tsconfig.lib.json' },
 	],
+}
+
+// Error collection for grouping
+interface ErrorGroup {
+	[key: string]: string[]
+}
+
+const errors: ErrorGroup = {}
+
+function addError(category: string, message: string) {
+	if (!errors[category]) {
+		errors[category] = []
+	}
+	errors[category].push(message)
 }
 
 function readJson(file: string) {
@@ -58,7 +82,7 @@ function checkTsconfigExt(pkg: string) {
 	const tsconfigPath = path.join(ROOT, 'packages', pkg, 'ext', 'tsconfig.json')
 
 	if (!fs.existsSync(tsconfigPath)) {
-		console.error(`[ERROR] Missing tsconfig.json in ${pkg}/ext`)
+		addError('Missing tsconfig.json', `${pkg}/ext`)
 		return false
 	}
 
@@ -67,12 +91,12 @@ function checkTsconfigExt(pkg: string) {
 	// Only compare keys present in canonical config
 	for (const key of Object.keys(CANONICAL_TSCONFIG)) {
 		if (!deepEqual(tsconfig[key], CANONICAL_TSCONFIG[key])) {
-			console.error(`[ERROR] ${pkg}/ext/tsconfig.json: Key '${key}' does not match canonical config.`)
+			addError('Invalid tsconfig.json', `${pkg}/ext/tsconfig.json: Key '${key}' does not match canonical config.`)
 			return false
 		}
 	}
 	if (fs.existsSync(path.join(ROOT, 'packages', pkg, 'ext', 'tsconfig.lib.json'))) {
-		console.error(`[ERROR] ${pkg}/ext/tsconfig.lib.json should not exist.`)
+		addError('Invalid tsconfig structure', `${pkg}/ext/tsconfig.lib.json should not exist.`)
 		return false
 	}
 
@@ -85,7 +109,7 @@ function checkTsconfigExt(pkg: string) {
 				const location = findJsonLocation(tsconfigPath, 'references')
 				const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-				console.error(`[ERROR] ${pkg}/ext/tsconfig.json${locationStr}: Reference '${refPath}' should point to tsconfig.lib.json, not main tsconfig.json`)
+				addError('Invalid tsconfig references', `${pkg}/ext/tsconfig.json${locationStr}: Reference '${refPath}' should point to tsconfig.lib.json, not main tsconfig.json`)
 				return false
 			}
 		}
@@ -98,22 +122,22 @@ function checkProjectJsonExt(pkg: string) {
 	const projectPath = path.join(ROOT, 'packages', pkg, 'ext', 'project.json')
 
 	if (!fs.existsSync(projectPath)) {
-		console.error(`[ERROR] Missing project.json in ${pkg}/ext`)
+		addError('Missing project.json', `${pkg}/ext`)
 		return false
 	}
 
 	const project = readJson(projectPath)
 
 	if (!project.targets || !project.targets.build) {
-		console.error(`[ERROR] ${pkg}/ext/project.json: Missing build target.`)
+		addError('Missing build target', `${pkg}/ext/project.json: Missing build target.`)
 		return false
 	}
 	if (project.targets.build.extends) {
-		console.error(`[ERROR] ${pkg}/ext/project.json: build target should not use 'extends'.`)
+		addError('Target extends', `${pkg}/ext/project.json: build target should not use 'extends'. All build targets must be explicit and inlined for clarity and maintainability.`)
 		return false
 	}
 	if (project.targets.build.executor !== '@nx/esbuild:esbuild') {
-		console.error(`[ERROR] ${pkg}/ext/project.json: build target executor should be '@nx/esbuild:esbuild'.`)
+		addError('Invalid executor', `${pkg}/ext/project.json: build target executor should be '@nx/esbuild:esbuild'.`)
 		return false
 	}
 	return true
@@ -124,7 +148,7 @@ function checkTsconfigCore(pkg: string) {
 	const tsconfigLibPath = path.join(ROOT, 'packages', pkg, 'core', 'tsconfig.lib.json')
 
 	if (!fs.existsSync(tsconfigPath)) {
-		console.error(`[ERROR] Missing tsconfig.json in ${pkg}/core`)
+		addError('Missing tsconfig.json', `${pkg}/core`)
 		return false
 	}
 
@@ -135,7 +159,7 @@ function checkTsconfigCore(pkg: string) {
 		const location = findJsonLocation(tsconfigPath, 'compilerOptions')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		console.error(`[ERROR] ${pkg}/core/tsconfig.json${locationStr}: Missing 'composite: true' in compilerOptions`)
+		addError('Missing \'composite: true\'', `${pkg}/core/tsconfig.json${locationStr}`)
 		return false
 	}
 
@@ -147,7 +171,7 @@ function checkTsconfigCore(pkg: string) {
 			const location = findJsonLocation(tsconfigLibPath, 'compilerOptions')
 			const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-			console.error(`[ERROR] ${pkg}/core/tsconfig.lib.json${locationStr}: Missing 'composite: true' in compilerOptions`)
+			addError('Missing \'composite: true\'', `${pkg}/core/tsconfig.lib.json${locationStr}`)
 			return false
 		}
 	}
@@ -160,7 +184,7 @@ function checkTsconfigShared() {
 	const tsconfigLibPath = path.join(ROOT, 'libs', 'shared', 'tsconfig.lib.json')
 
 	if (!fs.existsSync(tsconfigPath)) {
-		console.error(`[ERROR] Missing tsconfig.json in libs/shared`)
+		addError('Missing tsconfig.json', `libs/shared`)
 		return false
 	}
 
@@ -171,7 +195,7 @@ function checkTsconfigShared() {
 		const location = findJsonLocation(tsconfigPath, 'compilerOptions')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		console.error(`[ERROR] libs/shared/tsconfig.json${locationStr}: Missing 'composite: true' in compilerOptions`)
+		addError('Missing \'composite: true\'', `libs/shared/tsconfig.json${locationStr}`)
 		return false
 	}
 
@@ -183,7 +207,7 @@ function checkTsconfigShared() {
 			const location = findJsonLocation(tsconfigLibPath, 'compilerOptions')
 			const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-			console.error(`[ERROR] libs/shared/tsconfig.lib.json${locationStr}: Missing 'composite: true' in compilerOptions`)
+			addError('Missing \'composite: true\'', `libs/shared/tsconfig.lib.json${locationStr}`)
 			return false
 		}
 	}
@@ -203,14 +227,27 @@ function checkNoStaticImports(pkg: string, dep: string) {
 				walk(full)
 			else if (file.endsWith('.ts')) {
 				const content = fs.readFileSync(full, 'utf-8')
+				const lines = content.split('\n')
 
 				// Match static imports that are NOT type-only
 				// Look for import statements that don't start with "import type"
 				const staticImportRegex = new RegExp(`import\\s+(?!type\\s).*?from\\s+['"]${dep}['"]`, 'gm')
 
-				if (staticImportRegex.test(content)) {
-					console.error(`[ERROR] Static runtime import of '${dep}' found in ${full}`)
-					found = true
+				// Find all matches with line numbers
+				for (let i = 0; i < lines.length; i++) {
+					const line = lines[i]
+					const match = staticImportRegex.exec(line)
+					
+					if (match) {
+						const relativePath = path.relative(ROOT, full)
+						const column = match.index + 1
+						
+						addError('Static runtime import', `(${dep}) ${relativePath}:${i + 1}:${column}`)
+						found = true
+						
+						// Reset regex for next iteration
+						staticImportRegex.lastIndex = 0
+					}
 				}
 			}
 		}
@@ -235,7 +272,7 @@ function checkNoUnusedDeps(pkg: string) {
 			const location = findJsonLocation(pkgJsonPath, dep)
 			const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-			console.error(`[ERROR] Forbidden dependency '${dep}' found in ${pkg}/ext/package.json${locationStr}`)
+			addError('Forbidden dependency', `${pkg}/ext/package.json${locationStr}: '${dep}'`)
 			ok = false
 		}
 	}
@@ -265,7 +302,9 @@ function checkDynamicImportPattern(pkg: string, dep: string, requiredProps: stri
 						const propAssignRegex = new RegExp(`\\w+\\s*=\\s*\\w+Module\\.${prop}`)
 
 						if (!propAssignRegex.test(content)) {
-							console.error(`[ERROR] Dynamic import of '${dep}' in ${full} does not assign '${prop}' to a local variable.`)
+							const relativePath = path.relative(ROOT, full)
+
+							addError('Dynamic import pattern', `${relativePath}: Missing property assignment for '${prop}'`)
 							ok = false
 						}
 					}
@@ -274,7 +313,9 @@ function checkDynamicImportPattern(pkg: string, dep: string, requiredProps: stri
 					const moduleUsageRegex = /\bawilix\./g
 
 					if (moduleUsageRegex.test(content)) {
-						console.error(`[ERROR] Usage of module object 'awilix.' found after dynamic import in ${full}. All properties must be assigned to local variables.`)
+						const relativePath = path.relative(ROOT, full)
+
+						addError('Dynamic import pattern', `${relativePath}: Usage of module object 'awilix.' found after dynamic import. All properties must be assigned to local variables.`)
 						ok = false
 					}
 				}
@@ -299,32 +340,18 @@ function checkVSCodeEngineVersion(pkg: string) {
 		const location = findJsonLocation(pkgJsonPath, 'engines')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		console.error(`[ERROR] ${pkg}/ext/package.json${locationStr} Missing 'engines.vscode' field.`)
+		addError('Missing VSCode engine', `${pkg}/ext/package.json${locationStr}`)
 		return false
 	}
 
-	// Parse the version constraint (e.g., "^1.99.3" or ">=1.99.0 <2.0.0")
+	// Check that the VSCode engine version is exactly 1.99.3
 	const versionConstraint = engines.vscode
 	
-	// Check if the version constraint allows versions higher than 1.99.3
-	// This is a simplified check - in practice, you might want to use a proper semver parser
-	if (versionConstraint.includes('2.') || versionConstraint.includes('^2') || versionConstraint.includes('>=2')) {
+	if (versionConstraint !== '1.99.3') {
 		const location = findJsonLocation(pkgJsonPath, 'vscode')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		console.error(`[ERROR] ${pkg}/ext/package.json${locationStr} VSCode engine version '${versionConstraint}' is incompatible with Cursor. Must be <=1.99.3.`)
-		return false
-	}
-
-	// Check if the version constraint allows versions higher than 1.99.3
-	// Look for patterns like ">1.99.3", ">=1.99.4", "^1.99.4", etc.
-	const exceedsMaxRegex = /[>^]1\.99\.(?:[4-9]|\d{2,})/
-
-	if (exceedsMaxRegex.test(versionConstraint)) {
-		const location = findJsonLocation(pkgJsonPath, 'vscode')
-		const locationStr = location ? `:${location.line}:${location.column}` : ''
-
-		console.error(`[ERROR] ${pkg}/ext/package.json${locationStr} VSCode engine version '${versionConstraint}' exceeds maximum allowed version 1.99.3 for Cursor compatibility.`)
+		addError('Invalid VSCode engine version', `${pkg}/ext/package.json${locationStr}: '${versionConstraint}' must be exactly '1.99.3'.`)
 		return false
 	}
 
@@ -344,7 +371,7 @@ function checkPackageVersionFormat(pkg: string) {
 		const location = findJsonLocation(pkgJsonPath, 'version')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		console.error(`[ERROR] ${pkg}/ext/package.json${locationStr} Missing 'version' field.`)
+		addError('Missing version', `${pkg}/ext/package.json${locationStr}`)
 		return false
 	}
 
@@ -353,7 +380,7 @@ function checkPackageVersionFormat(pkg: string) {
 		const location = findJsonLocation(pkgJsonPath, 'version')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		console.error(`[ERROR] ${pkg}/ext/package.json${locationStr} Version '${version}' contains 'dev.' which is not allowed. Use proper semver format.`)
+		addError('Improper semver format', `${pkg}/ext/package.json${locationStr}: '${version}' contains 'dev.' which is not allowed. Use proper semver format.`)
 		return false
 	}
 
@@ -364,11 +391,125 @@ function checkPackageVersionFormat(pkg: string) {
 		const location = findJsonLocation(pkgJsonPath, 'version')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		console.error(`[ERROR] ${pkg}/ext/package.json${locationStr} Version '${version}' is not in valid semver format.`)
+		addError('Improper semver format', `${pkg}/ext/package.json${locationStr}: '${version}' is not in valid semver format.`)
 		return false
 	}
 
 	return true
+}
+
+function checkRequiredExtFiles(pkg: string) {
+	const extDir = path.join(ROOT, 'packages', pkg, 'ext')
+	const requiredFiles = ['license', 'readme', '.vscodeignore']
+	const missingFiles: string[] = []
+
+	for (const file of requiredFiles) {
+		// Check for various case variations and extensions
+		const possibleNames = [
+			file,
+			`${file}.txt`,
+			`${file}.md`,
+			`${file.toUpperCase()}`,
+			`${file.toUpperCase()}.txt`,
+			`${file.toUpperCase()}.md`,
+			`${file.charAt(0).toUpperCase() + file.slice(1)}`,
+			`${file.charAt(0).toUpperCase() + file.slice(1)}.txt`,
+			`${file.charAt(0).toUpperCase() + file.slice(1)}.md`
+		]
+
+		const found = possibleNames.some(name => {
+			const filePath = path.join(extDir, name)
+			return fs.existsSync(filePath)
+		})
+
+		if (!found) {
+			missingFiles.push(file)
+		}
+	}
+
+	if (missingFiles.length > 0) {
+		addError('Missing required file', `(${missingFiles.join(', ')}) ${pkg}/ext: Missing required files`)
+		return false
+	}
+
+	return true
+}
+
+function checkProjectJsonTargets(pkg: string) {
+	const projectJsonPath = path.join(ROOT, 'packages', pkg, 'ext', 'project.json')
+	const assetsPath = path.join(ROOT, 'packages', pkg, 'ext', 'assets')
+
+	if (!fs.existsSync(projectJsonPath))
+		return true
+
+	const projectJson = readJson(projectJsonPath)
+	const targets = projectJson.targets
+
+	if (!targets) {
+		addError('Missing targets', `${pkg}/ext/project.json: Missing 'targets' field.`)
+		return false
+	}
+
+	// Check if package has assets
+	const hasAssets = fs.existsSync(assetsPath) && fs.readdirSync(assetsPath).length > 0
+
+	if (hasAssets) {
+		// Must have copy-assets target
+		if (!targets['copy-assets']) {
+			addError('Has assets but missing \'copy-assets\' target', `${pkg}/ext/project.json`)
+			return false
+		}
+
+		// copy-assets must depend on build
+		const copyAssetsTarget = targets['copy-assets']
+
+		if (!copyAssetsTarget.dependsOn || !copyAssetsTarget.dependsOn.includes('build')) {
+			addError('Invalid target dependencies', `${pkg}/ext/project.json: 'copy-assets' target must depend on 'build'.`)
+			return false
+		}
+
+		// package:dev must depend on copy-assets
+		if (targets['package:dev']) {
+			const packageDevTarget = targets['package:dev']
+
+			if (!packageDevTarget.dependsOn || !packageDevTarget.dependsOn.includes('copy-assets')) {
+				addError('Invalid target dependencies', `${pkg}/ext/project.json: 'package:dev' target must depend on 'copy-assets' when assets exist.`)
+				return false
+			}
+		}
+
+		// package must depend on copy-assets
+		if (targets.package) {
+			const packageTarget = targets.package
+
+			if (!packageTarget.dependsOn || !packageTarget.dependsOn.includes('copy-assets')) {
+				addError('Invalid target dependencies', `${pkg}/ext/project.json: 'package' target must depend on 'copy-assets' when assets exist.`)
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+function printGroupedErrors() {
+	if (Object.keys(errors).length === 0) {
+		console.log('Feature structure audit passed.')
+		return
+	}
+
+	for (const [category, messages] of Object.entries(errors)) {
+		console.log(`${color(sectionTitle)}${category}:\x1B[0m`)
+		for (const message of messages) {
+			// Colorize file paths in specific blue and make parentheses brighter
+			let colorizedMessage = message.replace(/([a-zA-Z0-9\/\\\-_\.]+\.(json|ts|js|md))/g, `${color(filePath)}$1\x1B[0m`)
+
+			// Make parentheses brighter (light gray)
+			colorizedMessage = colorizedMessage.replace(/(\([^)]+\))/g, `\x1B[${parentheses}m$1\x1B[0m`)
+			console.log(`    ${colorizedMessage}`)
+		}
+		console.log()
+	}
 }
 
 function main() {
@@ -381,6 +522,7 @@ function main() {
 		ok = checkTsconfigExt(pkg) && ok
 		ok = checkTsconfigCore(pkg) && ok
 		ok = checkProjectJsonExt(pkg) && ok
+		ok = checkProjectJsonTargets(pkg) && ok
 		ok = checkNoStaticImports(pkg, 'awilix') && ok
 		ok = checkNoUnusedDeps(pkg) && ok
 		// Enforce dynamic import property assignment for awilix
@@ -389,13 +531,16 @@ function main() {
 		ok = checkVSCodeEngineVersion(pkg) && ok
 		// Check package version format
 		ok = checkPackageVersionFormat(pkg) && ok
+		// Check required files for ext packages
+		ok = checkRequiredExtFiles(pkg) && ok
 	}
+
+	printGroupedErrors()
+	
 	if (!ok) {
 		process.exit(1)
-	}
-	else {
-		console.log('Feature structure audit passed.')
 	}
 }
 
 main()
+

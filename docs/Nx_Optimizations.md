@@ -7,12 +7,12 @@ This document summarizes recommended Nx optimizations and best practices for the
 ## 1. Leverage Named Inputs for Smarter Caching
 
 - Define custom `namedInputs` in `nx.json` for different targets (build, test, lint, etc.).
-- Exclude files that don’t affect builds (e.g., docs, markdown, images) from invalidating the cache.
+- Exclude files that don't affect builds (e.g., docs, markdown, images) from invalidating the cache.
 
 ## 2. Fine-Tune Target Dependencies
 
 - Use the `dependsOn` property to ensure only necessary upstream builds are triggered.
-- Remove or adjust dependencies for faster builds if some extensions don’t need to depend on their core’s build.
+- Remove or adjust dependencies for faster builds if some extensions don't need to depend on their core's build.
 
 ## 3. Optimize Asset Copying
 
@@ -21,7 +21,7 @@ This document summarizes recommended Nx optimizations and best practices for the
 
 ## 4. Use Nx Affected Commands in CI
 
-- In CI/CD, use `nx affected:build`, `nx affected:test`, etc., to only build/test what’s changed.
+- In CI/CD, use `nx affected:build`, `nx affected:test`, etc., to only build/test what's changed.
 - This can dramatically speed up CI runs.
 
 ## 5. Enable Distributed Task Execution (DTE)

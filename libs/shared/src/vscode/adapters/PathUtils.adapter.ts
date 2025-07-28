@@ -14,4 +14,8 @@ export class PathUtilsAdapter implements IPathUtilsService {
 		return posixPath.startsWith('.') ? posixPath : `./${posixPath}`
 	}
 
+	public santizePath(pathStr: string): string {
+		return pathStr.replace(/[<>:"|?*]/g, '_')
+	}
+
 }

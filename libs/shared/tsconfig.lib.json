@@ -8,7 +8,10 @@
         "declaration": true,
         "declarationMap": true,
         "composite": true,
-        "types": ["node"]
+        "types": ["node"],
+        "paths": {
+            "@fux/shared": ["./src"]
+        }
     },
     "include": ["src/**/*.ts"],
     "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts"],

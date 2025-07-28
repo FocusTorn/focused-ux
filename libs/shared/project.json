@@ -36,7 +36,8 @@
                 "commands": ["nx run @fux/shared:build", "nx run @fux/shared:verify:dist:hash"]
             }
         },
-        "clean:dist": { "extends": "clean:dist" }
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" }
     },
     "tags": []
 }

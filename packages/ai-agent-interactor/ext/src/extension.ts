@@ -77,8 +77,8 @@ class AiAgentUriHandler implements UriHandler {
 
 }
 
-export function activate(context: ExtensionContext): void {
-	const container = createDIContainer(context)
+export async function activate(context: ExtensionContext): Promise<void> {
+	const container = await createDIContainer(context)
 	const interactorService = container.resolve<IAiAgentInteractorService>('interactorService')
 	const uriHandler = new AiAgentUriHandler(interactorService)
 

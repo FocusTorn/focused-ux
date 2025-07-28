@@ -1,3 +1,3 @@
 // ESLint & Imports -->>
-export type { IFileSystem, DirectoryEntry } from '@fux/utilities'
+export type { IFileSystem, DirectoryEntry } from '@fux/shared'
 //--------------------------------------------------------------------------------------------------------------<<

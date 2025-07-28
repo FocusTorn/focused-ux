@@ -1,3 +1,6 @@
 export interface IEnv {
-  // Add environment-related methods as needed
+  clipboard: {
+    readText: () => Promise<string>;
+    writeText: (text: string) => Promise<void>;
+  };
 } 

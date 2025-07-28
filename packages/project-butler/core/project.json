@@ -5,21 +5,15 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": [
-                "^build"
-            ],
+            "dependsOn": ["^build"],
             "executor": "@nx/esbuild:esbuild",
-            "outputs": [
-                "{options.outputPath}"
-            ],
+            "outputs": ["{options.outputPath}"],
             "options": {
                 "main": "packages/project-butler/core/src/index.ts",
                 "outputPath": "packages/project-butler/core/dist",
                 "tsConfig": "packages/project-butler/core/tsconfig.lib.json",
                 "platform": "node",
-                "format": [
-                    "esm"
-                ],
+                "format": ["esm"],
                 "bundle": false,
                 "sourcemap": true,
                 "target": "es2022",
@@ -29,7 +23,7 @@
                 "deleteOutputPath": true
             }
         },
-        
+
         "verify:dist:hash": {
             "executor": "nx:run-commands",
             "options": {
@@ -49,6 +43,9 @@
         "lint": {},
         "clean:dist": {
             "extends": "clean:dist"
+        },
+        "clean:cache": {
+            "extends": "clean:cache"
         }
     },
     "tags": []

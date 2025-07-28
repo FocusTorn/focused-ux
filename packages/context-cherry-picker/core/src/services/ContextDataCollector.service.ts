@@ -1,14 +1,21 @@
 // ESLint & Imports -->>
 
 //= MISC ======================================================================================================
-import * as micromatch from 'micromatch'
+let micromatch: any;
+
+async function getMicromatch() {
+  if (!micromatch) {
+    micromatch = await import('micromatch');
+  }
+  return micromatch;
+}
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IContextDataCollectorService, CollectionResult } from '../_interfaces/IContextDataCollectorService.js'
 import type { FileSystemEntry } from '../_interfaces/ccp.types.js'
 import type { IWorkspace } from '../_interfaces/IWorkspace.js'
 import type { IPath } from '../_interfaces/IPath.js'
-import type { IFileSystem } from '../_interfaces/IFileSystem.js'
+import type { IFileSystem, DirectoryEntry } from '../_interfaces/IFileSystem.js'
 import { constants } from '../_config/constants.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
@@ -118,6 +125,7 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 		showDirHideContents: string[],
 		initialSelectionSet: Set<string>,
 	): Promise<void> {
+		const mm = await getMicromatch()
 		for (const uri of urisToScan) {
 			if (!uri.startsWith(this.projectRootUri)) {
 				continue
@@ -125,7 +133,7 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 
 			const relativePath = this._getRelativePath(uri)
 
-			if (micromatch.isMatch(relativePath, baseIgnores) || micromatch.isMatch(relativePath, hideDirAndContents)) {
+			if (mm.isMatch(relativePath, baseIgnores) || mm.isMatch(relativePath, hideDirAndContents)) {
 				continue
 			}
 
@@ -136,12 +144,12 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 					targetSet.add(uri)
 				}
 				else if (stat.type === 'directory') {
-					if (micromatch.isMatch(relativePath, showDirHideContents)) {
+					if (mm.isMatch(relativePath, showDirHideContents)) {
 						continue
 					}
 
 					const entries = await this.fileSystem.readDirectory(uri)
-					const childrenUris = entries.map(entry => this.path.join(uri, entry.name))
+					const childrenUris = entries.map((entry: DirectoryEntry) => this.path.join(uri, entry.name))
 
 					await this._recursivelyCollectFileUrisForContent(
 						childrenUris,
@@ -166,13 +174,14 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 		hideDirAndContents: string[],
 		showDirHideContents: string[],
 	): Promise<void> {
+		const mm = await getMicromatch()
 		if (!uri.startsWith(this.projectRootUri)) {
 			return
 		}
 
 		const relativePath = this._getRelativePath(uri)
 
-		if (micromatch.isMatch(relativePath, baseIgnores) || micromatch.isMatch(relativePath, hideDirAndContents)) {
+		if (mm.isMatch(relativePath, baseIgnores) || mm.isMatch(relativePath, hideDirAndContents)) {
 			return
 		}
 
@@ -191,7 +200,7 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 			}
 
 			if (stat.type === 'directory') {
-				if (micromatch.isMatch(relativePath, showDirHideContents)) {
+				if (mm.isMatch(relativePath, showDirHideContents)) {
 					return
 				}
 

@@ -1,9 +1,5 @@
 // ESLint & Imports -->>
 
-//= TSYRINGE ==================================================================================================
-import 'reflect-metadata'
-import { container } from 'tsyringe'
-
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
 import type { ExtensionContext } from 'vscode'
 
@@ -18,7 +14,7 @@ let notesHubModuleInstance: any
 export async function activate(context: ExtensionContext): Promise<void> {
 	console.log(`[${constants.extension.name}] Activating...`)
 
-	const container = createDIContainer(context)
+	const container = await createDIContainer(context)
 	notesHubModuleInstance = container.resolve('notesHubModule')
 
 	try {

@@ -6,6 +6,7 @@
         "outDir": "dist",
         "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
         "types": ["node"],
+        
         "declaration": true,
         "declarationMap": true,
         "composite": true

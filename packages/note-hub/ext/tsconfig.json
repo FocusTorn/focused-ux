@@ -8,5 +8,8 @@
         "declarationMap": false
     },
     "include": ["src/**/*.ts"],
-    "references": [{ "path": "../core/tsconfig.lib.json" }, { "path": "../../../libs/shared/tsconfig.lib.json" }]
+    "references": [
+        { "path": "../core/tsconfig.lib.json" },
+        { "path": "../../../libs/shared/tsconfig.lib.json" }
+    ]
 }

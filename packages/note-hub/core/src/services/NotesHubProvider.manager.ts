@@ -1,12 +1,7 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) ================================================================================
-import type { IWindow } from '@fux/shared/_interfaces/IWindow'
-import type { IWorkspace } from '@fux/shared/_interfaces/IWorkspace'
-import type { ICommonUtilsService } from '@fux/shared/_interfaces/ICommonUtilsService'
-import type { IFrontmatterUtilsService } from '@fux/shared/_interfaces/IFrontmatterUtilsService'
-import type { IPathUtilsService } from '@fux/shared/_interfaces/IPathUtilsService'
-import type { ICommands } from '@fux/shared/_interfaces/ICommands'
+import type { IWindow, IWorkspace, ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, ICommands } from '@fux/shared'
 import type { ExtensionContext, Disposable } from 'vscode'
 import type { INotesHubProviderManager } from '../_interfaces/INotesHubProviderManager.js'
 import type { INotesHubDataProvider } from '../_interfaces/INotesHubDataProvider.js'

@@ -1,34 +1,28 @@
 {
-    
-    
-        // ESLint --------------->> 
-        
-        "eslint.useFlatConfig": true,
-        "eslint.workingDirectories": ["./"],
-        
-        //----------------------------------------------------<<
-        // Prettier ------------->> 
-        
-        "prettier.configPath": "prettier.config.cjs",
-        "prettier.experimentalTernaries": true,
-        "prettier.requireConfig": true,
-        
-        //----------------------------------------------------<<
+    // ESLint --------------->>
 
-        "typescript.tsdk": "node_modules/typescript/lib",
-        "editor.formatOnSave": true,
-        "nxConsole.generateAiAgentRules": true,
+    "eslint.useFlatConfig": true,
+    "eslint.workingDirectories": ["./"],
 
+    //----------------------------------------------------<<
+    // Prettier ------------->>
 
-        "files.exclude": { //>
-            "**/node_modules/**": true,
-            // "**/dist": true,
-            // "**/coverage": true
-        }, //<
-        
-    
-          "terminal.integrated.defaultProfile.windows": "FUX"
-    
-    
-    
+    "prettier.configPath": "prettier.config.cjs",
+    "prettier.experimentalTernaries": true,
+    "prettier.requireConfig": true,
+
+    //----------------------------------------------------<<
+
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "editor.formatOnSave": true,
+    "nxConsole.generateAiAgentRules": true,
+
+    "files.exclude": {
+        //>
+        "**/node_modules/**": true
+        // "**/dist": true,
+        // "**/coverage": true
+    }, //<
+
+    "terminal.integrated.defaultProfile.windows": "FUX"
 }

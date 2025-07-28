@@ -1,7 +1,14 @@
 // ESLint & Imports -->>
 
 //= MISC ======================================================================================================
-import micromatch from 'micromatch'
+let micromatch: any;
+
+async function getMicromatch() {
+  if (!micromatch) {
+    micromatch = await import('micromatch');
+  }
+  return micromatch;
+}
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IContextFormattingService } from '../_interfaces/IContextFormattingService.js'
@@ -25,7 +32,7 @@ export class ContextFormattingService implements IContextFormattingService {
 		private readonly path: IPath,
 	) {}
 
-	public generateProjectTreeString(
+	public async generateProjectTreeString(
 		treeEntriesMap: Map<string, FileSystemEntry>,
 		projectRootUri: string,
 		projectRootName: string,
@@ -33,16 +40,17 @@ export class ContextFormattingService implements IContextFormattingService {
 		outputFilterAlwaysHide: string[],
 		outputFilterShowIfSelected: string[],
 		initialCheckedUris: string[],
-	): string {
+	): Promise<string> {
+		const mm = await getMicromatch()
 		const entriesForTreeDisplay = Array.from(treeEntriesMap.values()).filter((entry) => {
 			const relativePath = entry.relativePath
 			const isExplicitlySelected = initialCheckedUris.includes(entry.uri)
 
-			if (micromatch.isMatch(relativePath, outputFilterAlwaysShow))
+			if (mm.isMatch(relativePath, outputFilterAlwaysShow))
 				return true
-			if (micromatch.isMatch(relativePath, outputFilterAlwaysHide))
+			if (mm.isMatch(relativePath, outputFilterAlwaysHide))
 				return false
-			if (micromatch.isMatch(relativePath, outputFilterShowIfSelected))
+			if (mm.isMatch(relativePath, outputFilterShowIfSelected))
 				return isExplicitlySelected
 			return true
 		})

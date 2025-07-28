@@ -1,12 +1,7 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) ================================================================================
-import type { IWindow } from '@fux/shared/_interfaces/IWindow'
-import type { IWorkspace } from '@fux/shared/_interfaces/IWorkspace'
-import type { ICommonUtilsService } from '@fux/shared/_interfaces/ICommonUtilsService'
-import type { IFrontmatterUtilsService } from '@fux/shared/_interfaces/IFrontmatterUtilsService'
-import type { IPathUtilsService } from '@fux/shared/_interfaces/IPathUtilsService'
-import type { IEnv } from '@fux/shared/_interfaces/IEnv'
+import type { IWindow, IWorkspace, ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, IEnv } from '@fux/shared'
 import type { ExtensionContext, MessageItem, FileType as VsCodeFileTypeEnum } from 'vscode'
 import { Uri, ProgressLocation as VsCodeProgressLocation, commands as VsCodeCommands } from 'vscode'
 import { Buffer } from 'node:buffer'

@@ -20,8 +20,8 @@ export class FileContentProviderService implements IFileContentProviderService {
 		private readonly tokenizerService: ITokenizerService,
 	) {}
 
-	private _localEstimateTokens(text: string): number {
-		return this.tokenizerService.calculateTokens(text)
+	private async _localEstimateTokens(text: string): Promise<number> {
+		return await this.tokenizerService.calculateTokens(text)
 	}
 
 	public async getFileContents(
@@ -56,7 +56,7 @@ export class FileContentProviderService implements IFileContentProviderService {
 				try {
 					const fileContent = await this.fileSystem.readFile(uri)
 					const fileEntryString = `<file name="${entry.name}" path="/${entry.relativePath}">\n${fileContent}\n</file>\n`
-					const tokensForThisFile = this._localEstimateTokens(fileEntryString)
+					const tokensForThisFile = await this._localEstimateTokens(fileEntryString)
 
 					if (currentTotalTokens + processedTokensThisCall + tokensForThisFile > maxTokens) {
 						this.window.showWarningMessage(`Context limit reached. File '${entry.name}' and subsequent files were not added.`, false)

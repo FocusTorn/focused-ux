@@ -5,7 +5,28 @@
     "projectType": "application",
     "targets": {
         "build": {
-            "extends": "build:extension"
+            "dependsOn": ["@fux/note-hub-core:build", "@fux/shared:build"],
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/note-hub/ext/src/extension.ts",
+                "outputPath": "packages/note-hub/ext/dist",
+                "tsConfig": "packages/note-hub/ext/tsconfig.json",
+                "platform": "node",
+                "format": ["cjs"],
+                "bundle": true,
+                "external": ["vscode", "awilix"],
+                "outExtension": {
+                    ".js": ".cjs"
+                },
+                "sourcemap": false,
+                "declaration": false,
+                "target": "es2022",
+                "keepNames": true,
+                "treeShaking": true,
+                "metafile": true,
+                "deleteOutputPath": true
+            }
         },
         "package:dev": {
             "executor": "nx:run-commands",
@@ -32,7 +53,8 @@
             }
         },
         "lint": {},
-        "clean:dist": { "extends": "clean:dist" }
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" }
     },
     "tags": ["type:extension"]
 }

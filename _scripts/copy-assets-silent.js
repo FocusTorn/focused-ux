@@ -64,4 +64,4 @@ const relDest = path.relative(workspaceRoot, destPath).replace(/\\/g, '/')
 
 // Nx grey: \x1b[90m ... \x1b[0m
 console.log(`Copying assets for ${packagePath}`)
-console.log(`\x1b[90m→ ${relDest} (${copiedFiles.length} files)\x1b[0m`) 
+console.log(`\x1b[90m→ ${relDest} (${copiedFiles.length} files)\x1b[0m`)

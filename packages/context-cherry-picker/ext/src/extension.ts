@@ -15,7 +15,7 @@ import type { WindowAdapter } from './adapters/Window.adapter.js'
 export async function activate(context: ExtensionContext): Promise<void> {
 	console.log(`[${ccpConstants.extension.name}] Activating...`)
 
-	const container = createDIContainer(context)
+	const container = await createDIContainer(context)
 
 	const ccpManager = container.resolve<IContextCherryPickerManager>('ccpManager')
 	const fileExplorerService = container.resolve<IFileExplorerService>('fileExplorerService')

@@ -1,7 +1,7 @@
 import type { IWindow } from '@fux/context-cherry-picker-core'
 import * as vscode from 'vscode'
-import type { IConfigurationService } from '@fux/utilities'
-import { showTimedInformationMessage as showTimedInformationMessageUtil } from '@fux/utilities'
+import type { IConfigurationService } from '@fux/shared'
+import { showTimedInformationMessage as showTimedInformationMessageUtil } from '@fux/shared'
 
 export class WindowAdapter implements IWindow {
 

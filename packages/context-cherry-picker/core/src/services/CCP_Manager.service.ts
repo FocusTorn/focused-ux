@@ -17,7 +17,7 @@ import type { IWindow } from '../_interfaces/IWindow.js'
 import type { IWorkspace } from '../_interfaces/IWorkspace.js'
 import type { IPath } from '../_interfaces/IPath.js'
 import type { IQuickSettingsService } from '../_interfaces/IQuickSettingsService.js'
-import type { IConfigurationService } from '@fux/utilities'
+import type { IConfigurationService } from '@fux/shared'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -166,7 +166,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		let formattedTreeString = ''
 
 		if (projectStructureQuickSettingMode !== 'none') {
-			formattedTreeString = this.contextFormatter.generateProjectTreeString(
+			formattedTreeString = await this.contextFormatter.generateProjectTreeString(
 				treeEntries,
 				this.projectRootUri,
 				projectRootName,

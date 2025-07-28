@@ -1,78 +1,311 @@
-### VS Code Extension Build & Packaging Guide
+# VS Code Extension Build & Packaging Guide
 
-This guide outlines the standard configuration for the `build` and `package:dev` targets within a `project.json` file for a VS Code extension in this monorepo. Adhering to this structure ensures consistency and leverages Nx's capabilities.
+This guide outlines the standard configuration for building and packaging VS Code extensions in the FocusedUX monorepo. The workspace uses global targets defined in `nx.json` to ensure consistency across all packages.
 
-#### 1. The `build` Target
+## 1. :: Package Structure
 
-The `build` target is responsible for compiling the TypeScript source code into JavaScript that the VS Code extension host can execute.
+The monorepo follows a consistent structure with three main package types:
 
-**Key Configuration:**
+- **`shared`** (Library): Located in `libs/shared/`, provides common services and utilities
+- **`core`** (Library): Located in `packages/{feature}/core/`, contains business logic for features
+- **`ext`** (Application): Located in `packages/{feature}/ext/`, contains VSCode extension implementation
 
--   **`executor`**: MUST be set to `@nx/esbuild:esbuild`. This uses the fast and efficient esbuild bundler.
--   **`outputs`**: MUST be `["{options.outputPath}"]`. This tells Nx where to find the build artifacts for caching.
--   **`dependsOn`**: MUST be `["^build"]`. This is a critical setting that ensures all workspace library dependencies (like a `core` package) are built *before* this extension package is built.
--   **`options`**:
-    -   **`main`**: The path to the extension's entry point file, typically `.../src/extension.ts`.
-    -   **`outputPath`**: The directory where the final bundled code will be placed, typically `.../dist`.
-    -   **`tsConfig`**: The path to the package's `tsconfig.json` file.
-    -   **`platform`**: MUST be `"node"`, as VS Code extensions run in a Node.js environment.
-    -   **`format`**: MUST be `["cjs"]` (CommonJS). The VS Code extension host requires this module format.
-    -   **`bundle`**: MUST be `true`. This bundles all source code and dependencies into a single file.
-    -   **`external`**: MUST be `["vscode"]`. The `vscode` module is provided by the VS Code runtime and must not be bundled.
-    -   **`assets`**: An array to copy static files (like icons or HTML views) into the `dist` directory.
+## 2. :: Global Build Targets
 
-**Example `build` Target:**
+The workspace defines standardized global targets in `nx.json` that all packages extend:
 
-~~~json
-"build": {
+### 2.1. :: `build:core` Target
+
+Used by shared libraries and core packages for library compilation.
+
+**Configuration:**
+```json
+"build:core": {
     "executor": "@nx/esbuild:esbuild",
-    "outputs": [ "{options.outputPath}" ],
-    "defaultConfiguration": "production",
-    "dependsOn": [ "^build" ],
+    "dependsOn": ["^build"],
+    "outputs": ["{options.outputPath}"],
     "options": {
-        "main": "packages/my-extension/ext/src/extension.ts",
-        "outputPath": "packages/my-extension/ext/dist",
-        "tsConfig": "packages/my-extension/ext/tsconfig.json",
+        "outputPath": "{projectRoot}/dist",
+        "main": "{projectRoot}/src/index.ts",
+        "tsConfig": "{projectRoot}/tsconfig.lib.json",
         "platform": "node",
-        "format": [ "cjs" ],
+        "format": ["esm"],
+        "bundle": false,
+        "sourcemap": true,
+        "target": "es2022",
+        "keepNames": true,
+        "declaration": true,
+        "declarationRootDir": "{projectRoot}/src",
+        "thirdParty": false,
+        "deleteOutputPath": true
+    }
+}
+```
+
+**Usage in `project.json`:**
+```json
+"build": {
+    "extends": "build:core"
+}
+```
+
+### 2.2. :: `build:extension` Target
+
+Used by VSCode extension packages for bundling and optimization.
+
+**Configuration:**
+```json
+"build:extension": {
+    "executor": "@nx/esbuild:esbuild",
+    "dependsOn": ["^build"],
+    "outputs": ["{options.outputPath}"],
+    "options": {
+        "main": "{projectRoot}/src/extension.ts",
+        "outputPath": "{projectRoot}/dist",
+        "tsConfig": "{projectRoot}/tsconfig.json",
+        "platform": "node",
+        "format": ["cjs"],
         "bundle": true,
-        "external": [ "vscode" ],
+        "external": ["vscode"],
+        "outExtension": { ".js": ".cjs" },
+        "sourcemap": false,
+        "target": "es2022",
+        "keepNames": true,
+        "treeShaking": true,
+        "metafile": true,
+        "declarationRootDir": "{projectRoot}/src",
         "assets": [
             {
                 "glob": "**/*",
-                "input": "packages/my-extension/ext/assets",
+                "input": "{projectRoot}/assets",
                 "output": "assets"
             }
-        ]
+        ],
+        "deleteOutputPath": true
     },
     "configurations": {
-        "production": { "minify": true },
-        "development": { "minify": false }
+        "development": {
+            "minify": false
+        },
+        "production": {
+            "minify": true
+        }
     }
 }
-~~~
+```
 
-#### 2. The `package:dev` Target
+**Usage in `project.json`:**
+```json
+"build": {
+    "extends": "build:extension"
+}
+```
 
-The `package:dev` target uses a custom script to create a versioned `.vsix` file for local installation and testing. This allows for rapid iteration without affecting the official version number.
+## 3. :: Package Configuration
 
-**Key Configuration:**
+### 3.1. :: Core Packages
 
--   **`executor`**: MUST be `nx:run-commands`.
--   **`dependsOn`**: MUST be `["build"]` to ensure the package is built before packaging.
--   **`options.command`**: The command to execute. It runs the `_scripts/create-dev-vsix.js` script, passing the relative path to the extension package directory (e.g., `context-cherry-picker/ext`) as an argument.
+**Purpose:** Framework-agnostic libraries containing business logic.
 
-**Example `package:dev` Target:**
+**Key Requirements:**
+- Use `build:core` target
+- Generate TypeScript declarations
+- Support tree-shaking through individual exports
+- No bundling (library consumption)
 
-~~~json
+**Example `project.json`:**
+```json
+{
+    "name": "@fux/ghost-writer-core",
+    "targets": {
+        "build": {
+            "extends": "build:core"
+        }
+    }
+}
+```
+
+### 3.2. :: Extension Packages
+
+**Purpose:** VSCode extensions that consume core packages.
+
+**Key Requirements:**
+- Use `build:extension` target
+- Bundle all dependencies (except `vscode`)
+- Include assets from `assets/` directory
+- Generate optimized CommonJS output
+
+**Example `project.json`:**
+```json
+{
+    "name": "@fux/ghost-writer-ext",
+    "targets": {
+        "build": {
+            "extends": "build:extension"
+        },
+        "package:dev": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node ./_scripts/create-dev-vsix.js ghost-writer/ext"
+            }
+        },
+        "package": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node ./_scripts/create-prod-vsix.js ghost-writer/ext"
+            }
+        }
+    }
+}
+```
+
+## 4. :: TypeScript Configuration
+
+### 4.1. :: Core Packages (`tsconfig.lib.json`)
+
+```json
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "declaration": true,
+        "declarationMap": true,
+        "emitDeclarationOnly": true,
+        "rootDir": "src"
+    },
+    "include": ["src/**/*"],
+    "exclude": ["dist", "node_modules"]
+}
+```
+
+### 4.2. :: Extension Packages (`tsconfig.json`)
+
+```json
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "src"
+    },
+    "include": ["src/**/*"],
+    "references": [
+        { "path": "../core" }
+    ]
+}
+```
+
+## 5. :: Packaging Targets
+
+### 5.1. :: Development Packaging (`package:dev`)
+
+Creates a versioned `.vsix` file for local testing without affecting the official version.
+
+**Configuration:**
+```json
 "package:dev": {
     "executor": "nx:run-commands",
     "dependsOn": ["build"],
     "options": {
-        "command": "node ./_scripts/create-dev-vsix.js context-cherry-picker/ext"
+        "command": "node ./_scripts/create-dev-vsix.js {package-directory}"
     }
 }
-~~~
+```
+
+### 5.2. :: Production Packaging (`package`)
+
+Creates a production-ready `.vsix` file with proper versioning.
+
+**Configuration:**
+```json
+"package": {
+    "executor": "nx:run-commands",
+    "dependsOn": ["build"],
+    "options": {
+        "command": "node ./_scripts/create-prod-vsix.js {package-directory}"
+    }
+}
+```
+
+## 6. :: Build Commands
+
+### 6.1. :: Building Individual Packages
+
+```bash
+# Build a core package
+nx build @fux/ghost-writer-core
+
+# Build an extension package
+nx build @fux/ghost-writer-ext
+
+# Build with production configuration
+nx build @fux/ghost-writer-ext --configuration=production
+```
+
+### 6.2. :: Building Multiple Packages
+
+```bash
+# Build all packages
+nx run-many --target=build --all
+
+# Build all extension packages
+nx run-many --target=build --projects=@fux/*-ext
+
+# Build all core packages
+nx run-many --target=build --projects=@fux/*-core
+```
+
+### 6.3. :: Packaging Extensions
+
+```bash
+# Create development package
+nx run @fux/ghost-writer-ext:package:dev
+
+# Create production package
+nx run @fux/ghost-writer-ext:package
+```
+
+## 7. :: Best Practices
+
+### 7.1. :: Bundle Optimization
+
+- Use individual exports in core packages for better tree-shaking
+- Externalize heavy dependencies when possible
+- Enable minification for production builds
+- Use `--skip-nx-cache` for troubleshooting build issues
+
+### 7.2. :: Asset Management
+
+- Place static assets in the `assets/` directory
+- Assets are automatically copied to `dist/assets/` during build
+- Use relative paths in extension code to reference assets
+
+### 7.3. :: Dependency Management
+
+- Core packages should have minimal dependencies
+- Extension packages bundle their dependencies
+- Use workspace dependencies for internal packages
+- Move workspace dependencies to `devDependencies` in extensions
+
+## 8. :: Troubleshooting
+
+### 8.1. :: Common Issues
+
+- **Build failures**: Check that all dependencies are built first
+- **Bundle size issues**: Review dependencies and consider tree-shaking
+- **Type errors**: Ensure TypeScript configurations are correct
+- **Asset not found**: Verify assets are in the correct directory
+
+### 8.2. :: Cache Issues
+
+- Use `nx reset` to clear the entire workspace cache
+- Use `--skip-nx-cache` to bypass caching for a single build
+- Check `.nx/cache` directory for cache-related issues
+
+For more detailed information about the workspace structure and best practices, see [docs/SOP.md](./SOP.md) and [docs/Nx_Optimizations.md](./Nx_Optimizations.md).
+
+For technical details on externalizing Node packages, see [docs/Externalize_Node_Packages.md](./Externalize_Node_Packages.md).
 
 
 

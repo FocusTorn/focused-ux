@@ -1,13 +1,13 @@
-import { encode } from 'gpt-tokenizer'
 import type { ITokenizerService } from '../_interfaces/ITokenizerService.js'
 
 export class TokenizerService implements ITokenizerService {
 
-	public calculateTokens(text: string): number {
+	public async calculateTokens(text: string): Promise<number> {
 		if (!text) {
 			return 0
 		}
 		try {
+			const { encode } = await import('gpt-tokenizer')
 			return encode(text).length
 		}
 		catch (_error) {

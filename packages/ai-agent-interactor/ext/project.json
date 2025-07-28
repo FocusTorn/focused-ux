@@ -5,7 +5,23 @@
     "projectType": "application",
     "targets": {
         "build": {
-            "extends": "build:extension"
+            "dependsOn": ["clean:dist"],
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/ai-agent-interactor/ext/src/index.ts",
+                "outputPath": "packages/ai-agent-interactor/ext/dist",
+                "tsConfig": "packages/ai-agent-interactor/ext/tsconfig.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": true,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "external": ["vscode"],
+                "thirdParty": false,
+                "deleteOutputPath": true
+            }
         },
         "package:dev": {
             "executor": "nx:run-commands",
@@ -31,7 +47,8 @@
                 "cwd": "{projectRoot}"
             }
         },
-        "clean:dist": { "extends": "clean:dist" }
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" }
     },
     "tags": ["type:extension"]
 }

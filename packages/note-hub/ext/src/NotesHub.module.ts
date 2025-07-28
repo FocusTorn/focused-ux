@@ -9,13 +9,13 @@ import type {
 	INotesHubActionService,
 	INotesHubConfigService,
 	INotesHubProviderManager,
-} from '@focused-ux/notes-hub-core'
+} from '@fux/note-hub-core'
 import {
 	NotesHubService,
 	NotesHubActionService,
 	NotesHubConfigService,
 	NotesHubProviderManager,
-} from '@focused-ux/notes-hub-core'
+} from '@fux/note-hub-core'
 import { constants } from './_config/constants.js'
 
 //--------------------------------------------------------------------------------------------------------------<<

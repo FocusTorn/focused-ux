@@ -5,6 +5,9 @@
         "rootDir": "./src",
         "composite": true
     },
-    "include": ["src/**/*"],
-    "references": [{ "path": "../../../libs/shared" }, { "path": "./tsconfig.lib.json" }]
+    "include": ["src/**/*.ts"],
+    "references": [
+        { "path": "../../../libs/shared/tsconfig.lib.json" },
+        { "path": "./tsconfig.lib.json" }
+    ]
 }

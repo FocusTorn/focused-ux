@@ -154,6 +154,19 @@ function _Invoke-NxTask { #>
     }
     if ($target -eq $null) { Write-Host "No Nx target specified (e.g., 'build', 'lint')."; return }
 
+    # Special handling for 'c' (clean) - run all clean targets
+    if ($target -eq 'clean') {
+        $cleanTargets = @('clean:cache', 'clean:dist')
+        foreach ($cleanTarget in $cleanTargets) {
+            if ($IsDebug) {
+                Write-Host "$($PSStyle.Dim)  - Running clean target: $cleanTarget$($PSStyle.Reset)"
+            }
+            $cleanPreArgs = @($cleanTarget, $NxProjectName) + $nxFlags + $targetArgs
+            _Invoke-Process -Executable 'nx' -PreArgs $cleanPreArgs -IsDebug:$IsDebug
+        }
+        return
+    }
+
     $nxPreArgs = @($target, $NxProjectName) + $nxFlags + $targetArgs
     _Invoke-Process -Executable 'nx' -PreArgs $nxPreArgs -IsDebug:$IsDebug
 } #<
@@ -236,10 +249,20 @@ $NxTargetShortcuts = @{ #>
     l = 'lint'
     p = 'package'
     pd = 'package:dev'
+    pdo = 'package:dev:only'
     pub = 'publish'
-
+    
+    
+    
+    #--------------------------------------------
     c = 'clean'
+    #--------------------------------------------
+    cc = 'clean:cache'
     cd = 'clean:dist'
+
+    #--------------------------------------------
+    
+    
 } #<
 
 

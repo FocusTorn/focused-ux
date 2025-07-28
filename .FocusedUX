@@ -22,7 +22,7 @@ ContextCherryPicker:
         initially_visible: false
         items:
           - '**/**/dist'
-          - '**/tsconfig.*.tsbuildinfo'
+          - '**/*.tsbuildinfo'
           - '**/.turbo'
           - '**/.nx'
           - '**/tmp'
@@ -33,7 +33,7 @@ ContextCherryPicker:
           - '**/coverage'
           - '**/.vscode-test.mjs'
       ign:
-        initially_visible: false
+        initially_visible: true
         items:
           - '**/.gitignore'
           - '**/.vscodeignore'

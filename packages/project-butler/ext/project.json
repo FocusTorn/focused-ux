@@ -5,71 +5,49 @@
     "projectType": "application",
     "targets": {
         "build": {
-            "dependsOn": ["@fux/project-butler-core:build", "@fux/shared:build"],
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
             "options": {
-                "main": "packages/project-butler/ext/src/extension.ts",
+                "entryPoints": ["packages/project-butler/ext/src/extension.ts"],
                 "outputPath": "packages/project-butler/ext/dist",
-                "tsConfig": "packages/project-butler/ext/tsconfig.json",
-                "platform": "node",
                 "format": ["cjs"],
+                "platform": "node",
                 "bundle": true,
-                "external": ["vscode", "awilix", "js-yaml"],
-                "outExtension": {
-                    ".js": ".cjs"
-                },
-                "sourcemap": false,
-                "declaration": false,
-                "target": "es2022",
-                "keepNames": true,
-                "treeShaking": true,
-                "metafile": true,
-                "declarationRootDir": "packages/project-butler/ext/src",
+                "external": ["vscode", "awilix"],
+                "sourcemap": true,
+                "main": "packages/project-butler/ext/src/extension.ts",
+                "tsConfig": "packages/project-butler/ext/tsconfig.json",
                 "assets": [
                     {
                         "glob": "**/*",
-                        "input": "packages/project-butler/ext/assets",
-                        "output": "assets"
+                        "input": "packages/project-butler/ext/assets/",
+                        "output": "./assets/"
                     }
-                ],
-                "deleteOutputPath": true
-            },
-            "configurations": {
-                "development": {
-                    "minify": false
-                },
-                "production": {
-                    "minify": true
-                }
-            }
-        },
-
-        "package:dev": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
-            "options": {
-                "command": "node ./_scripts/create-dev-vsix.js project-butler/ext"
+                ]
             }
         },
         "package": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
-            "outputs": ["{workspaceRoot}/vsix_packages/project-butler.vsix"],
             "options": {
-                "command": "vsce package --no-dependencies -o ../../vsix_packages/project-butler.vsix",
-                "cwd": "{projectRoot}"
+                "command": "node _scripts/create-vsix.js packages/project-butler/ext"
             }
         },
-        "publish": {
+        "package:dev": {
             "executor": "nx:run-commands",
-            "dependsOn": ["package"],
+            "dependsOn": ["build"],
             "options": {
-                "command": "vsce publish",
-                "cwd": "{projectRoot}"
+                "command": "node _scripts/create-vsix.js packages/project-butler/ext --dev"
             }
         },
-        "lint": {},
-        "clean:dist": { "extends": "clean:dist" }
-    }
+        "package:dev:only": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "node _scripts/create-vsix.js packages/project-butler/ext --dev"
+            }
+        },
+        "lint": {}
+    },
+    "tags": []
 }

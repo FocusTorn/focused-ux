@@ -3,5 +3,5 @@
 //--------------------------------------------------------------------------------------------------------------<<
 
 export interface ITokenizerService {
-	calculateTokens: (text: string) => number
+	calculateTokens: (text: string) => Promise<number>
 }

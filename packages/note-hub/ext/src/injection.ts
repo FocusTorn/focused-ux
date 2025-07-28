@@ -1,11 +1,16 @@
-import { createContainer, asClass, asValue, InjectionMode } from 'awilix'
 import type { AwilixContainer } from 'awilix'
 import type { ExtensionContext } from 'vscode'
-import { NotesHubService, NotesHubActionService, NotesHubConfigService, NotesHubProviderManager } from '@focused-ux/notes-hub-core'
+import { NotesHubService, NotesHubActionService, NotesHubConfigService, NotesHubProviderManager } from '@fux/note-hub-core'
 import { NotesHubModule } from './NotesHub.module.js'
 // import adapters and utility services as needed
 
-export function createDIContainer(context: ExtensionContext): AwilixContainer {
+export async function createDIContainer(context: ExtensionContext): Promise<AwilixContainer> {
+  const awilixModule = await import('awilix') as typeof import('awilix')
+  const createContainer = awilixModule.createContainer
+  const InjectionMode = awilixModule.InjectionMode
+  const asValue = awilixModule.asValue
+  const asClass = awilixModule.asClass
+  
   const container = createContainer({
     injectionMode: InjectionMode.PROXY,
   })

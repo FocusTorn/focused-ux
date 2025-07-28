@@ -4,7 +4,6 @@
     "sourceRoot": "packages/ghost-writer/ext/src",
     "projectType": "library",
 
-
     "targets": {
         "build": {
             "dependsOn": ["@fux/ghost-writer-core:build", "@fux/shared:build"],
@@ -21,6 +20,7 @@
                 "outExtension": { ".js": ".cjs" },
                 "sourcemap": false,
                 "metafile": true,
+                "deleteOutputPath": true,
                 "assets": [
                     {
                         "glob": "**/*",
@@ -48,6 +48,9 @@
         "lint": {},
         "clean:dist": {
             "extends": "clean:dist"
+        },
+        "clean:cache": {
+            "extends": "clean:cache"
         }
     },
 

@@ -76,86 +76,17 @@
         "lint": {
             "inputs": ["lint", "^lint"]
         },
-        "build:core": {
-            "executor": "@nx/esbuild:esbuild",
-            "dependsOn": ["^build"],
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "outputPath": "{projectRoot}/dist",
-                "main": "{projectRoot}/src/index.ts",
-                "tsConfig": "{projectRoot}/tsconfig.lib.json",
-                "platform": "node",
-                "format": ["esm"],
-                "bundle": false,
-                "sourcemap": true,
-                "target": "es2022",
-                "keepNames": true,
-                "declaration": true,
-                "declarationRootDir": "{projectRoot}/src",
-                "thirdParty": false,
-                "deleteOutputPath": true
-            }
-        },
-        "build:extension": {
-            "executor": "@nx/esbuild:esbuild",
-            "dependsOn": ["^build"],
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "main": "{projectRoot}/src/extension.ts",
-                "outputPath": "{projectRoot}/dist",
-                "tsConfig": "{projectRoot}/tsconfig.json",
-                "platform": "node",
-                "format": ["cjs"],
-                "bundle": true,
-                "external": ["vscode"],
-                "outExtension": { ".js": ".cjs" },
-                "sourcemap": false,
-                "target": "es2022",
-                "keepNames": true,
-                "treeShaking": true,
-                "metafile": true,
-                "declarationRootDir": "{projectRoot}/src",
-                "assets": [
-                    {
-                        "glob": "**/*",
-                        "input": "{projectRoot}/assets",
-                        "output": "assets"
-                    }
-                ],
-                "deleteOutputPath": true
-            },
-            "configurations": {
-                "development": {
-                    "minify": false
-                },
-                "production": {
-                    "minify": true
-                }
-            }
-        },
-        "build:shared": {
-            "executor": "@nx/esbuild:esbuild",
-            "dependsOn": ["^build"],
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "outputPath": "{projectRoot}/dist",
-                "main": "{projectRoot}/src/index.ts",
-                "tsConfig": "{projectRoot}/tsconfig.lib.json",
-                "platform": "node",
-                "format": ["esm"],
-                "bundle": false,
-                "sourcemap": true,
-                "target": "es2022",
-                "keepNames": true,
-                "declarationRootDir": "{projectRoot}/src",
-                "thirdParty": false,
-                "deleteOutputPath": true
-            }
-        },
         "clean:dist": {
             "executor": "nx:run-commands",
             "options": {
                 "command": "npx rimraf dist",
+                "cwd": "{projectRoot}"
+            }
+        },
+        "clean:cache": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx nx reset",
                 "cwd": "{projectRoot}"
             }
         }
@@ -215,6 +146,14 @@
                 "previewTargetName": "preview",
                 "serveStaticTargetName": "serve-static",
                 "typecheckTargetName": "typecheck",
+                "buildDepsTargetName": "build-deps",
+                "watchDepsTargetName": "watch-deps"
+            }
+        },
+        {
+            "plugin": "@nx/rollup/plugin",
+            "options": {
+                "buildTargetName": "build",
                 "buildDepsTargetName": "build-deps",
                 "watchDepsTargetName": "watch-deps"
             }

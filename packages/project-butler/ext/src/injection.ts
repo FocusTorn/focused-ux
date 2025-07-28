@@ -1,4 +1,3 @@
-import type { AwilixContainer } from 'awilix'
 import { ProjectButlerService } from '@fux/project-butler-core'
 import type { ITerminalProvider } from '@fux/project-butler-core'
 import { ConfigurationService } from '@fux/shared'
@@ -7,21 +6,23 @@ import { FileSystemAdapter } from './_adapters/FileSystem.adapter.js'
 import { ProcessAdapter } from './_adapters/Process.adapter.js'
 import { VSCodeTerminalAdapter } from './_adapters/VSCodeTerminal.adapter.js'
 import { VSCodeWindowAdapter } from './_adapters/VSCodeWindow.adapter.js'
-import { ExtensionContext } from 'vscode'
+import type { ExtensionContext } from 'vscode'
 
 let createContainer: typeof import('awilix').createContainer
 let InjectionMode: typeof import('awilix').InjectionMode
 let asValue: typeof import('awilix').asValue
 let asClass: typeof import('awilix').asClass
 
-export async function createDIContainer(context: ExtensionContext): Promise<AwilixContainer> {
+export async function createDIContainer(_context: ExtensionContext): Promise<import('awilix').AwilixContainer> {
 	if (!createContainer) {
 		const awilixModule = await import('awilix') as typeof import('awilix')
+
 		createContainer = awilixModule.createContainer
 		InjectionMode = awilixModule.InjectionMode
 		asValue = awilixModule.asValue
 		asClass = awilixModule.asClass
 	}
+
 	const container = createContainer({
 		injectionMode: InjectionMode.PROXY,
 	})

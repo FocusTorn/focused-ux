@@ -40,7 +40,8 @@
             }
         },
         "lint": {},
-        "clean:dist": { "extends": "clean:dist" }
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" }
     },
     "tags": []
 }

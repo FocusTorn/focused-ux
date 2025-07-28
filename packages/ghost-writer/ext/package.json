@@ -93,7 +93,7 @@
     "focused ux"
   ],
   "engines": {
-    "vscode": "^1.99.3"
+    "vscode": "1.99.3"
   },
   "license": "MIT"
 }

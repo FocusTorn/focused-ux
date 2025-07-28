@@ -28,4 +28,28 @@ export class WindowAdapter implements IWindow {
 		await showTimedInformationMessageUtil(message, finalDurationMs)
 	}
 
+	public showInformationMessage(message: string, ...items: string[]): Thenable<string | undefined> {
+		return vscode.window.showInformationMessage(message, ...items)
+	}
+
+	public showWarningMessage(message: string, options?: { modal?: boolean }, ...items: any[]): Thenable<any> {
+		return vscode.window.showWarningMessage(message, options, ...items)
+	}
+
+	public showInputBox(options: any): Thenable<string | undefined> {
+		return vscode.window.showInputBox(options)
+	}
+
+	public showTextDocument(doc: any): Thenable<any> {
+		return vscode.window.showTextDocument(doc)
+	}
+
+	public createTreeView(viewId: string, options: any): any {
+		return vscode.window.createTreeView(viewId, options)
+	}
+
+	public withProgress(options: any, task: () => Promise<any>): Thenable<any> {
+		return vscode.window.withProgress(options, task)
+	}
+
 }

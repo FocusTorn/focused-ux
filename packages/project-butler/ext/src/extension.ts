@@ -5,13 +5,11 @@ import { createDIContainer } from './injection.js'
 import { constants } from './_config/constants.js'
 import { hotswap } from './hotswap.js'
 
-export function activate(context: ExtensionContext): void {
+export async function activate(context: ExtensionContext): Promise<void> {
 	console.log(`[${constants.extension.name}] Activating...`)
 
-	const containerPromise = createDIContainer(context);
-
-	(async () => {
-		const container = await containerPromise
+	try {
+		const container = await createDIContainer(context)
 		const projectButlerService = container.resolve('projectButlerService') as IProjectButlerService
 
 		const disposables: Disposable[] = [
@@ -37,8 +35,11 @@ export function activate(context: ExtensionContext): void {
 		]
 
 		context.subscriptions.push(...disposables)
-		console.log(`[${constants.extension.name}] Activated.`)
-	})()
+		console.log(`[${constants.extension.name}] Activated successfully.`)
+	} catch (error) {
+		console.error(`[${constants.extension.name}] Failed to activate:`, error)
+		vscode.window.showErrorMessage(`Failed to activate ${constants.extension.name}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+	}
 }
 
 export function deactivate(): void {}

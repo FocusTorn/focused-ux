@@ -5,8 +5,16 @@ import { EventEmitter, TreeItemCheckboxState, TreeItemCollapsibleState } from 'v
 import type { Event, Disposable } from 'vscode'
 
 //= MISC ======================================================================================================
-import * as micromatch from 'micromatch'
+let micromatch: any;
 let yaml: typeof import('js-yaml');
+
+async function getMicromatch() {
+  if (!micromatch) {
+    micromatch = await import('micromatch');
+  }
+  return micromatch;
+}
+
 async function getYaml() {
   if (!yaml) {
     yaml = (await import('js-yaml'));
@@ -173,10 +181,11 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 
 	private async isUriHiddenForProviderUi(uri: string): Promise<boolean> {
 		const relativePath = this.workspace.asRelativePath(uri, false).replace(/\\/g, '/')
+		const mm = await getMicromatch()
 
-		if (micromatch.isMatch(relativePath, this.globalIgnoreGlobs))
+		if (mm.isMatch(relativePath, this.globalIgnoreGlobs))
 			return true
-		if (micromatch.isMatch(relativePath, this.contextExplorerIgnoreGlobs))
+		if (mm.isMatch(relativePath, this.contextExplorerIgnoreGlobs))
 			return true
 
 		if (this.fileGroupsConfig) {
@@ -186,7 +195,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 				const isVisible = await this.quickSettingsService.getSettingState(settingId)
 
 				if (isVisible === false) {
-					if (micromatch.isMatch(relativePath, group.items || [])) {
+					if (mm.isMatch(relativePath, group.items || [])) {
 						return true
 					}
 				}
@@ -208,17 +217,19 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 
 		if (element && element.type === 'directory') {
 			const relativeElementPath = this.workspace.asRelativePath(element.uri, false).replace(/\\/g, '/')
+			const mm = await getMicromatch()
 
-			if (micromatch.isMatch(relativeElementPath, this.contextExplorerHideChildrenGlobs)) {
+			if (mm.isMatch(relativeElementPath, this.contextExplorerHideChildrenGlobs)) {
 				return []
 			}
 		}
 
 		try {
 			const entries = await this.fileSystem.readDirectory(sourceUri)
+			const mm = await getMicromatch()
 			const promises = entries
 				.filter(isFileOrDirectory)
-				.map(async (entry) => {
+				.map(async (entry: DirectoryEntry) => {
 					const childUri = this.path.join(sourceUri, entry.name)
 
 					if (await this.isUriHiddenForProviderUi(childUri)) {
@@ -228,15 +239,15 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 					const relativeChildPath = this.workspace.asRelativePath(childUri, false).replace(/\\/g, '/')
 					let collapsibleStateOverride: TreeItemCollapsibleState | undefined
 
-					if (entry.type === 'directory' && micromatch.isMatch(relativeChildPath, this.contextExplorerHideChildrenGlobs)) {
+					if (entry.type === 'directory' && mm.isMatch(relativeChildPath, this.contextExplorerHideChildrenGlobs)) {
 						collapsibleStateOverride = TreeItemCollapsibleState.None
 					}
 					return new FileExplorerItem(childUri, entry.name, entry.type, this.getCheckboxState(childUri) || TreeItemCheckboxState.Unchecked, undefined, collapsibleStateOverride)
 				})
 
-			const resolvedChildren = (await Promise.all(promises)).filter((item): item is FileExplorerItem => item !== null)
+			const resolvedChildren = (await Promise.all(promises)).filter((item: any): item is FileExplorerItem => item !== null)
 
-			return resolvedChildren.sort((a, b) => {
+			return resolvedChildren.sort((a: FileExplorerItem, b: FileExplorerItem) => {
 				if (a.type === 'directory' && b.type === 'file')
 					return -1
 				if (a.type === 'file' && b.type === 'directory')
@@ -351,11 +362,11 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 
 				const content = await this.fileSystem.readFile(uri)
 
-				return this.tokenizerService.calculateTokens(content)
+				return await this.tokenizerService.calculateTokens(content)
 			}
 			else {
 				const entries = await this.fileSystem.readDirectory(uri)
-				const promises = entries.map(async (entry) => {
+				const promises = entries.map(async (entry: DirectoryEntry) => {
 					const childUri = this.path.join(uri, entry.name)
 
 					if (await this.isUriHiddenForProviderUi(childUri))
@@ -371,7 +382,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 
 				if (counts.includes(Infinity))
 					return Infinity
-				return counts.reduce((sum, count) => sum + count, 0)
+				return counts.reduce((sum: number, count: number) => sum + count, 0)
 			}
 		}
 		catch (_e) { /* ignore */ }

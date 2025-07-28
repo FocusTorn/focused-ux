@@ -86,7 +86,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider, Tr
 			dragAndDropController: this,
 		})
 
-		this.treeView.onDidChangeSelection(async (e) => {
+		this.treeView!.onDidChangeSelection(async (e) => {
 			if (e.selection.length > 0) {
 				const clickedItem = e.selection[0]
 				if (!clickedItem.isDirectory && clickedItem.resourceUri) {
@@ -95,8 +95,8 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider, Tr
 			}
 		})
 
-		this.iContext.subscriptions.push(this.treeView)
-		return this.treeView
+		this.iContext.subscriptions.push(this.treeView!)
+		return this.treeView!
 	}
 
 	public refresh(): void {

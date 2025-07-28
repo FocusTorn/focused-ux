@@ -94,6 +94,78 @@ const doc = (await getYaml()).load(str);
 - **Leaving in devDependencies** is harmless but unnecessary.
 - **TypeScript errors:** Use type assertions, not type arguments, on dynamic imports.
 
+## Preventing TypeScript Errors When Externalizing
+
+### 1. **Explicit Parameter Typing in Callbacks**
+When externalizing dependencies, ensure all callback parameters have explicit types to prevent implicit `any` errors:
+
+```ts
+// ❌ Wrong - implicit any
+const entries = await this.fileSystem.readDirectory(uri)
+const childrenUris = entries.map(entry => this.path.join(uri, entry.name))
+
+// ✅ Correct - explicit typing
+const entries = await this.fileSystem.readDirectory(uri)
+const childrenUris = entries.map((entry: DirectoryEntry) => this.path.join(uri, entry.name))
+```
+
+### 2. **Array Method Parameter Typing**
+Always type parameters in array methods like `map`, `filter`, `reduce`, `sort`:
+
+```ts
+// ❌ Wrong - implicit any
+const promises = entries.map(async (entry) => { /* ... */ })
+const resolved = items.filter((item): item is ValidType => item !== null)
+const sorted = items.sort((a, b) => a.name.localeCompare(b.name))
+const sum = counts.reduce((sum, count) => sum + count, 0)
+
+// ✅ Correct - explicit typing
+const promises = entries.map(async (entry: DirectoryEntry) => { /* ... */ })
+const resolved = items.filter((item: any): item is ValidType => item !== null)
+const sorted = items.sort((a: Item, b: Item) => a.name.localeCompare(b.name))
+const sum = counts.reduce((sum: number, count: number) => sum + count, 0)
+```
+
+### 3. **Interface and Type Definitions**
+Ensure all interfaces and types are properly defined and imported:
+
+```ts
+// Define or import the types you're using
+interface DirectoryEntry {
+  name: string
+  type: 'file' | 'directory'
+  // ... other properties
+}
+
+// Use explicit typing in all callbacks
+const processEntries = (entries: DirectoryEntry[]) => {
+  return entries.map((entry: DirectoryEntry) => {
+    // Process entry with full type safety
+  })
+}
+```
+
+### 4. **Type Guards and Assertions**
+Use type guards and assertions when dealing with unknown types:
+
+```ts
+// Type guard for filtering
+const isValidItem = (item: any): item is ValidItem => {
+  return item && typeof item.name === 'string'
+}
+
+// Usage with explicit typing
+const validItems = items.filter((item: any): item is ValidItem => isValidItem(item))
+```
+
+### 5. **Prevention Checklist**
+Before externalizing any dependency, ensure:
+- [ ] All callback parameters have explicit types
+- [ ] Array methods (`map`, `filter`, `reduce`, `sort`) have typed parameters
+- [ ] All interfaces and types are properly defined
+- [ ] Type guards are used for unknown types
+- [ ] No implicit `any` types in callback functions
+
 ---
 
 ## Checklist for Externalizing a Node Package

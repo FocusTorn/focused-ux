@@ -1,10 +1,7 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) ================================================================================
-import type { IWorkspace } from '@fux/shared/_interfaces/IWorkspace'
-import type { IPathUtilsService } from '@fux/shared/_interfaces/IPathUtilsService'
-import type { IWorkspaceUtilsService } from '@fux/shared/_interfaces/IWorkspaceUtilsService'
-import type { ICommonUtilsService } from '@fux/shared/_interfaces/ICommonUtilsService'
+import type { IWorkspace, IPathUtilsService, IWorkspaceUtilsService, ICommonUtilsService } from '@fux/shared'
 import { Uri, commands as VsCodeCommands } from 'vscode'
 import type * as nodeOs from 'node:os'
 import type * as nodePath from 'node:path'
