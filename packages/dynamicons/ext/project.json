@@ -12,9 +12,9 @@
                 "entryPoints": ["packages/dynamicons/ext/src/extension.ts"],
                 "outputPath": "packages/dynamicons/ext/dist",
                 "format": ["cjs"],
-                
+
                 "metafile": true,
-                
+
                 "platform": "node",
                 "bundle": true,
                 "external": ["vscode", "awilix"],
@@ -41,7 +41,8 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/dynamicons/ext --dev"
+                "command": "node _scripts/create-vsix.js packages/dynamicons/ext vsix_packages --dev",
+                "outputPath": "vsix_packages"
             }
         },
         "publish": {
@@ -55,5 +56,5 @@
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" }
     },
-    "tags": ["type:extension"]
+    "tags": ["ext"]
 }

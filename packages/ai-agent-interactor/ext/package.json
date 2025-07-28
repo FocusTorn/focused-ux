@@ -11,9 +11,11 @@
         "vscode": "^1.99.3"
     },
     "dependencies": {
-        "@fux/ai-agent-interactor-core": "workspace:*",
-        "@fux/shared": "workspace:*",
         "awilix": "^12.0.5"
+    },
+    "devDependencies": {
+        "@fux/ai-agent-interactor-core": "workspace:*",
+        "@fux/shared": "workspace:*"
     },
     "activationEvents": [
         "onUri"

@@ -40,9 +40,17 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/project-butler/ext --dev"
+                "command": "node _scripts/create-vsix.js packages/project-butler/ext vsix_packages --dev",
+                "outputPath": "vsix_packages"
             }
         },
+        
+        
+        
+        
+        
+        
+        
         "package:dev:only": {
             "executor": "nx:run-commands",
             "options": {

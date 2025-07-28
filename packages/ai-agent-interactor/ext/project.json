@@ -5,38 +5,41 @@
     "projectType": "application",
     "targets": {
         "build": {
-            "dependsOn": ["clean:dist"],
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
             "options": {
-                "main": "packages/ai-agent-interactor/ext/src/index.ts",
+                "entryPoints": ["packages/ai-agent-interactor/ext/src/extension.ts"],
                 "outputPath": "packages/ai-agent-interactor/ext/dist",
-                "tsConfig": "packages/ai-agent-interactor/ext/tsconfig.json",
+                "format": ["cjs"],
                 "platform": "node",
-                "format": ["esm"],
                 "bundle": true,
+                "external": ["vscode", "awilix"],
                 "sourcemap": true,
-                "target": "es2022",
-                "keepNames": true,
-                "external": ["vscode"],
-                "thirdParty": false,
-                "deleteOutputPath": true
+                "main": "packages/ai-agent-interactor/ext/src/extension.ts",
+                "tsConfig": "packages/ai-agent-interactor/ext/tsconfig.json",
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/ai-agent-interactor/ext/assets/",
+                        "output": "./assets/"
+                    }
+                ]
+            }
+        },
+        "package": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node _scripts/create-vsix.js packages/ai-agent-interactor/ext"
             }
         },
         "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node ./_scripts/create-dev-vsix.js ai-agent-interactor/ext"
-            }
-        },
-        "package": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
-            "outputs": ["{workspaceRoot}/vsix_packages/ai-agent-interactor.vsix"],
-            "options": {
-                "command": "vsce package --no-dependencies -o ../../../vsix_packages/ai-agent-interactor.vsix",
-                "cwd": "{projectRoot}"
+                "command": "node _scripts/create-vsix.js packages/ai-agent-interactor/ext vsix_packages --dev",
+                "outputPath": "vsix_packages"
             }
         },
         "publish": {
@@ -50,5 +53,5 @@
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" }
     },
-    "tags": ["type:extension"]
+    "tags": ["ext"]
 }

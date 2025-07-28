@@ -38,10 +38,11 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/ghost-writer/ext --dev"
+                "command": "node _scripts/create-vsix.js packages/ghost-writer/ext vsix_packages --dev",
+                "outputPath": "vsix_packages"
             }
         },
         "lint": {}
     },
-    "tags": []
+    "tags": ["ext"]
 }

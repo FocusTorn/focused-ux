@@ -1,26 +1,20 @@
 import { execSync } from 'node:child_process'
-import { readFileSync, mkdirSync, rmSync, cpSync, writeFileSync } from 'node:fs'
+import { readFileSync, mkdirSync, cpSync, writeFileSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import process from 'node:process'
+import { sync as rimrafSync } from 'rimraf'
 
-// This script creates a self-contained VSIX by building a clean, production-only
-// package in a temporary directory and allowing vsce to run its standard validation.
-//
-// The key steps are:
-// 1. Create a temporary directory.
-// 2. Create a modified package.json in it that *only* contains `dependencies`.
-// 3. Run `npm install --omit=dev` to create a clean, npm-compatible node_modules.
-// 4. Copy the build artifacts (`dist/`) and other assets.
-// 5. Run `vsce package` *without* --no-dependencies, allowing it to validate the clean environment.
+// This script creates a self-contained VSIX.
+// It now uses `rimraf` for robust directory cleanup to prevent hanging issues.
 //
 // Usage:
-// node _scripts/create-vsix.js <path_to_ext_dir> [--dev]
+// node _scripts/create-vsix.js <path_to_ext_dir> <output_dir> [--dev]
 
-const [packagePath, devFlag] = process.argv.slice(2)
+const [packagePath, outputDir, devFlag] = process.argv.slice(2)
 const isDevBuild = devFlag === '--dev'
 
-if (!packagePath) {
-    console.error('Error: Package path argument (relative to packages dir) is required.')
+if (!packagePath || !outputDir) {
+    console.error('Error: Package path and output directory arguments are required.')
     process.exit(1)
 }
 
@@ -32,14 +26,17 @@ const originalVersion = originalPackageJson.version
 const vsixBaseName = originalPackageJson.name
 
 const deployDir = join(workspaceRoot, 'tmp', 'deploy', vsixBaseName)
+const finalOutputDir = join(workspaceRoot, outputDir)
 
 console.log(`Preparing to package: ${vsixBaseName}`)
 console.log(`Deployment directory: ${deployDir}`)
+console.log(`Final output directory: ${finalOutputDir}`)
 
 try {
-    // 1. Clean and create the deployment directory.
-    rmSync(deployDir, { recursive: true, force: true })
+    // 1. Clean and create the deployment directory using rimraf for robustness.
+    rimrafSync(deployDir)
     mkdirSync(deployDir, { recursive: true })
+    mkdirSync(finalOutputDir, { recursive: true })
 
     // 2. Create a production-only package.json in the deploy directory.
     const prodPackageJson = { ...originalPackageJson }
@@ -47,20 +44,30 @@ try {
     delete prodPackageJson.scripts
     console.log('Created a production-only package.json manifest.')
 
-    // 3. Handle versioning for dev builds and fix license path.
+    // 3. Handle versioning. Use NX_TASK_HASH for dev builds.
     let finalVersion = originalVersion
+    let vsixFilename = `${vsixBaseName}-${finalVersion}.vsix`
+
     if (isDevBuild) {
-        const baseVersion = originalVersion.split('-')
-        finalVersion = `${baseVersion}-dev.${Date.now()}`
-        console.log(`Using temporary dev version: ${finalVersion}`)
+        const taskHash = process.env.NX_TASK_HASH
+        if (!taskHash) {
+            throw new Error(
+                'NX_TASK_HASH environment variable not found. This script should be run via Nx.'
+            )
+        }
+        const shortHash = taskHash.slice(0, 9)
+        finalVersion = `${originalVersion}-dev.${shortHash}`
+        vsixFilename = `${vsixBaseName}-dev.vsix` // Use a stable filename for caching
+        console.log(`Using deterministic dev version: ${finalVersion}`)
         prodPackageJson.version = finalVersion
     }
+
     if (prodPackageJson.license && prodPackageJson.license.startsWith('SEE LICENSE IN')) {
         prodPackageJson.license = 'SEE LICENSE IN LICENSE.txt'
     }
     writeFileSync(join(deployDir, 'package.json'), JSON.stringify(prodPackageJson, null, 4))
 
-    // 4. Install production dependencies using NPM for a standard node_modules structure.
+    // 4. Install production dependencies using NPM.
     console.log('Installing production dependencies with `npm install --omit=dev`...')
     const installCommand = 'npm install --omit=dev'
     execSync(installCommand, { cwd: deployDir, stdio: 'inherit' })
@@ -82,13 +89,9 @@ try {
     }
     console.log('Copied build artifacts and assets.')
 
-    // 6. Run vsce package from within the clean, prepared directory.
-    // By *not* using --no-dependencies, we allow vsce to run its validation,
-    // which should now pass in this clean environment.
-    const vsixOutputDir = join(workspaceRoot, 'vsix_packages')
-    mkdirSync(vsixOutputDir, { recursive: true })
-    const vsixOutputPath = join(vsixOutputDir, `${vsixBaseName}-${finalVersion}.vsix`)
-    const vsceCommand = `vsce package -o "${vsixOutputPath}"`
+    // 6. Run vsce package, writing to the specified output directory.
+    const vsixOutputPath = join(finalOutputDir, vsixFilename)
+    const vsceCommand = `vsce package --no-dependencies -o "${vsixOutputPath}"`
 
     console.log(`Running: ${vsceCommand} in ${deployDir}`)
     execSync(vsceCommand, { cwd: deployDir, stdio: 'inherit' })
@@ -97,7 +100,10 @@ try {
     console.error('❌ An error occurred during the packaging process:', error)
     process.exitCode = 1
 } finally {
-    // 7. Clean up the temporary deployment directory.
-    rmSync(deployDir, { recursive: true, force: true })
+    // 7. Clean up the temporary deployment directory using rimraf.
+    rimrafSync(deployDir)
     console.log(`Cleaned up temporary directory: ${deployDir}`)
 }
+
+// 8. Force exit the process to prevent any potential hanging.
+process.exit(0)

@@ -33,5 +33,5 @@
     },
     "lint": {}
   },
-  "tags": ["type:extension"]
+  "tags": ["ext"]
 } 
