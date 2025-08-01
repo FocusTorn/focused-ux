@@ -14,7 +14,9 @@ export async function createDIContainer(_context: ExtensionContext): Promise<imp
 		injectionMode: InjectionMode.PROXY,
 	})
 
-	// Register Adapters
+    
+	// Register Adapterssswefwef
+    // sdfsdf
 	container.register({
 		fileSystem: asClass(FileSystemAdapter).singleton(),
 		process: asClass(ProcessAdapter).singleton(),

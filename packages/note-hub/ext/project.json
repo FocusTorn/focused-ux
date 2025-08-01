@@ -14,7 +14,7 @@
                 "format": ["cjs"],
                 "platform": "node",
                 "bundle": true,
-                "external": ["vscode", "awilix"],
+                "external": ["vscode", "awilix", "js-yaml"],
                 "sourcemap": true,
                 "main": "packages/note-hub/ext/src/extension.ts",
                 "tsConfig": "packages/note-hub/ext/tsconfig.json",
@@ -31,21 +31,18 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/note-hub/ext"
+                "command": "node scripts/create-vsix.js packages/note-hub/ext vsix_packages"
             }
         },
         "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/note-hub/ext vsix_packages --dev",
+                "command": "node scripts/create-vsix.js packages/note-hub/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"
             }
         },
-        
-        
-        
-        
+
         "publish": {
             "executor": "nx:run-commands",
             "dependsOn": ["package"],

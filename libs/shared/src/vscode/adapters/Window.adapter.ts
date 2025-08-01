@@ -48,6 +48,10 @@ export class WindowAdapter implements IWindow {
 		return vscode.window.createTreeView(viewId, options)
 	}
 
+	public registerTreeDataProvider(viewId: string, provider: any): any {
+		return vscode.window.registerTreeDataProvider(viewId, provider)
+	}
+
 	public withProgress(options: any, task: () => Promise<any>): Thenable<any> {
 		return vscode.window.withProgress(options, task)
 	}

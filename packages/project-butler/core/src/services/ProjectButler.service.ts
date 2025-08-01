@@ -3,6 +3,7 @@ import type { IProjectButlerService } from '../_interfaces/IProjectButlerService
 import type { ITerminalProvider } from '../_interfaces/ITerminal.js'
 import type { IWindow } from '../_interfaces/IWindow.js'
 import * as path from 'node:path'
+import { load as loadYaml } from 'js-yaml'
 
 export class ProjectButlerService implements IProjectButlerService {
 
@@ -116,15 +117,82 @@ export class ProjectButlerService implements IProjectButlerService {
 				return
 			}
 
-			const scriptPath = path.join(workspaceRoot, '_scripts', 'js', 'format-package-json.js')
-            
-			const command = `node "${scriptPath}" "${finalUri}"`
+			// Read the master order from .FocusedUX config
+			const configPath = path.join(workspaceRoot, '.FocusedUX')
+			let configContent: string
+			try {
+				configContent = await this.fileSystem.readFile(configPath)
+			} catch (err: any) {
+				this.window.showErrorMessage(`Could not read '.FocusedUX' file: ${err.message}`)
+				return
+			}
 
-			this.process.exec(command, { cwd: workspaceRoot }, (error: Error | null, _stdout: string, stderr: string) => {
-				if (error) {
-					this.window.showErrorMessage(`Failed to format package.json: ${stderr || error.message}`)
+			let config: any
+			try {
+				config = loadYaml(configContent)
+			} catch (err: any) {
+				this.window.showErrorMessage(`Failed to parse YAML from '.FocusedUX': ${err.message}`)
+				return
+			}
+
+			const order = config?.TerminalButler?.['packageJson-order']
+			if (!order || !Array.isArray(order)) {
+				this.window.showErrorMessage("Configuration Error: 'TerminalButler.packageJson-order' not found or invalid in '.FocusedUX'.")
+				return
+			}
+
+			// Ensure 'name' is always first
+			const masterOrder = order.includes('name') ? order : ['name', ...order]
+
+			// Read and parse the package.json file
+			let packageContent: string
+			try {
+				packageContent = await this.fileSystem.readFile(finalUri)
+			} catch (err: any) {
+				this.window.showErrorMessage(`Failed to read package.json: ${err.message}`)
+				return
+			}
+
+			const packageData = JSON.parse(packageContent)
+			const originalKeys = Object.keys(packageData)
+
+			// Validate that no unknown top-level keys exist
+			const commentKeyRegex = /=.*=$/
+			for (const key of originalKeys) {
+				if (commentKeyRegex.test(key)) {
+					continue
 				}
-			})
+
+				if (!masterOrder.includes(key)) {
+					this.window.showErrorMessage(`Validation Failed: Found top-level key '${key}' which is not in the allowed ordering list defined in .FocusedUX.`)
+					return
+				}
+			}
+
+			// Re-order the keys into a new object
+			const orderedPackage: any = {}
+			for (const key of masterOrder) {
+				if (Object.prototype.hasOwnProperty.call(packageData, key)) {
+					orderedPackage[key] = packageData[key]
+				}
+			}
+
+			// Add back any comment-like keys
+			for (const key of originalKeys) {
+				if (commentKeyRegex.test(key)) {
+					orderedPackage[key] = packageData[key]
+				}
+			}
+
+			// Convert back to formatted JSON and write to file
+			const newJsonContent = JSON.stringify(orderedPackage, null, 4) + '\n'
+
+			try {
+				await this.fileSystem.writeFile(finalUri, new TextEncoder().encode(newJsonContent))
+				this.window.showTimedInformationMessage('Successfully formatted package.json')
+			} catch (err: any) {
+				this.window.showErrorMessage(`Failed to write updated package.json: ${err.message}`)
+			}
 		}
 		catch (error: any) {
 			this.window.showErrorMessage(`Failed to format package.json: ${error.message}`)

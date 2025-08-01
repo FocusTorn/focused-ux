@@ -62,13 +62,11 @@
             "outputs": ["{options.outputPath}"],
             "inputs": ["production", "^production"]
         },
-        
-        
-        
-        
+
         "publish": {
             "dependsOn": ["build"]
         },
+
         "@nx/esbuild:esbuild": {
             "cache": true,
             "inputs": ["production", "^production"],
@@ -105,7 +103,7 @@
         "package:dev": {
             "cache": true,
             "dependsOn": ["build"],
-            "inputs": ["production", "^production", "{workspaceRoot}/_scripts/create-vsix.js"],
+            "inputs": ["production", "^production", "{workspaceRoot}/scripts/create-vsix.js"],
             "outputs": ["{options.outputPath}"]
         }
     },
@@ -115,6 +113,14 @@
             "@fux/ghost-writer-ext",
             "@fux/note-hub-core",
             "@fux/note-hub-ext",
+            "@fux/project-butler-core",
+            "@fux/project-butler-ext",
+            "@fux/context-cherry-picker-core",
+            "@fux/context-cherry-picker-ext",
+            "@fux/ai-agent-interactor-core",
+            "@fux/ai-agent-interactor-ext",
+            "@fux/dynamicons-core",
+            "@fux/dynamicons-ext",
             "@fux/libs/shared"
         ],
         "projectsRelationship": "independent",
@@ -127,15 +133,6 @@
         }
     },
     "plugins": [
-        {
-            "plugin": "@nx/js/typescript",
-            "include": ["packages/*/core/**/*", "libs/**/*"],
-            "options": {
-                "typecheck": {
-                    "targetName": "typecheck"
-                }
-            }
-        },
         {
             "plugin": "@nx/eslint/plugin",
             "options": {
@@ -151,30 +148,10 @@
                 "packages/ai-agent-interactor/core/**/*",
                 "packages/ai-agent-interactor/ext/**/*",
                 "packages/dynamicons/core/**/*",
-                "packages/dynamicons/ext/**/*"
+                "packages/dynamicons/ext/**/*",
+                "packages/note-hub/core/**/*",
+                "packages/note-hub/ext/**/*"
             ]
-        },
-        {
-            "plugin": "@nx/vite/plugin",
-            "options": {
-                "buildTargetName": "build",
-                "testTargetName": "test",
-                "serveTargetName": "serve",
-                "devTargetName": "dev",
-                "previewTargetName": "preview",
-                "serveStaticTargetName": "serve-static",
-                "typecheckTargetName": "typecheck",
-                "buildDepsTargetName": "build-deps",
-                "watchDepsTargetName": "watch-deps"
-            }
-        },
-        {
-            "plugin": "@nx/rollup/plugin",
-            "options": {
-                "buildTargetName": "build",
-                "buildDepsTargetName": "build-deps",
-                "watchDepsTargetName": "watch-deps"
-            }
         }
     ]
 }

@@ -1,30 +1,182 @@
 import type { AwilixContainer } from 'awilix'
-import { createContainer, InjectionMode, asValue, asClass } from 'awilix'
+import { createContainer, InjectionMode, asValue, asClass, asFunction } from 'awilix'
 import type { ExtensionContext } from 'vscode'
-import { NotesHubService, NotesHubActionService, NotesHubConfigService, NotesHubProviderManager } from '@fux/note-hub-core'
+import os from 'node:os'
+import path from 'node:path'
+import fs from 'node:fs/promises'
+import { FileType as VsCodeFileType } from 'vscode'
+
+// F-UX Shared Imports
+import {
+	ConfigurationService,
+	CommonUtilsAdapter,
+	FileSystemAdapter,
+	PathUtilsAdapter,
+	ProcessAdapter,
+	WindowAdapter,
+	WorkspaceAdapter,
+} from '@fux/shared'
+import type {
+	IConfigurationService,
+	ICommonUtilsService,
+	IFileSystem,
+	IPathUtilsService,
+	IProcess,
+	IWindow,
+	IWorkspace,
+	IWorkspaceUtilsService,
+	IFrontmatterUtilsService,
+	IEnv,
+	ICommands,
+} from '@fux/shared'
+
+// Note Hub Core Imports
+import {
+	NotesHubService,
+	NotesHubActionService,
+	NotesHubConfigService,
+	NotesHubProviderManager,
+} from '@fux/note-hub-core'
+import type {
+	INotesHubService,
+	INotesHubActionService,
+	INotesHubConfigService,
+	INotesHubProviderManager,
+} from '@fux/note-hub-core'
 import { NotesHubModule } from './NotesHub.module.js'
-// import adapters and utility services as needed
+
+// Local Adapters
+import { WorkspaceUtilsAdapter } from './adapters/WorkspaceUtils.adapter.js'
+import { FrontmatterUtilsAdapter } from './adapters/FrontmatterUtils.adapter.js'
+import { EnvAdapter } from './adapters/Env.adapter.js'
+import { CommandsAdapter } from './adapters/Commands.adapter.js'
 
 export async function createDIContainer(context: ExtensionContext): Promise<AwilixContainer> {
 	const container = createContainer({
 		injectionMode: InjectionMode.PROXY,
 	})
 
-	// Register VSCode context
+	// VSCode Primitives & Node built-ins
 	container.register({
 		extensionContext: asValue(context),
+		iOsHomedir: asValue(os.homedir),
+		iPathJoin: asValue(path.join),
+		iPathNormalize: asValue(path.normalize),
+		iPathDirname: asValue(path.dirname),
+		iPathBasename: asValue(path.basename),
+		iPathParse: asValue(path.parse),
+		iPathExtname: asValue(path.extname),
+		iFspAccess: asValue(fs.access),
+		iFspRename: asValue(fs.rename),
+		iFileTypeEnum: asValue(VsCodeFileType),
 	})
 
-	// Register core services
+	// Shared & Local Adapters
 	container.register({
-		notesHubService: asClass(NotesHubService).singleton(),
-		notesHubActionService: asClass(NotesHubActionService).singleton(),
-		notesHubConfigService: asClass(NotesHubConfigService).singleton(),
-		notesHubProviderManager: asClass(NotesHubProviderManager).singleton(),
-		notesHubModule: asClass(NotesHubModule).singleton(),
+		iFileSystem: asClass(FileSystemAdapter).singleton(),
+		iProcess: asClass(ProcessAdapter).singleton(),
+		iPathUtils: asClass(PathUtilsAdapter).singleton(),
+		iWorkspace: asClass(WorkspaceAdapter).singleton(),
+		iEnv: asClass(EnvAdapter).singleton(),
+		iCommands: asClass(CommandsAdapter).singleton(),
+		iFrontmatterUtils: asFunction((cradle: { iFileSystem: IFileSystem }) => new FrontmatterUtilsAdapter(cradle.iFileSystem)).singleton(),
+		iWorkspaceUtils: asFunction((cradle: { iWorkspace: IWorkspace }) => new WorkspaceUtilsAdapter(cradle.iWorkspace)).singleton(),
+		iConfigurationService: asFunction((cradle: { iFileSystem: IFileSystem, iProcess: IProcess }) => new ConfigurationService(cradle.iFileSystem, cradle.iProcess)).singleton(),
+		iWindow: asFunction((cradle: { iConfigurationService: IConfigurationService }) => new WindowAdapter(cradle.iConfigurationService)).singleton(),
+		iCommonUtils: asFunction((cradle: { iWindow: IWindow }) => new CommonUtilsAdapter(cradle.iWindow)).singleton(),
 	})
 
-	// Register adapters and utility services here as needed
+	// Note Hub Core Services (using factories to inject dependencies)
+	container.register({
+		iProviderManager: asFunction((cradle: {
+			extensionContext: ExtensionContext
+			iWindow: IWindow
+			iWorkspace: IWorkspace
+			iCommands: ICommands
+			iCommonUtils: ICommonUtilsService
+			iFrontmatterUtils: IFrontmatterUtilsService
+			iPathUtils: IPathUtilsService
+		}) => new NotesHubProviderManager(
+			cradle.extensionContext,
+			cradle.iWindow,
+			cradle.iWorkspace,
+			cradle.iCommands,
+			cradle.iCommonUtils,
+			cradle.iFrontmatterUtils,
+			cradle.iPathUtils,
+		)).singleton(),
+
+		iConfigService: asFunction((cradle: {
+			iWorkspace: IWorkspace
+			iPathUtils: IPathUtilsService
+			iWorkspaceUtils: IWorkspaceUtilsService
+			iCommonUtils: ICommonUtilsService
+			iOsHomedir: typeof os.homedir
+			iPathJoin: typeof path.join
+			iPathNormalize: typeof path.normalize
+		}) => new NotesHubConfigService(
+			cradle.iWorkspace,
+			cradle.iPathUtils,
+			cradle.iWorkspaceUtils,
+			cradle.iCommonUtils,
+			cradle.iOsHomedir,
+			cradle.iPathJoin,
+			cradle.iPathNormalize,
+		)).singleton(),
+
+		iActionService: asFunction((cradle: {
+			extensionContext: ExtensionContext
+			iWindow: IWindow
+			iWorkspace: IWorkspace
+			iEnv: IEnv
+			iCommonUtils: ICommonUtilsService
+			iFrontmatterUtils: IFrontmatterUtilsService
+			iPathUtils: IPathUtilsService
+			iProviderManager: NotesHubProviderManager
+			iPathJoin: typeof path.join
+			iPathDirname: typeof path.dirname
+			iPathBasename: typeof path.basename
+			iPathParse: typeof path.parse
+			iPathExtname: typeof path.extname
+			iFspAccess: typeof fs.access
+			iFspRename: typeof fs.rename
+			iFileTypeEnum: typeof VsCodeFileType
+		}) => new NotesHubActionService(
+			cradle.extensionContext,
+			cradle.iWindow,
+			cradle.iWorkspace,
+			cradle.iEnv,
+			cradle.iCommonUtils,
+			cradle.iFrontmatterUtils,
+			cradle.iPathUtils,
+			cradle.iProviderManager,
+			cradle.iPathJoin,
+			cradle.iPathDirname,
+			cradle.iPathBasename,
+			cradle.iPathParse,
+			cradle.iPathExtname,
+			cradle.iFspAccess,
+			cradle.iFspRename,
+			cradle.iFileTypeEnum,
+		)).singleton(),
+
+		notesHubService: asFunction((cradle: {
+			iWorkspace: IWorkspace
+			iWindow: IWindow
+			iCommands: ICommands
+			iConfigService: INotesHubConfigService
+			iActionService: INotesHubActionService
+			iProviderManager: INotesHubProviderManager
+		}) => new NotesHubService(
+			cradle.iWorkspace,
+			cradle.iWindow,
+			cradle.iCommands,
+			cradle.iConfigService,
+			cradle.iActionService,
+			cradle.iProviderManager,
+		)).singleton(),
+		notesHubModule: asFunction((cradle: { notesHubService: INotesHubService }) => new NotesHubModule(cradle.notesHubService)).singleton(),
+	})
 
 	return container
 }

@@ -1,0 +1,10 @@
+{
+    "name": "@fux/structure-auditor",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "devDependencies": {
+        "@types/node": "18.19.39",
+        "tsx": "4.16.2"
+    }
+}

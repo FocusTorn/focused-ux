@@ -31,6 +31,12 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 	) {}
 
 	public async initializeProviders(config: NotesHubConfig, commandPrefix: string, openNoteCommandId: string): Promise<void> { //>
+		// Check if providers are already initialized
+		if (this.projectNotesProvider || this.remoteNotesProvider || this.globalNotesProvider) {
+			console.warn(`[NotesHub] Providers already initialized, skipping.`)
+			return
+		}
+
 		if (config.isProjectNotesEnabled) {
 			this.projectNotesProvider = new ProjectNotesDataProvider(
 				this.iContext,
@@ -144,22 +150,13 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 	public async revealNotesHubItem( //>
 		provider: INotesHubDataProvider,
 		item: INotesHubItem,
-		select: boolean = false,
+		_select: boolean = false,
 	): Promise<void> {
 		try {
-			if (!provider.treeView) {
-				this.iCommonUtils.errMsg(`Tree view not found for provider: ${provider.providerName}`)
-				return
-			}
-			if (!item) {
-				this.iCommonUtils.errMsg('Item to reveal is null or undefined')
-				return
-			}
-			await provider.treeView.reveal(item, { expand: true, select: false })
-			if (select) {
-				await this.iCommonUtils.delay(50)
-				await provider.treeView.reveal(item, { select: true, focus: true, expand: true })
-			}
+			// With the change to `registerTreeDataProvider`, we no longer have access to the
+			// `TreeView` instance, so we cannot programmatically reveal items.
+			// This is a known limitation to fix the extension activation errors.
+			console.warn(`[NotesHub] Attempted to reveal item '${item.filePath}' on provider '${provider.providerName}', but this feature is disabled.`)
 		}
 		catch (error) {
 			this.iCommonUtils.errMsg('Error revealing item in Notes Hub', error)

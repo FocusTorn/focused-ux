@@ -20,7 +20,8 @@
                 "keepNames": true,
                 "declarationRootDir": "packages/context-cherry-picker/core/src",
                 "thirdParty": false,
-                "deleteOutputPath": true
+                "deleteOutputPath": true,
+                "external": ["vscode", "awilix", "gpt-tokenizer", "js-yaml", "micromatch"]
             }
         },
         "verify:dist:hash": {

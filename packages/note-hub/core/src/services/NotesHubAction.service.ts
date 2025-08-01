@@ -91,8 +91,9 @@ export class NotesHubActionService implements INotesHubActionService {
 		}
 
 		const finalNewName = newExt ? `${newName}${newExt}` : newName
-		const newPath = this.iPathJoin(this.iPathDirname(oldFilePath), finalNewName)
-		const newUri = Uri.file(this.iPathUtils.santizePath(newPath))
+		const sanitizedFileName = this.iPathUtils.santizePath(finalNewName)
+		const newPath = this.iPathJoin(this.iPathDirname(oldFilePath), sanitizedFileName)
+		const newUri = Uri.file(newPath)
 
 		if (oldUri.toString() === newUri.toString())
 			return
@@ -312,8 +313,9 @@ export class NotesHubActionService implements INotesHubActionService {
 			return
 
 		const { newName, newExtension } = result
-		const newNotePath = this.iPathJoin(notesDir, `${newName}${newExtension}`)
-		const newNoteUri = Uri.file(this.iPathUtils.santizePath(newNotePath))
+		const sanitizedFileName = this.iPathUtils.santizePath(`${newName}${newExtension}`)
+		const newNotePath = this.iPathJoin(notesDir, sanitizedFileName)
+		const newNoteUri = Uri.file(newNotePath)
 
 		try {
 			await this.iWorkspace.fs.writeFile(newNoteUri, Buffer.from(`# ${newName}\n`, 'utf-8'))
@@ -355,7 +357,8 @@ export class NotesHubActionService implements INotesHubActionService {
 			return
 
 		const targetFolderPath = targetFolderItem.filePath
-		const newFolderPath = this.iPathJoin(targetFolderPath, this.iPathUtils.santizePath(newFolderName))
+		const sanitizedFolderName = this.iPathUtils.santizePath(newFolderName)
+		const newFolderPath = this.iPathJoin(targetFolderPath, sanitizedFolderName)
 		const newFolderUri = Uri.file(newFolderPath)
 
 		try {

@@ -15,7 +15,9 @@ export class PathUtilsAdapter implements IPathUtilsService {
 	}
 
 	public santizePath(pathStr: string): string {
-		return pathStr.replace(/[<>:"|?*]/g, '_')
+		// Replace invalid characters in filenames/foldernames
+		// This is now only used for sanitizing individual names, not full paths
+		return pathStr.replace(/[<>"|?*]/g, '_')
 	}
 
 }

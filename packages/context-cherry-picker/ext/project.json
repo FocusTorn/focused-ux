@@ -12,9 +12,7 @@
                 "entryPoints": ["packages/context-cherry-picker/ext/src/extension.ts"],
                 "outputPath": "packages/context-cherry-picker/ext/dist",
                 "format": ["cjs"],
-                
                 "metafile": true,
-                
                 "platform": "node",
                 "bundle": true,
                 "external": ["vscode", "awilix", "gpt-tokenizer", "js-yaml", "micromatch"],
@@ -34,14 +32,14 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/context-cherry-picker/ext"
+                "command": "node scripts/create-vsix.js packages/context-cherry-picker/ext vsix_packages"
             }
         },
         "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/context-cherry-picker/ext vsix_packages --dev",
+                "command": "node scripts/create-vsix.js packages/context-cherry-picker/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"
             }
         },

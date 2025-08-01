@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) ================================================================================
-import type { IWorkspace } from '@fux/shared'
+import type { IWindow, IWorkspace, ICommands } from '@fux/shared'
 import type { INotesHubService } from '../_interfaces/INotesHubService.js'
 import type { INotesHubDataProvider } from '../_interfaces/INotesHubDataProvider.js'
 import type { INotesHubItem } from '../_interfaces/INotesHubItem.js'
@@ -21,6 +21,8 @@ export class NotesHubService implements INotesHubService {
 
 	constructor(
 		private readonly iWorkspace: IWorkspace,
+		private readonly iWindow: IWindow,
+		private readonly iCommands: ICommands,
 		private readonly iConfigService: INotesHubConfigService,
 		private readonly iActionService: INotesHubActionService,
 		private readonly iProviderManager: INotesHubProviderManager,
@@ -45,16 +47,21 @@ export class NotesHubService implements INotesHubService {
 
 		const configWatcher = this.iWorkspace.onDidChangeConfiguration(async (e) => {
 			if (e.affectsConfiguration(this.configPrefix)) {
-				this.dispose()
-				await this.initializeNotesHub(this.configPrefix, this.commandPrefix)
+				const action = await this.iWindow.showInformationMessage(
+					'A Notes Hub configuration change requires a reload to take effect.',
+					'Reload Window',
+				)
+
+				if (action === 'Reload Window') {
+					this.iCommands.executeCommand('workbench.action.reloadWindow')
+				}
 			}
 		})
 
-		this.disposables.push(configWatcher)
+		this.disposables.push(configWatcher, { dispose: () => this.iProviderManager.dispose() })
 	} //<
 
 	public dispose(): void { //>
-		this.iProviderManager.dispose()
 		this.disposables.forEach(d => d.dispose())
 		this.disposables = []
 	} //<

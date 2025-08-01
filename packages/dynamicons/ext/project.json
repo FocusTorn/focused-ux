@@ -12,12 +12,19 @@
                 "entryPoints": ["packages/dynamicons/ext/src/extension.ts"],
                 "outputPath": "packages/dynamicons/ext/dist",
                 "format": ["cjs"],
-
                 "metafile": true,
-
                 "platform": "node",
                 "bundle": true,
-                "external": ["vscode", "awilix"],
+                "external": [
+                    "vscode",
+                    "awilix",
+                    "js-yaml",
+                    "puppeteer",
+                    "sharp",
+                    "strip-json-comments",
+                    "svgo",
+                    "tsx"
+                ],
                 "sourcemap": true,
                 "main": "packages/dynamicons/ext/src/extension.ts",
                 "tsConfig": "packages/dynamicons/ext/tsconfig.json",
@@ -34,14 +41,14 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/dynamicons/ext"
+                "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages"
             }
         },
         "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/dynamicons/ext vsix_packages --dev",
+                "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"
             }
         },

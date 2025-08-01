@@ -1,17 +1,17 @@
 {
     "name": "fux-project-butler",
-    "displayName": "F-UX: Project Butler (Decoupled)",
-    "description": "A decoupled collection of project management utilities.",
+    "displayName": "F-UX: Project Butler",
+    "description": "A collection of project management utilities.",
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
     "version": "0.1.0",
     "dependencies": {
         "awilix": "^12.0.5",
-        "js-yaml": "^4.1.0"
+        "js-yaml": "^4.1.0",
+        "@fux/project-butler-core": "workspace:*",
+        "@fux/shared": "workspace:*"
     },
     "devDependencies": {
-        "@fux/project-butler-core": "workspace:*",
-        "@fux/shared": "workspace:*",
         "@types/node": "^24.0.10",
         "@types/vscode": "^1.99.3",
         "typescript": "^5.8.3"

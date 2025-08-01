@@ -1,6 +1,6 @@
 # SOP: FocusedUX New Mono-Extension
 
-## 1. :: Project Overview
+## 1. :: Project Overview <!-- Start Fold -->
 
 The **Focused-UX (F-UX)** project is a monorepo designed to produce a suite of VS Code extensions. The architecture follows a modular approach where each feature is developed as a self-contained, installable VS Code extension through a `core`/`ext` package pair.
 
@@ -21,7 +21,9 @@ The workspace contains the following packages:
 - `@fux/project-butler-core` & `@fux/project-butler-ext`
 - `@fux/ai-agent-interactor-core` & `@fux/ai-agent-interactor-ext`
 
-## 2. :: Package Archetypes
+###### END: Project Overview (END) <!-- Close Fold -->
+
+## 2. :: Package Archetypes <!-- Start Fold -->
 
 The monorepo consists of three primary package archetypes, each with a distinct purpose and configuration.
 
@@ -31,7 +33,9 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 
 ---
 
-## 3. :: Key Configuration Principles
+###### END: Package Archetypes (END) <!-- Close Fold -->
+
+## 3. :: Key Configuration Principles <!-- Start Fold -->
 
 ### 3.1. :: Dependency Flow
 
@@ -62,6 +66,24 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 - **`package.json`:**
     - MUST define `"main"`, `"types"`, and a wildcard `"exports"` map to support deep imports.
 
+#### 3.3.1. :: Core Package Configuration Details
+
+**`package.json`:**
+
+- **`dependencies`**: **MUST** list all third-party libraries that are used at runtime within the `core` logic. For example, if a service uses `typescript` to parse code, `typescript` must be a production dependency here.
+- **`devDependencies`**: Should generally be empty, containing only type definitions (`@types/*`) if necessary.
+
+**`project.json`:**
+
+- The `build` target **MUST** have the following options:
+    - `"bundle": false`: `core` packages are libraries, not standalone bundles.
+    - `"external": ["dep1", "dep2", ...]` : This array **MUST** list every third-party package from the `dependencies` section of its `package.json`. This provides essential metadata to the build system.
+
+**`tsconfig.lib.json`:**
+
+- **`references`**: **MUST** include a path to the `tsconfig.lib.json` of any local `workspace:*` dependencies (e.g., `../../../libs/shared/tsconfig.lib.json`).
+- **`paths`**: **MUST** contain mappings for all `workspace:*` dependencies to their `src` directory.
+
 ### 3.4. :: `ext` Package (Application)
 
 - **Purpose:** To be published as a final, bundled VS Code extension.
@@ -76,12 +98,37 @@ The monorepo consists of three primary package archetypes, each with a distinct 
     ```
 - **`tsconfig.json`:** MUST include:
     - Proper `references` to core packages
+
+#### 3.4.1. :: Third-Party Dependency Management
+
+- **Externalization Strategy:** Third-party runtime dependencies are externalized from the bundle to keep the CJS file size small.
+- **Packaging Process:** The `create-vsix.js` script manually constructs `node_modules` by copying resolved dependencies from the workspace during packaging.
+- **Dependency Resolution:** All third-party dependencies listed in the `ext` package's `package.json` are automatically resolved and included in the final VSIX package.
+- **Bundle Optimization:** This approach results in significantly smaller bundle sizes while maintaining full functionality.
     - `"rootDir": "src"` for clean output structure
 - **`package.json`:**
     - MUST define the `"main"` field pointing to the bundled output (e.g., `./dist/extension.cjs`).
     - MUST NOT include `"module"`, `"types"`, or `"exports"`, as it is not consumed as a library.
-    - MUST move workspace dependencies to `devDependencies` since they're bundled.
+    - **Crucially, all consumed workspace packages (e.g., `@fux/shared`, `@fux/my-feature-core`) MUST be listed in `dependencies`, not `devDependencies`.** This ensures their own production dependencies are correctly installed by the packaging script.
 - **Packaging:** MUST include a `.vscodeignore` file to exclude source code (`src/`), configuration files, and other development artifacts from the final VSIX package.
+
+#### 3.4.2. :: Extension Package Configuration Details
+
+**`package.json`:**
+
+- **`dependencies`**: **MUST** list the superset of all third-party dependencies required by the entire feature (both `ext` and its corresponding `core` package). It **MUST** also list its local `workspace:*` dependencies (e.g., `@fux/<feature>-core`, `@fux/shared`). This file dictates the versions that will be installed in the final package.
+- **`devDependencies`**: Should generally only contain type definitions (`@types/*`) and other build-time tools like `typescript`.
+
+**`project.json`:**
+
+- The `build` target **MUST** have the following options:
+    - `"bundle": true`: This is the critical setting that creates the self-contained extension.
+    - `"external": ["vscode", "dep1", "dep2", ...]` : This array **MUST** contain `"vscode"` and all third-party runtime dependencies listed in the `ext` package's `package.json`. Third-party dependencies are externalized to keep the CJS bundle size small and are resolved during packaging via the `create-vsix.js` script.
+    - `"assets"`: **MUST** be configured to copy the extension's `assets` directory to the output `dist` folder.
+
+**`tsconfig.json`:**
+
+- **`references`**: **MUST** include paths to the `tsconfig.lib.json` of all `workspace:*` dependencies (e.g., `../core/tsconfig.lib.json`, `../../../libs/shared/tsconfig.lib.json`).
 
 ### 3.5. :: Build & Task Execution (`nx.json`)
 
@@ -96,9 +143,9 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 - **Command Structure:** Aliases MUST be implemented to construct and execute the idiomatic `pnpm nx <target> <project>` command.
 - **Alias Mapping:** New aliases SHOULD be added to the central `$packageAliases` hashtable for dynamic generation.
 
----
+###### END: Key Configuration Principles (END) <!-- Close Fold -->
 
-## 4. :: Code Generation and Scaffolding
+## 4. :: Code Generation and Scaffolding <!-- Start Fold -->
 
 ### 4.1. :: Use of Native Generators
 
@@ -109,9 +156,9 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 - **Directive**: A generated module or package **MUST** be fully functional and runnable "out-of-the-box" without requiring manual correction.
 - **Directive**: This includes, but is not limited to, correct build configurations, valid launch/task definitions, and complete dependency injection setups for all essential, shared services (e.g., `IPathUtilsService`, `ICommonUtilsService`). Commenting out essential registrations in generated code is a deviation.
 
----
+###### END: Code Generation and Scaffolding (END) <!-- Close Fold -->
 
-## 5. :: Build Configuration Discoveries
+## 5. :: Build Configuration Discoveries <!-- Start Fold -->
 
 ### 5.1. :: ESBuild vs SWC
 
@@ -137,9 +184,9 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 - **Implementation**: All packages now use `build:core` or `build:extension` targets instead of duplicating configuration.
 - **Benefits**: Simplified maintenance, consistent builds, and easier new package creation.
 
----
+###### END: Build Configuration Discoveries (END) <!-- Close Fold -->
 
-## 6. :: Standard Workflow
+## 6. :: Standard Workflow <!-- Start Fold -->
 
 ### 6.1. :: Creating New Features
 
@@ -165,9 +212,9 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 4. **Test:** Install and test the extension in VSCode
 5. **Iterate:** Make changes and repeat the build/test cycle
 
----
+###### END: Standard Workflow (END) <!-- Close Fold -->
 
-## 7. :: Technical Constraints & Best Practices
+## 7. :: Technical Constraints & Best Practices <!-- Start Fold -->
 
 ### 7.1. :: TypeScript Configuration
 
@@ -185,20 +232,46 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 
 ### 7.3. :: Dependency Injection with Awilix
 
-- **Framework**: The project uses **awilix** for dependency injection across all packages
-- **Container Setup**: Each extension package includes an `injection.ts` file that sets up the DI container
-- **Service Registration**: All services (core, shared, and adapters) are registered in the DI container
+- **Framework**: The project uses **awilix** for dependency injection across all packages.
+- **Container Setup**: Each extension package includes an `injection.ts` file that sets up the DI container.
+- **Service Registration**: All services (core, shared, and adapters) are registered in the DI container.
 - **Static Imports**: `awilix` and other externalized packages **MUST** be imported using static, top-level `import` statements to allow the bundler to correctly externalize them.
 
     ```typescript
     // Correct - static import
     import { createContainer, asClass, asFunction } from 'awilix'
-
-    // Incorrect - dynamic import (prevents externalization)
-    const { createContainer, asClass, asFunction } = await import('awilix')
     ```
 
-- **Externalization**: Awilix must be listed in `external` in extension build options and in `dependencies` in `package.json`
+- **Externalization**: Awilix must be listed in `external` in extension build options and in `dependencies` in `package.json`.
+
+#### 7.3.1. :: Dependency Injection Best Practices
+
+- **One Container Per Extension:** Each extension has its own DI container, created in its `injection.ts` file.
+- **Use Factories for Dependencies:** Services that depend on other services or adapters **MUST** be registered using factory functions (`asFunction`) to ensure `awilix` can correctly resolve the dependency graph.
+- **Register All Dependencies:** The container **MUST** provide a concrete implementation for every interface required by the services it resolves. This includes adapters for VS Code APIs (`IWindow`, `IWorkspace`) and shared utilities (`IPathUtilsService`, etc.).
+- **Import Required Interfaces:** All interfaces used in DI registration **MUST** be imported from their respective packages to ensure proper typing and resolution.
+
+#### 7.3.2. :: Common DI Pitfalls & Troubleshooting
+
+- **`AwilixResolutionError`:** This is the most common error and almost always means a dependency is missing from the container.
+    - **Symptom:** `Could not resolve 'someService'.`
+    - **Cause:** The `injection.ts` file is missing a registration for `someService` or one of its transitive dependencies.
+    - **Solution:** Trace the dependency chain for the service that failed to resolve and ensure every required interface has a corresponding adapter or service registered in the container.
+
+- **Hallucinated Adapters:** Do not assume an adapter exists in `@fux/shared`.
+    - **Symptom:** TypeScript error `Module '"@fux/shared"' has no exported member 'SomeAdapter'`.
+    - **Cause:** Attempting to import an adapter that does not exist in the shared library.
+    - **Solution:** Verify the exports of `@fux/shared/src/index.ts`. If an adapter is needed but not present, it **MUST** be created locally within the `ext` package's `src/adapters` directory.
+
+- **Path Sanitization Issues:** The `PathUtilsAdapter.santizePath()` method is designed for filenames only.
+    - **Symptom:** Corrupted drive letters like `\C_` instead of `C:\`
+    - **Cause:** Calling `santizePath()` on full file paths instead of just filenames
+    - **Solution:** Only sanitize individual filenames/foldernames, not complete file paths. Use `path.join()` to construct full paths after sanitizing individual components.
+
+- **Missing Interface Imports:** DI container registration requires proper interface imports.
+    - **Symptom:** TypeScript errors about missing interface types in DI registration
+    - **Cause:** Missing interface imports from core packages
+    - **Solution:** Import all required interfaces from the core package and use factory functions (`asFunction`) for proper dependency injection.
 
 ### 7.4. :: Externalization of Node Packages
 
@@ -208,18 +281,33 @@ The monorepo consists of three primary package archetypes, each with a distinct 
     - Be imported using **static `import` statements** everywhere (including in `shared`/`core` packages) to ensure the bundler can correctly identify and externalize it.
 - **Never use dynamic `import()` for externalized packages**, as this will cause them to be incorrectly bundled.
 
-### 7.5. :: Common Build Issues
+### 7.5. :: Packaging Script (`scripts/create-vsix.js`)
 
-- **TypeScript Declaration Errors**: Ensure core packages have `declaration: true` and `declarationMap: true` in `tsconfig.lib.json`
-- **Bundle Size Issues**: Check for unnecessary dependencies (like TypeScript AST usage) and consider individual exports
-- **Import Resolution Errors**: Verify `tsconfig.json` has proper `references` and `emitDeclarationOnly: true`
-- **Static imports of externalized packages** cause bundling—always use dynamic import
-- **Inconsistent tsconfig.json** leads to subtle build and type errors—keep them aligned
-- **Missing Path Mappings**: When TypeScript reports "File not found" errors for source directories, check that all `@fux/*` packages have proper path mappings in `tsconfig.base.json` and that `libs/shared/tsconfig.lib.json` includes explicit path overrides
+The role of the packaging script is to create a self-contained VSIX with a clean, production-only `node_modules` folder. It **MUST NOT** bundle third-party dependencies into the `extension.cjs`.
 
-### 7.6. :: TypeScript Configuration Troubleshooting
+Its responsibilities are:
 
-#### 7.6.1. :: "File not found" Errors for Source Directories
+1.  **Clean and Prepare:** It creates a temporary deployment directory.
+2.  **Copy Artifacts:** It copies the necessary project files (`dist`, `assets`, `README.md`, etc.) into the deployment directory.
+3.  **Prepare `package.json`:** It copies the original `package.json`, removes the `dependencies` and `devDependencies` properties, and updates the `version` for dev builds. This is crucial because `vsce` uses this file for metadata, but we don't want it to run an `install` step.
+4.  **Resolve Dependency Tree:** It runs `pnpm list --prod --json --depth=Infinity` on the original extension package to get a complete, structured list of all production dependencies and their exact locations on disk.
+5.  **Manually Construct `node_modules`:** It recursively walks the resolved dependency tree and physically copies each required package from its source location (usually the monorepo's central `.pnpm` store) into the deployment directory's `node_modules` folder. This creates a flat, physical `node_modules` structure that is compatible with `vsce`.
+6.  **Filter Workspace Packages:** It automatically skips workspace packages (those with `link:` versions) since they are not needed in the final VSIX.
+7.  **Copy Nested Dependencies:** It recursively copies all nested dependencies to ensure complete dependency resolution (e.g., `awilix` requires `camel-case` and `fast-glob`).
+8.  **Package VSIX:** It runs `vsce package` on the deployment directory to create the final VSIX file. The `--no-dependencies` flag **MUST** be used to prevent `vsce` from running its own dependency checks, which would fail against the manually constructed `node_modules` folder.
+
+### 7.6. :: Common Build Issues
+
+- **TypeScript Declaration Errors**: Ensure core packages have `declaration: true` and `declarationMap: true` in `tsconfig.lib.json`.
+- **Bundle Size Issues**: Check for unnecessary dependencies (like TypeScript AST usage) and consider individual exports.
+- **Import Resolution Errors**: Verify `tsconfig.json` has proper `references` and `emitDeclarationOnly: true`.
+- **Inconsistent tsconfig.json**: Leads to subtle build and type errors—keep them aligned.
+- **Missing Path Mappings**: When TypeScript reports "File not found" errors for source directories, check that all `@fux/*` packages have proper path mappings in `tsconfig.base.json` and that `libs/shared/tsconfig.lib.json` includes explicit path overrides.
+- **Path Sanitization Issues**: The `PathUtilsAdapter.santizePath()` method is designed for filenames only, not full file paths. Always sanitize individual components before joining paths to avoid drive letter corruption.
+
+### 7.7. :: TypeScript Configuration Troubleshooting
+
+#### 7.7.1. :: "File not found" Errors for Source Directories
 
 **Problem**: The TypeScript language server in VS Code reports errors like:
 
@@ -259,23 +347,31 @@ File 'd:/path/to/project/libs/shared/src' not found.
 
 **Verification**: After making these changes, restart the VS Code TypeScript server to ensure the errors are resolved. The workspace audit script (`scripts/audit-feature-structure.ts`) also validates this configuration.
 
-#### 7.6.2. :: Path Mapping Best Practices
+#### 7.7.2. :: Path Mapping Best Practices
 
 - **Base Config**: Use absolute paths from workspace root in `tsconfig.base.json`
 - **Package Config**: Use relative paths in individual package `tsconfig.lib.json` files
 - **Consistency**: Ensure all `@fux/*` packages referenced in imports have corresponding path mappings
 - **Validation**: Always test TypeScript compilation after adding new packages or changing path mappings
 
-### 7.7. :: Performance Optimization
+### 7.8. :: Performance Optimization
 
 - **Bundle Size**: Use individual exports, externalize heavy dependencies, and enable tree-shaking
 - **Build Time**: Leverage Nx caching and proper dependency ordering with `dependsOn: ["^build"]`
 - **Type Safety**: Ensure proper TypeScript configuration for declaration generation
 - **Dependency Hygiene**: No unused or duplicate dependencies in any package
 
----
+### 7.9. :: Webview State Management
 
-## 8. :: Package Generators
+- **Directive**: When updating the state of a VS Code webview, a targeted `postMessage` approach **SHOULD** be preferred over replacing the entire HTML content.
+- **Pattern**:
+    1.  The extension host sends a message to the webview containing only the data that has changed (e.g., `{ command: 'settingUpdated', settingId: '...', value: '...' }`).
+    2.  A script within the webview listens for these messages and performs the necessary, specific DOM manipulations to reflect the new state.
+- **Rationale**: This pattern is more performant as it avoids a full re-parse and re-render of the webview's HTML. It is also more reliable and less prone to race conditions or content-flashing artifacts that can occur with full HTML replacement.
+
+###### END: Technical Constraints & Best Practices (END) <!-- Close Fold -->
+
+## 8. :: Package Generators <!-- Start Fold -->
 
 The workspace includes Nx generators for creating new packages with the correct configuration from the start.
 
@@ -301,9 +397,8 @@ nx g ./generators:core --name=my-feature --description="My feature core function
 
 **Creating an extension package:**
 
-```bash
-nx g ./generators:ext --name=my-feature --displayName="F-UX: My Feature" --description="My feature extension" --corePackage=my-feature --directory=packages/my-feature
-```
+````bash
+nx g ./generators:ext --name=my-feature --displayName="F-UX: My Feature" --description="My feature extension" --corePackage=my-feature --directory=packages/my-feature```
 
 ### 8.3. :: Complete Feature Creation Workflow
 
@@ -356,9 +451,9 @@ nx g ./generators:ext --name=my-feature --displayName="F-UX: My Feature" --descr
 
 For detailed generator documentation, see `generators/README.md`.
 
----
+###### END: Package Generators (END) <!-- Close Fold -->
 
-## 9. :: Build Commands Reference
+## 9. :: Build Commands Reference <!-- Start Fold -->
 
 ### 9.1. :: Individual Package Commands
 
@@ -371,11 +466,11 @@ nx build @fux/ghost-writer-ext
 
 # Build with production configuration
 nx build @fux/ghost-writer-ext --configuration=production
-```
+````
 
-### 9.2. :: Batch Commands
+### 8.3. :: Batch Commands
 
-```bash
+````bash
 # Build all packages
 nx run-many --target=build --all
 
@@ -383,8 +478,7 @@ nx run-many --target=build --all
 nx run-many --target=build --projects=@fux/*-ext
 
 # Build all core packages
-nx run-many --target=build --projects=@fux/*-core
-```
+nx run-many --target=build --projects=@fux/*-core```
 
 ### 9.3. :: Packaging Commands
 
@@ -394,9 +488,9 @@ nx run @fux/ghost-writer-ext:package:dev
 
 # Create production package
 nx run @fux/ghost-writer-ext:package
-```
+````
 
-### 9.4. :: Clean Commands
+### 8.4. :: Clean Commands
 
 ```bash
 # Clean cache for a specific project
@@ -409,9 +503,9 @@ nx run @fux/ghost-writer-ext:clean:dist
 nx run @fux/ghost-writer-ext:clean
 ```
 
----
+###### END: Build Commands Reference (END) <!-- Close Fold -->
 
-## Nx Workspace Maintenance & Best Practices
+## 9. :: Nx Workspace Maintenance & Best Practices <!-- Start Fold -->
 
 All contributors must follow the Nx optimizations and best practices outlined in [docs/Nx_Optimizations.md](./Nx_Optimizations.md). This document covers:
 
@@ -424,8 +518,4 @@ All contributors must follow the Nx optimizations and best practices outlined in
 
 **Always consult the Nx_Optimizations.md file before making changes to build targets, project structure, or CI workflows.**
 
-For detailed build and packaging information, see [docs/Build_and_Packaging_Guide.md](./Build_and_Packaging_Guide.md).
-
-For technical details on externalizing Node packages, see [docs/Externalize_Node_Packages.md](./Externalize_Node_Packages.md).
-
----
+###### END: Nx Workspace Maintenance & Best Practices (END) <!-- Close Fold -->

@@ -31,14 +31,14 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/ai-agent-interactor/ext"
+                "command": "node scripts/create-vsix.js packages/ai-agent-interactor/ext vsix_packages"
             }
         },
         "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/ai-agent-interactor/ext vsix_packages --dev",
+                "command": "node scripts/create-vsix.js packages/ai-agent-interactor/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"
             }
         },
@@ -53,5 +53,5 @@
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" }
     },
-    "tags": ["ext"]
+    "tags": []
 }

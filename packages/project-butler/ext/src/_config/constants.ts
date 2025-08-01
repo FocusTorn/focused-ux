@@ -2,7 +2,7 @@ const EXT_ID_PREFIX = 'fux-project-butler-dc'
 
 export const constants = {
 	extension: {
-		name: 'F-UX: Project Butler (Decoupled)',
+		name: 'F-UX: Project Butler',
 		id: EXT_ID_PREFIX,
 	},
 	commands: {

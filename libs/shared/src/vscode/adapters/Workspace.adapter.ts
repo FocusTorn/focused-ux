@@ -19,6 +19,10 @@ export class WorkspaceAdapter implements IWorkspace {
 		return vscode.workspace.onDidChangeConfiguration(listener)
 	}
 
+	public createFileSystemWatcher(pattern: any): any {
+		return vscode.workspace.createFileSystemWatcher(pattern)
+	}
+
 	public openTextDocument(uri: any): Thenable<any> {
 		return vscode.workspace.openTextDocument(uri)
 	}

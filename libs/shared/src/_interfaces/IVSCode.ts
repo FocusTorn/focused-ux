@@ -9,6 +9,7 @@ export interface IWindow {
 	showInputBox: (options: any) => Thenable<string | undefined>;
 	showTextDocument: (doc: any) => Thenable<any>;
 	createTreeView: (viewId: string, options: any) => any;
+	registerTreeDataProvider: (viewId: string, provider: any) => any;
 	withProgress: (options: any, task: () => Promise<any>) => Thenable<any>;
 }
 
@@ -26,5 +27,6 @@ export interface IWorkspace {
 	};
 	workspaceFolders?: ReadonlyArray<{ uri: any }>;
 	onDidChangeConfiguration: (listener: (e: any) => void) => { dispose(): void };
+	createFileSystemWatcher: (pattern: any) => any;
 	openTextDocument: (uri: any) => Thenable<any>;
 }

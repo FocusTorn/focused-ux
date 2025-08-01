@@ -5,7 +5,7 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": ["clean:dist"],
+            "dependsOn": ["@fux/shared:build"],
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "options": {
@@ -20,7 +20,8 @@
                 "keepNames": true,
                 "declarationRootDir": "packages/dynamicons/core/src",
                 "thirdParty": false,
-                "deleteOutputPath": true
+                "deleteOutputPath": true,
+                "external": ["awilix", "puppeteer", "sharp", "strip-json-comments", "svgo", "tsx"]
             }
         },
         "verify:dist:hash": {

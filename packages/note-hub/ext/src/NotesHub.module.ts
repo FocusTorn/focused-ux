@@ -53,7 +53,13 @@ export class NotesHubModule {
 		}
 
 		return Object.entries(commandMap).map(([command, handler]) => {
-			return vscode.commands.registerCommand(command, handler)
+			try {
+				return vscode.commands.registerCommand(command, handler)
+			} catch (error) {
+				// If command is already registered, just return a no-op disposable
+				console.warn(`[${constants.extension.name}] Command ${command} is already registered, skipping.`)
+				return { dispose: () => {} }
+			}
 		})
 	}
 

@@ -1,14 +1,15 @@
-import { execSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import { readFileSync, mkdirSync, cpSync, writeFileSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import process from 'node:process'
 import { sync as rimrafSync } from 'rimraf'
 
 // This script creates a self-contained VSIX.
-// It now uses `rimraf` for robust directory cleanup to prevent hanging issues.
+// It now uses `stdio: 'pipe'` with `spawnSync` to manually handle I/O,
+// preventing the process from hanging on Windows due to unclosed streams.
 //
 // Usage:
-// node _scripts/create-vsix.js <path_to_ext_dir> <output_dir> [--dev]
+// node scripts/create-vsix.js <path_to_ext_dir> <output_dir> [--dev]
 
 const [packagePath, outputDir, devFlag] = process.argv.slice(2)
 const isDevBuild = devFlag === '--dev'
@@ -32,6 +33,7 @@ console.log(`Preparing to package: ${vsixBaseName}`)
 console.log(`Deployment directory: ${deployDir}`)
 console.log(`Final output directory: ${finalOutputDir}`)
 
+let exitCode = 0
 try {
     // 1. Clean and create the deployment directory using rimraf for robustness.
     rimrafSync(deployDir)
@@ -67,10 +69,19 @@ try {
     }
     writeFileSync(join(deployDir, 'package.json'), JSON.stringify(prodPackageJson, null, 4))
 
-    // 4. Install production dependencies using NPM.
-    console.log('Installing production dependencies with `npm install --omit=dev`...')
-    const installCommand = 'npm install --omit=dev'
-    execSync(installCommand, { cwd: deployDir, stdio: 'inherit' })
+    // 4. Install production dependencies using PNPM with proper stdio handling.
+    console.log('Installing production dependencies with `pnpm install --prod`...')
+    const pnpmResult = spawnSync('pnpm', ['install', '--prod'], {
+        cwd: deployDir,
+        encoding: 'utf-8',
+        stdio: 'inherit', // Use inherit to allow pnpm to display progress
+        timeout: 300000, // 5 minute timeout
+    })
+    if (pnpmResult.status !== 0) {
+        console.error('pnpm install failed with status:', pnpmResult.status)
+        console.error('pnpm error:', pnpmResult.error)
+        throw new Error(`pnpm install failed with status ${pnpmResult.status}`)
+    }
     console.log('Isolated production dependencies installed.')
 
     // 5. Copy the build artifacts and other necessary assets into the deploy directory.
@@ -89,21 +100,26 @@ try {
     }
     console.log('Copied build artifacts and assets.')
 
-    // 6. Run vsce package, writing to the specified output directory.
+    // 6. Run vsce package, capturing output manually.
     const vsixOutputPath = join(finalOutputDir, vsixFilename)
-    const vsceCommand = `vsce package --no-dependencies -o "${vsixOutputPath}"`
-
-    console.log(`Running: ${vsceCommand} in ${deployDir}`)
-    execSync(vsceCommand, { cwd: deployDir, stdio: 'inherit' })
+    const vsceResult = spawnSync('vsce', ['package', '--no-dependencies', '-o', vsixOutputPath], {
+        cwd: deployDir,
+        encoding: 'utf-8',
+        shell: true,
+    })
+    if (vsceResult.status !== 0) {
+        console.error(vsceResult.stderr)
+        throw new Error(`vsce package failed with status ${vsceResult.status}`)
+    }
+    console.log(vsceResult.stdout) // Print vsce output
     console.log(`✅ Successfully created self-contained package: ${vsixOutputPath}`)
 } catch (error) {
     console.error('❌ An error occurred during the packaging process:', error)
-    process.exitCode = 1
+    exitCode = 1
 } finally {
     // 7. Clean up the temporary deployment directory using rimraf.
     rimrafSync(deployDir)
     console.log(`Cleaned up temporary directory: ${deployDir}`)
+    // 8. Force exit the process to prevent any potential hanging.
+    process.exit(exitCode)
 }
-
-// 8. Force exit the process to prevent any potential hanging.
-process.exit(0)

@@ -25,14 +25,19 @@
         "focused ux"
     ],
     "dependencies": {
-        "awilix": "^12.0.5"
+        "@fux/dynamicons-core": "workspace:*",
+        "awilix": "^12.0.5",
+        "js-yaml": "^4.1.0",
+        "strip-json-comments": "^5.0.2"
     },
     "devDependencies": {
-        "@fux/dynamicons-core": "workspace:*",
-        "@fux/shared": "workspace:*",
         "@types/node": "latest",
         "@types/vscode": "^1.99.3",
-        "typescript": "^5.8.3"
+        "typescript": "^5.8.3",
+        "puppeteer": "^24.10.0",
+        "sharp": "^0.34.2",
+        "svgo": "^3.3.2",
+        "tsx": "^4.20.1"
     },
     "contributes": {
         "themes": [

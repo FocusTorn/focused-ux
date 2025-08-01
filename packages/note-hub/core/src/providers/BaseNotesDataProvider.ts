@@ -13,6 +13,8 @@ import type {
 	TreeView,
 	Uri,
 	TreeItem,
+	Disposable,
+	TreeDataProvider,
 } from 'vscode'
 import {
 	DataTransferItem,
@@ -46,7 +48,6 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider, Tr
 	private _onDidChangeTreeData: EventEmitter<NotesHubItem | undefined | null | void> = new EventEmitter()
 	readonly onDidChangeTreeData: Event<NotesHubItem | undefined | null | void> = this._onDidChangeTreeData.event
 
-	public treeView?: TreeView<NotesHubItem>
 	private fileWatcher: FileSystemWatcher
 
 	public readonly dropMimeTypes = ['text/uri-list']
@@ -78,25 +79,21 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider, Tr
 		this.iContext.subscriptions.push(this.fileWatcher)
 	}
 
-	public initializeTreeView(viewId: string): TreeView<NotesHubItem> {
-		this.treeView = this.iWindow.createTreeView(viewId, {
-			treeDataProvider: this,
-			showCollapseAll: true,
-			canSelectMany: true,
-			dragAndDropController: this,
-		})
+	private treeViewRegistered = false
 
-		this.treeView!.onDidChangeSelection(async (e) => {
-			if (e.selection.length > 0) {
-				const clickedItem = e.selection[0]
-				if (!clickedItem.isDirectory && clickedItem.resourceUri) {
-					this.iCommands.executeCommand(this.openNoteCommandId, clickedItem)
-				}
-			}
-		})
+	public initializeTreeView(viewId: string): void {
+		// Prevent duplicate registrations
+		if (this.treeViewRegistered) {
+			console.warn(`[NotesHub] Tree view ${viewId} is already registered, skipping.`)
+			return
+		}
 
-		this.iContext.subscriptions.push(this.treeView!)
-		return this.treeView!
+		// We use registerTreeDataProvider because the view is already declared in package.json.
+		// Using createTreeView would attempt to register it a second time, causing an error.
+		// I am assuming iWindow, which is an adapter for vscode.window, has this method.
+		const disposable = this.iWindow.registerTreeDataProvider(viewId, this)
+		this.iContext.subscriptions.push(disposable)
+		this.treeViewRegistered = true
 	}
 
 	public refresh(): void {
@@ -106,7 +103,6 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider, Tr
 	public dispose(): void {
 		this._onDidChangeTreeData.dispose()
 		this.fileWatcher.dispose()
-		this.treeView?.dispose()
 	}
 
 	      
@@ -139,6 +135,13 @@ public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
 		}
 		else {
 			element.collapsibleState = TreeItemCollapsibleState.None
+			// Set the command to execute when the item is clicked.
+			// This replaces the onDidChangeSelection listener that was previously on the TreeView.
+			element.command = {
+				command: this.openNoteCommandId,
+				title: 'Open Note',
+				arguments: [element],
+			}
 		}
 
 		if (element.isDirectory) {
@@ -248,7 +251,7 @@ public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
 		}
 
 		const draggedUriStrings = (await transferItem.asString()).split('\n')
-		if (draggedUriStrings.length === 0 || !draggedUriStrings[0]) {
+		if (draggedUriStrings.length === 0 || !draggedUriStrings) {
 			this.iCommonUtils.errMsg('Invalid drop data: No URIs found.')
 			return
 		}

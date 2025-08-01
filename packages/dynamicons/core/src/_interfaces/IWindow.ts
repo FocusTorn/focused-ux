@@ -73,4 +73,5 @@ export interface IWindow {
 		options: MessageOptions,
 		...items: T[]
 	) => Thenable<T | undefined>)
+	showTimedInformationMessage: (message: string, duration?: number) => Promise<void>
 }

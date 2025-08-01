@@ -12,7 +12,6 @@
                 "entryPoints": ["packages/project-butler/ext/src/extension.ts"],
                 "outputPath": "packages/project-butler/ext/dist",
                 "format": ["cjs"],
-                
                 "metafile": true,
                 "platform": "node",
                 "bundle": true,
@@ -33,31 +32,25 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/project-butler/ext"
+                "command": "node scripts/create-vsix.js packages/project-butler/ext vsix_packages"
             }
         },
         "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/project-butler/ext vsix_packages --dev",
+                "command": "node scripts/create-vsix.js packages/project-butler/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"
             }
         },
-        
-        
-        
-        
-        
-        
-        
+
         "package:dev:only": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "node _scripts/create-vsix.js packages/project-butler/ext --dev"
+                "command": "node scripts/create-vsix.js packages/project-butler/ext --dev"
             }
         },
         "lint": {}
     },
-    "tags": []
+    "tags": ["ext"]
 }

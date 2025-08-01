@@ -76,6 +76,8 @@ async function ensureThemeAssets(context: ExtensionContext, container: AwilixCon
 }
 
 async function regenerateAndApplyTheme(context: ExtensionContext, container: AwilixContainer): Promise<void> {
+	console.log(`[${EXT_NAME}] regenerateAndApplyTheme - Starting`)
+	
 	const iconThemeGeneratorService = container.resolve('iconThemeGeneratorService')
 	const workspaceService = container.resolve('workspace')
 	const path = container.resolve('path')
@@ -85,9 +87,13 @@ async function regenerateAndApplyTheme(context: ExtensionContext, container: Awi
 	const customMappings = config.get(CONFIG_KEYS.customIconMappings) as Record<string, string> | undefined
 	const hideArrows = config.get(CONFIG_KEYS.hideExplorerArrows) as boolean | null | undefined
 
+	console.log(`[${EXT_NAME}] regenerateAndApplyTheme - Config values:`, { userIconsDir, customMappings, hideArrows })
+
 	const baseThemePath = await getBaseThemePath(context, container)
 	const generatedThemePath = await getGeneratedThemePath(context, container)
 	const generatedThemeDir = path.dirname(generatedThemePath)
+
+	console.log(`[${EXT_NAME}] regenerateAndApplyTheme - Paths:`, { baseThemePath, generatedThemePath, generatedThemeDir })
 
 	try {
 		const newManifest = await iconThemeGeneratorService.generateIconThemeManifest(
@@ -99,14 +105,17 @@ async function regenerateAndApplyTheme(context: ExtensionContext, container: Awi
 		)
 
 		if (newManifest) {
+			console.log(`[${EXT_NAME}] regenerateAndApplyTheme - Manifest generated successfully`)
 			await iconThemeGeneratorService.writeIconThemeFile(newManifest, generatedThemePath)
 			console.log(`[${EXT_NAME}] Theme file regenerated successfully. The VS Code event loop will handle the UI refresh.`)
 		}
 		else {
+			console.log(`[${EXT_NAME}] regenerateAndApplyTheme - Manifest generation failed`)
 			vscode.window.showErrorMessage(`${dynamiconsConstants.featureName}: Failed to generate icon theme manifest.`)
 		}
 	}
 	catch (error: any) {
+		console.log(`[${EXT_NAME}] regenerateAndApplyTheme - Error:`, error)
 		vscode.window.showErrorMessage(`${dynamiconsConstants.featureName}: Error regenerating theme: ${error.message}`)
 	}
 }
@@ -175,6 +184,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
 			vscode.window.showInformationMessage(`${dynamiconsConstants.featureName}: Icon theme manually refreshed.`)
 		}),
 		vscode.workspace.onDidChangeConfiguration(async (e) => {
+			console.log(`[${EXT_NAME}] Configuration change event fired`)
+			console.log(`[${EXT_NAME}] Event details:`, e)
+			console.log(`[${EXT_NAME}] Affected configurations:`, e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.customIconMappings}`), e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.userIconsDirectory}`), e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.hideExplorerArrows}`), e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.baseThemeFileName}`), e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.generatedThemeFileName}`))
+			
 			if (
 				e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.customIconMappings}`)
 				|| e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.userIconsDirectory}`)
@@ -187,6 +200,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
 			}
 		}),
 	)
+	
+	console.log(`[${EXT_NAME}] Configuration change event listener registered`)
 }
 
 export function deactivate(): void {

@@ -7,7 +7,10 @@ import { fileURLToPath } from 'node:url'
 import process from 'node:process'
 
 //= MISC ======================================================================================================
-import stripJsonComments from 'strip-json-comments'
+import stripJsonCommentsModule from 'strip-json-comments'
+
+// Handle both default and direct exports
+const stripJsonComments = (stripJsonCommentsModule as any).default || stripJsonCommentsModule
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import { dynamiconsConstants } from '../_config/dynamicons.constants.js'

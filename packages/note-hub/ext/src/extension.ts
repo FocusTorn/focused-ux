@@ -10,8 +10,15 @@ import { constants } from './_config/constants.js'
 //--------------------------------------------------------------------------------------------------------------<<
 
 let notesHubModuleInstance: any
+let isActivated = false
 
 export async function activate(context: ExtensionContext): Promise<void> {
+	// Prevent multiple activations
+	if (isActivated) {
+		console.log(`[${constants.extension.name}] Already activated, skipping.`)
+		return
+	}
+
 	console.log(`[${constants.extension.name}] Activating...`)
 
 	const container = await createDIContainer(context)
@@ -21,6 +28,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		context.subscriptions.push(...notesHubModuleInstance.registerCommands(context))
 		await notesHubModuleInstance.initializeModule()
 		context.subscriptions.push({ dispose: () => notesHubModuleInstance?.dispose() })
+		isActivated = true
 	} catch (error) {
 		console.error(`[${constants.extension.name}] Error during NotesHubModule initialization:`, error)
 	}
@@ -30,4 +38,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
 export function deactivate(): void {
 	console.log(`[${constants.extension.name}] Deactivated.`)
+	isActivated = false
+	notesHubModuleInstance = null
 }

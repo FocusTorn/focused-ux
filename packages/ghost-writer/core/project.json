@@ -5,7 +5,6 @@
     "projectType": "library",
     "targets": {
         "build": {
-            // "dependsOn": ["clean:dist"],
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "options": {
@@ -21,7 +20,8 @@
                 "declarationRootDir": "packages/ghost-writer/core/src",
                 "thirdParty": false,
                 "deleteOutputPath": true,
-                "external": ["awilix", "picomatch", "js-yaml"]
+
+                "external": ["vscode", "typescript", "awilix", "js-yaml"]
             }
         },
         "verify:dist:hash": {

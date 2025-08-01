@@ -1,13 +1,4 @@
-export interface TreeFormatterNode {
-	label: string
-	details?: string
-	isDirectory?: boolean
-	children?: TreeFormatterNode[]
-}
-
-export interface ITreeFormatterService {
-	formatTree(rootNode: TreeFormatterNode): string
-}
+import type { ITreeFormatterService, TreeFormatterNode } from '../_interfaces/ITreeFormatterService.js'
 
 export class TreeFormatterService implements ITreeFormatterService {
 	private _generateTreeString(node: TreeFormatterNode, prefix: string): string {

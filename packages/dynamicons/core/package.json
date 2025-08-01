@@ -2,17 +2,16 @@
     "name": "@fux/dynamicons-core",
     "version": "0.1.0",
     "dependencies": {
-        "@fux/shared": "workspace:*"
-    },
-    "devDependencies": {
-        "awilix": "^12.0.5",
-        "@types/node": "^24.0.0",
-        "@types/vscode": "^1.99.3",
+        "@fux/shared": "workspace:*",
         "puppeteer": "^24.10.0",
         "sharp": "^0.34.2",
         "strip-json-comments": "^5.0.2",
         "svgo": "^3.3.2",
-        "tsx": "^4.20.1",
+        "tsx": "^4.20.1"
+    },
+    "devDependencies": {
+        "@types/node": "^24.0.0",
+        "@types/vscode": "^1.99.3",
         "typescript": "^5.8.3"
     },
     "private": true,

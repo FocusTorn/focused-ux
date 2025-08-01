@@ -6,11 +6,13 @@
     "repository": "https://github.com/FocusTorn/focused-ux",
     "version": "0.1.0",
     "dependencies": {
-        "awilix": "^12.0.5"
+        "awilix": "^12.0.5",
+        "js-yaml": "^4.1.0",
+        "@fux/note-hub-core": "workspace:*",
+        "@fux/shared": "workspace:*"
     },
     "devDependencies": {
-        "@fux/note-hub-core": "workspace:*",
-        "@fux/shared": "workspace:*",
+        "@types/js-yaml": "^4.0.9",
         "@types/node": "^24.0.10",
         "@types/vscode": "^1.99.3",
         "typescript": "^5.8.3"
@@ -274,8 +276,7 @@
         }
     },
     "activationEvents": [
-        "onStartupFinished",
-        "onCommand:note-hub.example"
+        "onStartupFinished"
     ],
     "icon": "./assets/hub-logo.png",
     "categories": [

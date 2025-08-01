@@ -12,9 +12,12 @@
                 "entryPoints": ["packages/ghost-writer/ext/src/extension.ts"],
                 "outputPath": "packages/ghost-writer/ext/dist",
                 "format": ["cjs"],
+                "metafile": true,
                 "platform": "node",
                 "bundle": true,
+
                 "external": ["vscode", "typescript", "awilix", "js-yaml"],
+
                 "sourcemap": true,
                 "main": "packages/ghost-writer/ext/src/extension.ts",
                 "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
@@ -31,14 +34,14 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/ghost-writer/ext"
+                "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages"
             }
         },
         "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "node _scripts/create-vsix.js packages/ghost-writer/ext vsix_packages --dev",
+                "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"
             }
         },

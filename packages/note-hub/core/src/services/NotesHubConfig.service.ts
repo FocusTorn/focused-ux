@@ -11,6 +11,7 @@ import { notesHubConstants } from '../_config/constants.js'
 //--------------------------------------------------------------------------------------------------------------<<
 
 export class NotesHubConfigService implements INotesHubConfigService {
+	private contextSet = false
 
 	constructor(
 		private readonly iWorkspace: IWorkspace,
@@ -61,9 +62,13 @@ export class NotesHubConfigService implements INotesHubConfigService {
 		const isRemoteNotesEnabled = nhConfig.get<boolean>(notesHubConstants.configKeys.ENABLE_REMOTE_NOTES, true)
 		const isGlobalNotesEnabled = nhConfig.get<boolean>(notesHubConstants.configKeys.ENABLE_GLOBAL_NOTES, true)
 
-		VsCodeCommands.executeCommand('setContext', `config.${configPrefix}.enableProjectNotes`, isProjectNotesEnabled)
-		VsCodeCommands.executeCommand('setContext', `config.${configPrefix}.enableRemoteNotes`, isRemoteNotesEnabled)
-		VsCodeCommands.executeCommand('setContext', `config.${configPrefix}.enableGlobalNotes`, isGlobalNotesEnabled)
+		// Set context variables for view visibility (only once to prevent duplicate registrations)
+		if (!this.contextSet) {
+			VsCodeCommands.executeCommand('setContext', `config.${configPrefix}.enableProjectNotes`, isProjectNotesEnabled)
+			VsCodeCommands.executeCommand('setContext', `config.${configPrefix}.enableRemoteNotes`, isRemoteNotesEnabled)
+			VsCodeCommands.executeCommand('setContext', `config.${configPrefix}.enableGlobalNotes`, isGlobalNotesEnabled)
+			this.contextSet = true
+		}
 
 		return {
 			projectNotesPath,

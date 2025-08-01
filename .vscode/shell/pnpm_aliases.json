@@ -14,5 +14,11 @@
     "nhc": "@fux/note-hub-core",
     "nh": "@fux/note-hub-ext",
 
-    "shared": "@fux/shared"
+    "aic": "@fux/ai-agent-interactor-core",
+    "ai": "@fux/ai-agent-interactor-ext",
+    
+    
+    
+    "shared": "@fux/shared",
+    "audit": "@fux/structure-auditor"
 }

@@ -12,9 +12,8 @@ export interface INotesHubDataProvider extends TreeDataProvider<INotesHubItem>, 
 	onDidChangeTreeData: Event<INotesHubItem | undefined | null | void>
 	readonly notesDir: string
 	readonly providerName: 'project' | 'remote' | 'global'
-	treeView?: TreeView<INotesHubItem>
 
 	refresh: () => void
 	getNotesHubItem: (uri: Uri) => Promise<INotesHubItem | undefined>
-	initializeTreeView: (viewId: string) => TreeView<INotesHubItem>
+	initializeTreeView: (viewId: string) => void
 }
