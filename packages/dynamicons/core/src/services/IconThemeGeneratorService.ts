@@ -69,6 +69,8 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 			return undefined
 		}
 
+
+
 		manifest.iconDefinitions = manifest.iconDefinitions || {}
 
 		if (userIconsDirectory) {
@@ -96,35 +98,27 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 		}
 
 		if (customMappings) {
-			console.log(`[IconThemeGeneratorService] Processing custom mappings:`, JSON.stringify(customMappings, null, 2))
-
 			for (const key in customMappings) {
 				const value = customMappings[key]
-				console.log(`[IconThemeGeneratorService] Processing mapping: ${key} = ${value}`)
 
 				if (key.startsWith(dynamiconsConstants.associationKeyPrefixes.file)) {
 					const fileNameOrExt = key.substring(dynamiconsConstants.associationKeyPrefixes.file.length).trim()
-					console.log(`[IconThemeGeneratorService] File mapping - fileNameOrExt: ${fileNameOrExt}`)
 
 					if (fileNameOrExt.includes('.')) {
 						manifest.fileNames = manifest.fileNames || {}
 						manifest.fileNames[fileNameOrExt] = value
-						console.log(`[IconThemeGeneratorService] Added to fileNames: ${fileNameOrExt} = ${value}`)
 					}
 					else {
 						manifest.fileExtensions = manifest.fileExtensions || {}
 						manifest.fileExtensions[fileNameOrExt] = value
-						console.log(`[IconThemeGeneratorService] Added to fileExtensions: ${fileNameOrExt} = ${value}`)
 					}
 				}
 				else if (key.startsWith(dynamiconsConstants.associationKeyPrefixes.folder)) {
 					const folderName = key.substring(dynamiconsConstants.associationKeyPrefixes.folder.length).trim()
-					console.log(`[IconThemeGeneratorService] Folder mapping - folderName: ${folderName}`)
 
 					manifest.folderNames = manifest.folderNames || {}
 					manifest.folderNamesExpanded = manifest.folderNamesExpanded || {}
 					manifest.folderNames[folderName] = value
-					console.log(`[IconThemeGeneratorService] Added to folderNames: ${folderName} = ${value}`)
 
 					let openDefinitionKey = value
 
@@ -147,7 +141,6 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 					else {
 						manifest.folderNamesExpanded[folderName] = value
 					}
-					console.log(`[IconThemeGeneratorService] Added to folderNamesExpanded: ${folderName} = ${manifest.folderNamesExpanded[folderName]}`)
 				}
 				else if (key.startsWith(dynamiconsConstants.associationKeyPrefixes.language)) {
 					const langId = key.substring(dynamiconsConstants.associationKeyPrefixes.language.length).trim()
@@ -156,15 +149,8 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 					manifest.languageIds[langId] = value
 				}
 			}
+			
 
-			console.log(`[IconThemeGeneratorService] Final manifest sections:`, {
-				fileNames: Object.keys(manifest.fileNames || {}),
-				fileExtensions: Object.keys(manifest.fileExtensions || {}),
-				folderNames: Object.keys(manifest.folderNames || {}),
-				folderNamesExpanded: Object.keys(manifest.folderNamesExpanded || {})
-			})
-		} else {
-			console.log(`[IconThemeGeneratorService] No custom mappings provided`)
 		}
 
 		if (hideExplorerArrows !== null && hideExplorerArrows !== undefined) {
@@ -176,6 +162,11 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 
 		// Add a timestamp for debugging to confirm the file is being rewritten.
 		manifest._lastUpdated = new Date().toISOString()
+
+		// Enable VS Code's built-in file watching for automatic theme refresh
+		manifest._watch = true
+
+
 
 		return manifest
 	}

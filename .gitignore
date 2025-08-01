@@ -32,6 +32,7 @@ node_modules
 npm-debug.log
 testem.log
 /typings
+stats
 
 #= SYSTEM FILES =============================================
 .DS_Store

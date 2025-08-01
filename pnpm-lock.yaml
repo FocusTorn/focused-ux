@@ -95,13 +95,12 @@ importers:
 
   packages/ai-agent-interactor/ext:
     dependencies:
-      awilix:
-        specifier: ^12.0.5
-        version: 12.0.5
-    devDependencies:
       '@fux/ai-agent-interactor-core':
         specifier: workspace:*
         version: link:../core
+      awilix:
+        specifier: ^12.0.5
+        version: 12.0.5
 
   packages/context-cherry-picker/core:
     dependencies:
@@ -145,6 +144,9 @@ importers:
 
   packages/dynamicons/core:
     dependencies:
+      '@fux/shared':
+        specifier: workspace:*
+        version: link:../../../libs/shared
       puppeteer:
         specifier: ^24.10.0
         version: 24.14.0(typescript@5.8.3)
@@ -185,21 +187,9 @@ importers:
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
-      puppeteer:
-        specifier: ^24.10.0
-        version: 24.14.0(typescript@5.8.3)
-      sharp:
-        specifier: ^0.34.2
-        version: 0.34.3
       strip-json-comments:
         specifier: ^5.0.2
         version: 5.0.2
-      svgo:
-        specifier: ^3.3.2
-        version: 3.3.2
-      tsx:
-        specifier: ^4.20.1
-        version: 4.20.3
     devDependencies:
       '@types/node':
         specifier: latest
@@ -207,6 +197,18 @@ importers:
       '@types/vscode':
         specifier: ^1.99.3
         version: 1.102.0
+      puppeteer:
+        specifier: ^24.10.0
+        version: 24.14.0(typescript@5.8.3)
+      sharp:
+        specifier: ^0.34.2
+        version: 0.34.3
+      svgo:
+        specifier: ^3.3.2
+        version: 3.3.2
+      tsx:
+        specifier: ^4.20.1
+        version: 4.20.3
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -250,6 +252,12 @@ importers:
 
   packages/note-hub/ext:
     dependencies:
+      '@fux/note-hub-core':
+        specifier: workspace:*
+        version: link:../core
+      '@fux/shared':
+        specifier: workspace:*
+        version: link:../../../libs/shared
       awilix:
         specifier: ^12.0.5
         version: 12.0.5
@@ -257,12 +265,6 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
     devDependencies:
-      '@fux/note-hub-core':
-        specifier: workspace:*
-        version: link:../core
-      '@fux/shared':
-        specifier: workspace:*
-        version: link:../../../libs/shared
       '@types/js-yaml':
         specifier: ^4.0.9
         version: 4.0.9

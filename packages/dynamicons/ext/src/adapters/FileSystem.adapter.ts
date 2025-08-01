@@ -17,6 +17,10 @@ export class FileSystemAdapter implements IFileSystem {
 		return fs.readdir(path)
 	}
 
+	public readFile(path: PathLike, options?: { encoding: BufferEncoding, flag?: string } | BufferEncoding): Promise<string | Buffer> {
+		return fs.readFile(path, options)
+	}
+
 	public writeFile(path: PathLike | fs.FileHandle, data: string | Uint8Array, options?: WriteFileOptions): Promise<void> {
 		return fs.writeFile(path, data, options)
 	}

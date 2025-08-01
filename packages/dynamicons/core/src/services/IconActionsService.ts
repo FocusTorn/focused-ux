@@ -183,6 +183,9 @@ export class IconActionsService implements IIconActionsService {
 		assignableToType?: 'file' | 'folder',
 		currentFilter?: (iconName: string) => boolean,
 	): Promise<string | undefined> {
+		console.log(`[IconActionsService] showAvailableIconsQuickPick - Starting`)
+		console.log(`[IconActionsService] showAvailableIconsQuickPick - assignableToType:`, assignableToType)
+		
 		const builtInFileIconsDir = this.path.join(
 			this.context.extensionPath,
 			this.BUILT_IN_FILE_ICONS_REL_PATH,
@@ -192,26 +195,37 @@ export class IconActionsService implements IIconActionsService {
 			this.BUILT_IN_FOLDER_ICONS_REL_PATH,
 		)
 
+		console.log(`[IconActionsService] showAvailableIconsQuickPick - Icon directories:`, { builtInFileIconsDir, builtInFolderIconsDir })
+
 		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX)
 		const userIconsDirSetting = config.get<string>(this.USER_ICONS_DIR_KEY)
+
+		console.log(`[IconActionsService] showAvailableIconsQuickPick - User icons dir setting:`, userIconsDirSetting)
 
 		let fileIconOptions: ICoreQuickPickItem[] = []
 		let folderIconOptions: ICoreQuickPickItem[] = []
 		let userIconOptions: ICoreQuickPickItem[] = []
 
 		if (assignableToType === 'file' || !assignableToType) {
+			console.log(`[IconActionsService] showAvailableIconsQuickPick - Loading file icons...`)
 			fileIconOptions = await this.getIconOptionsFromDirectory(builtInFileIconsDir, 'file')
+			console.log(`[IconActionsService] showAvailableIconsQuickPick - File icons loaded:`, fileIconOptions.length)
 		}
 		if (assignableToType === 'folder' || !assignableToType) {
+			console.log(`[IconActionsService] showAvailableIconsQuickPick - Loading folder icons...`)
+
 			const folderFilter = (name: string) => !name.endsWith(`${dynamiconsConstants.defaults.openFolderIconSuffix}.svg`)
 
 			folderIconOptions = await this.getIconOptionsFromDirectory(builtInFolderIconsDir, 'folder', folderFilter)
+			console.log(`[IconActionsService] showAvailableIconsQuickPick - Folder icons loaded:`, folderIconOptions.length)
 		}
 
 		if (userIconsDirSetting) {
 			try {
 				await this.fileSystem.stat(userIconsDirSetting)
+				console.log(`[IconActionsService] showAvailableIconsQuickPick - Loading user icons...`)
 				userIconOptions = await this.getIconOptionsFromDirectory(userIconsDirSetting, 'user')
+				console.log(`[IconActionsService] showAvailableIconsQuickPick - User icons loaded:`, userIconOptions.length)
 			}
 			catch (error: any) {
 				if (error.code === 'ENOENT') {
@@ -229,6 +243,8 @@ export class IconActionsService implements IIconActionsService {
 		folderIconOptions = folderIconOptions.filter(item => filterFn(item.iconNameInDefinitions))
 		userIconOptions = userIconOptions.filter(item => filterFn(item.iconNameInDefinitions))
 
+		console.log(`[IconActionsService] showAvailableIconsQuickPick - After filtering:`, { fileIconOptions: fileIconOptions.length, folderIconOptions: folderIconOptions.length, userIconOptions: userIconOptions.length })
+
 		const combinedIconOptions: DataOrSeparator<ICoreQuickPickItem>[] = []
 
 		if (userIconOptions.length > 0) {
@@ -244,13 +260,19 @@ export class IconActionsService implements IIconActionsService {
 			combinedIconOptions.push(...folderIconOptions)
 		}
 
+		console.log(`[IconActionsService] showAvailableIconsQuickPick - Combined options:`, combinedIconOptions.length)
+
 		const dataItems = combinedIconOptions.filter(item => 'iconNameInDefinitions' in item) as ICoreQuickPickItem[]
 
+		console.log(`[IconActionsService] showAvailableIconsQuickPick - Data items:`, dataItems.length)
+
 		if (dataItems.length === 0) {
+			console.log(`[IconActionsService] showAvailableIconsQuickPick - No items found, showing message`)
 			this.window.showInformationMessage('No available icons match the criteria.')
 			return undefined
 		}
 
+		console.log(`[IconActionsService] showAvailableIconsQuickPick - Showing quick pick with`, dataItems.length, `items`)
 		return this.quickPick.showQuickPickSingle<ICoreQuickPickItem, 'iconNameInDefinitions'>(
 			dataItems,
 			{
@@ -320,34 +342,34 @@ export class IconActionsService implements IIconActionsService {
 			return
 		}
 
-		console.log(`[IconActionsService] === STARTING ICON ASSIGNMENT ===`)
-		console.log(`[IconActionsService] Resource names:`, resourceNames)
-		console.log(`[IconActionsService] Type to assign:`, typeToAssign)
-		console.log(`[IconActionsService] Icon name key:`, iconNameKey)
+		console.log(`[IconActionsService] Assigning ${iconNameKey} to ${resourceNames.length} ${typeToAssign}${resourceNames.length > 1 ? 's' : ''}: ${resourceNames.join(', ')}`)
+
+		// Get current settings for comparison
+		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX)
+		const beforeMappings = config.get<Record<string, string>>(this.CUSTOM_MAPPINGS_KEY) || {}
 
 		await this.updateCustomIconMappings(async (mappings) => {
-			console.log(`[IconActionsService] Inside updateCustomIconMappings callback`)
-			console.log(`[IconActionsService] Input mappings:`, JSON.stringify(mappings, null, 2))
-			
 			for (const resourceName of resourceNames) {
 				const associationKey = await this.getAssociationKey(resourceName, typeToAssign)
-
-				console.log(`[IconActionsService] Setting ${associationKey} = ${iconNameKey}`)
 				mappings[associationKey] = iconNameKey
 			}
-			
-			console.log(`[IconActionsService] Output mappings:`, JSON.stringify(mappings, null, 2))
 			return mappings
 		})
 
-		// Check if the configuration was actually updated
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX)
+		// Get updated settings for comparison
 		const afterMappings = config.get<Record<string, string>>(this.CUSTOM_MAPPINGS_KEY) || {}
 
-		console.log(`[IconActionsService] After assignment - Updated mappings:`, JSON.stringify(afterMappings, null, 2))
-
-		// The configuration change event in the extension will handle theme regeneration
-		console.log(`[IconActionsService] Configuration updated. Theme regeneration will be handled by VS Code configuration change event.`)
+		// Show only the specific items that were changed
+		console.log(`[IconActionsService] === ASSIGNMENT SUMMARY ===`)
+		for (const resourceName of resourceNames) {
+			const associationKey = await this.getAssociationKey(resourceName, typeToAssign)
+			const beforeValue = beforeMappings[associationKey] || 'NO ASSIGNMENT'
+			const afterValue = afterMappings[associationKey] || 'NO ASSIGNMENT'
+			
+			console.log(`[IconActionsService] ${resourceName}: ${beforeValue} → ${afterValue}`)
+		}
+		console.log(`[IconActionsService] === END ASSIGNMENT ===`)
+		
 		await this.window.showTimedInformationMessage(`Icon assigned successfully. Theme will update automatically.`)
 	}
 

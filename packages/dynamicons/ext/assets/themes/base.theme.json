@@ -1195,5 +1195,6 @@
   "highContrast": {
     "fileExtensions": {},
     "fileNames": {}
-  }
+  },
+  "_watch": true
 }
