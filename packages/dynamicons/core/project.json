@@ -5,9 +5,16 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": ["@fux/shared:build"],
+            "dependsOn": ["@fux/shared:build", "build-assets"],
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
+            "inputs": [
+                "{projectRoot}/src/**/*",
+                "{projectRoot}/src/models/*.json",
+                "{projectRoot}/src/icons/**/*",
+                "{workspaceRoot}/packages/dynamicons/ext/assets/icons/**/*",
+                "{workspaceRoot}/packages/dynamicons/ext/assets/themes/*.json"
+            ],
             "options": {
                 "main": "packages/dynamicons/core/src/index.ts",
                 "outputPath": "packages/dynamicons/core/dist",

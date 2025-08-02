@@ -174,8 +174,8 @@ async function regenerateAndApplyTheme(context: ExtensionContext, container: Awi
 			
 
 			
-			// Add a small delay to ensure VS Code has time to detect the file change
-			await new Promise(resolve => setTimeout(resolve, 100))
+					// Add a minimal delay to ensure VS Code has time to detect the file change
+		await new Promise(resolve => setTimeout(resolve, 50))
 		}
 		else {
 			vscode.window.showErrorMessage(`${dynamiconsConstants.featureName}: Failed to generate icon theme manifest.`)
@@ -287,9 +287,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
 				const currentTheme = workbenchConfig.get('iconTheme')
 				if (currentTheme === ICON_THEME_ID) {
 					console.log(`[${EXT_NAME}] Forcing theme refresh on first load...`)
-					// Temporarily switch to a different theme and back to force refresh
+					// Use a more direct refresh method - trigger file explorer refresh
+					await vscode.commands.executeCommand('workbench.files.action.refreshFilesExplorer')
+					// Also temporarily switch themes for immediate visual update
 					await workbenchConfig.update('iconTheme', 'vs-seti-file-icons', true)
-					await new Promise(resolve => setTimeout(resolve, 100))
+					await new Promise(resolve => setTimeout(resolve, 25))
 					await workbenchConfig.update('iconTheme', ICON_THEME_ID, true)
 				}
 			} catch (error) {
@@ -333,14 +335,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		vscode.commands.registerCommand(COMMANDS.refreshIconTheme, async () => {
 			await regenerateAndApplyTheme(context, container)
 			
-			// Force VS Code to reload the icon theme
+			// Force VS Code to reload the icon theme immediately
 			const workspaceService = container.resolve('workspace') as Cradle['workspace']
 			const workbenchConfig = workspaceService.getConfiguration('workbench')
 			const currentTheme = workbenchConfig.get('iconTheme')
 			if (currentTheme === ICON_THEME_ID) {
-				// Temporarily switch to a different theme and back to force refresh
+				// Trigger file explorer refresh for immediate visual update
+				await vscode.commands.executeCommand('workbench.files.action.refreshFilesExplorer')
+				// Also temporarily switch themes for immediate visual update
 				await workbenchConfig.update('iconTheme', 'vs-seti-file-icons', true)
-				await new Promise(resolve => setTimeout(resolve, 50))
+				await new Promise(resolve => setTimeout(resolve, 25))
 				await workbenchConfig.update('iconTheme', ICON_THEME_ID, true)
 			}
 			
@@ -363,6 +367,13 @@ export async function activate(context: ExtensionContext): Promise<void> {
 				|| e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.generatedThemeFileName}`)
 			) {
 				await regenerateAndApplyTheme(context, container)
+				
+				// Immediately refresh the file explorer to show changes
+				try {
+					await vscode.commands.executeCommand('workbench.files.action.refreshFilesExplorer')
+				} catch (error) {
+					console.log(`[${EXT_NAME}] Error refreshing file explorer after config change:`, error)
+				}
 			}
 		}),
 	)

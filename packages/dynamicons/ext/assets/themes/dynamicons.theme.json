@@ -549,6 +549,12 @@
     "_folder-lib": {
       "iconPath": "../icons/folder_icons/folder-lib.svg"
     },
+    "_folder-luggage-open": {
+      "iconPath": "../icons/folder_icons/folder-luggage-open.svg"
+    },
+    "_folder-luggage": {
+      "iconPath": "../icons/folder_icons/folder-luggage.svg"
+    },
     "_folder-model-open": {
       "iconPath": "../icons/folder_icons/folder-model-open.svg"
     },
@@ -566,6 +572,12 @@
     },
     "_folder-notes": {
       "iconPath": "../icons/folder_icons/folder-notes.svg"
+    },
+    "_folder-nx-open": {
+      "iconPath": "../icons/folder_icons/folder-nx-open.svg"
+    },
+    "_folder-nx": {
+      "iconPath": "../icons/folder_icons/folder-nx.svg"
     },
     "_folder-out-open": {
       "iconPath": "../icons/folder_icons/folder-out-open.svg"
@@ -727,7 +739,9 @@
   "folderNames": {
     "bin": "_folder-binary",
     "build": "_folder-build",
+    "_build": "_folder-build",
     "config": "_folder-config",
+    "_config": "_folder-config",
     "configs": "_folder-config",
     "configuration": "_folder-config",
     ".arduino15": "_folder-config",
@@ -778,11 +792,13 @@
     "___json___": "_folder-json",
     "_json": "_folder-json",
     "lib": "_folder-lib",
+    "libs": "_folder-lib",
     "library": "_folder-lib",
     "libraries": "_folder-lib",
     "model": "_folder-model",
     "models": "_folder-model",
     "node_modules": "_folder-node",
+    "_docs": "_folder-notes",
     ".notes": "_folder-notes",
     ".pnotes": "_folder-notes",
     "_notes_": "_folder-notes",
@@ -792,6 +808,7 @@
     ".notesHub_projectNotes": "_folder-notes",
     ".notesHub_remoteNotes": "_folder-notes",
     ".notesHub_globalNotes": "_folder-notes",
+    ".nx": "_folder-nx",
     "dist": "_folder-out",
     "out": "_folder-out",
     "packages": "_folder-package",
@@ -871,7 +888,9 @@
   "folderNamesExpanded": {
     "bin": "_folder-binary-open",
     "build": "_folder-build-open",
+    "_build": "_folder-build-open",
     "config": "_folder-config-open",
+    "_config": "_folder-config-open",
     "configs": "_folder-config-open",
     "configuration": "_folder-config-open",
     ".arduino15": "_folder-config-open",
@@ -922,11 +941,13 @@
     "___json___": "_folder-json-open",
     "_json": "_folder-json-open",
     "lib": "_folder-lib-open",
+    "libs": "_folder-lib-open",
     "library": "_folder-lib-open",
     "libraries": "_folder-lib-open",
     "model": "_folder-model-open",
     "models": "_folder-model-open",
     "node_modules": "_folder-node-open",
+    "_docs": "_folder-notes-open",
     ".notes": "_folder-notes-open",
     ".pnotes": "_folder-notes-open",
     "_notes_": "_folder-notes-open",
@@ -936,6 +957,7 @@
     ".notesHub_projectNotes": "_folder-notes-open",
     ".notesHub_remoteNotes": "_folder-notes-open",
     ".notesHub_globalNotes": "_folder-notes-open",
+    ".nx": "_folder-nx-open",
     "dist": "_folder-out-open",
     "out": "_folder-out-open",
     "packages": "_folder-package-open",
