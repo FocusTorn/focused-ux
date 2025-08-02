@@ -420,6 +420,12 @@
     "_folder-cmake": {
       "iconPath": "../icons/folder_icons/folder-cmake.svg"
     },
+    "_folder-component-open": {
+      "iconPath": "../icons/folder_icons/folder-component-open.svg"
+    },
+    "_folder-component": {
+      "iconPath": "../icons/folder_icons/folder-component.svg"
+    },
     "_folder-config-open": {
       "iconPath": "../icons/folder_icons/folder-config-open.svg"
     },
@@ -1195,6 +1201,5 @@
   "highContrast": {
     "fileExtensions": {},
     "fileNames": {}
-  },
-  "_watch": true
+  }
 }
