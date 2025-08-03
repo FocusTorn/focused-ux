@@ -38,6 +38,7 @@ export function checkTsconfigExt(pkg: string) { //>
 		if (!deepEqual(tsconfig[key], CANONICAL_TSCONFIG[key])) {
 			const location = findJsonLocation(tsconfigPath, key)
 			const locationStr = location ? `:${location.line}:${location.column}` : ''
+
 			addError('Invalid tsconfig.json', `${pkg}/ext/tsconfig.json${locationStr}: Key '${key}' does not match canonical config.`)
 			return false
 		}
@@ -188,6 +189,7 @@ export function checkTsconfigLibPaths(pkg: string) { //>
 		if (!deepEqual(actualPaths, expectedPaths)) {
 			const location = findJsonLocation(tsconfigLibPath, 'paths')
 			const locationStr = location ? `:${location.line}:${location.column}` : ''
+
 			addError('Incorrect tsconfig.lib.json paths', `${pkg}/core/tsconfig.lib.json${locationStr}: The 'paths' configuration does not match the package's dependencies.`)
 			return false
 		}

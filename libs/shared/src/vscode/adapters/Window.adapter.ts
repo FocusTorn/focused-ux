@@ -2,7 +2,6 @@ import type { TextEditor } from 'vscode'
 import * as vscode from 'vscode'
 import type { IWindow } from '../../_interfaces/IVSCode.js'
 import type { IConfigurationService } from '../../_interfaces/IConfigurationService.js'
-import { showTimedInformationMessage as showTimedInformationMessageUtil } from '../window.js'
 
 export class WindowAdapter implements IWindow {
 
@@ -25,7 +24,16 @@ export class WindowAdapter implements IWindow {
 			finalDurationMs = durationSeconds * 1000
 		}
 
-		await showTimedInformationMessageUtil(message, finalDurationMs)
+		await vscode.window.withProgress(
+			{
+				location: vscode.ProgressLocation.Notification,
+				title: message,
+				cancellable: false,
+			},
+			async () => {
+				await new Promise(resolve => setTimeout(resolve, finalDurationMs))
+			},
+		)
 	}
 
 	public showInformationMessage(message: string, ...items: string[]): Thenable<string | undefined> {

@@ -5,9 +5,11 @@ import { ClipboardService, ConsoleLoggerService, ImportGeneratorService } from '
 import type { IPathUtilsService, IStorageService } from '@fux/ghost-writer-core'
 import {
 	CommonUtilsAdapter,
+	CommandsAdapter,
 	ConfigurationService,
 	FileSystemAdapter,
 	PathUtilsAdapter,
+	PositionAdapter,
 	ProcessAdapter,
 	WindowAdapter,
 	WorkspaceAdapter,
@@ -32,6 +34,8 @@ export async function createDIContainer(context: ExtensionContext): Promise<Awil
 		pathUtils: asClass(PathUtilsAdapter).singleton(),
 		fileSystem: asClass(FileSystemAdapter).singleton(),
 		process: asClass(ProcessAdapter).singleton(),
+		commands: asClass(CommandsAdapter).singleton(),
+		position: asClass(PositionAdapter).singleton(),
 	})
 
 	// Manually construct services with cross-dependencies

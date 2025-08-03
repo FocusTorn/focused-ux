@@ -1,15 +1,16 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { TreeItemCheckboxState, TreeItemCollapsibleState } from 'vscode'
+import type { TreeItemCollapsibleState } from 'vscode'
+import type { TreeItemCheckboxState } from 'vscode'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-export interface IFileExplorerItem { //>
+export interface IFileExplorerItem {
 	uri: string
 	label: string
-	tooltip?: string
 	type: 'file' | 'directory'
-	checkboxState?: TreeItemCheckboxState
 	collapsibleState: TreeItemCollapsibleState
-} //<
+	checkboxState?: TreeItemCheckboxState
+	children?: IFileExplorerItem[]
+}

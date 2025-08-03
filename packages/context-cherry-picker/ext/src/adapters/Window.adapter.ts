@@ -1,7 +1,7 @@
 import type { IWindow } from '@fux/context-cherry-picker-core'
 import * as vscode from 'vscode'
 import type { IConfigurationService } from '@fux/shared'
-import { showTimedInformationMessage as showTimedInformationMessageUtil } from '@fux/shared'
+
 
 export class WindowAdapter implements IWindow {
 
@@ -34,9 +34,23 @@ export class WindowAdapter implements IWindow {
 	}
 
 	public async showTimedInformationMessage(message: string, duration?: number): Promise<void> {
-		const finalDurationMs = await this._getDuration(duration)
+		let finalDurationMs = duration
 
-		await showTimedInformationMessageUtil(message, finalDurationMs)
+		if (finalDurationMs === undefined) {
+			const durationSeconds = await this.configurationService.get<number>('ContextCherryPicker.settings.message_show_seconds', 1.5)
+			finalDurationMs = durationSeconds * 1000
+		}
+
+		await vscode.window.withProgress(
+			{
+				location: vscode.ProgressLocation.Notification,
+				title: message,
+				cancellable: false,
+			},
+			async () => {
+				await new Promise(resolve => setTimeout(resolve, finalDurationMs))
+			},
+		)
 	}
 
 	async setStatusBarMessage(message: string, durationInMs?: number): Promise<void> {

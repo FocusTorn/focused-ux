@@ -9,6 +9,8 @@
 !assets/**
 
 # 4. Re-include the production node_modules.
+# Note: We intentionally include node_modules for self-contained extensions.
+# This may trigger VS Code bundling warnings, but they can be safely ignored.
 !node_modules/**
 
 # 5. Re-include essential package metadata.

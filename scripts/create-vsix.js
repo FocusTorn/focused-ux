@@ -1,5 +1,5 @@
 import { execSync, spawnSync } from 'node:child_process'
-import { readFileSync, mkdirSync, cpSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, mkdirSync, cpSync, writeFileSync, existsSync, unlinkSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import process from 'node:process'
 import { sync as rimrafSync } from 'rimraf'
@@ -58,8 +58,8 @@ function finishProgress() {
         console.log('✓ Finished packaging process.')
     } else {
         // Clear the entire line and move to the next for subsequent output.
-        process.stderr.write('\r' + ' '.repeat(80) + '\r\n')
-        console.error('✓ VSIX packaging completed successfully!')
+        process.stderr.write('\r' + ' '.repeat(120) + '\r\n')
+        // process.stderr.write('\r' + ' '.repeat(120) + '\r\n')
     }
 }
 
@@ -234,20 +234,92 @@ try {
     // 6. Package the VSIX.
     updateProgress(6, 'Running vsce package command')
     const vsixOutputPath = join(finalOutputDir, vsixFilename)
-    const vsceCommand = `vsce package -o "${vsixOutputPath}"`
 
-    // Capture vsce output
+    // Create a temporary .vscodeignore to suppress bundling warnings
+    const vscodeignorePath = join(deployDir, '.vscodeignore')
+    const originalVscodeignore =
+        existsSync(vscodeignorePath) ? readFileSync(vscodeignorePath, 'utf-8') : ''
+    const tempVscodeignore = originalVscodeignore + '\nnode_modules/**\n'
+    writeFileSync(vscodeignorePath, tempVscodeignore)
+
+    // Capture vsce output, suppressing bundling warnings
     let vsceOutput = ''
     try {
-        vsceOutput = execSync(vsceCommand, {
+        // Use spawnSync to have more control over output handling
+        const result = spawnSync('vsce', ['package', '-o', vsixOutputPath], {
             cwd: deployDir,
             encoding: 'utf-8',
+            stdio: ['pipe', 'pipe', 'pipe'],
+            env: { ...process.env, VSCE_SILENT: 'true' },
         })
-    } catch (error) {
-        // If vsce fails, combine stdout and stderr from the error object before re-throwing.
-        // The script's main catch block will log the full error object, including this output.
-        vsceOutput = (error.stdout || '') + (error.stderr || '')
-        throw error
+
+        // Check for command not found or execution errors
+        if (result.error) {
+            throw new Error(`Failed to execute vsce: ${result.error.message}`)
+        }
+
+        if (result.status !== 0) {
+            const errorMsg = result.stderr || result.stdout || 'Unknown error'
+            throw new Error(`vsce failed with status ${result.status}: ${errorMsg}`)
+        }
+
+        // Clear the progress bar immediately after vsce completes
+        process.stderr.write('\r' + ' '.repeat(120) + '\r\n')
+
+        // Combine stdout and stderr, filtering out bundling warnings
+        const allOutput = (result.stdout || '') + (result.stderr || '')
+        vsceOutput = allOutput
+            .split('\n')
+            .filter((line) => {
+                // Filter out bundling warnings since we intentionally include node_modules
+                return (
+                    !line.includes('For performance reasons, you should bundle your extension') &&
+                    !line.includes(
+                        'You should also exclude unnecessary files by adding them to your .vscodeignore'
+                    ) &&
+                    !line.includes('This extension consists of') &&
+                    !line.includes('JavaScript files') &&
+                    !line.includes('VSIX packaging completed successfully!')
+                )
+            })
+            .join('\n')
+            .trim()
+    } catch (_error) {
+        // Fallback to execSync if spawnSync fails
+        try {
+            const vsceCommand = `vsce package -o "${vsixOutputPath}" 2>&1`
+            vsceOutput = execSync(vsceCommand, {
+                cwd: deployDir,
+                encoding: 'utf-8',
+            })
+
+            // Clear the progress bar immediately after vsce completes
+            process.stderr.write('\r' + ' '.repeat(120) + '\r\n')
+
+            // Filter the output after capture
+            vsceOutput = vsceOutput
+                .split('\n')
+                .filter((line) => {
+                    // Filter out bundling warnings since we intentionally include node_modules
+                    return (
+                        !line.includes(
+                            'For performance reasons, you should bundle your extension'
+                        ) &&
+                        !line.includes(
+                            'You should also exclude unnecessary files by adding them to your .vscodeignore'
+                        ) &&
+                        !line.includes('This extension consists of') &&
+                        !line.includes('JavaScript files') &&
+                        !line.includes('VSIX packaging completed successfully!')
+                    )
+                })
+                .join('\n')
+                .trim()
+        } catch (fallbackError) {
+            // If both approaches fail, combine stdout and stderr from the error object before re-throwing.
+            vsceOutput = (fallbackError.stdout || '') + (fallbackError.stderr || '')
+            throw fallbackError
+        }
     }
 
     if (!existsSync(vsixOutputPath)) {
@@ -258,16 +330,27 @@ try {
 
     completeStep(`VSIX packaged successfully: ${vsixFilename}`)
 
+    // Restore original .vscodeignore
+    if (originalVscodeignore !== '') {
+        writeFileSync(vscodeignorePath, originalVscodeignore)
+    } else {
+        // Remove the temporary file if it didn't exist originally
+        if (existsSync(vscodeignorePath)) {
+            unlinkSync(vscodeignorePath)
+        }
+    }
+
     // 7. Cleanup
     updateProgress(7, 'Cleaning up deployment directory')
     // rimrafSync(deployDir) // Temporarily disabled for debugging
     completeStep('Cleanup completed')
 
+    // Clear the progress bar first
     finishProgress()
 
-    // Show the vsce output after the progress bar is complete.
+    // Show the filtered vsce output after the progress bar is complete
     if (vsceOutput.trim()) {
-        console.log(vsceOutput.trim())
+        console.log(vsceOutput)
     }
 
     // This is redundant with vsce output, so only show in verbose mode.

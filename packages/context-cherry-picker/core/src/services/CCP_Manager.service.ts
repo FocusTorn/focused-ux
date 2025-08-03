@@ -1,8 +1,5 @@
 // ESLint & Imports -->>
 
-//= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import { TreeItemCheckboxState } from 'vscode'
-
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IContextCherryPickerManager } from '../_interfaces/IContextCherryPickerManager.js'
 import type { IFileExplorerService } from '../_interfaces/IFileExplorerService.js'
@@ -13,6 +10,7 @@ import type { IContextDataCollectorService } from '../_interfaces/IContextDataCo
 import type { IFileContentProviderService } from '../_interfaces/IFileContentProviderService.js'
 import type { IContextFormattingService } from '../_interfaces/IContextFormattingService.js'
 import { constants } from '../_config/constants.js'
+import { TreeItemCheckboxState } from 'vscode'
 import type { IWindow } from '../_interfaces/IWindow.js'
 import type { IWorkspace } from '../_interfaces/IWorkspace.js'
 import type { IPath } from '../_interfaces/IPath.js'

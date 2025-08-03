@@ -1,7 +1,9 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { Event, TreeItemCheckboxState } from 'vscode'
+import type { Event } from 'vscode'
+import type { IFileExplorerItem } from './IFileExplorerItem.js'
+import type { TreeItemCheckboxState } from 'vscode'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { FileExplorerItem } from '../models/FileExplorerItem.js'
@@ -10,16 +12,16 @@ import type { FileGroupsConfig } from './ccp.types.js'
 //--------------------------------------------------------------------------------------------------------------<<
 
 export interface IFileExplorerService { //>
-	onDidChangeTreeData: Event<FileExplorerItem | undefined | null | void>
+	onDidChangeTreeData: Event<IFileExplorerItem | undefined | null | void>
 
-	getTreeItem: (element: FileExplorerItem) => Promise<FileExplorerItem>
-	getChildren: (element?: FileExplorerItem) => Promise<FileExplorerItem[]>
+	getTreeItem: (element: IFileExplorerItem) => Promise<IFileExplorerItem>
+	getChildren: (element?: IFileExplorerItem) => Promise<IFileExplorerItem[]>
 
 	refresh: () => Promise<void>
 	updateCheckboxState: (uri: string, state: TreeItemCheckboxState) => void
 	getCheckboxState: (uri: string) => TreeItemCheckboxState | undefined
 	getAllCheckedItems: () => string[]
-	loadCheckedState: (items: Array<{ uriString: string, checkboxState: number }>) => void
+	loadCheckedState: (checkedItems: Array<{ uriString: string, checkboxState: TreeItemCheckboxState }>) => void
 	clearAllCheckboxes: () => void
 
 	getCoreScanIgnoreGlobs: () => string[]

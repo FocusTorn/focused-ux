@@ -6,7 +6,7 @@ import { errors, printGroupedErrors } from './util/errors.js'
 import { checkPackageJsonExtDependencies, checkNoUnusedDeps, checkVSCodeEngineVersion, checkPackageVersionFormat, checkCorePackageDependencies } from './checks/package-json.js'
 import { checkProjectJsonExt, checkProjectJsonPackaging, checkProjectJsonExternalsConsistency, checkProjectJsonExtExternals } from './checks/project-json.js'
 import { checkTsconfigExt, checkTsconfigCore, checkTsconfigShared, checkTsconfigLibPaths } from './checks/tsconfig.js'
-import { checkRequiredExtFiles, checkNoDynamicImports } from './checks/misc.js'
+import { checkRequiredExtFiles, checkNoDynamicImports, checkNoVSCodeValueImports } from './checks/misc.js'
 
 function main() { //>
 	const packagesDir = path.join(ROOT, 'packages')
@@ -45,6 +45,7 @@ function main() { //>
 		ok = checkProjectJsonExtExternals(pkg) && ok
 		ok = checkPackageJsonExtDependencies(pkg) && ok
 		ok = checkNoDynamicImports(pkg) && ok
+		ok = checkNoVSCodeValueImports(pkg) && ok
 		ok = checkNoUnusedDeps(pkg) && ok
 		ok = checkVSCodeEngineVersion(pkg) && ok
 		ok = checkPackageVersionFormat(pkg) && ok

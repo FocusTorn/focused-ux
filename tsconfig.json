@@ -13,7 +13,7 @@
     },
     "compileOnSave": false,
     "files": [],
-    "exclude": ["_scripts/**/*", "node_modules", "dist", "**/dist/**/*"],
+    "exclude": ["_scripts/**/*", "node_modules", "dist", "**/dist/**/*", "libs/tools/structure-auditor/**/*"],
     "references": [
         {
             "path": "./packages/ghost-writer/core"

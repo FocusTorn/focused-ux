@@ -1,6 +1,4 @@
 import type { ExtensionContext, Disposable, TextEditorEdit } from 'vscode'
-import * as vscode from 'vscode'
-import { Position } from 'vscode'
 import type {
 	IClipboardService,
 	IConsoleLoggerService,
@@ -8,7 +6,7 @@ import type {
 } from '@fux/ghost-writer-core'
 import { createDIContainer } from './injection.js'
 import { constants } from './_config/constants.js'
-import type { IWindow, IWorkspace } from './_interfaces/IVSCode.js'
+import type { IWindow, IWorkspace, ICommands, IPosition } from '@fux/shared'
 
 export function activate(context: ExtensionContext): void {
 	console.log(`[${constants.extension.name}] Activating...`)
@@ -23,6 +21,8 @@ export function activate(context: ExtensionContext): void {
 		const importGeneratorService = container.resolve<IImportGeneratorService>('importGeneratorService')
 		const window = container.resolve<IWindow>('window')
 		const workspace = container.resolve<IWorkspace>('workspace')
+		const commands = container.resolve<ICommands>('commands')
+		const position = container.resolve<IPosition>('position')
 
 		// Command Handlers
 		const handleStoreCodeFragment = async (): Promise<void> => {
@@ -112,24 +112,24 @@ export function activate(context: ExtensionContext): void {
 
 				if (result) {
 					await editor.edit((editBuilder: TextEditorEdit) => {
-						const position = new Position(result.insertLine, 0)
+						const positionInstance = position.create(result.insertLine, 0)
 
-						editBuilder.insert(position, result.logStatement)
+						editBuilder.insert(positionInstance, result.logStatement)
 					})
 				}
 			}
 		}
 
 		const disposables: Disposable[] = [
-			vscode.commands.registerCommand(
+			commands.registerCommand(
 				constants.commands.storeCodeFragment,
 				handleStoreCodeFragment,
 			),
-			vscode.commands.registerCommand(
+			commands.registerCommand(
 				constants.commands.insertImportStatement,
 				handleInsertImportStatement,
 			),
-			vscode.commands.registerCommand(
+			commands.registerCommand(
 				constants.commands.logSelectedVariable,
 				handleLogSelectedVariable,
 			),

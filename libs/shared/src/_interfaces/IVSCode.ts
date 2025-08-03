@@ -1,4 +1,4 @@
-import type { TextEditor, WorkspaceConfiguration } from 'vscode'
+import type { TextEditor, WorkspaceConfiguration, Disposable } from 'vscode'
 
 export interface IWindow {
 	activeTextEditor: TextEditor | undefined
@@ -29,4 +29,12 @@ export interface IWorkspace {
 	onDidChangeConfiguration: (listener: (e: any) => void) => { dispose(): void };
 	createFileSystemWatcher: (pattern: any) => any;
 	openTextDocument: (uri: any) => Thenable<any>;
+}
+
+export interface ICommands {
+	registerCommand(command: string, callback: (...args: any[]) => any): Disposable
+}
+
+export interface IPosition {
+	create(line: number, character: number): any
 }
