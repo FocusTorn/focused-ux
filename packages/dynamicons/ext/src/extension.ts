@@ -265,6 +265,91 @@ async function activateIconThemeIfNeeded(context: ExtensionContext, container: A
 	}
 }
 
+async function checkIfThemeNeedsRegeneration(context: ExtensionContext, container: AwilixContainer): Promise<boolean> {
+	const workspaceService = container.resolve('workspace')
+	const fileSystem = container.resolve('fileSystem')
+	const iconThemeGeneratorService = container.resolve('iconThemeGeneratorService')
+	const uriAdapter = container.resolve('uriAdapter')
+
+	const config = workspaceService.getConfiguration(CONFIG_PREFIX) as { get: <T>(key: string, defaultValue?: T) => T | undefined }
+	const userIconsDir = config.get(CONFIG_KEYS.userIconsDirectory) as string | undefined
+	const customMappings = config.get(CONFIG_KEYS.customIconMappings) as Record<string, string> | undefined
+	const hideArrows = config.get(CONFIG_KEYS.hideExplorerArrows) as boolean | null | undefined
+
+	// Check if any settings exist that would affect theme generation
+	const hasRelevantSettings = userIconsDir || (customMappings && Object.keys(customMappings).length > 0) || hideArrows !== null
+
+	if (!hasRelevantSettings) {
+		console.log(`[${EXT_NAME}] No relevant settings found, theme regeneration not needed`)
+		return false
+	}
+
+	try {
+		const generatedThemeUri = await getGeneratedThemePath(context, container)
+		const baseThemeUri = await getBaseThemePath(context, container)
+		const generatedThemeDirUri = uriAdapter.dirname(generatedThemeUri)
+
+		// Check if generated theme file exists
+		try {
+			await fileSystem.access(generatedThemeUri)
+		}
+		catch {
+			console.log(`[${EXT_NAME}] Generated theme file doesn't exist, regeneration needed`)
+			return true
+		}
+
+		// Read current generated theme
+		let currentTheme: any = null
+		try {
+			const currentThemeContent = await fileSystem.readFile(generatedThemeUri, 'utf8')
+			currentTheme = JSON.parse(currentThemeContent)
+		}
+		catch (error) {
+			console.log(`[${EXT_NAME}] Error reading current theme file, regeneration needed:`, error)
+			return true
+		}
+
+		// Generate what the theme should look like with current settings
+		const expectedTheme = await iconThemeGeneratorService.generateIconThemeManifest(
+			baseThemeUri,
+			generatedThemeDirUri,
+			userIconsDir || undefined,
+			customMappings,
+			hideArrows,
+		)
+
+		if (!expectedTheme) {
+			console.log(`[${EXT_NAME}] Could not generate expected theme, regeneration needed`)
+			return true
+		}
+
+		// Remove timestamp for comparison
+		const currentThemeForComparison = { ...currentTheme }
+		const expectedThemeForComparison = { ...expectedTheme }
+		delete currentThemeForComparison._lastUpdated
+		delete expectedThemeForComparison._lastUpdated
+
+		// Compare the themes
+		const currentThemeStr = JSON.stringify(currentThemeForComparison, null, 2)
+		const expectedThemeStr = JSON.stringify(expectedThemeForComparison, null, 2)
+
+		if (currentThemeStr !== expectedThemeStr) {
+			console.log(`[${EXT_NAME}] Current theme doesn't match expected theme, regeneration needed`)
+			console.log(`[${EXT_NAME}] Current theme size: ${currentThemeStr.length} chars`)
+			console.log(`[${EXT_NAME}] Expected theme size: ${expectedThemeStr.length} chars`)
+			return true
+		}
+
+		console.log(`[${EXT_NAME}] Current theme matches expected theme, no regeneration needed`)
+		return false
+	}
+	catch (error) {
+		console.log(`[${EXT_NAME}] Error checking theme regeneration need:`, error)
+		// If we can't determine, err on the side of regeneration
+		return true
+	}
+}
+
 export async function activate(context: ExtensionContext): Promise<void> { //>
 	if (isActivated) {
 		console.log(`[${EXT_NAME}] Already activated, skipping...`)
@@ -292,27 +377,11 @@ export async function activate(context: ExtensionContext): Promise<void> { //>
 		let needsRegeneration = false
 
 		try {
-			const fileSystem = container.resolve('fileSystem')
-			const generatedThemeUri = await getGeneratedThemePath(context, container)
-			
-			try {
-				const stats = await fileSystem.stat(generatedThemeUri)
-
-				if (stats.size === 0) {
-					console.log(`[${EXT_NAME}] Generated theme file is empty, regenerating...`)
-					needsRegeneration = true
-				}
-				else {
-					console.log(`[${EXT_NAME}] Generated theme file exists and has content (${stats.size} bytes)`)
-				}
-			}
-			catch (_error) {
-				console.log(`[${EXT_NAME}] Generated theme file not found, regenerating...`)
-				needsRegeneration = true
-			}
+			// Use the new comprehensive check that considers user settings
+			needsRegeneration = await checkIfThemeNeedsRegeneration(context, container)
 		}
 		catch (error) {
-			console.log(`[${EXT_NAME}] Error checking theme file, skipping regeneration...`, error)
+			console.log(`[${EXT_NAME}] Error checking theme regeneration need, skipping regeneration...`, error)
 		}
 		
 		if (needsRegeneration) {
