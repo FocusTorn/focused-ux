@@ -1,24 +1,27 @@
-import { EventEmitter, TreeItem, TreeItemCollapsibleState, ThemeIcon } from 'vscode'
-import type { TreeDataProvider, Event } from 'vscode'
+import type { TreeDataProvider, Event, TreeItem } from 'vscode'
+import { TreeItemFactoryAdapter, EventEmitterAdapter } from '@fux/shared'
 import type { ISavedStatesService, SavedStateItem as CoreSavedStateItem } from '@fux/context-cherry-picker-core'
 import { ccpConstants } from '@fux/context-cherry-picker-core'
 
 export class SavedStatesViewProvider implements TreeDataProvider<CoreSavedStateItem> {
 
-	private _onDidChangeTreeData: EventEmitter<CoreSavedStateItem | undefined | null | void> = new EventEmitter()
-	readonly onDidChangeTreeData: Event<CoreSavedStateItem | undefined | null | void> = this._onDidChangeTreeData.event
+	private _onDidChangeTreeData: EventEmitterAdapter<CoreSavedStateItem | undefined | null | void>
+	readonly onDidChangeTreeData: Event<CoreSavedStateItem | undefined | null | void>
+	private treeItemFactory: TreeItemFactoryAdapter
 
 	constructor(private readonly service: ISavedStatesService) {
+		this._onDidChangeTreeData = new EventEmitterAdapter<CoreSavedStateItem | undefined | null | void>()
+		this.onDidChangeTreeData = this._onDidChangeTreeData.event
+		this.treeItemFactory = new TreeItemFactoryAdapter()
 		this.service.onDidChangeTreeData(() => this._onDidChangeTreeData.fire(undefined))
 	}
 
 	getTreeItem(element: CoreSavedStateItem): TreeItem {
-		const item = new TreeItem(element.label, TreeItemCollapsibleState.None)
+		const item = this.treeItemFactory.createWithIcon(element.label, 'save')
 
 		item.id = element.id
 		item.description = `${element.checkedItems.length} items`
 		item.tooltip = `Saved on: ${new Date(element.timestamp).toLocaleString()}`
-		item.iconPath = new ThemeIcon('save')
 		item.contextValue = 'savedStateEntry'
 		item.command = {
 			command: ccpConstants.commands.contextCherryPicker.loadSavedState,

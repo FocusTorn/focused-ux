@@ -1,0 +1,46 @@
+{
+    "name": "<%= projectName %>",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "<%= libRoot %>/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "<%= libRoot %>/src/index.ts",
+                "outputPath": "<%= libRoot %>/dist",
+                "tsConfig": "<%= libRoot %>/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "<%= libRoot %>/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": ["vscode", "typescript", "awilix", "js-yaml"]
+            }
+        },
+        "verify:dist:hash": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "node ../../scripts/verify-dist-hash.cjs",
+                "cwd": "<%= libRoot %>"
+            }
+        },
+        "build:with-verify": {
+            "executor": "nx:run-commands",
+            "options": {
+                "commands": [
+                    "nx run <%= projectName %>:build",
+                    "nx run <%= projectName %>:verify:dist:hash"
+                ]
+            }
+        },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" }
+    },
+    "tags": []
+} 

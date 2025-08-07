@@ -4,7 +4,7 @@ export class CommonUtilsAdapter implements ICommonUtilsService {
 
 	constructor(private readonly window: any) {}
 
-	public errMsg(message: string, error?: any): void {
+	public errMsg(message: string, _error?: any): void {
 		this.window.showErrorMessage(message)
 	}
 

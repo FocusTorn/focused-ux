@@ -76,9 +76,6 @@ export function checkNoVSCodeValueImports(pkg: string) { //>
 	]
 	let found = false
 
-	// Track errors by file to group them
-	const fileErrors = new Map<string, number>()
-
 	function walk(dir: string) {
 		if (!fs.existsSync(dir))
 			return
@@ -100,19 +97,17 @@ export function checkNoVSCodeValueImports(pkg: string) { //>
 				// Check for value imports from vscode (not type imports)
 				const vscodeValueImportRegex = /import\s+(?!type\s+).*from\s+['"]vscode['"]/g
 
-				let importCount = 0
 				for (let i = 0; i < lines.length; i++) {
 					const line = lines[i]
 					const matches = line.match(vscodeValueImportRegex)
-					if (matches) {
-						importCount += matches.length
-					}
-				}
 
-				if (importCount > 0) {
-					const relativePath = path.relative(ROOT, full)
-					fileErrors.set(relativePath, importCount)
-					found = true
+					if (matches) {
+						const relativePath = path.relative(ROOT, full)
+						const locationStr = `:${i + 1}:1`
+
+						addError('VS Code value import detected', `${relativePath}${locationStr} - Use type imports/adapters to decouple`)
+						found = true
+					}
 				}
 			}
 		}
@@ -122,13 +117,88 @@ export function checkNoVSCodeValueImports(pkg: string) { //>
 		walk(dir)
 	}
 
-	// Add grouped errors
-	for (const [filePath, count] of fileErrors) {
-		const message = count > 1 
-			? `${filePath} - (${count}) - Use type imports/adapters to decouple`
-			: `${filePath} - Use type imports/adapters to decouple`
-		addError('VS Code value import detected', message)
+	return !found
+} //<
+
+export function checkVSCodeAdaptersInSharedOnly(pkg: string) { //>
+	const coreDir = path.join(ROOT, 'packages', pkg, 'core', 'src')
+	const extDir = path.join(ROOT, 'packages', pkg, 'ext', 'src')
+	let found = false
+
+	function scanForVSCodeAdapters(dir: string, packageType: string) {
+		if (!fs.existsSync(dir))
+			return
+		
+		function walk(currentDir: string) {
+			for (const file of fs.readdirSync(currentDir)) {
+				const full = path.join(currentDir, file)
+
+				if (fs.statSync(full).isDirectory()) {
+					walk(full)
+				}
+				else if (file.endsWith('.ts')) {
+					const content = fs.readFileSync(full, 'utf-8')
+					const lines = content.split('\n')
+
+					// Check for VSCode adapter patterns
+					const vscodeAdapterPatterns = [
+						/import.*vscode.*from.*['"]vscode['"]/g, // VSCode imports
+						/import.*from.*['"]vscode['"]/g, // Any imports from vscode
+						/vscode\./g, // VSCode API usage
+					]
+
+					for (let i = 0; i < lines.length; i++) {
+						const line = lines[i]
+						
+						// Skip if this is the shared package (allowed to have VSCode adapters)
+						if (packageType === 'shared') {
+							continue
+						}
+
+						// Skip test files and setup files
+						if (file.includes('.test.') || file.includes('.spec.') || file.includes('setup.')) {
+							continue
+						}
+
+						// Skip if it's just a type import
+						if (line.includes('import type') && line.includes('vscode')) {
+							continue
+						}
+
+						// No exceptions - all VSCode coupling must be in shared package only
+
+						// Skip comments
+						if (line.trim().startsWith('//') || line.trim().startsWith('/*') || line.trim().startsWith('*')) {
+							continue
+						}
+
+						// Check for VSCode adapter patterns
+						for (const pattern of vscodeAdapterPatterns) {
+							if (pattern.test(line)) {
+								// Skip if this is just a string literal containing "vscode."
+								if (line.includes("'vscode.") || line.includes('"vscode.')) {
+									continue
+								}
+								
+								const relativePath = path.relative(ROOT, full)
+								const locationStr = `:${i + 1}:1`
+
+								addError('VSCode adapter/type found in non-shared package', `${relativePath}${locationStr} - VSCode adapters and types must be in shared package only`)
+								found = true
+								break
+							}
+						}
+					}
+				}
+			}
+		}
+
+		walk(dir)
 	}
+
+	// Scan core and ext packages (should not have VSCode adapters)
+	scanForVSCodeAdapters(coreDir, 'core')
+	scanForVSCodeAdapters(extDir, 'ext')
 
 	return !found
 } //<

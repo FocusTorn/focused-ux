@@ -14,6 +14,11 @@
             "factory": "./shared/generator#default",
             "schema": "./shared/schema.json",
             "description": "Create a shared package"
+        },
+        "lib": {
+            "factory": "./lib/generator#default",
+            "schema": "./lib/schema.json",
+            "description": "Create a library package"
         }
     }
 }

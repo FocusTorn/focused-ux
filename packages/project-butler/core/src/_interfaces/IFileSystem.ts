@@ -3,7 +3,7 @@ export interface FileStats {
 }
 
 export interface IFileSystem {
-	stat(path: string): Promise<FileStats>
-	access(path: string): Promise<void>
-	copyFile(src: string, dest: string): Promise<void>
+	stat: (path: string) => Promise<FileStats>
+	access: (path: string) => Promise<void>
+	copyFile: (src: string, dest: string) => Promise<void>
 }

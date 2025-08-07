@@ -6,7 +6,7 @@
     "repository": "https://github.com/FocusTorn/focused-ux",
     "version": "0.1.0",
     "private": true,
-    "main": "./dist/extension.cjs",
+    "main": "./dist/index.cjs",
     "dependencies": {
         "typescript": "^5.8.3",
         "awilix": "^12.0.5",
@@ -14,7 +14,11 @@
         "@fux/ghost-writer-core": "workspace:*",
         "@fux/shared": "workspace:*"
     },
-    "devDependencies": {},
+    "devDependencies": {
+        "vitest": "^3.2.4",
+        "@vitest/coverage-v8": "^3.2.4",
+        "@fux/mockly": "workspace:*"
+    },
     "contributes": {
         "commands": [
             {
@@ -91,6 +95,12 @@
         "developer tools",
         "focused ux"
     ],
+    "scripts": {
+        "test": "nx vite:test",
+        "test:coverage": "nx vite:test --coverage",
+        "test:ui": "nx vite:test --ui",
+        "test:run": "nx vite:test run"
+    },
     "engines": {
         "vscode": "^1.99.3"
     },

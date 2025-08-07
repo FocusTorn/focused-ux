@@ -6,14 +6,25 @@
             "@fux/context-cherry-picker-core": ["packages/context-cherry-picker/core/src"],
             "@fux/dynamicons-core": ["packages/dynamicons/core/src"],
             "@fux/ghost-writer-core": ["packages/ghost-writer/core/src"],
+
             "@fux/note-hub-core": ["packages/note-hub/core/src"],
             "@fux/project-butler-core": ["packages/project-butler/core/src"],
-            "@fux/shared": ["libs/shared/src"]
+            "@fux/project-butler-core/*": ["packages/project-butler/core/src/*"],
+            "@fux/shared": ["libs/shared/src"],
+            "@fux/shared/*": ["libs/shared/src/*"],
+            "@fux/mockly": ["libs/mockly/src"],
+            "@fux/mockly/*": ["libs/mockly/src/*"]
         }
     },
     "compileOnSave": false,
     "files": [],
-    "exclude": ["_scripts/**/*", "node_modules", "dist", "**/dist/**/*", "libs/tools/structure-auditor/**/*"],
+    "exclude": [
+        "_scripts/**/*",
+        "node_modules",
+        "dist",
+        "**/dist/**/*",
+        "libs/tools/structure-auditor/**/*"
+    ],
     "references": [
         {
             "path": "./packages/ghost-writer/core"
@@ -54,6 +65,7 @@
         {
             "path": "./libs/shared"
         },
+
         {
             "path": "./generators"
         }

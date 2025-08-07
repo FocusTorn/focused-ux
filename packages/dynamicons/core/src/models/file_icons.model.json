@@ -1,4 +1,3 @@
-
 //  { "name": "", "fileNames": [], "fileExtensions": [] },
 
 {
@@ -24,7 +23,7 @@
         { "name": "cmake", "fileExtensions": ["cmake"] },
         { "name": "cmake-cache", "fileNames": ["CMakeCache.txt"] },
         { "name": "cmake-list", "fileNames": ["CMakeLists.txt"] },
-        { "name": "cmake-json", "fileNames": ["CMakePresets.json","compile_commands.json"] },
+        { "name": "cmake-json", "fileNames": ["CMakePresets.json", "compile_commands.json"] },
         { "name": "coderabbit", "fileNames": [".coderabbit.yaml"] },
         { "name": "coffee", "fileExtensions": ["coffee", "cson", "iced"] },
         {
@@ -35,7 +34,6 @@
         { "name": "cpp", "fileExtensions": ["cpp"] },
         { "name": "header", "fileExtensions": ["h"] },
         { "name": "csharp", "fileExtensions": ["cs"] },
-
         { "name": "editorconfig", "fileNames": [".editorconfig"] },
         { "name": "eslint", "fileNames": [".eslintrc.json", "eslint.config.js"] },
         { "name": "env", "fileNames": ["pyvenv.cfg"] },
@@ -54,11 +52,9 @@
         { "name": "model", "fileExtensions": ["model.js", "model.json"] },
         { "name": "mocha-config", "fileNames": [".mocharc.js", ".mocharc.json", ".mocharc.yaml"] },
         { "name": "mocha", "fileExtensions": ["mocha.js", "mocha.cjs", "mocha.mjs", "mocha.ts", "mocha.mts"] },
-
         { "name": "ninja", "fileNames": ["build.ninja"] },
         { "name": "ninja-log", "fileNames": [".ninja_log"] },
         { "name": "ninja-flow", "fileNames": [".ninja_deps"] },
-
         { "name": "node-ignore", "fileNames": [".npmignore"] },
         { "name": "package", "fileNames": ["package.json"] },
         { "name": "package-lock", "fileNames": ["package-lock.json"] },
@@ -66,8 +62,7 @@
         { "name": "png", "fileExtensions": ["png"] },
         { "name": "poetry", "fileNames": ["poetry.p"] },
         { "name": "poetry-lock", "fileNames": ["poetry.lock"] },
-        { "name": "prettier", "fileNames": ["prettier.config.js"] },
-
+        { "name": "prettier-config", "fileNames": ["prettier.config.js", "prettier.config.cjs"] },
         { "name": "pyversion", "fileNames": [".python-version"] },
         { "name": "pyconfig", "fileNames": ["pyproject.toml"] },
         { "name": "python-file", "fileExtensions": ["py"] },
@@ -82,30 +77,19 @@
         { "name": "theme", "fileExtensions": ["theme.json"] },
         { "name": "typescript", "fileExtensions": ["ts"] },
         { "name": "tsconfig", "fileNames": ["tsconfig.json", "tsconfig.test.json"] },
-        
-        
-        
         { "name": "turbo-json", "fileNames": ["turbo.json"] },
-        
-        
-        
-        
         { "name": "text-file", "fileExtensions": ["txt", "txtc"] },
         { "name": "txte", "fileExtensions": ["txte"] },
         { "name": "yaml", "fileExtensions": ["yaml"] },
         { "name": "yarn", "fileNames": [".pnp.cjs", ".pnp.loader.mjs"] },
         { "name": "yarn-config", "fileNames": [".yarnrc", ".yarnrc.yml"] },
         { "name": "yarn-lock", "fileNames": ["yarn.lock"] },
-
-        { "name": "vite", "fileExtensions": ["vite.js","vite.ts"] },
-        
-        
+        { "name": "vite", "fileExtensions": ["vite.js", "vite.ts"] },
+        { "name": "vite-config", "fileExtensions": ["vitest.config.js", "vitest.config.ts"] },
         { "name": "vscode", "fileNames": ["vsc-extension-quickstart.md"], "fileExtensions": ["vsix", "code-workspace"] },
         { "name": "vscode-config", "fileNames": ["settings.json", "c_cpp_properties.json", "tasks.json"] },
         { "name": "vscode-ignore", "fileNames": [".vscodeignore"] },
-
         { "name": "webpack-config", "fileNames": ["webpack.config.js"] },
         { "name": "zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
     ]
 }
-

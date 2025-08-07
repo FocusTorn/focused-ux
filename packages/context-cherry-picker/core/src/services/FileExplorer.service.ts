@@ -1,8 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import { EventEmitter, TreeItemCheckboxState, TreeItemCollapsibleState } from 'vscode'
-import type { Event, Disposable } from 'vscode'
+import type { TreeItemCheckboxState, TreeItemCollapsibleState, Event } from '@fux/shared'
 
 //= MISC ======================================================================================================
 import * as micromatch from 'micromatch'
@@ -11,6 +10,7 @@ import * as yaml from 'js-yaml'
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IFileExplorerService } from '../_interfaces/IFileExplorerService.js'
 import { FileExplorerItem } from '../models/FileExplorerItem.js'
+import type { ITreeItemFactory } from '../models/FileExplorerItem.js'
 import { constants } from '../_config/constants.js'
 import type { FileGroupsConfig } from '../_interfaces/ccp.types.js'
 import type { IWorkspace, IFileSystemWatcher } from '../_interfaces/IWorkspace.js'
@@ -19,6 +19,7 @@ import type { IQuickSettingsService } from '../_interfaces/IQuickSettingsService
 import type { ITokenizerService } from '../_interfaces/ITokenizerService.js'
 import type { IFileSystem, DirectoryEntry } from '../_interfaces/IFileSystem.js'
 import type { IPath } from '../_interfaces/IPath.js'
+import { EventEmitterAdapter } from '@fux/shared'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -47,16 +48,16 @@ function isFileOrDirectory(entry: DirectoryEntry): entry is DirectoryEntry & { t
 	return entry.type === 'file' || entry.type === 'directory'
 }
 
-export class FileExplorerService implements IFileExplorerService, Disposable { //>
+export class FileExplorerService implements IFileExplorerService { //>
 
-	private _onDidChangeTreeData: EventEmitter<FileExplorerItem | undefined | null | void> = new EventEmitter<FileExplorerItem | undefined | null | void>()
+	private _onDidChangeTreeData: EventEmitterAdapter<FileExplorerItem | undefined | null | void> = new EventEmitterAdapter<FileExplorerItem | undefined | null | void>()
 	readonly onDidChangeTreeData: Event<FileExplorerItem | undefined | null | void> = this._onDidChangeTreeData.event
 
 	private checkboxStates: Map<string, TreeItemCheckboxState> = new Map()
 	private tokenCountCache: Map<string, 'loading' | number> = new Map()
 	private fileWatcher: IFileSystemWatcher | undefined
 	private isInitialized = false
-	private configChangeListener: Disposable | undefined
+	private configChangeListener: any | undefined
 
 	private fileGroupsConfig: FileGroupsConfig | undefined
 	private globalIgnoreGlobs: string[] = []
@@ -73,6 +74,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 		private readonly tokenizerService: ITokenizerService,
 		private readonly fileSystem: IFileSystem,
 		private readonly path: IPath,
+		private readonly treeItemFactory: ITreeItemFactory,
 	) {
 		this.configChangeListener = this.workspace.onDidChangeConfiguration(this._onVsCodeConfigChange)
 
@@ -226,9 +228,17 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 					let collapsibleStateOverride: TreeItemCollapsibleState | undefined
 
 					if (entry.type === 'directory' && mm.isMatch(relativeChildPath, this.contextExplorerHideChildrenGlobs)) {
-						collapsibleStateOverride = TreeItemCollapsibleState.None
+						collapsibleStateOverride = this.treeItemFactory.getCollapsibleStateNone()
 					}
-					return new FileExplorerItem(childUri, entry.name, entry.type, this.getCheckboxState(childUri) || TreeItemCheckboxState.Unchecked, undefined, collapsibleStateOverride)
+					return FileExplorerItem.create(
+						childUri,
+						entry.name,
+						entry.type,
+						this.treeItemFactory,
+						this.getCheckboxState(childUri) || this.treeItemFactory.getCheckboxStateUnchecked(),
+						undefined,
+						collapsibleStateOverride,
+					)
 				})
 
 			const resolvedChildren = (await Promise.all(promises)).filter((item: any): item is FileExplorerItem => item !== null)
@@ -254,7 +264,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 
 		const currentState = this.getCheckboxState(element.uri)
 
-		element.checkboxState = currentState === undefined ? TreeItemCheckboxState.Unchecked : currentState
+		element.checkboxState = currentState === undefined ? this.treeItemFactory.getCheckboxStateUnchecked() : currentState
 
 		const cacheState = this.tokenCountCache.get(element.uri)
 
@@ -284,8 +294,8 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 
 	clearAllCheckboxes(): void {
 		this.checkboxStates.forEach((state, uriString) => {
-			if (state === TreeItemCheckboxState.Checked) {
-				this.checkboxStates.set(uriString, TreeItemCheckboxState.Unchecked)
+			if (state === this.treeItemFactory.getCheckboxStateChecked()) {
+				this.checkboxStates.set(uriString, this.treeItemFactory.getCheckboxStateUnchecked())
 			}
 		})
 		this._onDidChangeTreeData.fire()
@@ -302,7 +312,7 @@ export class FileExplorerService implements IFileExplorerService, Disposable { /
 
 	getAllCheckedItems(): string[] {
 		return Array.from(this.checkboxStates.entries())
-			.filter(([, state]) => state === TreeItemCheckboxState.Checked)
+			.filter(([, state]) => state === this.treeItemFactory.getCheckboxStateChecked())
 			.map(([uriString]) => uriString)
 	}
 

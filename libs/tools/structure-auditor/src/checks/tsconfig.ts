@@ -12,6 +12,7 @@ const CANONICAL_TSCONFIG: Record<string, any> = { //>
 		composite: false,
 		declaration: false,
 		declarationMap: false,
+		tsBuildInfoFile: 'dist/tsconfig.tsbuildinfo',
 	},
 	include: ['src/**/*.ts'],
 	references: [

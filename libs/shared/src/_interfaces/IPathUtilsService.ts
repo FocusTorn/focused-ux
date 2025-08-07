@@ -1,3 +1,3 @@
 export interface IPathUtilsService {
-  santizePath: (path: string) => string;
-} 
+	santizePath: (path: string) => string
+}

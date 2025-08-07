@@ -1,8 +1,10 @@
-import type { IProcess } from '../../_interfaces/IProcess.js'
 import { exec } from 'node:child_process'
-import * as vscode from 'vscode'
+import type { IProcess } from '../../_interfaces/IProcess.js'
+import type { IWorkspace } from '../../_interfaces/IVSCode.js'
 
 export class ProcessAdapter implements IProcess {
+
+	constructor(private workspace: IWorkspace) {}
 
 	public exec(
 		command: string,
@@ -13,7 +15,7 @@ export class ProcessAdapter implements IProcess {
 	}
 
 	public getWorkspaceRoot(): string | undefined {
-		return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+		return this.workspace.workspaceFolders?.[0]?.uri.fsPath
 	}
 
 }

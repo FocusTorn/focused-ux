@@ -1,9 +1,9 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) ================================================================================
-import type { IWindow, IWorkspace, ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, IEnv } from '@fux/shared'
-import type { ExtensionContext, MessageItem, FileType as VsCodeFileTypeEnum } from 'vscode'
-import { Uri, ProgressLocation as VsCodeProgressLocation, commands as VsCodeCommands } from 'vscode'
+import type { IWindow, IWorkspace, ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, IEnv, IFileType, IUri, ICommands } from '@fux/shared'
+import type { ExtensionContext, MessageItem } from '@fux/shared'
+import { UriAdapter, FileTypeAdapter } from '@fux/shared'
 import { Buffer } from 'node:buffer'
 import type * as nodePath from 'node:path'
 import { constants as fsConstants } from 'node:fs'
@@ -31,6 +31,7 @@ export class NotesHubActionService implements INotesHubActionService {
 		private readonly iFrontmatterUtils: IFrontmatterUtilsService,
 		private readonly iPathUtils: IPathUtilsService,
 		private readonly iProviderManager: INotesHubProviderManager,
+		private readonly iCommands: ICommands,
 		private readonly iPathJoin: typeof nodePath.join,
 		private readonly iPathDirname: typeof nodePath.dirname,
 		private readonly iPathBasename: typeof nodePath.basename,
@@ -38,7 +39,7 @@ export class NotesHubActionService implements INotesHubActionService {
 		private readonly iPathExtname: typeof nodePath.extname,
 		private readonly iFspAccess: typeof fspAccessType,
 		private readonly iFspRename: typeof fspRenameType,
-		private readonly iFileTypeEnum: typeof VsCodeFileTypeEnum,
+		private readonly iFileTypeEnum: IFileType,
 	) {}
 
 	public async openNote( //>
@@ -93,7 +94,7 @@ export class NotesHubActionService implements INotesHubActionService {
 		const finalNewName = newExt ? `${newName}${newExt}` : newName
 		const sanitizedFileName = this.iPathUtils.santizePath(finalNewName)
 		const newPath = this.iPathJoin(this.iPathDirname(oldFilePath), sanitizedFileName)
-		const newUri = Uri.file(newPath)
+		const newUri = UriAdapter.file(newPath)
 
 		if (oldUri.toString() === newUri.toString())
 			return
@@ -149,7 +150,7 @@ export class NotesHubActionService implements INotesHubActionService {
 			return
 		}
 		try {
-			await VsCodeCommands.executeCommand('markdown.showPreviewToSide', noteItem.resourceUri)
+			await this.iCommands.executeCommand('markdown.showPreviewToSide', noteItem.resourceUri)
 		}
 		catch (error) {
 			this.iCommonUtils.errMsg('Failed to open note preview.', error)
@@ -194,7 +195,7 @@ export class NotesHubActionService implements INotesHubActionService {
 		}
 		await this.iEnv.clipboard.writeText(item.resourceUri.toString())
 		await this.iContext.globalState.update(`${notesHubConstants.commands.openNote}.${notesHubConstants.storageKeys.OPERATION}`, 'copy')
-		VsCodeCommands.executeCommand('setContext', `${notesHubConstants.commands.openNote}.${notesHubConstants.contextKeys.CAN_PASTE}`, true)
+		this.iCommands.executeCommand('setContext', `${notesHubConstants.commands.openNote}.${notesHubConstants.contextKeys.CAN_PASTE}`, true)
 		this.iWindow.showInformationMessage(`'${item.fileName}' copied.`)
 	} //<
 
@@ -207,7 +208,7 @@ export class NotesHubActionService implements INotesHubActionService {
 		}
 		await this.iEnv.clipboard.writeText(item.resourceUri.toString())
 		await this.iContext.globalState.update(`${notesHubConstants.commands.openNote}.${notesHubConstants.storageKeys.OPERATION}`, 'cut')
-		VsCodeCommands.executeCommand('setContext', `${notesHubConstants.commands.openNote}.${notesHubConstants.contextKeys.CAN_PASTE}`, true)
+		this.iCommands.executeCommand('setContext', `${notesHubConstants.commands.openNote}.${notesHubConstants.contextKeys.CAN_PASTE}`, true)
 		this.iWindow.showInformationMessage(`'${item.fileName}' cut.`)
 	} //<
 
@@ -239,7 +240,7 @@ export class NotesHubActionService implements INotesHubActionService {
 		const sourceItemName = this.iPathBasename(sourceUri.fsPath)
 		const targetFolderPath = targetFolderItem.resourceUri.fsPath
 		const targetItemPath = this.iPathJoin(targetFolderPath, sourceItemName)
-		const targetItemUri = Uri.file(this.iPathUtils.santizePath(targetItemPath))
+		const targetItemUri = UriAdapter.file(this.iPathUtils.santizePath(targetItemPath))
 
 		if (sourceUri.toString() === targetItemUri.toString())
 			return
@@ -255,8 +256,8 @@ export class NotesHubActionService implements INotesHubActionService {
 		const operationName = operation === 'cut' ? 'Moving' : 'Copying'
 
 		try {
-			await this.iWindow.withProgress(
-				{ location: VsCodeProgressLocation.Notification, title: `${operationName} '${sourceItemName}'...`, cancellable: false },
+					await this.iWindow.withProgress(
+			{ location: 'Notification', title: `${operationName} '${sourceItemName}'...`, cancellable: false },
 				async () => {
 					if (operation === 'cut') {
 						await this.iFspRename(sourceUri.fsPath, targetItemUri.fsPath)
@@ -282,7 +283,7 @@ export class NotesHubActionService implements INotesHubActionService {
 			if (operation === 'cut') {
 				await this.iContext.globalState.update(`${notesHubConstants.commands.openNote}.${notesHubConstants.storageKeys.OPERATION}`, undefined)
 				await this.iEnv.clipboard.writeText('')
-				VsCodeCommands.executeCommand('setContext', `${notesHubConstants.commands.openNote}.${notesHubConstants.contextKeys.CAN_PASTE}`, false)
+				this.iCommands.executeCommand('setContext', `${notesHubConstants.commands.openNote}.${notesHubConstants.contextKeys.CAN_PASTE}`, false)
 			}
 			this.iWindow.showInformationMessage(`Item '${sourceItemName}' ${operation === 'cut' ? 'moved' : 'copied'}.`)
 		}
@@ -315,7 +316,7 @@ export class NotesHubActionService implements INotesHubActionService {
 		const { newName, newExtension } = result
 		const sanitizedFileName = this.iPathUtils.santizePath(`${newName}${newExtension}`)
 		const newNotePath = this.iPathJoin(notesDir, sanitizedFileName)
-		const newNoteUri = Uri.file(newNotePath)
+		const newNoteUri = UriAdapter.file(newNotePath)
 
 		try {
 			await this.iWorkspace.fs.writeFile(newNoteUri, Buffer.from(`# ${newName}\n`, 'utf-8'))
@@ -359,7 +360,7 @@ export class NotesHubActionService implements INotesHubActionService {
 		const targetFolderPath = targetFolderItem.filePath
 		const sanitizedFolderName = this.iPathUtils.santizePath(newFolderName)
 		const newFolderPath = this.iPathJoin(targetFolderPath, sanitizedFolderName)
-		const newFolderUri = Uri.file(newFolderPath)
+		const newFolderUri = UriAdapter.file(newFolderPath)
 
 		try {
 			await this.iFspAccess(targetFolderPath, fsConstants.W_OK)

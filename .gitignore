@@ -22,6 +22,7 @@ node_modules
 
 #= IDE - VSCODE =============================================
 !.vscode/*
+mockly-vsc
 
 
 #= MISC =====================================================
@@ -53,6 +54,8 @@ Thumbs.db
 
 # Ignored by F-UX Notes Hub
 /.fux_note-hub/
+
+
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*

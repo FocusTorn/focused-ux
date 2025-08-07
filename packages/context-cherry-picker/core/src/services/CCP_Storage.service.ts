@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { TreeItemCheckboxState } from 'vscode'
+import type { TreeItemCheckboxState } from '@fux/shared'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IStorageService } from '../_interfaces/IStorageService.js'

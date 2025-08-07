@@ -1,6 +1,6 @@
 // ESLint & Imports -->>
 
-import type { Event } from 'vscode'
+import type { Event } from '@fux/shared'
 import type { SavedStateItem } from '../models/SavedStateItem.js'
 
 //--------------------------------------------------------------------------------------------------------------<<

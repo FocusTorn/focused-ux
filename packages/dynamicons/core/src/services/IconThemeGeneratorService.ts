@@ -7,6 +7,8 @@ import type { IIconThemeGeneratorService } from '../_interfaces/IIconThemeGenera
 import type { ICommonUtils } from '../_interfaces/ICommonUtils.js'
 import type { IFileSystem } from '../_interfaces/IFileSystem.js'
 import type { IPath } from '../_interfaces/IPath.js'
+import type { IUri, UriAdapter } from '@fux/shared'
+
 import stripJsonCommentsModule from 'strip-json-comments'
 
 // Handle both default and direct exports
@@ -40,51 +42,52 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 		private readonly fileSystem: IFileSystem,
 		private readonly path: IPath,
 		private readonly commonUtils: ICommonUtils,
+		private readonly uriAdapter: typeof UriAdapter,
 	) {}
 
-	private readJsonFileSync<T = any>(filePath: string, encoding: BufferEncoding = 'utf-8'): T | undefined {
+	private async readJsonFile<T = any>(filePath: IUri, encoding: BufferEncoding = 'utf-8'): Promise<T | undefined> {
 		try {
-			const fileContent = this.fileSystem.readFileSync(filePath, encoding)
+			const fileContent = await this.fileSystem.readFile(filePath, encoding)
 			const contentWithoutComments = stripJsonComments(fileContent.toString())
 
 			return JSON.parse(contentWithoutComments) as T
 		}
 		catch (error) {
-			this.commonUtils.errMsg(`Error reading or parsing JSON file synchronously: ${filePath}`, error)
+			this.commonUtils.errMsg(`Error reading or parsing JSON file: ${filePath.fsPath}`, error)
 			return undefined
 		}
 	}
 
 	public async generateIconThemeManifest(
-		baseManifestPath: string,
-		generatedThemeDir: string,
+		baseManifestUri: IUri,
+		generatedThemeDirUri: IUri,
 		userIconsDirectory?: string,
 		customMappings?: Record<string, string>,
 		hideExplorerArrows?: boolean | null,
 	): Promise<Record<string, any> | undefined> {
-		const manifest = this.readJsonFileSync<ThemeManifest>(baseManifestPath)
+		const manifest = await this.readJsonFile<ThemeManifest>(baseManifestUri)
 
 		if (!manifest) {
-			this.commonUtils.errMsg(`[IconThemeGeneratorService] Base manifest not found or failed to parse at: ${baseManifestPath}`)
+			this.commonUtils.errMsg(`[IconThemeGeneratorService] Base manifest not found or failed to parse at: ${baseManifestUri.fsPath}`)
 			return undefined
 		}
-
-
 
 		manifest.iconDefinitions = manifest.iconDefinitions || {}
 
 		if (userIconsDirectory) {
 			try {
-				await this.fileSystem.access(userIconsDirectory, fsConstants.R_OK)
+				const userIconsDirUri = this.uriAdapter.file(userIconsDirectory)
 
-				const files = await this.fileSystem.readdir(userIconsDirectory, { withFileTypes: true }) as Dirent[]
+				await this.fileSystem.access(userIconsDirUri, fsConstants.R_OK)
+
+				const files = await this.fileSystem.readdir(userIconsDirUri, { withFileTypes: true }) as Dirent[]
 
 				for (const file of files) {
 					if (file.isFile() && file.name.endsWith('.svg')) {
 						const iconName = file.name.replace(/\.svg$/, '')
 						const definitionKey = `${dynamiconsConstants.defaults.userIconDefinitionPrefix}${iconName}`
 						const absoluteUserIconFilePath = this.path.join(userIconsDirectory, file.name)
-						const relativeIconPath = this.path.relative(generatedThemeDir, absoluteUserIconFilePath).replace(/\\/g, '/')
+						const relativeIconPath = this.path.relative(generatedThemeDirUri.fsPath, absoluteUserIconFilePath).replace(/\\/g, '/')
 
 						manifest.iconDefinitions[definitionKey] = {
 							iconPath: relativeIconPath,
@@ -149,8 +152,6 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 					manifest.languageIds[langId] = value
 				}
 			}
-			
-
 		}
 
 		if (hideExplorerArrows !== null && hideExplorerArrows !== undefined) {
@@ -166,19 +167,17 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 		// Enable VS Code's built-in file watching for automatic theme refresh
 		manifest._watch = true
 
-
-
 		return manifest
 	}
 
-	public async writeIconThemeFile(manifest: Record<string, any>, outputPath: string): Promise<void> {
+	public async writeIconThemeFile(manifest: Record<string, any>, outputPathUri: IUri): Promise<void> {
 		try {
-			const manifestJsonString = JSON.stringify(manifest, null, 2)
+			const manifestJsonString = `${JSON.stringify(manifest, null, 4)}\n`
 
-			await this.fileSystem.writeFile(outputPath, manifestJsonString, 'utf-8')
+			await this.fileSystem.writeFile(outputPathUri, manifestJsonString, 'utf-8')
 		}
 		catch (error) {
-			this.commonUtils.errMsg(`[IconThemeGeneratorService] Failed to write icon theme manifest to ${outputPath}:`, error)
+			this.commonUtils.errMsg(`[IconThemeGeneratorService] Failed to write icon theme manifest to ${outputPathUri.fsPath}:`, error)
 			throw error
 		}
 	}

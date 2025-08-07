@@ -1,6 +1,6 @@
 import type { AwilixContainer } from 'awilix'
 import { createContainer, InjectionMode, asClass } from 'awilix'
-import type { ExtensionContext } from 'vscode'
+import type { ExtensionContext } from '@fux/shared'
 import { AiAgentInteractorService } from '@fux/ai-agent-interactor-core'
 
 export async function createDIContainer(_context: ExtensionContext): Promise<AwilixContainer> {

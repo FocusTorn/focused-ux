@@ -7,14 +7,24 @@
         "@nx/esbuild": "21.2.3",
         "@nx/eslint": "21.2.3",
         "@nx/js": "21.2.3",
+        "@nx/vite": "21.2.3",
+        "@nx/web": "21.2.3",
         "@nx/workspace": "^21.3.10",
         "@seahax/eslint-plugin-wrap": "^0.6.7",
+        "@swc-node/register": "~1.9.1",
+        "@swc/core": "~1.5.7",
+        "@swc/helpers": "~0.5.11",
         "@types/node": "^24.0.10",
         "@types/vscode": "^1.99.3",
         "@typescript-eslint/parser": "^8.35.1",
+        "@vitest/coverage-v8": "^3.0.5",
+        "@vitest/ui": "^3.0.0",
         "cli-progress": "^3.12.0",
         "esbuild": "^0.25.5",
         "eslint": "^9.30.1",
+        "eslint-plugin-unused-imports": "^4.1.4",
+        "jiti": "2.4.2",
+        "jsdom": "~22.1.0",
         "knip": "^5.62.0",
         "nx": "21.2.3",
         "ora": "^8.2.0",
@@ -24,7 +34,10 @@
         "strip-json-comments": "^5.0.2",
         "tslib": "^2.8.1",
         "typescript": "^5.8.3",
-        "verdaccio": "^6.0.5"
+        "verdaccio": "^6.0.5",
+        "vite": "^6.0.0",
+        "vite-tsconfig-paths": "^5.1.4",
+        "vitest": "^3.0.0"
     },
     "license": "MIT",
     "private": true,
@@ -33,6 +46,12 @@
         "packages/*/*",
         "libs/*"
     ],
+    "scripts": {
+        "prune-cache": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1",
+        "prune-cache:dry-run": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1 -DryRun",
+        "prune-cache:keep-5": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1 -KeepCount 5",
+        "prune-cache:list": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1 -ListOnly"
+    },
     "nx": {
         "includedScripts": [],
         "targets": {
@@ -45,5 +64,10 @@
                 }
             }
         }
+    },
+    
+    "dependencies": {
+        "chalk": "^5.5.0",
+        "commander": "^14.0.0"
     }
 }

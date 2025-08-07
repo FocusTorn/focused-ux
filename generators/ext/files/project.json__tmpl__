@@ -5,30 +5,42 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "extends": "build:extension"
-    },
-    "package:dev": {
-      "executor": "nx:run-commands",
-      "dependsOn": ["build"],
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": ["^build"],
       "options": {
-        "command": "node ./_scripts/create-dev-vsix.js <%= name %>/ext"
+        "entryPoints": ["<%= packageRoot %>/src/extension.ts"],
+        "outputPath": "<%= packageRoot %>/dist",
+        "format": ["cjs"],
+        "metafile": true,
+        "platform": "node",
+        "bundle": true,
+        "external": ["vscode", "typescript", "awilix", "js-yaml"],
+        "sourcemap": true,
+        "main": "<%= packageRoot %>/src/extension.ts",
+        "tsConfig": "<%= packageRoot %>/tsconfig.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "<%= packageRoot %>/assets/",
+            "output": "./assets/"
+          }
+        ]
       }
     },
     "package": {
       "executor": "nx:run-commands",
       "dependsOn": ["build"],
-      "outputs": ["{workspaceRoot}/vsix_packages/<%= name %>.vsix"],
       "options": {
-        "command": "vsce package --no-dependencies -o ../../vsix_packages/<%= name %>.vsix",
-        "cwd": "{projectRoot}"
+        "command": "node scripts/create-vsix.js <%= packageRoot %> vsix_packages"
       }
     },
-    "publish": {
+    "package:dev": {
       "executor": "nx:run-commands",
-      "dependsOn": ["package"],
+      "dependsOn": ["build"],
       "options": {
-        "command": "vsce publish",
-        "cwd": "{projectRoot}"
+        "command": "node scripts/create-vsix.js <%= packageRoot %> vsix_packages --dev",
+        "outputPath": "vsix_packages"
       }
     },
     "lint": {}

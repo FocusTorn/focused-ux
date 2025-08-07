@@ -4,7 +4,8 @@
     "sourceRoot": "packages/project-butler/core/src",
     "projectType": "library",
     "targets": {
-        "build": {
+        
+        "build": { //>
             "dependsOn": ["^build"],
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
@@ -22,31 +23,46 @@
                 "thirdParty": false,
                 "deleteOutputPath": true
             }
-        },
-
-        "verify:dist:hash": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "node ../../../scripts/verify-dist-hash.cjs",
-                "cwd": "packages/project-butler/core"
-            }
-        },
-        "build:with-verify": {
-            "executor": "nx:run-commands",
-            "options": {
-                "commands": [
-                    "nx run @fux/project-butler-core:build",
-                    "nx run @fux/project-butler-core:verify:dist:hash"
-                ]
-            }
-        },
-        "lint": {},
-        "clean:dist": {
-            "extends": "clean:dist"
-        },
-        "clean:cache": {
-            "extends": "clean:cache"
-        }
+        }, //<
+        
+        "check-types": { "extends": "check-types" },
+        "lint": { "extends": "lint" },
+        "lint:full": { "extends": "lint:full" },
+        "validate": { "extends": "validate" },
+        "validate:full": { "extends": "validate:full" },
+        "audit": { "extends": "audit" },
+        "audit:full": { "extends": "audit:full" },
+        
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+        
+        "test": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^build"]
+        }, //<
+        "test:full": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^test"]
+        } //<
+        
     },
-    "tags": []
+    "tags": ["core"]
 }
+
+// "verify:dist:hash": {
+//     "executor": "nx:run-commands",
+//     "options": {
+//         "command": "node ../../../scripts/verify-dist-hash.cjs",
+//         "cwd": "packages/project-butler/core"
+//     }
+// },
+// "build:with-verify": {
+//     "executor": "nx:run-commands",
+//     "options": {
+//         "commands": [
+//             "nx run @fux/project-butler-core:build",
+//             "nx run @fux/project-butler-core:verify:dist:hash"
+//         ]
+//     }
+// },

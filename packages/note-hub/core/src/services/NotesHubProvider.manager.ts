@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) ================================================================================
-import type { IWindow, IWorkspace, ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, ICommands } from '@fux/shared'
+import type { IWindow, IWorkspace, ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, ICommands, IFileType } from '@fux/shared'
 import type { ExtensionContext, Disposable } from 'vscode'
 import type { INotesHubProviderManager } from '../_interfaces/INotesHubProviderManager.js'
 import type { INotesHubDataProvider } from '../_interfaces/INotesHubDataProvider.js'
@@ -28,6 +28,7 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 		private readonly iCommonUtils: ICommonUtilsService,
 		private readonly iFrontmatterUtils: IFrontmatterUtilsService,
 		private readonly iPathUtils: IPathUtilsService,
+		private readonly iFileTypeEnum: IFileType,
 	) {}
 
 	public async initializeProviders(config: NotesHubConfig, commandPrefix: string, openNoteCommandId: string): Promise<void> { //>
@@ -39,6 +40,9 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 
 		if (config.isProjectNotesEnabled) {
 			this.projectNotesProvider = new ProjectNotesDataProvider(
+				config.projectNotesPath,
+				'project',
+				openNoteCommandId,
 				this.iContext,
 				this.iWindow,
 				this.iWorkspace,
@@ -46,8 +50,7 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.iCommonUtils,
 				this.iFrontmatterUtils,
 				this.iPathUtils,
-				config.projectNotesPath,
-				openNoteCommandId,
+				this.iFileTypeEnum,
 			)
 			this.projectNotesProvider.initializeTreeView(`${commandPrefix}.projectNotesView`)
 			this.disposables.push(this.projectNotesProvider)
@@ -55,6 +58,9 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 
 		if (config.isRemoteNotesEnabled) {
 			this.remoteNotesProvider = new RemoteNotesDataProvider(
+				config.remoteNotesPath,
+				'remote',
+				openNoteCommandId,
 				this.iContext,
 				this.iWindow,
 				this.iWorkspace,
@@ -62,8 +68,7 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.iCommonUtils,
 				this.iFrontmatterUtils,
 				this.iPathUtils,
-				config.remoteNotesPath,
-				openNoteCommandId,
+				this.iFileTypeEnum,
 			)
 			this.remoteNotesProvider.initializeTreeView(`${commandPrefix}.remoteNotesView`)
 			this.disposables.push(this.remoteNotesProvider)
@@ -71,6 +76,9 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 
 		if (config.isGlobalNotesEnabled) {
 			this.globalNotesProvider = new GlobalNotesDataProvider(
+				config.globalNotesPath,
+				'global',
+				openNoteCommandId,
 				this.iContext,
 				this.iWindow,
 				this.iWorkspace,
@@ -78,8 +86,7 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.iCommonUtils,
 				this.iFrontmatterUtils,
 				this.iPathUtils,
-				config.globalNotesPath,
-				openNoteCommandId,
+				this.iFileTypeEnum,
 			)
 			this.globalNotesProvider.initializeTreeView(`${commandPrefix}.globalNotesView`)
 			this.disposables.push(this.globalNotesProvider)

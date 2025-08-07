@@ -3,6 +3,9 @@
     "version": "0.0.1",
     "private": true,
     "type": "module",
+    "dependencies": {
+        "strip-json-comments": "^5.0.2"
+    },
     "devDependencies": {
         "@types/node": "18.19.39",
         "tsx": "4.16.2"

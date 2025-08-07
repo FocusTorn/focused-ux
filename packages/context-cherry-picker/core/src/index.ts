@@ -17,7 +17,10 @@ export type { ISavedStatesService } from './_interfaces/ISavedStatesService.js'
 export type { IStorageService } from './_interfaces/IStorageService.js'
 export type { ITokenizerService } from './_interfaces/ITokenizerService.js'
 export type { ITreeFormatterService, TreeFormatterNode } from './_interfaces/ITreeFormatterService.js'
+export type { ITreeItemFactory } from './models/FileExplorerItem.js'
 export type { IWindow } from './_interfaces/IWindow.js'
+
+// Intentional linting error
 export type { IWorkspace } from './_interfaces/IWorkspace.js'
 
 // Models

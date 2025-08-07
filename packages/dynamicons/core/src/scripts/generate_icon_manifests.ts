@@ -9,11 +9,11 @@ import process from 'node:process'
 //= MISC ======================================================================================================
 import stripJsonCommentsModule from 'strip-json-comments'
 
-// Handle both default and direct exports
-const stripJsonComments = (stripJsonCommentsModule as any).default || stripJsonCommentsModule
-
 //= IMPLEMENTATION TYPES ======================================================================================
 import { dynamiconsConstants } from '../_config/dynamicons.constants.js'
+
+// Handle both default and direct exports
+const stripJsonComments = (stripJsonCommentsModule as any).default || stripJsonCommentsModule
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -460,7 +460,7 @@ export async function main(silent: boolean = false): Promise<boolean> { //>
 	const combinedIconsData = transformIcons(fileIconsData, folderIconsData, silent)
 
 	try {
-		fs.writeFileSync(BASE_THEME_FILE_ABS.replace(/\//g, path.sep), JSON.stringify(combinedIconsData, null, 2))
+		fs.writeFileSync(BASE_THEME_FILE_ABS.replace(/\//g, path.sep), `${JSON.stringify(combinedIconsData, null, 4)}\n`)
 		if (!silent) {
 			console.log(
 				`│  ├─ ${ansii.gold}Generated Manifest:${ansii.none} ${path.relative(MONOREPO_ROOT, BASE_THEME_FILE_ABS)}`,
@@ -475,7 +475,7 @@ export async function main(silent: boolean = false): Promise<boolean> { //>
 	}
 
 	try {
-		fs.writeFileSync(OUTPUT_THEME_FILE_ABS.replace(/\//g, path.sep), JSON.stringify(combinedIconsData, null, 2))
+		fs.writeFileSync(OUTPUT_THEME_FILE_ABS.replace(/\//g, path.sep), `${JSON.stringify(combinedIconsData, null, 4)}\n`)
 		if (!silent) {
 			console.log(
 				`│  └─ ${ansii.gold}Generated Manifest:${ansii.none} ${path.relative(MONOREPO_ROOT, OUTPUT_THEME_FILE_ABS)}`,

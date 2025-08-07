@@ -1,30 +1,29 @@
 // ESLint & Imports -->>
 
 // _UTILITIES ==================================================================================================
-// import { ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, IWindow, IWorkspace, ICommands } from '@fux/_utilities' (update to actual path)
 import type {
-	CancellationToken,
-	DataTransfer,
+	IWindow,
+	IWorkspace,
+	ICommands,
+	ICommonUtilsService,
+	IFrontmatterUtilsService,
+	IPathUtilsService,
+	IUri,
+	ITreeItem,
+	IFileType,
 	Event,
-	ExtensionContext,
-	FileSystemWatcher,
-	ProviderResult,
-	TreeDragAndDropController,
-	TreeView,
-	Uri,
-	TreeItem,
-	Disposable,
-	TreeDataProvider,
-} from 'vscode'
-import {
-	DataTransferItem,
-	EventEmitter,
-	FileType,
-	RelativePattern,
-	ThemeIcon,
+	IExtensionContext,
 	TreeItemCollapsibleState,
-	Uri as VsCodeUri,
-} from 'vscode'
+	IFileSystemWatcher,
+	IRelativePattern,
+	ProviderResult,
+} from '@fux/shared'
+import {
+	EventEmitterAdapter,
+	ThemeIconAdapter,
+	UriAdapter,
+	RelativePatternAdapter,
+} from '@fux/shared'
 import { basename, dirname, extname, join, normalize } from 'node:path'
 import { constants as fsConstants } from 'node:fs'
 import { Buffer } from 'node:buffer'
@@ -43,35 +42,33 @@ const DEFAULT_FOLDER_ICON = 'folder'
 
 const ALLOWED_EXTENSIONS = ['.md', '.txt', '.txte']
 
-export abstract class BaseNotesDataProvider implements INotesHubDataProvider, TreeDragAndDropController<NotesHubItem> {
+export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 
-	private _onDidChangeTreeData: EventEmitter<NotesHubItem | undefined | null | void> = new EventEmitter()
+	private _onDidChangeTreeData: EventEmitterAdapter<NotesHubItem | undefined | null | void> = new EventEmitterAdapter()
 	readonly onDidChangeTreeData: Event<NotesHubItem | undefined | null | void> = this._onDidChangeTreeData.event
 
-	private fileWatcher: FileSystemWatcher
-
-	public readonly dropMimeTypes = ['text/uri-list']
-	public readonly dragMimeTypes = ['text/uri-list']
+	private fileWatcher: IFileSystemWatcher
 
 	// Awilix-ready constructor (no decorators)
 	constructor(
 		public readonly notesDir: string,
 		public readonly providerName: 'project' | 'remote' | 'global',
 		private readonly openNoteCommandId: string,
-		protected readonly iContext: ExtensionContext,
-		protected readonly iWindow: any, // TODO: Replace 'any' with IWindow from _utilities
-		protected readonly iWorkspace: any, // TODO: Replace 'any' with IWorkspace from _utilities
-		protected readonly iCommands: any, // TODO: Replace 'any' with ICommands from _utilities
-		protected readonly iCommonUtils: any, // TODO: Replace 'any' with ICommonUtilsService from _utilities
-		protected readonly iFrontmatterUtils: any, // TODO: Replace 'any' with IFrontmatterUtilsService from _utilities
-		protected readonly iPathUtils: any, // TODO: Replace 'any' with IPathUtilsService from _utilities
+		protected readonly iContext: IExtensionContext,
+		protected readonly iWindow: IWindow,
+		protected readonly iWorkspace: IWorkspace,
+		protected readonly iCommands: ICommands,
+		protected readonly iCommonUtils: ICommonUtilsService,
+		protected readonly iFrontmatterUtils: IFrontmatterUtilsService,
+		protected readonly iPathUtils: IPathUtilsService,
+		protected readonly iFileTypeEnum: IFileType,
 	) {
 		if (this.providerName === 'project' && this.notesDir.includes('.fux_note-hub')) {
 			this.addDirToGitignore('.fux_note-hub')
 		}
 
 		this.fileWatcher = this.iWorkspace.createFileSystemWatcher(
-			new RelativePattern(this.notesDir, '**/*'),
+			RelativePatternAdapter.create(this.notesDir, '**/*'),
 		)
 		this.fileWatcher.onDidChange(() => this.refresh())
 		this.fileWatcher.onDidCreate(() => this.refresh())
@@ -92,6 +89,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider, Tr
 		// Using createTreeView would attempt to register it a second time, causing an error.
 		// I am assuming iWindow, which is an adapter for vscode.window, has this method.
 		const disposable = this.iWindow.registerTreeDataProvider(viewId, this)
+
 		this.iContext.subscriptions.push(disposable)
 		this.treeViewRegistered = true
 	}
@@ -104,9 +102,8 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider, Tr
 		this._onDidChangeTreeData.dispose()
 		this.fileWatcher.dispose()
 	}
-
 	      
-public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
+	public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
 		if (!element.parentUri) {
 			return undefined
 		}
@@ -124,9 +121,7 @@ public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
 		return this.getNotesHubItem(element.parentUri)
 	}//<
 
-    
-
-	public async getTreeItem(element: NotesHubItem): Promise<TreeItem> {
+	public async getTreeItem(element: NotesHubItem): Promise<ITreeItem> {
 		if (element.isDirectory) {
 			// If it's a root item (no parent), start it as expanded. Otherwise, collapsed.
 			element.collapsibleState = !element.parentUri
@@ -148,20 +143,20 @@ public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
 			if (!element.parentUri) { // This is a root folder for this provider
 				switch (this.providerName) {
 					case 'project':
-						element.iconPath = new ThemeIcon(PROJECT_ROOT_ICON)
+						element.iconPath = ThemeIconAdapter.create(PROJECT_ROOT_ICON)
 						break
 					case 'remote':
-						element.iconPath = new ThemeIcon(REMOTE_ROOT_ICON)
+						element.iconPath = ThemeIconAdapter.create(REMOTE_ROOT_ICON)
 						break
 					case 'global':
-						element.iconPath = new ThemeIcon(GLOBAL_ROOT_ICON)
+						element.iconPath = ThemeIconAdapter.create(GLOBAL_ROOT_ICON)
 						break
 					default:
-						element.iconPath = new ThemeIcon(DEFAULT_ROOT_ICON)
+						element.iconPath = ThemeIconAdapter.create(DEFAULT_ROOT_ICON)
 				}
 			}
 			else {
-				element.iconPath = new ThemeIcon(DEFAULT_FOLDER_ICON)
+				element.iconPath = ThemeIconAdapter.create(DEFAULT_FOLDER_ICON)
 			}
 		}
 		return element
@@ -173,6 +168,7 @@ public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
 
 			if (!element) { // Root level for this provider
 				const rootFolderItem = new NotesHubItem(basename(this.notesDir), this.notesDir, true)
+
 				return [rootFolderItem]
 			}
 
@@ -182,11 +178,12 @@ public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
 
 				for (const [name, fileType] of entries) {
 					const filePath = join(dirPath, name)
-					const isDir = (fileType & FileType.Directory) > 0
+					const isDir = (fileType & this.iFileTypeEnum.Directory) > 0
 
 					if (isDir || this.isExtensionValid(filePath)) {
 						const frontmatter = !isDir ? await this.iFrontmatterUtils.getFrontmatter(filePath) : undefined
 						const item = new NotesHubItem(name, filePath, isDir, element.resourceUri, frontmatter)
+
 						items.push(item)
 					}
 				}
@@ -200,16 +197,17 @@ public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
 		}
 	}
 
-	public async getNotesHubItem(uri: Uri): Promise<NotesHubItem | undefined> {
+	public async getNotesHubItem(uri: IUri): Promise<NotesHubItem | undefined> {
 		try {
 			const filePath = uri.fsPath
 			const stats = await this.iWorkspace.fs.stat(uri)
-			const isDirectory = (stats.type & FileType.Directory) > 0
+			const isDirectory = (stats.type & this.iFileTypeEnum.Directory) > 0
 			const fileName = basename(filePath)
 			const parentPath = dirname(filePath)
-			const parentUri = parentPath !== filePath ? VsCodeUri.file(parentPath) : undefined
+			const parentUri = parentPath !== filePath ? UriAdapter.file(parentPath) : undefined
 
 			let frontmatter: { [key: string]: string } | undefined
+
 			if (!isDirectory && this.isExtensionValid(filePath)) {
 				frontmatter = await this.iFrontmatterUtils.getFrontmatter(filePath)
 			}
@@ -221,83 +219,12 @@ public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
 		}
 	}
 
-	public async handleDrag(
-		source: readonly NotesHubItem[],
-		dataTransfer: DataTransfer,
-		_token: CancellationToken,
-	): Promise<void> {
-		const validSourceUris = source
-			.map(item => item.resourceUri?.toString())
-			.filter(uriString => uriString !== undefined) as string[]
-
-		if (validSourceUris.length > 0) {
-			dataTransfer.set('text/uri-list', new DataTransferItem(validSourceUris.join('\n')))
-		}
-	}
-
-	public async handleDrop( //>
-		target: NotesHubItem | undefined,
-		dataTransfer: DataTransfer,
-		token: CancellationToken,
-	): Promise<void> {
-		if (token.isCancellationRequested) {
-			return
-		}
-
-		const transferItem = dataTransfer.get('text/uri-list')
-		if (!transferItem) {
-			this.iCommonUtils.errMsg('Invalid drop data: Missing text/uri-list.')
-			return
-		}
-
-		const draggedUriStrings = (await transferItem.asString()).split('\n')
-		if (draggedUriStrings.length === 0 || !draggedUriStrings) {
-			this.iCommonUtils.errMsg('Invalid drop data: No URIs found.')
-			return
-		}
-
-		const sourceUri = VsCodeUri.parse(draggedUriStrings[0])
-		if (!sourceUri) {
-			this.iCommonUtils.errMsg('Invalid drop data: Could not parse source URI.')
-			return
-		}
-
-		let targetDirUri: Uri
-		if (target) {
-			targetDirUri = target.isDirectory ? target.resourceUri! : VsCodeUri.file(dirname(target.filePath))
-		}
-		else {
-			targetDirUri = VsCodeUri.file(this.notesDir)
-		}
-
-		const sourceName = basename(sourceUri.fsPath)
-		const newTargetPathUri = VsCodeUri.joinPath(targetDirUri, sourceName)
-
-		if (sourceUri.toString() === newTargetPathUri.toString()) {
-			return
-		}
-
-		if (await this.fileExists(newTargetPathUri.fsPath)) {
-			const confirm = await this.confirmOverwrite(sourceName)
-			if (!confirm) {
-				return
-			}
-		}
-
-		try {
-			await this.iWorkspace.fs.rename(sourceUri, newTargetPathUri, { overwrite: true })
-			this.refresh()
-		}
-		catch (err) {
-			this.iCommonUtils.errMsg(`Failed to move item '${sourceName}'`, err)
-		}
-	} //<
-
 	private sortItems(a: NotesHubItem, b: NotesHubItem): number { //>
 		const aIsDir = a.isDirectory ? 0 : 1
 		const bIsDir = b.isDirectory ? 0 : 1
 		const aLabel = typeof a.label === 'string' ? a.label : a.label?.label || ''
 		const bLabel = typeof b.label === 'string' ? b.label : b.label?.label || ''
+
 		return aIsDir - bIsDir || aLabel.localeCompare(bLabel)
 	} //<
 
@@ -318,33 +245,41 @@ public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
 	private async confirmOverwrite(itemName: string): Promise<boolean> { //>
 		const message = `'${itemName}' already exists. Overwrite?`
 		const result = await this.iWindow.showInformationMessage(message, { modal: true }, 'Overwrite')
+
 		return result === 'Overwrite'
 	} //<
 
 	private async addDirToGitignore(dirToIgnore: string): Promise<void> { //>
 		const workspaceFolder = this.iWorkspace.workspaceFolders?.[0]
+
 		if (!workspaceFolder) {
 			return
 		}
 
-		const gitignoreUri = VsCodeUri.joinPath(workspaceFolder.uri, '.gitignore')
+		const gitignoreUri = UriAdapter.joinPath(workspaceFolder.uri, '.gitignore')
+
 		try {
 			let gitignoreContent = ''
+
 			try {
 				const rawContent = await this.iWorkspace.fs.readFile(gitignoreUri)
+
 				gitignoreContent = Buffer.from(rawContent).toString('utf-8')
 			}
 			catch (error) {
 				const fsError = error as NodeJS.ErrnoException
+
 				if (fsError.code !== 'ENOENT' && fsError.code !== 'FileNotFound') {
 					this.iCommonUtils.errMsg(`Error reading .gitignore: ${gitignoreUri.fsPath}`, fsError)
 				}
 			}
 
 			const lineToSearch = `/${dirToIgnore}/`
+
 			if (!gitignoreContent.includes(lineToSearch)) {
 				const newEntry = `${gitignoreContent.length > 0 ? '\n' : ''}# Ignored by F-UX Notes Hub\n${lineToSearch}\n`
 				const fullContent = gitignoreContent + newEntry
+
 				await this.iWorkspace.fs.writeFile(gitignoreUri, Buffer.from(fullContent, 'utf-8'))
 			}
 		}
@@ -355,6 +290,8 @@ public getParent(element: NotesHubItem): ProviderResult<NotesHubItem> { //>
 
 	protected santizePath(uncleanPath: string): string { //>
 		const normalPath = normalize(uncleanPath)
+
 		return normalPath.replace(/\\/g, '/')
 	} //<
+
 }

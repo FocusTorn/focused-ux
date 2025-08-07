@@ -4,17 +4,30 @@
     "sourceRoot": "packages/note-hub/ext/src",
     "projectType": "application",
     "targets": {
-        "build": {
+        
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build"],
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "dependsOn": [
+                "^build"
+            ],
             "options": {
-                "entryPoints": ["packages/note-hub/ext/src/extension.ts"],
+                "entryPoints": [
+                    "packages/note-hub/ext/src/extension.ts"
+                ],
                 "outputPath": "packages/note-hub/ext/dist",
-                "format": ["cjs"],
+                "format": [
+                    "cjs"
+                ],
                 "platform": "node",
                 "bundle": true,
-                "external": ["vscode", "awilix", "js-yaml"],
+                "external": [
+                    "vscode",
+                    "awilix",
+                    "js-yaml"
+                ],
                 "sourcemap": true,
                 "main": "packages/note-hub/ext/src/extension.ts",
                 "tsConfig": "packages/note-hub/ext/tsconfig.json",
@@ -26,34 +39,60 @@
                     }
                 ]
             }
-        },
-        "package": {
+        }, //<
+        "package": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": [
+                "build"
+            ],
             "options": {
                 "command": "node scripts/create-vsix.js packages/note-hub/ext vsix_packages"
             }
-        },
-        "package:dev": {
+        }, //<
+        "package:dev": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": [
+                "build"
+            ],
             "options": {
                 "command": "node scripts/create-vsix.js packages/note-hub/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"
             }
-        },
-
-        "publish": {
+        }, //<
+        "publish": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["package"],
+            "dependsOn": [
+                "package"
+            ],
             "options": {
                 "command": "vsce publish",
                 "cwd": "{projectRoot}"
             }
-        },
-        "lint": {},
+        }, //<
+        
+        "check-types": { "extends": "check-types" },
+        "lint": { "extends": "lint" },
+        "lint:full": { "extends": "lint:full" },
+        "validate": { "extends": "validate" },
+        "validate:full": { "extends": "validate:full" },
+        "audit": { "extends": "audit" },
+        "audit:full": { "extends": "audit:full" },
+        
+        "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" }
+        "clean:cache": { "extends": "clean:cache" },
+
+        "test": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^build"]
+        }, //<
+        "test:full": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^test"]
+        } //<
+        
     },
-    "tags": ["ext"]
+    "tags": [
+        "ext"
+    ]
 }

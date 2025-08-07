@@ -4,18 +4,31 @@
     "sourceRoot": "packages/project-butler/ext/src",
     "projectType": "application",
     "targets": {
-        "build": {
+        
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build"],
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "dependsOn": [
+                "^build"
+            ],
             "options": {
-                "entryPoints": ["packages/project-butler/ext/src/extension.ts"],
+                "entryPoints": [
+                    "packages/project-butler/ext/src/extension.ts"
+                ],
                 "outputPath": "packages/project-butler/ext/dist",
-                "format": ["cjs"],
+                "format": [
+                    "cjs"
+                ],
                 "metafile": true,
                 "platform": "node",
                 "bundle": true,
-                "external": ["vscode", "awilix", "js-yaml"],
+                "external": [
+                    "vscode",
+                    "awilix",
+                    "js-yaml"
+                ],
                 "sourcemap": true,
                 "main": "packages/project-butler/ext/src/extension.ts",
                 "tsConfig": "packages/project-butler/ext/tsconfig.json",
@@ -27,30 +40,58 @@
                     }
                 ]
             }
-        },
-        "package": {
+        }, //<
+        "package": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": [
+                "build"
+            ],
             "options": {
                 "command": "node scripts/create-vsix.js packages/project-butler/ext vsix_packages"
             }
-        },
-        "package:dev": {
+        }, //<
+        "package:dev": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": [
+                "build"
+            ],
             "options": {
                 "command": "node scripts/create-vsix.js packages/project-butler/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"
             }
-        },
-
-        "package:dev:only": {
+        }, //<
+        "publish": { //>
             "executor": "nx:run-commands",
+            "dependsOn": [
+                "package"
+            ],
             "options": {
-                "command": "node scripts/create-vsix.js packages/project-butler/ext --dev"
+                "command": "vsce publish",
+                "cwd": "{projectRoot}"
             }
-        },
-        "lint": {}
+        }, //<
+        
+        "check-types": { "extends": "check-types" },
+        "lint": { "extends": "lint" },
+        "lint:full": { "extends": "lint:full" },
+        "validate": { "extends": "validate" },
+        "validate:full": { "extends": "validate:full" },
+        "audit": { "extends": "audit" },
+        "audit:full": { "extends": "audit:full" },
+        
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+
+        "test": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^build"]
+        }, //<
+        "test:full": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^test"]
+        } //<
+
     },
     "tags": ["ext"]
 }

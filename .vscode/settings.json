@@ -3,6 +3,7 @@
 
     "eslint.useFlatConfig": true,
     "eslint.workingDirectories": ["./"],
+    "eslint.format.enable": true,
 
     //----------------------------------------------------<<
     // Prettier ------------->>
@@ -17,12 +18,59 @@
     "editor.formatOnSave": true,
     "nxConsole.generateAiAgentRules": true,
 
+    // Formatting configuration for JSON/JSONC files
+    "[json]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.eslint": "explicit"
+        }
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.eslint": "explicit"
+        }
+    },
+
+    // Register ESLint as a formatter for JSON/JSONC files
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "json",
+        "jsonc"
+    ],
+
+    // Ensure ESLint appears as a formatter option
+    "eslint.lintTask.enable": true,
+    "eslint.run": "onType",
+    "eslint.autoFixOnSave": true,
+
+    // Register ESLint as a formatter
+    "eslint.codeActionsOnSave.mode": "all",
+
     "files.exclude": {
         //>
-        // "**/node_modules/**": true
+        "**/node_modules/**": true
         // "**/dist": true,
         // "**/coverage": true
     }, //<
 
-    "terminal.integrated.defaultProfile.windows": "FUX"
+    // Terminal --------------->>
+
+    "terminal.integrated.profiles.windows": {
+        "FUX PowerShell": {
+            "source": "PowerShell",
+            "args": ["-NoExit", "-Command", ". .vscode/shell/profile.ps1"]
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "FUX PowerShell",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    }
+
+    //----------------------------------------------------<<
 }

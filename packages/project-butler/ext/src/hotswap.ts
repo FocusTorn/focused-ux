@@ -1,23 +1,25 @@
 import type { Uri } from 'vscode'
-import * as vscode from 'vscode'
+import type { IWindowPB } from '@fux/shared'
+import { ExtensionsAdapter, ProgressAdapter, ExtensionAPIAdapter } from '@fux/shared'
 import * as path from 'node:path'
 
-export async function hotswap(vsixUri: Uri): Promise<void> {
+export async function hotswap(vsixUri: Uri, windowAdapter: IWindowPB): Promise<void> {
 	const vsixFilename = path.basename(vsixUri.fsPath)
 	const match = vsixFilename.match(/^(?:([\w-]+)\.)?([\w-]+)-\d+\.\d+\.\d+.*\.vsix$/)
 
 	if (!match) {
-		vscode.window.showErrorMessage(
+		windowAdapter.showErrorMessage(
 			`Hotswap: Could not parse extension ID from filename: ${vsixFilename}`,
 		)
 		return
 	}
 
 	const extensionBaseName = match[2]
-	const installed = vscode.extensions.all.find(ext => ext.id.endsWith(`.${extensionBaseName}`))
+	const extensionsAdapter = new ExtensionsAdapter()
+	const installed = extensionsAdapter.all.find(ext => ext.id.endsWith(`.${extensionBaseName}`))
 
 	if (!installed) {
-		vscode.window.showWarningMessage(
+		windowAdapter.showWarningMessage(
 			`Hotswap: No currently installed extension found for '${extensionBaseName}'. Will proceed with installation only.`,
 		)
 	}
@@ -25,41 +27,43 @@ export async function hotswap(vsixUri: Uri): Promise<void> {
 	const targetExtensionId = installed ? installed.id : `NewRealityDesigns.${extensionBaseName}`
 
 	try {
-		await vscode.window.withProgress(
+		const extensionAPI = new ExtensionAPIAdapter()
+		
+		await ProgressAdapter.withProgress(
 			{
-				location: vscode.ProgressLocation.Notification,
+				location: 15, // ProgressLocation.Notification
 				title: `Hotswapping ${extensionBaseName}`,
 				cancellable: false,
 			},
 			async (progress) => {
 				if (installed) {
 					progress.report({ message: `Uninstalling ${targetExtensionId}...` })
-					await vscode.commands.executeCommand(
+					await extensionAPI.executeCommand(
 						'workbench.extensions.uninstallExtension',
 						targetExtensionId,
 					)
 				}
 
 				progress.report({ message: `Installing from ${vsixFilename}...` })
-				await vscode.commands.executeCommand('workbench.extensions.installExtension', vsixUri)
+				await extensionAPI.executeCommand('workbench.extensions.installExtension', vsixUri)
 
 				progress.report({ message: 'Installation complete.' })
 				await new Promise(resolve => setTimeout(resolve, 1500))
 			},
 		)
 
-		const choice = await vscode.window.showInformationMessage(
+		const choice = await windowAdapter.showInformationMessage(
 			`✅ Hotswap complete: ${extensionBaseName} reinstalled. A reload is required.`,
-			{ modal: true },
+			true,
 			'Reload Window',
 		)
 
 		if (choice === 'Reload Window') {
-			await vscode.commands.executeCommand('workbench.action.reloadWindow')
+			await extensionAPI.executeCommand('workbench.action.reloadWindow')
 		}
 	}
 	catch (error: any) {
-		vscode.window.showErrorMessage(`Hotswap failed: ${error.message}`)
+		windowAdapter.showErrorMessage(`Hotswap failed: ${error.message}`)
 		console.error(error)
 	}
 }

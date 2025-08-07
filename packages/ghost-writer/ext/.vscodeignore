@@ -4,6 +4,8 @@
 # 2. Re-include the bundled extension code.
 !dist/extension.cjs
 !dist/extension.cjs.map
+!dist/index.cjs
+!dist/index.cjs.map
 
 # 3. Re-include the assets.
 !assets/**

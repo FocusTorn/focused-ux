@@ -1,5 +1,5 @@
 export const ghostWriterConstants = {
 	storageKeys: {
-		CLIPBOARD: 'ghostWriter.clipboard',
+		CLIPBOARD: 'fux-ghost-writer.clipboard',
 	},
 } as const

@@ -4,7 +4,7 @@ export interface StoredFragment {
 }
 
 export interface IClipboardService {
-	store(fragment: StoredFragment): Promise<void>
-	retrieve(): Promise<StoredFragment | undefined>
-	clear(): Promise<void>
+	store: (fragment: StoredFragment) => Promise<void>
+	retrieve: () => Promise<StoredFragment | undefined>
+	clear: () => Promise<void>
 }

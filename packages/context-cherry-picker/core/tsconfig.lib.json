@@ -8,13 +8,26 @@
         "emitDeclarationOnly": false,
         "declaration": true,
         "declarationMap": true,
-        "types": ["node"],
+        "types": [
+            "node"
+        ],
         "composite": true,
         "paths": {
-            "@fux/shared": ["../../../libs/shared/src"]
+            "@fux/shared": [
+                "../../../libs/shared/src"
+            ]
         }
     },
-    "include": ["src/**/*.ts"],
-    "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"],
-    "references": [{ "path": "../../../libs/shared/tsconfig.lib.json" }]
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "src/**/*.spec.ts",
+        "src/**/*.test.ts"
+    ],
+    "references": [
+        {
+            "path": "../../../libs/shared/tsconfig.lib.json"
+        }
+    ]
 }

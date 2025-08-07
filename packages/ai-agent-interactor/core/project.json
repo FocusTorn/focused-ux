@@ -4,7 +4,8 @@
     "sourceRoot": "packages/ai-agent-interactor/core/src",
     "projectType": "library",
     "targets": {
-        "build": {
+        
+        "build": { //>
             "dependsOn": ["clean:dist"],
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
@@ -22,26 +23,30 @@
                 "thirdParty": false,
                 "deleteOutputPath": true
             }
-        },
-        "verify:dist:hash": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "node ../../../scripts/verify-dist-hash.cjs",
-                "cwd": "packages/ai-agent-interactor/core"
-            }
-        },
-        "build:with-verify": {
-            "executor": "nx:run-commands",
-            "options": {
-                "commands": [
-                    "nx run @fux/ai-agent-interactor-core:build",
-                    "nx run @fux/ai-agent-interactor-core:verify:dist:hash"
-                ]
-            }
-        },
-        "lint": {},
+        }, //<
+        
+        "check-types": { "extends": "check-types" },
+        "lint": { "extends": "lint" },
+        "lint:full": { "extends": "lint:full" },
+        "validate": { "extends": "validate" },
+        "validate:full": { "extends": "validate:full" },
+        "audit": { "extends": "audit" },
+        "audit:full": { "extends": "audit:full" },
+        
+        "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" }
+        "clean:cache": { "extends": "clean:cache" },
+
+
+        "test": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^build"]
+        }, //<
+        "test:full": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^test"]
+        } //<
+
     },
     "tags": []
 }

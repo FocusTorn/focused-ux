@@ -1,8 +1,8 @@
 export interface IProcess {
-	exec(
+	exec: (
 		command: string,
 		options: { cwd: string },
 		callback: (error: Error | null, stdout: string, stderr: string) => void,
-	): void
-	getWorkspaceRoot(): string | undefined
+	) => void
+	getWorkspaceRoot: () => string | undefined
 }

@@ -1,8 +1,8 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) ================================================================================
-import type { IWorkspace, IPathUtilsService, IWorkspaceUtilsService, ICommonUtilsService } from '@fux/shared'
-import { Uri, commands as VsCodeCommands } from 'vscode'
+import type { IWorkspace, IPathUtilsService, IWorkspaceUtilsService, ICommonUtilsService, ICommands } from '@fux/shared'
+import { UriAdapter } from '@fux/shared'
 import type * as nodeOs from 'node:os'
 import type * as nodePath from 'node:path'
 import type { INotesHubConfigService, NotesHubConfig } from '../_interfaces/INotesHubConfigService.js'
@@ -18,6 +18,7 @@ export class NotesHubConfigService implements INotesHubConfigService {
 		private readonly iPathUtils: IPathUtilsService,
 		private readonly iWorkspaceUtils: IWorkspaceUtilsService,
 		private readonly iCommonUtils: ICommonUtilsService,
+		private readonly iCommands: ICommands,
 		private readonly iOsHomedir: typeof nodeOs.homedir,
 		private readonly iPathJoin: typeof nodePath.join,
 		private readonly iPathNormalize: typeof nodePath.normalize,
@@ -64,9 +65,9 @@ export class NotesHubConfigService implements INotesHubConfigService {
 
 		// Set context variables for view visibility (only once to prevent duplicate registrations)
 		if (!this.contextSet) {
-			VsCodeCommands.executeCommand('setContext', `config.${configPrefix}.enableProjectNotes`, isProjectNotesEnabled)
-			VsCodeCommands.executeCommand('setContext', `config.${configPrefix}.enableRemoteNotes`, isRemoteNotesEnabled)
-			VsCodeCommands.executeCommand('setContext', `config.${configPrefix}.enableGlobalNotes`, isGlobalNotesEnabled)
+			this.iCommands.executeCommand('setContext', `config.${configPrefix}.enableProjectNotes`, isProjectNotesEnabled)
+			this.iCommands.executeCommand('setContext', `config.${configPrefix}.enableRemoteNotes`, isRemoteNotesEnabled)
+			this.iCommands.executeCommand('setContext', `config.${configPrefix}.enableGlobalNotes`, isGlobalNotesEnabled)
 			this.contextSet = true
 		}
 
@@ -82,7 +83,7 @@ export class NotesHubConfigService implements INotesHubConfigService {
 
 	public async createDirectoryIfNeeded(dirPath: string): Promise<void> { //>
 		try {
-			const uri = Uri.file(this.iPathUtils.santizePath(dirPath))
+			const uri = UriAdapter.file(this.iPathUtils.santizePath(dirPath))
 
 			try {
 				await this.iWorkspace.fs.stat(uri)

@@ -1,8 +1,20 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import { TreeItem, TreeItemCollapsibleState, ThemeIcon, ThemeColor, Uri } from 'vscode'
-import type { TreeItemLabel } from 'vscode'
+import type { 
+	ITreeItem, 
+	TreeItemCollapsibleState, 
+	IThemeIcon, 
+	IThemeColor, 
+	IUri, 
+	TreeItemLabel 
+} from '@fux/shared'
+import { 
+	TreeItemAdapter, 
+	ThemeIconAdapter, 
+	ThemeColorAdapter, 
+	UriAdapter 
+} from '@fux/shared'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 
@@ -22,20 +34,42 @@ const priorityColorIds: string[] = [
 	'notesHub.priority5',
 ]
 
-export class NotesHubItem extends TreeItem implements INotesHubItem {
+export class NotesHubItem implements INotesHubItem {
+	private treeItem: ITreeItem
 
 	public filePath: string
 	public isDirectory: boolean
-	public parentUri?: Uri
+	public parentUri?: IUri
 	public frontmatter?: { [key: string]: string }
-	public declare label: TreeItemLabel | string
 	public fileName: string
+
+	// TreeItem interface compatibility
+	get label(): TreeItemLabel | string { return this.treeItem.label }
+	set label(value: TreeItemLabel | string) { this.treeItem.label = value }
+
+	get resourceUri(): IUri | undefined { return this.treeItem.resourceUri }
+	set resourceUri(value: IUri | undefined) { this.treeItem.resourceUri = value }
+
+	get description(): string | undefined { return this.treeItem.description }
+	set description(value: string | undefined) { this.treeItem.description = value }
+
+	get tooltip(): string | undefined { return this.treeItem.tooltip }
+	set tooltip(value: string | undefined) { this.treeItem.tooltip = value }
+
+	get contextValue(): string | undefined { return this.treeItem.contextValue }
+	set contextValue(value: string | undefined) { this.treeItem.contextValue = value }
+
+	get iconPath(): IThemeIcon | undefined { return this.treeItem.iconPath }
+	set iconPath(value: IThemeIcon | undefined) { this.treeItem.iconPath = value }
+
+	get collapsibleState(): TreeItemCollapsibleState { return this.treeItem.collapsibleState }
+	set collapsibleState(value: TreeItemCollapsibleState) { this.treeItem.collapsibleState = value }
 
 	constructor(
 		fileName: string,
 		filePath: string,
 		isDirectory: boolean,
-		parentUri?: Uri,
+		parentUri?: IUri,
 		frontmatter?: { [key: string]: string },
 	) {
 		const displayLabel = (
@@ -43,8 +77,7 @@ export class NotesHubItem extends TreeItem implements INotesHubItem {
 				? frontmatter.Label
 				: fileName
 		)
-		super(displayLabel, isDirectory ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None)
-
+		
 		this.fileName = fileName
 		this.filePath = filePath
 		this.isDirectory = isDirectory
@@ -56,31 +89,37 @@ export class NotesHubItem extends TreeItem implements INotesHubItem {
 			throw new Error('Invalid filePath provided for NotesHubItem')
 		}
 
-		this.resourceUri = Uri.file(filePath)
-		this.description = frontmatter?.Desc
-		this.tooltip = this.filePath
-		this.contextValue = isDirectory ? 'notesHubFolderItem' : 'notesHubFileItem'
+		const resourceUri = UriAdapter.file(filePath)
+		this.treeItem = TreeItemAdapter.create(
+			displayLabel, 
+			isDirectory ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None,
+			(resourceUri as UriAdapter).uri
+		)
+		
+		this.treeItem.description = frontmatter?.Desc
+		this.treeItem.tooltip = this.filePath
+		this.treeItem.contextValue = isDirectory ? 'notesHubFolderItem' : 'notesHubFileItem'
 		
 		if (isDirectory) {
-			this.iconPath = new ThemeIcon('folder')
+			this.treeItem.iconPath = ThemeIconAdapter.create('folder')
 		}
 		else {
-			this.iconPath = this.iconPathFromFrontmatter(frontmatter)
+			this.treeItem.iconPath = this.iconPathFromFrontmatter(frontmatter)
 		}
 	}
 
 	private getPriorityThemeColor(
 		priority: number,
-	): ThemeColor {
+	): IThemeColor {
 		const colorId = priorityColorIds[Math.min(priority, priorityColorIds.length - 1)]
-		return new ThemeColor(colorId)
+		return ThemeColorAdapter.create(colorId)
 	}
 
 	public iconPathFromFrontmatter(
 		frontmatterData?: { [key: string]: string },
-	): ThemeIcon {
+	): IThemeIcon {
 		if (!frontmatterData) {
-			return new ThemeIcon(NOTESHUB_DEFAULT_NOTE_ICON, new ThemeColor(NOTESHUB_DEFAULT_NOTE_COLOR_ID))
+			return ThemeIconAdapter.create(NOTESHUB_DEFAULT_NOTE_ICON, ThemeColorAdapter.create(NOTESHUB_DEFAULT_NOTE_COLOR_ID))
 		}
 
 		const iconName = frontmatterData.Codicon || frontmatterData.Icon || NOTESHUB_DEFAULT_NOTE_ICON
@@ -89,7 +128,7 @@ export class NotesHubItem extends TreeItem implements INotesHubItem {
 		const priority = Number.parseInt(frontmatterData.Priority, 10)
 
 		return Number.isNaN(priority)
-			? new ThemeIcon(usedIcon)
-			: new ThemeIcon(usedIcon, this.getPriorityThemeColor(priority))
+			? ThemeIconAdapter.create(usedIcon)
+			: ThemeIconAdapter.create(usedIcon, this.getPriorityThemeColor(priority))
 	}
 }

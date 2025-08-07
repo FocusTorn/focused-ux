@@ -120,24 +120,29 @@ export class ProjectButlerService implements IProjectButlerService {
 			// Read the master order from .FocusedUX config
 			const configPath = path.join(workspaceRoot, '.FocusedUX')
 			let configContent: string
+
 			try {
 				configContent = await this.fileSystem.readFile(configPath)
-			} catch (err: any) {
+			}
+			catch (err: any) {
 				this.window.showErrorMessage(`Could not read '.FocusedUX' file: ${err.message}`)
 				return
 			}
 
 			let config: any
+
 			try {
 				config = loadYaml(configContent)
-			} catch (err: any) {
+			}
+			catch (err: any) {
 				this.window.showErrorMessage(`Failed to parse YAML from '.FocusedUX': ${err.message}`)
 				return
 			}
 
 			const order = config?.TerminalButler?.['packageJson-order']
+
 			if (!order || !Array.isArray(order)) {
-				this.window.showErrorMessage("Configuration Error: 'TerminalButler.packageJson-order' not found or invalid in '.FocusedUX'.")
+				this.window.showErrorMessage('Configuration Error: \'TerminalButler.packageJson-order\' not found or invalid in \'.FocusedUX\'.')
 				return
 			}
 
@@ -146,9 +151,11 @@ export class ProjectButlerService implements IProjectButlerService {
 
 			// Read and parse the package.json file
 			let packageContent: string
+
 			try {
 				packageContent = await this.fileSystem.readFile(finalUri)
-			} catch (err: any) {
+			}
+			catch (err: any) {
 				this.window.showErrorMessage(`Failed to read package.json: ${err.message}`)
 				return
 			}
@@ -158,6 +165,7 @@ export class ProjectButlerService implements IProjectButlerService {
 
 			// Validate that no unknown top-level keys exist
 			const commentKeyRegex = /=.*=$/
+
 			for (const key of originalKeys) {
 				if (commentKeyRegex.test(key)) {
 					continue
@@ -171,6 +179,7 @@ export class ProjectButlerService implements IProjectButlerService {
 
 			// Re-order the keys into a new object
 			const orderedPackage: any = {}
+
 			for (const key of masterOrder) {
 				if (Object.prototype.hasOwnProperty.call(packageData, key)) {
 					orderedPackage[key] = packageData[key]
@@ -185,12 +194,13 @@ export class ProjectButlerService implements IProjectButlerService {
 			}
 
 			// Convert back to formatted JSON and write to file
-			const newJsonContent = JSON.stringify(orderedPackage, null, 4) + '\n'
+			const newJsonContent = `${JSON.stringify(orderedPackage, null, 4)}\n`
 
 			try {
 				await this.fileSystem.writeFile(finalUri, new TextEncoder().encode(newJsonContent))
 				this.window.showTimedInformationMessage('Successfully formatted package.json')
-			} catch (err: any) {
+			}
+			catch (err: any) {
 				this.window.showErrorMessage(`Failed to write updated package.json: ${err.message}`)
 			}
 		}

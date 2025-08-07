@@ -1,24 +1,28 @@
 {
-  "extends": "../../../tsconfig.base.json",
-  "compilerOptions": {
-    "outDir": "./dist-scripts",
-    "rootDir": "./src",
-    "types": ["node"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "target": "ES2022",
-    "allowImportingTsExtensions": false,
-    "noEmit": true,
-    "composite": false
-  },
-  "include": [
-    "src/scripts/**/*.ts",
-    "src/_config/**/*.ts",
-    "src/services/**/*.ts",
-    "src/_interfaces/**/*.ts"
-  ],
-  "exclude": [
-    "dist",
-    "node_modules"
-  ]
+    "extends": "../../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./dist-scripts",
+        "rootDir": "./src",
+        "types": [
+            "node"
+        ],
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "target": "ES2022",
+        "allowImportingTsExtensions": false,
+        "noEmit": true,
+        "composite": false,
+        
+        "tsBuildInfoFile": "dist/tsconfig.scripts.tsbuildinfo"
+    },
+    "include": [
+        "src/scripts/**/*.ts",
+        "src/_config/**/*.ts",
+        "src/services/**/*.ts",
+        "src/_interfaces/**/*.ts"
+    ],
+    "exclude": [
+        "dist",
+        "node_modules"
+    ]
 }

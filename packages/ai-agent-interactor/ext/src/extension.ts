@@ -1,11 +1,33 @@
-import type { ExtensionContext, Uri, UriHandler } from 'vscode'
-import * as vscode from 'vscode'
+import type { ExtensionContext, Uri, UriHandler, IRange, IDocumentSymbol, ITextDocument, ITextEditor, IWindow, ICommands, IWorkspace } from '@fux/shared'
+import { 
+	UriAdapter, 
+	RangeAdapter, 
+	DocumentSymbolAdapter, 
+	TextDocumentAdapter, 
+	TextEditorAdapter,
+	UriHandlerAdapter,
+	WindowAdapter,
+	CommandsAdapter,
+	WorkspaceAdapter
+} from '@fux/shared'
 import type { IAiAgentInteractorService } from '@fux/ai-agent-interactor-core'
 import { createDIContainer } from './injection.js'
 
 class AiAgentUriHandler implements UriHandler {
+	private windowAdapter: IWindow
+	private commandsAdapter: ICommands
+	private workspaceAdapter: IWorkspace
 
-	constructor(private readonly interactorService: IAiAgentInteractorService) {}
+	constructor(
+		private readonly interactorService: IAiAgentInteractorService,
+		windowAdapter: IWindow,
+		commandsAdapter: ICommands,
+		workspaceAdapter: IWorkspace
+	) {
+		this.windowAdapter = windowAdapter
+		this.commandsAdapter = commandsAdapter
+		this.workspaceAdapter = workspaceAdapter
+	}
 
 	public async handleUri(uri: Uri): Promise<void> {
 		if (uri.path !== '/transfer') {
@@ -16,39 +38,43 @@ class AiAgentUriHandler implements UriHandler {
 		const payload = params.get('data')
 
 		if (!payload) {
-			vscode.window.showErrorMessage('AI Agent: No data received in URI.')
+			this.windowAdapter.showErrorMessage('AI Agent: No data received in URI.')
 			return
 		}
 
 		const data = this.interactorService.deserialize(payload)
 
 		if (!data) {
-			vscode.window.showErrorMessage('AI Agent: Invalid data format in URI.')
+			this.windowAdapter.showErrorMessage('AI Agent: Invalid data format in URI.')
 			return
 		}
 
-		const projectBase = vscode.workspace.getConfiguration('fux-ai-agent-interactor').get<string>('projectBase')
+		const config = this.workspaceAdapter.getConfiguration('fux-ai-agent-interactor')
+		const projectBase = config.get<string>('projectBase')
 
 		if (!projectBase) {
-			vscode.window.showErrorMessage('AI Agent: `projectBase` setting is not configured.')
+			this.windowAdapter.showErrorMessage('AI Agent: `projectBase` setting is not configured.')
 			return
 		}
 
-		const fileUri = vscode.Uri.joinPath(vscode.Uri.file(projectBase), data.path)
+		const baseUri = UriAdapter.file(projectBase)
+		const fileUri = UriAdapter.joinPath(baseUri, data.path)
 
 		try {
-			const document = await vscode.workspace.openTextDocument(fileUri)
-			const editor = await vscode.window.showTextDocument(document)
+			const document = await this.workspaceAdapter.openTextDocument(fileUri)
+			const editor = await this.windowAdapter.showTextDocument(document)
 
 			if (data.elementChain.length === 0) {
-				const fullRange = new vscode.Range(document.positionAt(0), document.positionAt(document.getText().length))
+				const startPos = document.positionAt(0)
+				const endPos = document.positionAt(document.getText().length)
+				const fullRange = RangeAdapter.create(startPos.create(0, 0), endPos.create(0, 0))
 
 				await editor.edit((editBuilder) => {
 					editBuilder.replace(fullRange, data.code)
 				})
 			}
 			else {
-				const symbols = await vscode.commands.executeCommand<vscode.DocumentSymbol[]>(
+				const symbols = await this.commandsAdapter.executeCommand<IDocumentSymbol[]>(
 					'vscode.executeDocumentSymbolProvider',
 					document.uri,
 				)
@@ -61,17 +87,17 @@ class AiAgentUriHandler implements UriHandler {
 					})
 				}
 				else {
-					vscode.window.showErrorMessage(`AI Agent: Could not find element path: ${data.elementChain.join(' ► ')}`)
+					this.windowAdapter.showErrorMessage(`AI Agent: Could not find element path: ${data.elementChain.join(' ► ')}`)
 					return
 				}
 			}
 
 			await document.save()
 			// Use a less intrusive notification
-			vscode.window.setStatusBarMessage(`AI Agent: Updated ${data.path}`, 5000)
+			this.windowAdapter.setStatusBarMessage(`AI Agent: Updated ${data.path}`, 5000)
 		}
 		catch (error: any) {
-			vscode.window.showErrorMessage(`AI Agent Error: ${error.message}`)
+			this.windowAdapter.showErrorMessage(`AI Agent Error: ${error.message}`)
 		}
 	}
 
@@ -80,14 +106,21 @@ class AiAgentUriHandler implements UriHandler {
 export async function activate(context: ExtensionContext): Promise<void> {
 	const container = await createDIContainer(context)
 	const interactorService = container.resolve<IAiAgentInteractorService>('interactorService')
-	const uriHandler = new AiAgentUriHandler(interactorService)
+	
+	// Create adapters
+	const windowAdapter = new WindowAdapter(container.resolve('configurationService'))
+	const commandsAdapter = new CommandsAdapter()
+	const workspaceAdapter = new WorkspaceAdapter()
+	
+	const uriHandler = new AiAgentUriHandler(interactorService, windowAdapter, commandsAdapter, workspaceAdapter)
+	const vscodeUriHandler = UriHandlerAdapter.create(uriHandler)
 
-	context.subscriptions.push(vscode.window.registerUriHandler(uriHandler))
+	context.subscriptions.push(windowAdapter.registerUriHandler(vscodeUriHandler))
 }
 
 export function deactivate(): void {}
 
-function findSymbolRange(symbols: vscode.DocumentSymbol[] | undefined, chain: string[]): vscode.Range | undefined {
+function findSymbolRange(symbols: IDocumentSymbol[] | undefined, chain: string[]): IRange | undefined {
 	if (!symbols || symbols.length === 0 || chain.length === 0) {
 		return undefined
 	}

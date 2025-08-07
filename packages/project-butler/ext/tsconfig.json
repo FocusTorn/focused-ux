@@ -5,11 +5,16 @@
         "rootDir": "src",
         "composite": false,
         "declaration": false,
-        "declarationMap": false
+        "declarationMap": false,
+        "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     },
     "include": ["src/**/*.ts"],
     "references": [
-        { "path": "../core/tsconfig.lib.json" },
-        { "path": "../../../libs/shared/tsconfig.lib.json" }
+        {
+            "path": "../core/tsconfig.lib.json"
+        },
+        {
+            "path": "../../../libs/shared/tsconfig.lib.json"
+        }
     ]
 }

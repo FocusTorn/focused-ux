@@ -1,6 +1,7 @@
 import type { ITreeFormatterService, TreeFormatterNode } from '../_interfaces/ITreeFormatterService.js'
 
 export class TreeFormatterService implements ITreeFormatterService {
+
 	private _generateTreeString(node: TreeFormatterNode, prefix: string): string {
 		let output = ''
 		const childrenCount = node.children?.length ?? 0
@@ -44,4 +45,5 @@ export class TreeFormatterService implements ITreeFormatterService {
 		output += this._generateTreeString(rootNode, '')
 		return output.trimEnd()
 	}
+
 }

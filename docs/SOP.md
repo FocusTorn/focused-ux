@@ -35,6 +35,118 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 
 ###### END: Package Archetypes (END) <!-- Close Fold -->
 
+## 2.1. :: Package Structure Decision Tree <!-- Start Fold -->
+
+When creating a new package, use the following decision tree to determine the appropriate structure:
+
+### Decision Tree
+
+```
+Is the package intended to be a VS Code extension?
+├─ YES → Use core/ext pattern (packages/{feature}/core + packages/{feature}/ext)
+│   ├─ core: Library with business logic, built with @nx/esbuild:esbuild (bundle: false)
+│   └─ ext: Application bundle, built with @nx/esbuild:esbuild (bundle: true)
+│
+├─ NO → Is the package a shared library consumed by other packages?
+│   ├─ YES → Use shared pattern (libs/shared)
+│   │   └─ Built with @nx/esbuild:esbuild (bundle: false), generates declarations
+│   │
+│   └─ NO → Is the package a standalone tool/utility that runs directly?
+│       ├─ YES → Use tool pattern (libs/tools/{tool-name})
+│       │   ├─ Runs directly with tsx (no build step)
+│       │   ├─ Uses nx:run-commands executor for execution
+│       │   ├─ No declaration generation (composite: false, declaration: false)
+│       │   └─ Dependencies in devDependencies (not dependencies)
+│       │
+│       └─ NO → Reconsider package purpose or consult team
+```
+
+### Package Type Examples
+
+**VS Code Extensions (core/ext pattern):**
+
+- `packages/ghost-writer-core` + `packages/ghost-writer-ext`
+- `packages/dynamicons-core` + `packages/dynamicons-ext`
+- `packages/context-cherry-picker-core` + `packages/context-cherry-picker-ext`
+
+**Shared Libraries (shared pattern):**
+
+- `libs/shared` - Common services and VS Code adapters
+
+**Standalone Tools (tool pattern):**
+
+- `libs/tools/structure-auditor` - Runs with `tsx src/main.ts`
+- `libs/tools/cursor-memory-optimizer` - Runs with `tsx src/index.ts`
+- `libs/tools/prune-nx-cache` - Utility scripts
+
+### Tool Pattern Configuration
+
+For standalone tools that run directly with tsx:
+
+**`package.json`:**
+
+```json
+{
+    "name": "@fux/tool-name",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "devDependencies": {
+        "@types/node": "18.19.39",
+        "tsx": "4.16.2",
+        "other-runtime-deps": "^version"
+    }
+}
+```
+
+**`project.json`:**
+
+```json
+{
+    "name": "tool-name",
+    "sourceRoot": "libs/tools/tool-name/src",
+    "projectType": "library",
+    "targets": {
+        "run": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsx libs/tools/tool-name/src/main.ts"
+            }
+        },
+        "lint": {
+            "executor": "@nx/eslint:lint"
+        }
+    },
+    "tags": ["tool"]
+}
+```
+
+**`tsconfig.json`:**
+
+```json
+{
+    "extends": "../../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "src",
+        "composite": false,
+        "declaration": false,
+        "declarationMap": false
+    },
+    "include": ["src/**/*.ts"]
+}
+```
+
+**Key Differences from Library Pattern:**
+
+- No build step required (runs directly with tsx)
+- Runtime dependencies in `dependencies`, build tools in `devDependencies`
+- No declaration generation
+- Uses `nx:run-commands` executor for execution
+- No `tsconfig.lib.json` or `tsconfig.spec.json`
+
+###### END: Package Structure Decision Tree (END) <!-- Close Fold -->
+
 ## 3. :: Key Configuration Principles <!-- Start Fold -->
 
 ### 3.1. :: Dependency Flow
@@ -229,6 +341,20 @@ The monorepo consists of three primary package archetypes, each with a distinct 
 - **Current standard**: `"@types/vscode": "^1.99.3"` (compatible with Cursor)
 - **Critical constraint**: For extensions to work in Cursor, VSCode version must be 1.99.3 or lower
 - **Configuration API**: Use type assertions (`as`) instead of generic type arguments for `WorkspaceConfiguration.get()` calls
+
+### 7.2.1. :: VSCode Adapters and Types Centralization
+
+- **VSCode adapters and types MUST be centralized in the shared package only**
+- **Core packages**: MUST NOT contain any VSCode adapters, VSCode API usage, or VSCode value imports
+- **Extension packages**: MUST NOT contain VSCode adapters; they should use adapters from the shared package
+- **Shared package**: Contains all VSCode adapters and provides interfaces for VSCode API interactions
+- **Type imports**: Core and ext packages MAY import VSCode types for interface definitions, but MUST NOT use VSCode APIs directly
+- **Adapter pattern**: All VSCode API interactions must go through adapters in the shared package to maintain decoupling
+
+**Exceptions:**
+
+- Test files and setup files may contain VSCode imports for mocking purposes
+- NO exceptions for extension.ts files - all VSCode coupling must be in shared package only
 
 ### 7.3. :: Dependency Injection with Awilix
 
@@ -505,7 +631,113 @@ nx run @fux/ghost-writer-ext:clean
 
 ###### END: Build Commands Reference (END) <!-- Close Fold -->
 
-## 9. :: Nx Workspace Maintenance & Best Practices <!-- Start Fold -->
+## 9. :: Common Pitfalls & Lessons Learned <!-- Start Fold -->
+
+### 9.1. :: Package.json Module Type Mismatch
+
+**Problem**: TypeScript compilation shows warning: `"Package type is set to "module" but "cjs" format is included. Going to use "esm" format instead."`
+
+**Root Cause**: Mismatch between `package.json` configuration and build output format:
+
+- `package.json` has `"type": "module"` (indicating ESM)
+- Build configuration uses `"format": ["cjs"]` (producing CommonJS)
+
+**Solution**: Remove `"type": "module"` from `package.json` for VS Code extension packages that use CommonJS build format.
+
+**Affected Packages**: All extension packages that use `@nx/esbuild:esbuild` with `"format": ["cjs"]`:
+
+- `packages/project-butler/ext/package.json`
+- `packages/context-cherry-picker/ext/package.json`
+- `packages/note-hub/ext/package.json`
+- `packages/ghost-writer/ext/package.json`
+- `packages/dynamicons/ext/package.json`
+- `packages/ai-agent-interactor/ext/package.json`
+
+**Prevention**: When creating new extension packages, ensure `package.json` doesn't include `"type": "module"` if the build configuration uses CommonJS format.
+
+### 9.2. :: Unused Variables Best Practice
+
+**Problem**: ESLint errors like `'line' is defined but never used. Allowed unused args must match /^_/u`
+
+**Root Cause**: Function parameters or variables that are declared but never used
+
+**Solution**: Prefix unused variables with `_` to indicate they are intentionally unused:
+```typescript
+// ❌ Wrong - causes ESLint error
+function processData(data: string, line: number) {
+    console.log(data)
+    // line is never used
+}
+
+// ✅ Correct - ESLint compliant
+function processData(data: string, _line: number) {
+    console.log(data)
+    // _line is intentionally unused
+}
+```
+
+**Best Practices**:
+- **Function Parameters**: Prefix with `_` if the parameter is required by the interface but not used in implementation
+- **Variables**: Prefix with `_` if declared but intentionally unused
+- **Consistency**: Always use `_` prefix, never remove parameters that are part of a required interface
+- **Documentation**: Consider adding a comment explaining why the parameter is unused if it's not obvious
+
+**Common Scenarios**:
+- Adapter implementations where interface requires parameters you don't need
+- Event handlers where you only need some parameters
+- Callback functions where you only use specific arguments
+
+### 9.3. :: TypeScript Import Errors
+
+**Problem**: TypeScript errors like `'"@fux/shared"' has no exported member named 'ExtensionContext'`
+
+**Root Cause**: Importing VS Code types from `@fux/shared` instead of directly from `vscode`
+
+**Solution**: Import VS Code types directly from `vscode`:
+
+```typescript
+// ❌ Wrong
+import type { ExtensionContext, Disposable, Uri } from '@fux/shared'
+
+// ✅ Correct
+import type { ExtensionContext, Disposable, Uri } from 'vscode'
+```
+
+**Common Types to Import from vscode**:
+
+- `ExtensionContext`
+- `Disposable`
+- `Uri`
+- `TreeView`
+- `TreeDataProvider`
+- `TreeItem`
+- `TreeItemCollapsibleState`
+- `ProgressLocation`
+
+### 9.4. :: Container Scope Issues
+
+**Problem**: `Cannot find name 'container'` in catch blocks or other scopes
+
+**Root Cause**: Container variable declared inside try block but accessed in catch block
+
+**Solution**: Declare container variable outside try block:
+
+```typescript
+let container: any = null
+
+try {
+    container = await createDIContainer(context)
+    // ... rest of code
+} catch (error) {
+    if (container) {
+        // Safe to use container here
+    }
+}
+```
+
+###### END: Common Pitfalls & Lessons Learned (END) <!-- Close Fold -->
+
+## 10. :: Nx Workspace Maintenance & Best Practices <!-- Start Fold -->
 
 All contributors must follow the Nx optimizations and best practices outlined in [docs/Nx_Optimizations.md](./Nx_Optimizations.md). This document covers:
 

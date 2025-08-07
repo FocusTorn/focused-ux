@@ -13,5 +13,5 @@ export interface ConsoleLoggerResult {
 }
 
 export interface IConsoleLoggerService {
-	generate(options: ConsoleLoggerGenerateOptions): ConsoleLoggerResult | undefined
+	generate: (options: ConsoleLoggerGenerateOptions) => ConsoleLoggerResult | undefined
 }

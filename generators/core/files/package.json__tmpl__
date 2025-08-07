@@ -1,5 +1,5 @@
 {
-  "name": "<%= packageName %>",
+  "name": "<%= projectName %>",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,19 +11,15 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*.js",
-      "default": "./dist/*.js"
     }
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "@types/node": "^20.11.16"
   },
   "files": [
     "dist",
     "!**/*.tsbuildinfo"
-  ]
+  ],
+  "dependencies": {
+    "typescript": "^5.8.3",
+    "@fux/shared": "workspace:*"
+  },
+  "devDependencies": {}
 } 

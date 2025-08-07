@@ -1,9 +1,14 @@
 import fs from 'node:fs'
+import stripJsonComments from 'strip-json-comments'
 import { addError } from './errors.js'
 
 export function readJson(file: string) { //>
 	try {
-		return JSON.parse(fs.readFileSync(file, 'utf-8'))
+		const content = fs.readFileSync(file, 'utf-8')
+		const contentWithoutComments = stripJsonComments(content)
+		// Remove trailing commas before parsing
+		const contentWithoutTrailingCommas = contentWithoutComments.replace(/,(\s*[}\]])/g, '$1')
+		return JSON.parse(contentWithoutTrailingCommas)
 	}
 	catch (_e) {
 		addError('JSON Read Error', `Could not read or parse ${file}`)

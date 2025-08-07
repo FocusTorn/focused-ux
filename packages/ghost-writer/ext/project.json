@@ -4,22 +4,34 @@
     "sourceRoot": "packages/ghost-writer/ext/src",
     "projectType": "application",
     "targets": {
-        "build": {
+        
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build"],
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "dependsOn": [
+                "^build"
+            ],
             "options": {
-                "entryPoints": ["packages/ghost-writer/ext/src/extension.ts"],
+                "entryPoints": [
+                    "packages/ghost-writer/ext/src/index.ts"
+                ],
                 "outputPath": "packages/ghost-writer/ext/dist",
-                "format": ["cjs"],
+                "format": [
+                    "cjs"
+                ],
                 "metafile": true,
                 "platform": "node",
                 "bundle": true,
-
-                "external": ["vscode", "typescript", "awilix", "js-yaml"],
-
+                "external": [
+                    "vscode",
+                    "typescript",
+                    "awilix",
+                    "js-yaml"
+                ],
                 "sourcemap": true,
-                "main": "packages/ghost-writer/ext/src/extension.ts",
+                "main": "packages/ghost-writer/ext/src/index.ts",
                 "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
                 "assets": [
                     {
@@ -29,23 +41,136 @@
                     }
                 ]
             }
-        },
-        "package": {
+        }, //<
+        "package": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": [
+                "build"
+            ],
             "options": {
                 "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages"
             }
-        },
-        "package:dev": {
+        }, //<
+        "package:dev": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": [
+                "build"
+            ],
             "options": {
                 "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"
             }
-        },
-        "lint": {}
+        }, //<
+        "publish": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": [
+                "package"
+            ],
+            "options": {
+                "command": "vsce publish",
+                "cwd": "{projectRoot}"
+            }
+        }, //<
+
+        "check-types": { "extends": "check-types" },
+        "lint": { "extends": "lint" },
+        "lint:full": { "extends": "lint:full" },
+        "validate": { "extends": "validate" },
+        "validate:full": { "extends": "validate:full" },
+        "audit": { "extends": "audit" },
+        "audit:full": { "extends": "audit:full" },
+        
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+
+        "test": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^build"]
+        }, //<
+        "test:full": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^test"]
+        } //<
+
     },
     "tags": ["ext"]
 }
+
+// "lint": {
+//     "executor": "@nx/eslint:lint",
+//     "dependsOn": [
+//         "^build"
+//     ],
+//     "inputs": [
+//         "lint"
+//     ]
+// },
+// "lint:full": {
+//     "executor": "@nx/eslint:lint",
+//     "dependsOn": [
+//         "^lint"
+//     ],
+//     "inputs": [
+//         "lint"
+//     ]
+// },
+// "test": {
+//     "extends": "vite:test",
+//     "dependsOn": [
+//         "^build"
+//     ]
+// },
+// "test:full": {
+//     "extends": "vite:test",
+//     "dependsOn": [
+//         "^test"
+//     ]
+// },
+// "check-types": {
+//     "executor": "@nx/js:tsc",
+//     "outputs": [
+//         "{options.outputPath}"
+//     ],
+//     "dependsOn": [
+//         "^build"
+//     ],
+//     "options": {
+//         "tsConfig": "{projectRoot}/tsconfig.json",
+//         "main": "{projectRoot}/src/index.ts",
+//         "outputPath": "{projectRoot}/dist"
+//     }
+// },
+// "check-types:full": {
+//     "executor": "nx:run-commands",
+//     "dependsOn": [
+//         "^check-types",
+//         "check-types"
+//     ],
+//     "options": {
+//         "commands": [],
+//         "parallel": false
+//     }
+// },
+// "validate": {
+//     "executor": "nx:run-commands",
+//     "dependsOn": [
+//         "lint",
+//         "check-types"
+//     ],
+//     "options": {
+//         "commands": [],
+//         "parallel": false
+//     }
+// },
+// "validate:full": {
+//     "executor": "nx:run-commands",
+//     "dependsOn": [
+//         "lint:full",
+//         "check-types:full"
+//     ],
+//     "options": {
+//         "commands": [],
+//         "parallel": false
+//     }
+// }

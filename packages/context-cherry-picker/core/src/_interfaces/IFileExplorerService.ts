@@ -1,12 +1,10 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { Event } from 'vscode'
+import type { Event, TreeItemCheckboxState } from '@fux/shared'
 import type { IFileExplorerItem } from './IFileExplorerItem.js'
-import type { TreeItemCheckboxState } from 'vscode'
 
 //= IMPLEMENTATION TYPES ======================================================================================
-import type { FileExplorerItem } from '../models/FileExplorerItem.js'
 import type { FileGroupsConfig } from './ccp.types.js'
 
 //--------------------------------------------------------------------------------------------------------------<<

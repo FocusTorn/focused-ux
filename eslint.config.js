@@ -9,6 +9,7 @@
 // );
 
 import seahaxWrapPlugin from '@seahax/eslint-plugin-wrap'
+import nxPlugin from '@nx/eslint'
 
 import {
     //>
@@ -17,7 +18,7 @@ import {
     imports,
     javascript,
     jsdoc,
-    // jsonc,
+    jsonc,
     markdown,
     node,
     // sortPackageJson,
@@ -80,6 +81,7 @@ const focusTornBaseRules = {
         { blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] },
     ],
 
+    // Rule for unused variables - prefix with _ to indicate intentionally unused
     'unused-imports/no-unused-vars': [
         'error',
         {
@@ -100,6 +102,9 @@ export default combine(
     {
         ignores: [
             //>
+
+            '**/coverage/**',
+
             '**/.turbo/**',
             'pnpm-lock.yaml',
             '**/node_modules/**',
@@ -128,6 +133,7 @@ export default combine(
     markdown(),
     yaml(),
     toml(),
+    jsonc(),
     javascript({
         //>
         overrides: { 'no-unused-vars': 'off' },
@@ -198,6 +204,7 @@ export default combine(
         },
         plugins: {
             '@seahax/wrap': seahaxWrapPlugin,
+            '@nx': nxPlugin,
         },
     }, //<
 
@@ -232,5 +239,50 @@ export default combine(
                 jest: 'readonly', // For Jest
             },
         },
+    }, //<
+
+    {
+        name: 'focused-ux/shared-library-rules', //>
+        files: ['libs/shared/**/*.ts', 'libs/shared/**/*.tsx'],
+        rules: {
+            'ts/no-use-before-define': 'off', // Disable problematic rule that causes crashes
+        },
+    }, //<
+
+    {
+        name: 'focused-ux/json-formatting-rules', //>
+        files: ['**/*.json', '**/*.jsonc'],
+        rules: {
+            // JSON/JSONC specific formatting rules
+            'jsonc/indent': ['error', 4],
+            'jsonc/key-spacing': ['error', { beforeColon: false, afterColon: true }],
+            'jsonc/comma-dangle': ['error', 'never'],
+            'jsonc/object-curly-spacing': ['error', 'always'],
+            'jsonc/array-bracket-spacing': ['error', 'never'],
+            'jsonc/object-property-newline': ['error', { allowMultiplePropertiesPerLine: true }],
+            'jsonc/array-element-newline': ['error', 'consistent'],
+            'jsonc/no-comments': 'off', // Allow comments in JSONC files
+        },
     } //<
+
+    // Temporarily disabled Nx module boundaries rule
+    // {
+    //     name: 'focused-ux/nx-module-boundaries', //>
+    //     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    //     rules: {
+    //         '@nx/enforce-module-boundaries': [
+    //             'error',
+    //             {
+    //                 enforceBuildableLibDependency: true,
+    //                 allow: [],
+    //                 depConstraints: [
+    //                     {
+    //                         sourceTag: '*',
+    //                         onlyDependOnLibsWithTags: ['*'],
+    //                     },
+    //                 ],
+    //             },
+    //         ],
+    //     },
+    // } //<
 )

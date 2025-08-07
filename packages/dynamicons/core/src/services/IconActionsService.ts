@@ -1,26 +1,28 @@
 // ESLint & Imports -->>
 
-import type { Uri as VsCodeUri } from 'vscode'
-import { QuickPickItemKind } from 'vscode'
+import type { IWindow, ICommands, IWorkspace, IQuickPick, IContext, ICoreQuickPickItem, IUri } from '@fux/shared'
+import { UriAdapter } from '@fux/shared'
 import { dynamiconsConstants } from '../_config/dynamicons.constants.js'
 import type { IIconActionsService } from '../_interfaces/IIconActionsService.js'
-import type { IWindow } from '../_interfaces/IWindow.js'
-import type { ICommands } from '../_interfaces/ICommands.js'
-import type { IWorkspace } from '../_interfaces/IWorkspace.js'
 import type { IPath } from '../_interfaces/IPath.js'
-import type { IQuickPick } from '../_interfaces/IQuickPick.js'
 import type { ICommonUtils } from '../_interfaces/ICommonUtils.js'
-import type { IContext } from '../_interfaces/IContext.js'
 import type { IFileSystem } from '../_interfaces/IFileSystem.js'
 import type { IIconThemeGeneratorService } from '../_interfaces/IIconThemeGeneratorService.js'
-import type { ICoreQuickPickItem } from '../_interfaces/ICoreQuickPickItem.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
 type IconAssociationType = 'file' | 'folder' | 'language'
-type DataOrSeparator<T extends ICoreQuickPickItem> = | T | (
-	{ label: string, kind: typeof QuickPickItemKind.Separator }
-)
+
+// QuickPickItemKind values - these should match VSCode's QuickPickItemKind enum
+const QuickPickItemKind = {
+	Separator: -1,
+	Default: 0,
+} as const
+
+type DataOrSeparator<T extends ICoreQuickPickItem> = T | {
+	label: string
+	kind: typeof QuickPickItemKind.Separator
+}
 
 export class IconActionsService implements IIconActionsService {
 
@@ -41,13 +43,14 @@ export class IconActionsService implements IIconActionsService {
 		private readonly commonUtils: ICommonUtils,
 		private readonly fileSystem: IFileSystem,
 		private readonly iconThemeGenerator: IIconThemeGeneratorService,
+		private readonly uriAdapter: typeof UriAdapter,
 	) {}
 
 	private async getResourceName(
-		resourceUri: VsCodeUri,
+		resourceUri: IUri,
 	): Promise<string | undefined> {
 		try {
-			const stat = await this.fileSystem.stat(resourceUri.fsPath)
+			const stat = await this.fileSystem.stat(resourceUri)
 
 			if (stat.isDirectory()) {
 				return this.path.basename(resourceUri.fsPath)
@@ -80,20 +83,20 @@ export class IconActionsService implements IIconActionsService {
 	}
 
 	private async getUserIconsDir(): Promise<string | undefined> {
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX)
+		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { get: <T>(key: string) => T | undefined }
 
 		return config.get<string>(this.USER_ICONS_DIR_KEY) || undefined
 	}
 
 	private async getCustomMappings(): Promise<Record<string, string> | undefined> {
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX)
+		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { get: <T>(key: string) => T | undefined }
 		const mappings = config.get<Record<string, string>>(this.CUSTOM_MAPPINGS_KEY) || undefined
 		
 		return mappings
 	}
 
 	private async getHideArrowsSetting(): Promise<boolean | null | undefined> {
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX)
+		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { get: <T>(key: string) => T | undefined }
 
 		return config.get<boolean | null>(this.HIDE_ARROWS_KEY)
 	}
@@ -105,7 +108,10 @@ export class IconActionsService implements IIconActionsService {
 	): Promise<void> {
 		console.log(`[IconActionsService] updateCustomIconMappings - Starting`)
 
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX)
+		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as {
+			get: <T>(key: string) => T | undefined
+			update: (key: string, value: any, isGlobal?: boolean) => Promise<void>
+		}
 		const originalMappingsFromConfig = config.get<Record<string, string>>(this.CUSTOM_MAPPINGS_KEY) || {}
 
 		console.log(`[IconActionsService] updateCustomIconMappings - Original mappings:`, JSON.stringify(originalMappingsFromConfig, null, 2))
@@ -148,7 +154,8 @@ export class IconActionsService implements IIconActionsService {
 		const iconOptions: ICoreQuickPickItem[] = []
 
 		try {
-			const entries = await this.fileSystem.readdir(directoryPath, { withFileTypes: true }) as import('fs').Dirent[]
+			const directoryUri = this.uriAdapter.file(directoryPath)
+			const entries = await this.fileSystem.readdir(directoryUri, { withFileTypes: true }) as import('fs').Dirent[]
 
 			for (const entry of entries) {
 				if (entry.isFile() && entry.name.endsWith('.svg') && (!filter || filter(entry.name))) {
@@ -197,7 +204,7 @@ export class IconActionsService implements IIconActionsService {
 
 		console.log(`[IconActionsService] showAvailableIconsQuickPick - Icon directories:`, { builtInFileIconsDir, builtInFolderIconsDir })
 
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX)
+		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { get: <T>(key: string) => T | undefined }
 		const userIconsDirSetting = config.get<string>(this.USER_ICONS_DIR_KEY)
 
 		console.log(`[IconActionsService] showAvailableIconsQuickPick - User icons dir setting:`, userIconsDirSetting)
@@ -222,7 +229,7 @@ export class IconActionsService implements IIconActionsService {
 
 		if (userIconsDirSetting) {
 			try {
-				await this.fileSystem.stat(userIconsDirSetting)
+				await this.fileSystem.access(userIconsDirSetting)
 				console.log(`[IconActionsService] showAvailableIconsQuickPick - Loading user icons...`)
 				userIconOptions = await this.getIconOptionsFromDirectory(userIconsDirSetting, 'user')
 				console.log(`[IconActionsService] showAvailableIconsQuickPick - User icons loaded:`, userIconOptions.length)
@@ -285,7 +292,7 @@ export class IconActionsService implements IIconActionsService {
 	}
 
 	public async assignIconToResource(
-		resourceUris: VsCodeUri[],
+		resourceUris: IUri[],
 		iconTypeScope?: IconAssociationType,
 	): Promise<void> {
 		if (!resourceUris || resourceUris.length === 0) {
@@ -297,7 +304,7 @@ export class IconActionsService implements IIconActionsService {
 		let isFolderMode = false
 		const resourceStats = await Promise.all(resourceUris.map(async (uri) => {
 			try {
-				return { uri, stat: await this.fileSystem.stat(uri.fsPath) }
+				return { uri, stat: await this.fileSystem.stat(uri) }
 			}
 			catch (error) {
 				this.commonUtils.errMsg(`Could not get stats for ${uri.fsPath}`, error)
@@ -345,12 +352,13 @@ export class IconActionsService implements IIconActionsService {
 		console.log(`[IconActionsService] Assigning ${iconNameKey} to ${resourceNames.length} ${typeToAssign}${resourceNames.length > 1 ? 's' : ''}: ${resourceNames.join(', ')}`)
 
 		// Get current settings for comparison
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX)
+		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { get: <T>(key: string) => T | undefined }
 		const beforeMappings = config.get<Record<string, string>>(this.CUSTOM_MAPPINGS_KEY) || {}
 
 		await this.updateCustomIconMappings(async (mappings) => {
 			for (const resourceName of resourceNames) {
 				const associationKey = await this.getAssociationKey(resourceName, typeToAssign)
+
 				mappings[associationKey] = iconNameKey
 			}
 			return mappings
@@ -373,7 +381,7 @@ export class IconActionsService implements IIconActionsService {
 		await this.window.showTimedInformationMessage(`Icon assigned successfully. Theme will update automatically.`)
 	}
 
-	public async revertIconAssignment(resourceUris: VsCodeUri[]): Promise<void> {
+	public async revertIconAssignment(resourceUris: IUri[]): Promise<void> {
 		if (!resourceUris || resourceUris.length === 0) {
 			this.window.showWarningMessage('No file or folder selected.')
 			return
@@ -383,7 +391,7 @@ export class IconActionsService implements IIconActionsService {
 		let isFolderMode = false
 		const resourceStats = await Promise.all(resourceUris.map(async (uri) => {
 			try {
-				return { uri, stat: await this.fileSystem.stat(uri.fsPath) }
+				return { uri, stat: await this.fileSystem.stat(uri) }
 			}
 			catch (error) {
 				this.commonUtils.errMsg(`Could not get stats for ${uri.fsPath}`, error)
@@ -435,7 +443,10 @@ export class IconActionsService implements IIconActionsService {
 	}
 
 	public async toggleExplorerArrows(): Promise<void> {
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX)
+		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as {
+			get: <T>(key: string) => T | undefined
+			update: (key: string, value: any, isGlobal?: boolean) => Promise<void>
+		}
 		const currentSetting = config.get<boolean | null>(this.HIDE_ARROWS_KEY)
 		const newSetting = (currentSetting === null || currentSetting === undefined) ? true : !currentSetting
 

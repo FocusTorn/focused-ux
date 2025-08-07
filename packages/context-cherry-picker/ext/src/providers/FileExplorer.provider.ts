@@ -1,14 +1,18 @@
-import { EventEmitter, TreeItem, TreeItemCollapsibleState, ThemeIcon, Uri } from 'vscode'
-import type { TreeDataProvider, Event, Disposable } from 'vscode'
+import type { TreeDataProvider, Event, Disposable, TreeItem } from 'vscode'
+import { TreeItemFactoryAdapter, UriFactory, EventEmitterAdapter } from '@fux/shared'
 import type { IFileExplorerService, FileExplorerItem as CoreFileExplorerItem } from '@fux/context-cherry-picker-core'
 
 export class FileExplorerViewProvider implements TreeDataProvider<CoreFileExplorerItem>, Disposable {
 
-	private _onDidChangeTreeData: EventEmitter<CoreFileExplorerItem | undefined | null | void> = new EventEmitter()
-	readonly onDidChangeTreeData: Event<CoreFileExplorerItem | undefined | null | void> = this._onDidChangeTreeData.event
+	private _onDidChangeTreeData: EventEmitterAdapter<CoreFileExplorerItem | undefined | null | void>
+	readonly onDidChangeTreeData: Event<CoreFileExplorerItem | undefined | null | void>
 	private serviceListener: Disposable
+	private treeItemFactory: TreeItemFactoryAdapter
 
 	constructor(private readonly service: IFileExplorerService) {
+		this._onDidChangeTreeData = new EventEmitterAdapter<CoreFileExplorerItem | undefined | null | void>()
+		this.onDidChangeTreeData = this._onDidChangeTreeData.event
+		this.treeItemFactory = new TreeItemFactoryAdapter()
 		this.serviceListener = this.service.onDidChangeTreeData((item) => {
 			this._onDidChangeTreeData.fire(item)
 		})
@@ -21,17 +25,17 @@ export class FileExplorerViewProvider implements TreeDataProvider<CoreFileExplor
 
 	getTreeItem(element: CoreFileExplorerItem): TreeItem {
 		const collapsibleState = element.type === 'directory'
-			? TreeItemCollapsibleState.Collapsed
-			: TreeItemCollapsibleState.None
+			? this.treeItemFactory.create('', 1).collapsibleState // Collapsed
+			: this.treeItemFactory.create('', 0).collapsibleState // None
 
-		const item = new TreeItem(element.label, element.collapsibleState ?? collapsibleState)
+		const item = this.treeItemFactory.create(element.label, element.collapsibleState ?? collapsibleState)
 
 		item.id = element.uri
-		item.resourceUri = Uri.file(element.uri)
+		item.resourceUri = UriFactory.file(element.uri)
 		item.checkboxState = element.checkboxState
 		item.tooltip = element.tooltip
 		item.description = element.description
-		item.iconPath = element.type === 'directory' ? new ThemeIcon('folder') : new ThemeIcon('file')
+		item.iconPath = element.type === 'directory' ? this.treeItemFactory.createWithIcon('', 'folder').iconPath : this.treeItemFactory.createWithIcon('', 'file').iconPath
 		item.contextValue = element.type
 		return item
 	}

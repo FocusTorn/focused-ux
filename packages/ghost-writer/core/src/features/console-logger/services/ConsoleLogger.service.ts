@@ -54,8 +54,8 @@ class LogMessageHelper {
 	}
 
 	public generateLogMessage(selectedVar: string, lineOfSelectedVar: number, includeClassName: boolean, includeFunctionName: boolean): string {
-		const className = includeClassName ? this.getEnclosingClassName(lineOfSelectedVar) : ''
-		const funcName = includeFunctionName ? this.getEnclosingFunctionName(lineOfSelectedVar) : ''
+		const className = includeClassName ? this.getEnclosingClassName(lineOfSelectedVar, selectedVar) : ''
+		const funcName = includeFunctionName ? this.getEnclosingFunctionName(lineOfSelectedVar, selectedVar) : ''
 		const lineOfLogMsg = this.getMsgTargetLine(lineOfSelectedVar, selectedVar)
 		const spacesBeforeMsg = this.calculateSpaces(lineOfSelectedVar)
 		const debuggingMsg = `${spacesBeforeMsg}console.log('${className}${funcName}${selectedVar}:', ${selectedVar});`
@@ -70,11 +70,35 @@ class LogMessageHelper {
 			const nodeEndLine = this.getLineAndCharacterOfPosition(node.getEnd()).line
 
 			if (nodeStartLine <= line && nodeEndLine >= line && node.getText(this.sourceFile).includes(varName)) {
+				// Check for regular variable declaration
 				if (node.kind === getTS().SyntaxKind.VariableDeclaration && (node as any).name.getText(this.sourceFile) === varName) {
 					foundNode = node
 					return
 				}
+				// Check for destructured variable (BindingElement)
+				else if (node.kind === getTS().SyntaxKind.BindingElement && (node as any).name.getText(this.sourceFile) === varName) {
+					foundNode = node
+					return
+				}
 				else if (!foundNode) {
+					foundNode = node
+				}
+			}
+			getTS().forEachChild(node, traverse)
+		}
+
+		traverse(this.sourceFile)
+		return foundNode
+	}
+
+	private findAnyNodeAtLine(line: number): ts.Node | undefined {
+		let foundNode: ts.Node | undefined
+		const traverse = (node: ts.Node) => {
+			const nodeStartLine = this.getLineAndCharacterOfPosition(node.getStart()).line
+			const nodeEndLine = this.getLineAndCharacterOfPosition(node.getEnd()).line
+
+			if (nodeStartLine <= line && nodeEndLine >= line) {
+				if (!foundNode) {
 					foundNode = node
 				}
 			}
@@ -111,64 +135,69 @@ class LogMessageHelper {
 		return ' '.repeat(currentLine.firstNonWhitespaceCharacterIndex)
 	}
 
-	private getEnclosingClassName(lineOfSelectedVar: number): string {
-		const classDeclarationRegex = /class\s+([a-zA-Z\d_]+)/
+	private getEnclosingClassName(lineOfSelectedVar: number, selectedVar: string): string {
+		// First find the variable declaration at the line
+		const varNode = this.findNodeAtLine(lineOfSelectedVar, selectedVar)
 
-		for (let i = lineOfSelectedVar; i >= 0; i--) {
-			const lineText = this.lineAt(i).text
-			const match = lineText.match(classDeclarationRegex)
+		if (!varNode)
+			return ''
 
-			if (match) {
-				const closingLine = this.getClosingBraceLine(i)
+		let current = varNode
 
-				if (lineOfSelectedVar < closingLine) {
-					return `${match[1]} -> `
-				}
+		while (current) {
+			if (getTS().isClassDeclaration(current) && current.name) {
+				return `${current.name.getText(this.sourceFile)} -> `
 			}
+			current = current.parent
 		}
 		return ''
 	}
 
-	private getEnclosingFunctionName(lineOfSelectedVar: number): string {
-		const functionRegex = /(?:function\s+([a-zA-Z\d_]+)|([a-zA-Z\d_]+)\s*=\s*(?:async\s*)?(?:\([^)]*\))\s*=>|const\s+([a-zA-Z\d_]+)\s*=\s*(?:async\s*)?function)/
+	private getEnclosingFunctionName(lineOfSelectedVar: number, selectedVar: string): string {
+		// First find the variable declaration at the line
+		const varNode = this.findNodeAtLine(lineOfSelectedVar, selectedVar)
 
-		for (let i = lineOfSelectedVar; i >= 0; i--) {
-			const lineText = this.lineAt(i).text
-			const match = lineText.match(functionRegex)
+		if (!varNode)
+			return ''
 
-			if (match) {
-				const functionName = match || match || match
-				const closingLine = this.getClosingBraceLine(i)
+		let current = varNode
 
-				if (lineOfSelectedVar < closingLine) {
-					return `${functionName} -> `
+		while (current) {
+			// Function declaration: function myFunction() {}
+			if (getTS().isFunctionDeclaration(current) && current.name) {
+				return `${current.name.getText(this.sourceFile)} -> `
+			}
+			
+			// Function expression: const myFunction = function() {}
+			if (getTS().isFunctionExpression(current) && current.name) {
+				return `${current.name.getText(this.sourceFile)} -> `
+			}
+			
+			// Variable declaration with function: const myFunction = function() {}
+			if (getTS().isVariableDeclaration(current) && current.name && getTS().isIdentifier(current.name)) {
+				const initializer = current.initializer
+
+				if (initializer && (getTS().isFunctionExpression(initializer) || getTS().isArrowFunction(initializer))) {
+					return `${current.name.getText(this.sourceFile)} -> `
 				}
 			}
+			
+			// Arrow function: const myFunction = () => {}
+			if (getTS().isArrowFunction(current)) {
+				// Try to find the parent variable declaration
+				let parent = current.parent
+
+				while (parent) {
+					if (getTS().isVariableDeclaration(parent) && parent.name && getTS().isIdentifier(parent.name)) {
+						return `${parent.name.getText(this.sourceFile)} -> `
+					}
+					parent = parent.parent
+				}
+			}
+			
+			current = current.parent
 		}
 		return ''
-	}
-
-	private getClosingBraceLine(startLine: number): number {
-		let braceCount = 0
-		let inBlock = false
-
-		for (let i = startLine; i < this.lineCount; i++) {
-			const lineText = this.lineAt(i).text
-
-			for (const char of lineText) {
-				if (char === '{') {
-					braceCount++
-					inBlock = true
-				}
-				else if (char === '}') {
-					braceCount--
-				}
-			}
-			if (inBlock && braceCount === 0) {
-				return i
-			}
-		}
-		return this.lineCount
 	}
 
 }

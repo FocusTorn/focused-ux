@@ -3,5 +3,5 @@
 //--------------------------------------------------------------------------------------------------------------<<
 
 export interface IFileUtilsService {
-	formatFileSize(bytes: number): string
+	formatFileSize: (bytes: number) => string
 }

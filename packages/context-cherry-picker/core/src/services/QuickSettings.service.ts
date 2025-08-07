@@ -1,8 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import { EventEmitter } from 'vscode'
-import type { Event } from 'vscode'
+import type { Event } from '@fux/shared'
 
 //= MISC ======================================================================================================
 import * as yaml from 'js-yaml'
@@ -14,6 +13,7 @@ import type { IWorkspace } from '../_interfaces/IWorkspace.js'
 import type { IFileSystem } from '../_interfaces/IFileSystem.js'
 import type { IPath } from '../_interfaces/IPath.js'
 import type { IContext } from '../_interfaces/IContext.js'
+import { EventEmitterAdapter } from '@fux/shared'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -52,7 +52,7 @@ interface ProjectYamlConfig {
 export class QuickSettingsService implements IQuickSettingsService {
 
 	private _settingsState: Map<string, any> = new Map()
-	private _onDidUpdateSetting = new EventEmitter<{ settingId: string, value: any }>()
+	private _onDidUpdateSetting = new EventEmitterAdapter<{ settingId: string, value: any }>()
 	public readonly onDidUpdateSetting: Event<{ settingId: string, value: any }> = this._onDidUpdateSetting.event
 	private _initializationPromise: Promise<void>
 

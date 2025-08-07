@@ -1,8 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { TreeItemCollapsibleState } from 'vscode'
-import type { TreeItemCheckboxState } from 'vscode'
+import type { TreeItemCollapsibleState, TreeItemCheckboxState } from '@fux/shared'
 
 //--------------------------------------------------------------------------------------------------------------<<
 

@@ -1,19 +1,19 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import { EventEmitter } from 'vscode'
-import type { Event, TreeItemLabel } from 'vscode'
+import type { Event, TreeItemLabel } from '@fux/shared'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { ISavedStatesService } from '../_interfaces/ISavedStatesService.js'
 import type { IStorageService } from '../_interfaces/IStorageService.js'
 import { SavedStateItem } from '../models/SavedStateItem.js'
+import { EventEmitterAdapter } from '@fux/shared'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
 export class SavedStatesService implements ISavedStatesService { //>
 
-	private _onDidChangeTreeData: EventEmitter<SavedStateItem | undefined | null | void> = new EventEmitter<SavedStateItem | undefined | null | void>()
+	private _onDidChangeTreeData: EventEmitterAdapter<SavedStateItem | undefined | null | void> = new EventEmitterAdapter<SavedStateItem | undefined | null | void>()
 	readonly onDidChangeTreeData: Event<SavedStateItem | undefined | null | void> = this._onDidChangeTreeData.event
 
 	constructor(

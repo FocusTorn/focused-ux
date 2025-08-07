@@ -14,7 +14,10 @@
     "devDependencies": {
         "@types/node": "^24.0.10",
         "@types/vscode": "^1.99.3",
-        "typescript": "^5.8.3"
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4",
+        "@vitest/coverage-v8": "^3.2.4",
+        "@fux/mockly": "workspace:*"
     },
     "contributes": {
         "commands": [
@@ -92,5 +95,11 @@
         "vscode": "^1.99.3"
     },
     "private": true,
-    "main": "./dist/extension.cjs"
+    "main": "./dist/extension.cjs",
+    "scripts": {
+        "test": "nx vite:test",
+        "test:run": "nx vite:test run",
+        "test:coverage": "nx vite:test run --coverage",
+        "test:ui": "nx vite:test --ui"
+    }
 }

@@ -10,12 +10,12 @@ import type { IContextDataCollectorService } from '../_interfaces/IContextDataCo
 import type { IFileContentProviderService } from '../_interfaces/IFileContentProviderService.js'
 import type { IContextFormattingService } from '../_interfaces/IContextFormattingService.js'
 import { constants } from '../_config/constants.js'
-import { TreeItemCheckboxState } from 'vscode'
 import type { IWindow } from '../_interfaces/IWindow.js'
 import type { IWorkspace } from '../_interfaces/IWorkspace.js'
 import type { IPath } from '../_interfaces/IPath.js'
 import type { IQuickSettingsService } from '../_interfaces/IQuickSettingsService.js'
 import type { IConfigurationService } from '@fux/shared'
+import type { ITreeItemFactory } from '../models/FileExplorerItem.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -37,6 +37,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		private readonly workspace: IWorkspace,
 		private readonly path: IPath,
 		private readonly configurationService: IConfigurationService,
+		private readonly treeItemFactory: ITreeItemFactory,
 	) {}
 
 	public async saveCurrentCheckedState(): Promise<void> {
@@ -52,7 +53,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		if (stateName) {
 			const itemsToSave = checkedItems.map(uri => ({
 				uriString: uri,
-				checkboxState: this.fileExplorerService.getCheckboxState(uri) || TreeItemCheckboxState.Unchecked,
+				checkboxState: this.fileExplorerService.getCheckboxState(uri) || this.treeItemFactory.getCheckboxStateUnchecked(),
 			}))
 
 			await this.storageService.saveState(stateName, itemsToSave)

@@ -1,13 +1,13 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { Uri } from 'vscode'
+import type { IUri } from '@fux/shared'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
 export interface IIconActionsService {
 	assignIconToResource: (
-		resourceUris: Uri[],
+		resourceUris: IUri[],
 		iconTypeScope?: 'file' | 'folder' | 'language'
 	) => Promise<void>
 
@@ -27,7 +27,7 @@ export interface IIconActionsService {
 	) => Promise<void>
 
 	revertIconAssignment: (
-		resourceUris: Uri[]
+		resourceUris: IUri[]
 	) => Promise<void>
 
 	toggleExplorerArrows: () => Promise<void>
