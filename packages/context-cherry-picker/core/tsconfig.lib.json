@@ -5,17 +5,13 @@
         "rootDir": "src",
         "outDir": "dist",
         "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
-        "emitDeclarationOnly": false,
+        "emitDeclarationOnly": true,
         "declaration": true,
         "declarationMap": true,
-        "types": [
-            "node"
-        ],
         "composite": true,
+        "types": ["node"],
         "paths": {
-            "@fux/shared": [
-                "../../../libs/shared/src"
-            ]
+            "@fux/shared": ["../../../libs/shared"]
         }
     },
     "include": [
@@ -26,8 +22,6 @@
         "src/**/*.test.ts"
     ],
     "references": [
-        {
-            "path": "../../../libs/shared/tsconfig.lib.json"
-        }
+        { "path": "../../../libs/shared/tsconfig.lib.json" }
     ]
 }

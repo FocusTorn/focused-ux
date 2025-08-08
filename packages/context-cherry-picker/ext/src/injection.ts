@@ -2,7 +2,7 @@ import type { AwilixContainer } from 'awilix'
 import { createContainer, InjectionMode, asValue, asClass, asFunction } from 'awilix'
 import type { ExtensionContext } from 'vscode'
 import type { IConfigurationService, IProcess as ISharedProcess } from '@fux/shared'
-import { ConfigurationService, WindowAdapter, WorkspaceCCPAdapter } from '@fux/shared'
+import { ConfigurationService, WindowAdapter, WorkspaceCCPAdapter, WorkspaceAdapter } from '@fux/shared'
 
 // Core Services
 import {
@@ -47,11 +47,11 @@ class CCPContextAdapter implements IContext {
 class CCPTreeItemFactoryAdapter implements ITreeItemFactory {
 
 	getCheckboxStateUnchecked() {
-		return 1 // TreeItemCheckboxState.Unchecked
+		return 0 // TreeItemCheckboxState.Unchecked
 	}
 
 	getCheckboxStateChecked() {
-		return 2 // TreeItemCheckboxState.Checked
+		return 1 // TreeItemCheckboxState.Checked
 	}
 
 	getCollapsibleStateNone() {
@@ -73,13 +73,19 @@ export async function createDIContainer(context: ExtensionContext): Promise<Awil
 		injectionMode: InjectionMode.PROXY,
 	})
 
-	// Adapters for CCP's own interfaces
+	// Register base adapters first
 	container.register({
 		context: asValue(new CCPContextAdapter(context)),
 		fileSystem: asClass(FileSystemAdapter).singleton(),
 		path: asClass(PathAdapter).singleton(),
-		workspace: asClass(WorkspaceCCPAdapter).singleton(),
+		workspaceAdapter: asClass(WorkspaceAdapter).singleton(),
 		treeItemFactory: asValue(new CCPTreeItemFactoryAdapter()),
+	})
+
+	// Register WorkspaceCCPAdapter with dependency on WorkspaceAdapter
+	container.register({
+		workspace: asFunction((cradle: { workspaceAdapter: WorkspaceAdapter }) =>
+			new WorkspaceCCPAdapter(cradle.workspaceAdapter)).singleton(),
 	})
 
 	// Create an adapter for the shared IProcess interface

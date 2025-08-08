@@ -8,13 +8,13 @@
         "build-assets": { //>
             "executor": "nx:run-commands",
             "options": {
-                "command": "pnpm exec tsx ./src/scripts/build_dynamicon_assets.ts",
+                "command": "tsx ./src/scripts/build_dynamicon_assets.ts",
                 "cwd": "packages/dynamicons/core",
                 "forwardAllArgs": true
             },
             "configurations": {
                 "development": {
-                    "command": "pnpm exec tsx ./src/scripts/build_dynamicon_assets.ts"
+                    "command": "tsx ./src/scripts/build_dynamicon_assets.ts"
                 }
             }
         }, //<

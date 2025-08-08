@@ -11,7 +11,7 @@
         "types": ["node"],
         "composite": true,
         "paths": {
-            "@fux/shared": ["../../../libs/shared/src"]
+            "@fux/shared": ["../../../libs/shared"]
         }
     },
     "include": ["src/**/*.ts", "src/**/*.tsx"],

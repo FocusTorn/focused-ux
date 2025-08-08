@@ -5,25 +5,6 @@
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
     "version": "0.2.0",
-    "private": true,
-    "main": "./dist/extension.cjs",
-    "engines": {
-        "vscode": "^1.99.3"
-    },
-    "activationEvents": [
-        "onStartupFinished"
-    ],
-    "icon": "assets/logo.jpeg",
-    "categories": [
-        "Themes"
-    ],
-    "keywords": [
-        "icon theme",
-        "theme",
-        "icons",
-        "dynamicons",
-        "focused ux"
-    ],
     "dependencies": {
         "@fux/dynamicons-core": "workspace:*",
         "@fux/shared": "workspace:*",
@@ -159,5 +140,24 @@
                 }
             }
         }
-    }
+    },
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "icon": "assets/logo.jpeg",
+    "categories": [
+        "Themes"
+    ],
+    "keywords": [
+        "icon theme",
+        "theme",
+        "icons",
+        "dynamicons",
+        "focused ux"
+    ],
+    "engines": {
+        "vscode": "^1.99.3"
+    },
+    "private": true,
+    "main": "./dist/extension.cjs"
 }

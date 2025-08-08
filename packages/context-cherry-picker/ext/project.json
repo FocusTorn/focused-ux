@@ -15,7 +15,7 @@
             ],
             "options": {
                 "entryPoints": [
-                    "packages/context-cherry-picker/ext/src/index.ts"
+                    "packages/context-cherry-picker/ext/src/extension.ts"
                 ],
                 "outputPath": "packages/context-cherry-picker/ext/dist",
                 "format": [
@@ -32,7 +32,7 @@
                     "micromatch"
                 ],
                 "sourcemap": true,
-                "main": "packages/context-cherry-picker/ext/src/index.ts",
+                "main": "packages/context-cherry-picker/ext/src/extension.ts",
                 "tsConfig": "packages/context-cherry-picker/ext/tsconfig.json",
                 "assets": [
                     {

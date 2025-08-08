@@ -458,6 +458,46 @@ import { join } from 'node:path'
 - `node:crypto`
 - `node:child_process`
 
+### 4.7. Shared Path Alias Resolution
+
+**Rule:** The TypeScript path alias for `@fux/shared` must point to the package root (`libs/shared`), not `libs/shared/src`.
+
+**Rationale:**
+
+- Ensures consumers use the referenced project's declaration output instead of inlining sources
+- Prevents `rootDir` and `include` errors in composite projects under NodeNext/ESM
+- Aligns all packages on a consistent import strategy for the shared adapters
+
+**Implementation:**
+
+- In each consumer `tsconfig.lib.json`, set the path mapping to the package root
+- Keep a project reference to `libs/shared/tsconfig.lib.json`
+
+**Example (Correct):**
+
+```json
+{
+    "compilerOptions": {
+        "paths": {
+            "@fux/shared": ["../../../libs/shared"]
+        }
+    },
+    "references": [{ "path": "../../../libs/shared/tsconfig.lib.json" }]
+}
+```
+
+**Example (Incorrect):**
+
+```json
+{
+    "compilerOptions": {
+        "paths": {
+            "@fux/shared": ["../../../libs/shared/src"]
+        }
+    }
+}
+```
+
 ## 5. Migration Checklist
 
 When migrating existing code to SOP v2:
