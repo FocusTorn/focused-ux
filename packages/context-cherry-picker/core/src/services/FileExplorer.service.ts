@@ -91,12 +91,12 @@ export class FileExplorerService implements IFileExplorerService { //>
 	}
 
 	private _onVsCodeConfigChange = async (): Promise<void> => {
-		console.log(`[${constants.extension.name}] VS Code settings changed. Refreshing explorer view.`)
+		// console.log(`[${constants.extension.name}] VS Code settings changed. Refreshing explorer view.`)
 		await this.refresh()
 	}
 
 	private _onFocusedUxConfigChange = async (): Promise<void> => {
-		console.log(`[${constants.extension.name}] '.FocusedUX' file configuration changed. Refreshing explorer view.`)
+		// console.log(`[${constants.extension.name}] '.FocusedUX' file configuration changed. Refreshing explorer view.`)
 		await this.quickSettingsService.refresh()
 		await this.refresh()
 	}

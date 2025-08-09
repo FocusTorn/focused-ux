@@ -13,7 +13,7 @@ import { QuickSettingsViewProvider } from './providers/QuickSettings.provider.js
 // FIX The filter quick settings ignores directories starting with a ., EG.  '.shared'
 
 export async function activate(context: ExtensionContext): Promise<void> {
-	console.log(`[${ccpConstants.extension.name}] Activating...`)
+	// console.log(`[${ccpConstants.extension.name}] Activating...`)
 
 	const extensionContext = new ExtensionContextAdapter(context)
 	const extensionAPI = new ExtensionAPIAdapter()
@@ -70,7 +70,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
 	extensionContext.subscriptions.push(...commandDisposables)
 
-	console.log(`[${ccpConstants.extension.name}] Activated and commands registered.`)
+	// console.log(`[${ccpConstants.extension.name}] Activated and commands registered.`)
 }
 
 export function deactivate(): void {}

@@ -19,7 +19,7 @@ import type { ITreeItemFactory } from '../models/FileExplorerItem.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-const LOG_PREFIX = `[${constants.extension.nickName} - CCP_Manager]:`
+const _LOG_PREFIX = `[${constants.extension.nickName} - CCP_Manager]:`
 
 export class ContextCherryPickerManager implements IContextCherryPickerManager {
 
@@ -106,12 +106,12 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 	}
 
 	public async copyContextOfCheckedItems(): Promise<void> {
-		console.log(`${LOG_PREFIX} copyContextOfCheckedItems called.`)
+		// console.log(`${LOG_PREFIX} copyContextOfCheckedItems called.`)
 
 		const allCheckedUris = this.getCheckedExplorerItems()
 		const initialCheckedUris = this._pruneRedundantUris(allCheckedUris)
 
-		console.log(`${LOG_PREFIX} Total checked items: ${allCheckedUris.length}, after pruning: ${initialCheckedUris.length}`)
+		// console.log(`${LOG_PREFIX} Total checked items: ${allCheckedUris.length}, after pruning: ${initialCheckedUris.length}`)
 
 		const workspaceFolders = this.workspace.workspaceFolders
 
@@ -128,7 +128,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 
 		const projectStructureQuickSettingMode = await this.getQuickSettingState(constants.quickSettingIDs.projectStructureContents.id) as 'all' | 'selected' | 'none'
 
-		console.log(`${LOG_PREFIX} Project Structure Quick Setting Mode:`, projectStructureQuickSettingMode)
+		// console.log(`${LOG_PREFIX} Project Structure Quick Setting Mode:`, projectStructureQuickSettingMode)
 
 		const staticCoreIgnores = this.fileExplorerService.getCoreScanIgnoreGlobs()
 		const contextExplorerIgnoreGlobs = this.fileExplorerService.getContextExplorerIgnoreGlobs()
@@ -198,7 +198,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		finalOutput += `<project_files>\n${filesContentOutputString || '\n'}</project_files>\n`
 		finalOutput += '</context>'
 
-		console.log(`${LOG_PREFIX} Total tokens for final output (estimate): ${totalTokens}`)
+		// console.log(`${LOG_PREFIX} Total tokens for final output (estimate): ${totalTokens}`)
 
 		await this.window.setClipboard(finalOutput)
 		await this.showStatusMessage(`📋 Context copied (~${totalTokens} tokens)`)
@@ -217,7 +217,7 @@ export class ContextCherryPickerManager implements IContextCherryPickerManager {
 		const durationSeconds = await this.configurationService.get<number>('ContextCherryPicker.settings.message_show_seconds', 1.5)
 		const durationMs = durationSeconds * 1000
 
-		console.log(`[${LOG_PREFIX}] Status Message (type: ${messageType}): ${message}`)
+		// console.log(`[${LOG_PREFIX}] Status Message (type: ${messageType}): ${message}`)
 
 		switch (messageType) {
 			case 'toast':

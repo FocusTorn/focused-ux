@@ -1,31 +1,26 @@
 // ESLint & Imports -->>
 
-// _UTILITIES (direct imports) ================================================================================
-import type { ExtensionContext, Disposable } from '@fux/shared'
-import { WindowAdapter } from '@fux/shared'
+// _UTILITIES (direct imports) =======================================================================
+import type { Disposable } from '@fux/shared'
+import type { ExtensionContext } from 'vscode'
+import * as vscode from 'vscode'
+import type { WindowAdapter } from '@fux/shared'
 import type {
 	INotesHubItem,
 	INotesHubService,
-	INotesHubActionService,
-	INotesHubConfigService,
-	INotesHubProviderManager,
 } from '@fux/note-hub-core'
-import {
-	NotesHubService,
-	NotesHubActionService,
-	NotesHubConfigService,
-	NotesHubProviderManager,
-} from '@fux/note-hub-core'
+
 import { constants } from './_config/constants.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
 export class NotesHubModule {
+
 	private service?: INotesHubService
 
 	constructor(
 		private readonly notesHubService: INotesHubService,
-		private readonly windowAdapter: WindowAdapter
+		private readonly windowAdapter: WindowAdapter,
 	) {
 		this.service = notesHubService
 	}
@@ -50,13 +45,14 @@ export class NotesHubModule {
 			[constants.commands.cutItem]: (item?: INotesHubItem) => item && service.cutItem(item),
 			[constants.commands.pasteItem]: (item?: INotesHubItem) => item && service.pasteItem(item),
 			[constants.commands.renameItem]: (item?: INotesHubItem) => item && service.renameItem(item),
-			[constants.commands.deleteItem]: (item?: INotesHubItem) => item && service.deleteItem(item),
 		}
 
 		return Object.entries(commandMap).map(([command, handler]) => {
 			try {
-				return this.windowAdapter.registerCommand(command, handler)
-			} catch (error) {
+				// Use vscode.commands.registerCommand directly since we don't have access to the commands adapter here
+				return vscode.commands.registerCommand(command, handler)
+			}
+			catch (_error) {
 				// If command is already registered, just return a no-op disposable
 				console.warn(`[${constants.extension.name}] Command ${command} is already registered, skipping.`)
 				return { dispose: () => {} }
@@ -73,4 +69,5 @@ export class NotesHubModule {
 		this.service?.dispose()
 		console.log(`[${constants.extension.name}] NotesHubModule disposed.`)
 	}
+
 }

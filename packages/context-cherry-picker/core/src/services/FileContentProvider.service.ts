@@ -10,7 +10,7 @@ import { constants } from '../_config/constants.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-const LOG_PREFIX = `[${constants.extension.nickName} - FileContentProvider]:`
+const _LOG_PREFIX = `[${constants.extension.nickName} - FileContentProvider]:`
 
 export class FileContentProviderService implements IFileContentProviderService {
 
@@ -44,12 +44,12 @@ export class FileContentProviderService implements IFileContentProviderService {
 		})
 
 		if (sortedContentUris.length > 0) {
-			console.log(`${LOG_PREFIX} Starting to process file contents for ${sortedContentUris.length} items.`)
+			// console.log(`${LOG_PREFIX} Starting to process file contents for ${sortedContentUris.length} items.`)
 			for (const uri of sortedContentUris) {
 				const entry = collectedFileSystemEntries.get(uri)
 
 				if (!entry || !entry.isFile) {
-					console.warn(`${LOG_PREFIX} URI ${uri} for content but not a valid file entry. Skipping.`)
+					// console.warn(`${LOG_PREFIX} URI ${uri} for content but not a valid file entry. Skipping.`)
 					continue
 				}
 
@@ -60,7 +60,7 @@ export class FileContentProviderService implements IFileContentProviderService {
 
 					if (currentTotalTokens + processedTokensThisCall + tokensForThisFile > maxTokens) {
 						this.window.showWarningMessage(`Context limit reached. File '${entry.name}' and subsequent files were not added.`, false)
-						console.log(`${LOG_PREFIX} Token limit reached processing ${entry.name}.`)
+						// console.log(`${LOG_PREFIX} Token limit reached processing ${entry.name}.`)
 						limitReachedInThisCall = true
 						break
 					}
@@ -69,12 +69,12 @@ export class FileContentProviderService implements IFileContentProviderService {
 				}
 				catch (error: any) {
 					this.window.showErrorMessage(`Error reading file ${uri} for content: ${error.message}`)
-					console.error(`${LOG_PREFIX} Error reading file ${uri}: ${error.message}`)
+					// console.error(`${LOG_PREFIX} Error reading file ${uri}: ${error.message}`)
 				}
 			}
 		}
 		else {
-			console.log(`${LOG_PREFIX} No file items were identified for content processing.`)
+			// console.log(`${LOG_PREFIX} No file items were identified for content processing.`)
 		}
 
 		return {

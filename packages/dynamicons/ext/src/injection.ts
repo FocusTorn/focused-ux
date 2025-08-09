@@ -137,11 +137,11 @@ class DynamiconsPathAdapter implements IPath {
 	}
 
 	public join(...paths: string[]): string {
-		console.log(`[DynamiconsPathAdapter] join called with paths:`, paths)
+		// console.log(`[DynamiconsPathAdapter] join called with paths:`, paths)
 
 		const result = this.sharedPath.join(...paths)
 
-		console.log(`[DynamiconsPathAdapter] join result:`, result)
+		// console.log(`[DynamiconsPathAdapter] join result:`, result)
 		return result
 	}
 

@@ -1,13 +1,13 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) ================================================================================
-import type { IWindow, IWorkspace, ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, IEnv, IFileType, IUri, ICommands } from '@fux/shared'
-import type { ExtensionContext, MessageItem } from '@fux/shared'
-import { UriAdapter, FileTypeAdapter } from '@fux/shared'
+import type { IWindow, IWorkspace, ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, IEnv, IFileType, ICommands, IUri } from '@fux/shared'
+import { UriAdapter } from '@fux/shared'
 import { Buffer } from 'node:buffer'
 import type * as nodePath from 'node:path'
 import { constants as fsConstants } from 'node:fs'
 import type { access as fspAccessType, rename as fspRenameType } from 'node:fs/promises'
+import type { ExtensionContext } from 'vscode'
 import type { INotesHubActionService } from '../_interfaces/INotesHubActionService.js'
 import type { INotesHubItem } from '../_interfaces/INotesHubItem.js'
 import { NotesHubItem } from '../models/NotesHubItem.js'
@@ -17,8 +17,6 @@ import type { INotesHubProviderManager } from '../_interfaces/INotesHubProviderM
 //--------------------------------------------------------------------------------------------------------------<<
 
 const ALLOWED_EXTENSIONS_NOTES_HUB = ['.md', '.txt', '.txte']
-
-interface ConfirmMessageItem extends MessageItem { choice: string }
 
 export class NotesHubActionService implements INotesHubActionService {
 
@@ -92,7 +90,7 @@ export class NotesHubActionService implements INotesHubActionService {
 		}
 
 		const finalNewName = newExt ? `${newName}${newExt}` : newName
-		const sanitizedFileName = this.iPathUtils.santizePath(finalNewName)
+		const sanitizedFileName = finalNewName ? this.iPathUtils.sanitizePath(finalNewName) : ''
 		const newPath = this.iPathJoin(this.iPathDirname(oldFilePath), sanitizedFileName)
 		const newUri = UriAdapter.file(newPath)
 
@@ -227,10 +225,10 @@ export class NotesHubActionService implements INotesHubActionService {
 			return
 		}
 
-		let sourceUri: Uri
+		let sourceUri: IUri
 
 		try {
-			sourceUri = Uri.parse(sourceUriString, true)
+			sourceUri = UriAdapter.file(sourceUriString)
 		}
 		catch (error) {
 			this.iCommonUtils.errMsg('Invalid URI on clipboard for paste operation.', error)
@@ -240,7 +238,7 @@ export class NotesHubActionService implements INotesHubActionService {
 		const sourceItemName = this.iPathBasename(sourceUri.fsPath)
 		const targetFolderPath = targetFolderItem.resourceUri.fsPath
 		const targetItemPath = this.iPathJoin(targetFolderPath, sourceItemName)
-		const targetItemUri = UriAdapter.file(this.iPathUtils.santizePath(targetItemPath))
+		const targetItemUri = UriAdapter.file(targetItemPath ? this.iPathUtils.sanitizePath(targetItemPath) : targetItemPath)
 
 		if (sourceUri.toString() === targetItemUri.toString())
 			return
@@ -256,8 +254,8 @@ export class NotesHubActionService implements INotesHubActionService {
 		const operationName = operation === 'cut' ? 'Moving' : 'Copying'
 
 		try {
-					await this.iWindow.withProgress(
-			{ location: 'Notification', title: `${operationName} '${sourceItemName}'...`, cancellable: false },
+			await this.iWindow.withProgress(
+				{ title: `${operationName} '${sourceItemName}'...`, cancellable: false },
 				async () => {
 					if (operation === 'cut') {
 						await this.iFspRename(sourceUri.fsPath, targetItemUri.fsPath)
@@ -314,7 +312,7 @@ export class NotesHubActionService implements INotesHubActionService {
 			return
 
 		const { newName, newExtension } = result
-		const sanitizedFileName = this.iPathUtils.santizePath(`${newName}${newExtension}`)
+		const sanitizedFileName = `${newName}${newExtension}` ? this.iPathUtils.sanitizePath(`${newName}${newExtension}`) : ''
 		const newNotePath = this.iPathJoin(notesDir, sanitizedFileName)
 		const newNoteUri = UriAdapter.file(newNotePath)
 
@@ -326,7 +324,7 @@ export class NotesHubActionService implements INotesHubActionService {
 
 			await this.iWindow.showTextDocument(doc)
 
-			const newItemForReveal = await provider.getNotesHubItem(newNoteUri)
+			const newItemForReveal = await provider.getNotesHubItem((newNoteUri as UriAdapter).uri)
 
 			if (newItemForReveal) {
 				await this.iProviderManager.revealNotesHubItem(provider, newItemForReveal, true)
@@ -358,7 +356,7 @@ export class NotesHubActionService implements INotesHubActionService {
 			return
 
 		const targetFolderPath = targetFolderItem.filePath
-		const sanitizedFolderName = this.iPathUtils.santizePath(newFolderName)
+		const sanitizedFolderName = newFolderName ? this.iPathUtils.sanitizePath(newFolderName) : ''
 		const newFolderPath = this.iPathJoin(targetFolderPath, sanitizedFolderName)
 		const newFolderUri = UriAdapter.file(newFolderPath)
 
@@ -374,7 +372,7 @@ export class NotesHubActionService implements INotesHubActionService {
 			await this.iWorkspace.fs.createDirectory(newFolderUri)
 			provider.refresh()
 
-			const newItemForReveal = await provider.getNotesHubItem(newFolderUri)
+			const newItemForReveal = await provider.getNotesHubItem((newFolderUri as UriAdapter).uri)
 
 			if (newItemForReveal) {
 				await this.iProviderManager.revealNotesHubItem(provider, newItemForReveal, true)
@@ -412,13 +410,9 @@ export class NotesHubActionService implements INotesHubActionService {
 	} //<
 
 	private async confirmAction(message: string, confirmActionTitle: string = 'Confirm'): Promise<boolean> { //>
-		const items: ConfirmMessageItem[] = [
-			{ title: confirmActionTitle, choice: 'confirm' },
-			{ title: 'Cancel', choice: 'cancel', isCloseAffordance: true },
-		]
-		const result = await this.iWindow.showWarningMessage(message, { modal: true }, ...items)
+		const result = await this.iWindow.showWarningMessage(message, { modal: true }, confirmActionTitle, 'Cancel')
 
-		return result?.choice === 'confirm'
+		return result === confirmActionTitle
 	} //<
 
 	private async confirmOverwrite(itemName: string): Promise<boolean> { //>
@@ -466,7 +460,16 @@ export class NotesHubActionService implements INotesHubActionService {
 
 	private async fileExists(filePath: string): Promise<boolean> { //>
 		try {
-			await this.iFspAccess(this.iPathUtils.santizePath(filePath), fsConstants.F_OK)
+			if (!filePath) {
+				return false
+			}
+
+			const sanitizedPath = this.iPathUtils.sanitizePath(filePath)
+			if (!sanitizedPath) {
+				return false
+			}
+
+			await this.iFspAccess(sanitizedPath, fsConstants.F_OK)
 			return true
 		}
 		catch {

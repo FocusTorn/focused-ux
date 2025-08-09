@@ -45,15 +45,9 @@ export class StorageService implements IStorageService { //>
 					await this.fileSystem.stat(this.storageFileUri)
 				}
 				catch (_error: any) {
-					try {
-						await this.fileSystem.createDirectory(this.context.globalStorageUri)
-						await this.fileSystem.writeFile(this.storageFileUri, new TextEncoder().encode(JSON.stringify({}, null, 2)))
-						console.log(`[${localCcpConstants.extension.nickName}] Storage file initialized at ${this.storageFileUri}`)
-					}
-					catch (createError) {
-						console.error(`[${localCcpConstants.extension.nickName}] Critical error creating storage file ${this.storageFileUri}:`, createError)
-						throw createError
-					}
+					await this.fileSystem.createDirectory(this.context.globalStorageUri)
+					await this.fileSystem.writeFile(this.storageFileUri, new TextEncoder().encode(JSON.stringify({}, null, 2)))
+					// console.log(`[${localCcpConstants.extension.nickName}] Storage file initialized at ${this.storageFileUri}`)
 				}
 			})()
 		}
@@ -67,21 +61,15 @@ export class StorageService implements IStorageService { //>
 
 			return JSON.parse(fileContents) as SavedStatesFileFormat
 		}
-		catch (error) {
-			console.error(`[${localCcpConstants.extension.nickName}] Error reading storage file ${this.storageFileUri}:`, error)
+		catch (_error) {
+			// console.error(`[${localCcpConstants.extension.nickName}] Error reading storage file ${this.storageFileUri}:`, _error)
 			return {}
 		}
 	} //<
 
 	private async writeStorage(data: SavedStatesFileFormat): Promise<void> { //>
 		await this._initializeStorage()
-		try {
-			await this.fileSystem.writeFile(this.storageFileUri, new TextEncoder().encode(JSON.stringify(data, null, 2)))
-		}
-		catch (error) {
-			console.error(`[${localCcpConstants.extension.nickName}] Error writing storage file ${this.storageFileUri}:`, error)
-			throw error
-		}
+		await this.fileSystem.writeFile(this.storageFileUri, new TextEncoder().encode(JSON.stringify(data, null, 2)))
 	} //<
 
 	async saveState(name: string, checkedItems: Array<{ uriString: string, checkboxState: TreeItemCheckboxState }>): Promise<void> { //>

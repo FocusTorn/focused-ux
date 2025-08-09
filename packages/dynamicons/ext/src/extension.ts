@@ -31,11 +31,11 @@ async function getGeneratedThemePath(context: ExtensionContext, container: Awili
 	
 	const fullUri = uriAdapter.joinPath(baseUri, ASSETS_PATHS.themesPath, generatedThemeFileName)
 	
-	console.log(`[dynamicons] Constructing generated theme URI:`)
-	console.log(`  - extensionUri: ${context.extensionUri.toString()}`)
-	console.log(`  - themesPath: ${ASSETS_PATHS.themesPath}`)
-	console.log(`  - generatedThemeFileName: ${generatedThemeFileName}`)
-	console.log(`  - fullUri.fsPath: ${fullUri.fsPath}`)
+	// console.log(`[dynamicons] Constructing generated theme URI:`)
+	// console.log(`  - extensionUri: ${context.extensionUri.toString()}`)
+	// console.log(`  - themesPath: ${ASSETS_PATHS.themesPath}`)
+	// console.log(`  - generatedThemeFileName: ${generatedThemeFileName}`)
+	// console.log(`  - fullUri.fsPath: ${fullUri.fsPath}`)
 	
 	if (!fullUri || fullUri.fsPath.trim() === '') {
 		throw new Error('Generated theme URI is empty or invalid')
@@ -57,11 +57,11 @@ async function getBaseThemePath(context: ExtensionContext, container: AwilixCont
 
 	const fullUri = uriAdapter.joinPath(baseUri, ASSETS_PATHS.themesPath, baseThemeFileName)
 
-	console.log(`[dynamicons] Constructing base theme URI:`)
-	console.log(`  - extensionUri: ${context.extensionUri.toString()}`)
-	console.log(`  - themesPath: ${ASSETS_PATHS.themesPath}`)
-	console.log(`  - baseThemeFileName: ${baseThemeFileName}`)
-	console.log(`  - fullUri.fsPath: ${fullUri.fsPath}`)
+	// console.log(`[dynamicons] Constructing base theme URI:`)
+	// console.log(`  - extensionUri: ${context.extensionUri.toString()}`)
+	// console.log(`  - themesPath: ${ASSETS_PATHS.themesPath}`)
+	// console.log(`  - baseThemeFileName: ${baseThemeFileName}`)
+	// console.log(`  - fullUri.fsPath: ${fullUri.fsPath}`)
 	
 	if (!fullUri || fullUri.fsPath.trim() === '') {
 		throw new Error('Base theme URI is empty or invalid')
@@ -115,7 +115,7 @@ async function ensureThemeAssets(context: ExtensionContext, container: AwilixCon
 
 async function regenerateAndApplyTheme(context: ExtensionContext, container: AwilixContainer): Promise<void> { //>
 	if (isRegenerating) {
-		console.log(`[${EXT_NAME}] Theme regeneration already in progress, skipping...`)
+		// console.log(`[${EXT_NAME}] Theme regeneration already in progress, skipping...`)
 		return
 	}
 
@@ -162,12 +162,12 @@ async function regenerateAndApplyTheme(context: ExtensionContext, container: Awi
 		)
 
 		if (newManifest) {
-			console.log(`[${EXT_NAME}] Writing theme file to: ${generatedThemeUri.fsPath}`)
+			// console.log(`[${EXT_NAME}] Writing theme file to: ${generatedThemeUri.fsPath}`)
 			await iconThemeGeneratorService.writeIconThemeFile(newManifest, generatedThemeUri)
 			
 			// Show only the specific items that were changed
 			if (customMappings) {
-				console.log(`[${EXT_NAME}] === ASSIGNED ITEMS SUMMARY ===`)
+				// console.log(`[${EXT_NAME}] === ASSIGNED ITEMS SUMMARY ===`)
 
 				let changedItemsCount = 0
 				
@@ -196,16 +196,16 @@ async function regenerateAndApplyTheme(context: ExtensionContext, container: Awi
 					
 					// Only show items that actually changed
 					if (beforeInTheme !== afterInTheme) {
-						console.log(`[${EXT_NAME}] ${actualName}: ${beforeInTheme} → ${afterInTheme}`)
+						// console.log(`[${EXT_NAME}] ${actualName}: ${beforeInTheme} → ${afterInTheme}`)
 						changedItemsCount++
 					}
 				}
 				
 				if (changedItemsCount === 0) {
-					console.log(`[${EXT_NAME}] No items changed in theme file`)
+					// console.log(`[${EXT_NAME}] No items changed in theme file`)
 				}
 				
-				console.log(`[${EXT_NAME}] === END ASSIGNED ITEMS ===`)
+				// console.log(`[${EXT_NAME}] === END ASSIGNED ITEMS ===`)
 			}
 			
 			// Add a minimal delay to ensure VS Code has time to detect the file change
@@ -280,7 +280,7 @@ async function checkIfThemeNeedsRegeneration(context: ExtensionContext, containe
 	const hasRelevantSettings = userIconsDir || (customMappings && Object.keys(customMappings).length > 0) || hideArrows !== null
 
 	if (!hasRelevantSettings) {
-		console.log(`[${EXT_NAME}] No relevant settings found, theme regeneration not needed`)
+		// console.log(`[${EXT_NAME}] No relevant settings found, theme regeneration not needed`)
 		return false
 	}
 
@@ -294,18 +294,20 @@ async function checkIfThemeNeedsRegeneration(context: ExtensionContext, containe
 			await fileSystem.access(generatedThemeUri)
 		}
 		catch {
-			console.log(`[${EXT_NAME}] Generated theme file doesn't exist, regeneration needed`)
+			// console.log(`[${EXT_NAME}] Generated theme file doesn't exist, regeneration needed`)
 			return true
 		}
 
 		// Read current generated theme
 		let currentTheme: any = null
+
 		try {
 			const currentThemeContent = await fileSystem.readFile(generatedThemeUri, 'utf8')
+
 			currentTheme = JSON.parse(currentThemeContent)
 		}
-		catch (error) {
-			console.log(`[${EXT_NAME}] Error reading current theme file, regeneration needed:`, error)
+		catch (_error) {
+			// console.log(`[${EXT_NAME}] Error reading current theme file, regeneration needed:`, _error)
 			return true
 		}
 
@@ -319,13 +321,14 @@ async function checkIfThemeNeedsRegeneration(context: ExtensionContext, containe
 		)
 
 		if (!expectedTheme) {
-			console.log(`[${EXT_NAME}] Could not generate expected theme, regeneration needed`)
+			// console.log(`[${EXT_NAME}] Could not generate expected theme, regeneration needed`)
 			return true
 		}
 
 		// Remove timestamp for comparison
 		const currentThemeForComparison = { ...currentTheme }
 		const expectedThemeForComparison = { ...expectedTheme }
+
 		delete currentThemeForComparison._lastUpdated
 		delete expectedThemeForComparison._lastUpdated
 
@@ -334,17 +337,17 @@ async function checkIfThemeNeedsRegeneration(context: ExtensionContext, containe
 		const expectedThemeStr = JSON.stringify(expectedThemeForComparison, null, 2)
 
 		if (currentThemeStr !== expectedThemeStr) {
-			console.log(`[${EXT_NAME}] Current theme doesn't match expected theme, regeneration needed`)
-			console.log(`[${EXT_NAME}] Current theme size: ${currentThemeStr.length} chars`)
-			console.log(`[${EXT_NAME}] Expected theme size: ${expectedThemeStr.length} chars`)
+			// console.log(`[${EXT_NAME}] Current theme doesn't match expected theme, regeneration needed`)
+			// console.log(`[${EXT_NAME}] Current theme size: ${currentThemeStr.length} chars`)
+			// console.log(`[${EXT_NAME}] Expected theme size: ${expectedThemeStr.length} chars`)
 			return true
 		}
 
-		console.log(`[${EXT_NAME}] Current theme matches expected theme, no regeneration needed`)
+		// console.log(`[${EXT_NAME}] Current theme matches expected theme, no regeneration needed`)
 		return false
 	}
-	catch (error) {
-		console.log(`[${EXT_NAME}] Error checking theme regeneration need:`, error)
+	catch (_error) {
+		// console.log(`[${EXT_NAME}] Error checking theme regeneration need:`, _error)
 		// If we can't determine, err on the side of regeneration
 		return true
 	}
@@ -352,11 +355,11 @@ async function checkIfThemeNeedsRegeneration(context: ExtensionContext, containe
 
 export async function activate(context: ExtensionContext): Promise<void> { //>
 	if (isActivated) {
-		console.log(`[${EXT_NAME}] Already activated, skipping...`)
+		// console.log(`[${EXT_NAME}] Already activated, skipping...`)
 		return
 	}
 	
-	console.log(`[${EXT_NAME}] Activating...`)
+	// console.log(`[${EXT_NAME}] Activating...`)
 	isActivated = true
 
 	const container = await createDIContainer(context)
@@ -366,13 +369,13 @@ export async function activate(context: ExtensionContext): Promise<void> { //>
 	try {
 		await ensureThemeAssets(context, container)
 	}
-	catch (error) {
-		console.log(`[${EXT_NAME}] Error during theme assets setup, continuing...`, error)
+	catch (_error) {
+		// console.log(`[${EXT_NAME}] Error during theme assets setup, continuing...`, _error)
 	}
 	
 	// Check if theme regeneration is needed on first load
 	if (!isThemeInitialized) {
-		console.log(`[${EXT_NAME}] First load detected, checking if theme regeneration is needed...`)
+		// console.log(`[${EXT_NAME}] First load detected, checking if theme regeneration is needed...`)
 		
 		let needsRegeneration = false
 
@@ -380,16 +383,16 @@ export async function activate(context: ExtensionContext): Promise<void> { //>
 			// Use the new comprehensive check that considers user settings
 			needsRegeneration = await checkIfThemeNeedsRegeneration(context, container)
 		}
-		catch (error) {
-			console.log(`[${EXT_NAME}] Error checking theme regeneration need, skipping regeneration...`, error)
+		catch (_error) {
+			// console.log(`[${EXT_NAME}] Error checking theme regeneration need, skipping regeneration...`, _error)
 		}
 		
 		if (needsRegeneration) {
 			try {
 				await regenerateAndApplyTheme(context, container)
 			}
-			catch (error) {
-				console.log(`[${EXT_NAME}] Error during theme regeneration, continuing...`, error)
+			catch (_error) {
+				// console.log(`[${EXT_NAME}] Error during theme regeneration, continuing...`, _error)
 			}
 			
 			// Force VS Code to reload the icon theme on first load (only if theme is currently active)
@@ -399,7 +402,7 @@ export async function activate(context: ExtensionContext): Promise<void> { //>
 				const currentTheme = workbenchConfig.get('iconTheme')
 
 				if (currentTheme === ICON_THEME_ID) {
-					console.log(`[${EXT_NAME}] Forcing theme refresh on first load...`)
+					// console.log(`[${EXT_NAME}] Forcing theme refresh on first load...`)
 
 					// Use a more direct refresh method - trigger file explorer refresh
 					const commands = container.resolve('commands')
@@ -411,23 +414,23 @@ export async function activate(context: ExtensionContext): Promise<void> { //>
 					await workbenchConfig.update('iconTheme', ICON_THEME_ID, true)
 				}
 			}
-			catch (error) {
-				console.log(`[${EXT_NAME}] Error during force refresh, continuing...`, error)
+			catch (_error) {
+				// console.log(`[${EXT_NAME}] Error during force refresh, continuing...`, _error)
 			}
 		}
 		
 		isThemeInitialized = true
-		console.log(`[${EXT_NAME}] Theme initialization completed`)
+		// console.log(`[${EXT_NAME}] Theme initialization completed`)
 	}
 	else {
-		console.log(`[${EXT_NAME}] Theme already initialized, skipping regeneration`)
+		// console.log(`[${EXT_NAME}] Theme already initialized, skipping regeneration`)
 	}
 	
 	try {
 		await activateIconThemeIfNeeded(context, container)
 	}
-	catch (error) {
-		console.log(`[${EXT_NAME}] Error during icon theme activation, continuing...`, error)
+	catch (_error) {
+		// console.log(`[${EXT_NAME}] Error during icon theme activation, continuing...`, _error)
 	}
 
 	const commands = container.resolve('commands')
@@ -499,8 +502,8 @@ export async function activate(context: ExtensionContext): Promise<void> { //>
 				try {
 					await commands.executeCommand('workbench.files.action.refreshFilesExplorer')
 				}
-				catch (error) {
-					console.log(`[${EXT_NAME}] Error refreshing file explorer after config change:`, error)
+				catch (_error) {
+					// console.log(`[${EXT_NAME}] Error refreshing file explorer after config change:`, _error)
 				}
 			}
 		}),

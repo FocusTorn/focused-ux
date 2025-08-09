@@ -50,6 +50,11 @@ export class TreeItemAdapter implements ITreeItem {
 		return new TreeItemAdapter(treeItem)
 	}
 
+	// Expose the underlying VS Code TreeItem for providers that must return a real TreeItem
+	public toVsCode(): vscode.TreeItem {
+		return this.treeItem
+	}
+
 }
 
 export class ThemeIconAdapter implements IThemeIcon {

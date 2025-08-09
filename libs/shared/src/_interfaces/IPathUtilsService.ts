@@ -1,3 +1,4 @@
 export interface IPathUtilsService {
-	santizePath: (path: string) => string
+	getDottedPath: (from: string, to: string) => string | undefined
+	sanitizePath: (path: string) => string
 }

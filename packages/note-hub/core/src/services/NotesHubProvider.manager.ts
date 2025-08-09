@@ -38,11 +38,9 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 			return
 		}
 
-		if (config.isProjectNotesEnabled) {
+		if (config.isProjectNotesEnabled && config.projectNotesPath) {
 			this.projectNotesProvider = new ProjectNotesDataProvider(
 				config.projectNotesPath,
-				'project',
-				openNoteCommandId,
 				this.iContext,
 				this.iWindow,
 				this.iWorkspace,
@@ -51,16 +49,15 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.iFrontmatterUtils,
 				this.iPathUtils,
 				this.iFileTypeEnum,
+				openNoteCommandId,
 			)
 			this.projectNotesProvider.initializeTreeView(`${commandPrefix}.projectNotesView`)
 			this.disposables.push(this.projectNotesProvider)
 		}
 
-		if (config.isRemoteNotesEnabled) {
+		if (config.isRemoteNotesEnabled && config.remoteNotesPath) {
 			this.remoteNotesProvider = new RemoteNotesDataProvider(
 				config.remoteNotesPath,
-				'remote',
-				openNoteCommandId,
 				this.iContext,
 				this.iWindow,
 				this.iWorkspace,
@@ -69,16 +66,15 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.iFrontmatterUtils,
 				this.iPathUtils,
 				this.iFileTypeEnum,
+				openNoteCommandId,
 			)
 			this.remoteNotesProvider.initializeTreeView(`${commandPrefix}.remoteNotesView`)
 			this.disposables.push(this.remoteNotesProvider)
 		}
 
-		if (config.isGlobalNotesEnabled) {
+		if (config.isGlobalNotesEnabled && config.globalNotesPath) {
 			this.globalNotesProvider = new GlobalNotesDataProvider(
 				config.globalNotesPath,
-				'global',
-				openNoteCommandId,
 				this.iContext,
 				this.iWindow,
 				this.iWorkspace,
@@ -87,6 +83,7 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.iFrontmatterUtils,
 				this.iPathUtils,
 				this.iFileTypeEnum,
+				openNoteCommandId,
 			)
 			this.globalNotesProvider.initializeTreeView(`${commandPrefix}.globalNotesView`)
 			this.disposables.push(this.globalNotesProvider)
@@ -112,7 +109,7 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 			remoteNotesPath: this.remoteNotesProvider?.notesDir || '',
 			globalNotesPath: this.globalNotesProvider?.notesDir || '',
 		}
-		const sanitizedFilePath = this.iPathUtils.santizePath(item.filePath)
+		const sanitizedFilePath = item.filePath ? this.iPathUtils.sanitizePath(item.filePath) : ''
 
 		if (this.projectNotesProvider && config.projectNotesPath && sanitizedFilePath.startsWith(config.projectNotesPath)) {
 			return this.projectNotesProvider

@@ -4,20 +4,52 @@ import * as path from 'node:path'
 export class PathUtilsAdapter implements IPathUtilsService {
 
 	public getDottedPath(from: string, to: string): string | undefined {
-		const toDir = path.dirname(to)
-		// Calculate path from the destination's directory to the source file
-		const relativePath = path.relative(toDir, from)
+		if (!from || !to || typeof from !== 'string' || typeof to !== 'string') {
+			console.warn('[PathUtils] Invalid paths provided to getDottedPath():', { from, to })
+			return undefined
+		}
+		
+		if (from.trim() === '' || to.trim() === '') {
+			console.warn('[PathUtils] Invalid paths provided to getDottedPath():', { from, to })
+			return undefined
+		}
+		
+		try {
+			const toDir = path.dirname(to)
+			// Calculate path from the destination's directory to the source file
+			const relativePath = path.relative(toDir, from)
 
-		// Normalize path separators for consistency
-		const posixPath = relativePath.replace(/\\/g, '/')
+			if (!relativePath) {
+				return undefined
+			}
 
-		return posixPath.startsWith('.') ? posixPath : `./${posixPath}`
+			// Normalize path separators for consistency
+			const posixPath = String(relativePath).replace(/\\/g, '/')
+
+			return posixPath.startsWith('.') ? posixPath : `./${posixPath}`
+		} catch (error) {
+			console.warn('[PathUtils] Error calculating relative path:', { from, to, error })
+			return undefined
+		}
 	}
 
-	public santizePath(pathStr: string): string {
+	public sanitizePath(pathStr: string): string {
 		// Replace invalid characters in filenames/foldernames
 		// This is now only used for sanitizing individual names, not full paths
-		return pathStr.replace(/[<>"|?*]/g, '_')
+		if (!pathStr || typeof pathStr !== 'string') {
+			console.warn('[PathUtils] Invalid path provided to sanitizePath():', pathStr)
+			return ''
+		}
+		
+		const sanitized = String(pathStr).replace(/[<>"|?*]/g, '_')
+		
+		// Ensure we return a valid string
+		if (!sanitized || sanitized.trim() === '') {
+			console.warn('[PathUtils] Sanitization resulted in empty string for:', pathStr)
+			return '_'
+		}
+		
+		return sanitized
 	}
 
 }

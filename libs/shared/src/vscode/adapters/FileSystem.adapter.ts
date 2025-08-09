@@ -33,7 +33,15 @@ export class FileSystemAdapter implements IFileSystem {
 	}
 
 	public async createDirectory(path: string): Promise<void> {
-		await fs.mkdir(path, { recursive: true })
+		console.warn(`[FileSystemAdapter] createDirectory called with path: ${path}`)
+		try {
+			await fs.mkdir(path, { recursive: true })
+			console.warn(`[FileSystemAdapter] Successfully created directory: ${path}`)
+		}
+		catch (error) {
+			console.warn(`[FileSystemAdapter] Failed to create directory: ${path}`, error)
+			throw error
+		}
 	}
 
 }

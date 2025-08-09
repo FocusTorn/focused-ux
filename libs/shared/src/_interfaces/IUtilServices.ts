@@ -1,6 +1,6 @@
 export interface IPathUtilsService {
 	getDottedPath: (from: string, to: string) => string | undefined
-	santizePath: (path: string) => string
+	sanitizePath: (path: string) => string
 }
 
 export interface ICommonUtilsService {

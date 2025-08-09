@@ -13,7 +13,7 @@ import { constants } from '../_config/constants.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-const LOG_PREFIX = `[${constants.extension.nickName} - ContextDataCollector]:`
+const _LOG_PREFIX = `[${constants.extension.nickName} - ContextDataCollector]:`
 
 export class ContextDataCollectorService implements IContextDataCollectorService { //>
 
@@ -39,7 +39,7 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 		const urisForContentFsPaths = new Set<string>()
 		const initialSelectionSet = new Set(initialCheckedUris)
 
-		console.log(`${LOG_PREFIX} Collecting file URIs for content based on initial selections.`)
+		// console.log(`${LOG_PREFIX} Collecting file URIs for content based on initial selections.`)
 		await this._recursivelyCollectFileUrisForContent(
 			initialCheckedUris,
 			urisForContentFsPaths,
@@ -48,9 +48,9 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 			coreScanDirShowDirHideContentsGlobs,
 			initialSelectionSet,
 		)
-		console.log(`${LOG_PREFIX} Found ${urisForContentFsPaths.size} actual file URIs for content.`)
+		// console.log(`${LOG_PREFIX} Found ${urisForContentFsPaths.size} actual file URIs for content.`)
 
-		console.log(`${LOG_PREFIX} Collecting file system entries (mode: ${mode}).`)
+		// console.log(`${LOG_PREFIX} Collecting file system entries (mode: ${mode}).`)
 		if (mode === 'all') {
 			await this._recursivelyCollectTreeEntries(
 				this.projectRootUri,
@@ -87,19 +87,19 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 						relativePath,
 					})
 				}
-				catch (e: any) {
-					console.warn(`${LOG_PREFIX} Error stating content file ${contentUri} for metadata: ${e.message}`)
+				catch (_e: any) {
+					// console.warn(`${LOG_PREFIX} Error stating content file ${contentUri} for metadata: ${_e.message}`)
 				}
 			}
 		}
 
-		console.log(`${LOG_PREFIX} Collected ${collectedFileSystemEntries.size} entries for FileSystemEntry map.`)
+		// console.log(`${LOG_PREFIX} Collected ${collectedFileSystemEntries.size} entries for FileSystemEntry map.`)
 		return { treeEntries: collectedFileSystemEntries, contentFileUris: urisForContentFsPaths }
 	}
 
 	private _getRelativePath(uri: string): string {
 		if (!this.projectRootUri) {
-			console.warn(`${LOG_PREFIX} projectRootUri is not set when calling _getRelativePath for ${uri}`)
+			// console.warn(`${LOG_PREFIX} projectRootUri is not set when calling _getRelativePath for ${uri}`)
 			return this.workspace.asRelativePath(uri, false).replace(/\\/g, '/')
 		}
 
@@ -155,8 +155,8 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 					)
 				}
 			}
-			catch (error: any) {
-				console.error(`${LOG_PREFIX} [ContentScan] Error processing ${uri}: ${error.message}`)
+			catch (_error: any) {
+				// console.error(`${LOG_PREFIX} [ContentScan] Error processing ${uri}: ${_error.message}`)
 			}
 		}
 	}
@@ -214,8 +214,8 @@ export class ContextDataCollectorService implements IContextDataCollectorService
 				}
 			}
 		}
-		catch (error: any) {
-			console.error(`${LOG_PREFIX} [TreeScan] Error processing ${uri}: ${error.message}`)
+		catch (_error: any) {
+			// console.error(`${LOG_PREFIX} [TreeScan] Error processing ${uri}: ${_error.message}`)
 		}
 	}
 

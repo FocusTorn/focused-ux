@@ -15,7 +15,10 @@
         "@types/js-yaml": "^4.0.9",
         "@types/node": "^24.0.10",
         "@types/vscode": "^1.99.3",
-        "typescript": "^5.8.3"
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4",
+        "@vitest/coverage-v8": "^3.2.4",
+        "@fux/mockly": "workspace:*"
     },
     "contributes": {
         "commands": [

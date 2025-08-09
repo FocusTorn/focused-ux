@@ -12,6 +12,6 @@ export interface NotesHubConfig { //>
 } //<
 
 export interface INotesHubConfigService { //>
-	getNotesHubConfig(configPrefix: string): NotesHubConfig
-	createDirectoryIfNeeded(dirPath: string): Promise<void>
+	getNotesHubConfig: (configPrefix: string) => NotesHubConfig
+	createDirectoryIfNeeded: (dirPath: string) => Promise<void>
 } //<

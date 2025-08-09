@@ -24,25 +24,33 @@ export class WindowAdapter implements IWindow, IWindowCCP, IWindowPB {
 	}
 
 	public showErrorMessage(message: string): void {
-		vscode.window.showErrorMessage(message)
+		const safeMessage = message && typeof message === 'string' ? message : 'An unknown error occurred.'
+
+		vscode.window.showErrorMessage(safeMessage)
 	}
 
 	// Unified showInformationMessage that handles different signatures
 	public async showInformationMessage(message: string, modalOrItems?: boolean | string, ...items: string[]): Promise<string | undefined> {
+		const raw = message && typeof message === 'string' ? message : ''
+		const safeMessage = raw.length > 0 ? raw : ' '
+
 		if (typeof modalOrItems === 'boolean') {
 			// IWindowPB signature: (message, modal, ...items)
-			return await vscode.window.showInformationMessage(message, { modal: modalOrItems }, ...items)
+			return await vscode.window.showInformationMessage(safeMessage, { modal: modalOrItems }, ...items)
 		}
 		else {
 			// IWindow signature: (message, ...items)
 			const allItems = modalOrItems ? [modalOrItems, ...items] : items
 
-			return await vscode.window.showInformationMessage(message, ...allItems)
+			return await vscode.window.showInformationMessage(safeMessage, ...allItems)
 		}
 	}
 
 	public async showWarningMessage(message: string, options?: any, ...items: string[]): Promise<string | undefined> {
-		return await vscode.window.showWarningMessage(message, options, ...items)
+		const raw = message && typeof message === 'string' ? message : ''
+		const safeMessage = raw.length > 0 ? raw : ' '
+
+		return await vscode.window.showWarningMessage(safeMessage, options, ...items)
 	}
 
 	public async showInputBox(options?: any): Promise<string | undefined> {
@@ -120,6 +128,8 @@ export class WindowAdapter implements IWindow, IWindowCCP, IWindowPB {
 
 	// Unified showTimedInformationMessage method
 	public async showTimedInformationMessage(message: string, duration?: number): Promise<void> {
+		const raw = message && typeof message === 'string' ? message : ''
+		const safeMessage = raw.length > 0 ? raw : ' '
 		let finalDurationMs = duration
 
 		if (finalDurationMs === undefined) {
@@ -128,7 +138,7 @@ export class WindowAdapter implements IWindow, IWindowCCP, IWindowPB {
 			finalDurationMs = durationSeconds * 1000
 		}
 
-		await showTimedInformationMessageUtil(this, message, finalDurationMs)
+		await showTimedInformationMessageUtil(this, safeMessage, finalDurationMs)
 	}
 
 	private async _getDuration(duration?: number, configKey?: string): Promise<number> {

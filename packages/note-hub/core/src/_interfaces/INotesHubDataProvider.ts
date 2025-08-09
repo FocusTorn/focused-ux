@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { Event, TreeDataProvider, TreeDragAndDropController, Uri, TreeView } from 'vscode'
+import type { Event, TreeDataProvider, TreeDragAndDropController, Uri } from 'vscode'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { INotesHubItem } from './INotesHubItem.js'

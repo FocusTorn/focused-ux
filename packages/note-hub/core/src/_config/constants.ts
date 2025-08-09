@@ -15,8 +15,8 @@ export const notesHubConstants = {
 	storageKeys: {
 		OPERATION: `operation`,
 	},
-    // These are command suffixes. The prefix is added by the ext module.
-    commands: {
-        openNote: 'openNote',
-    }
+	// These are command suffixes. The prefix is added by the ext module.
+	commands: {
+		openNote: 'openNote',
+	},
 } as const

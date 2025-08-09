@@ -45,15 +45,16 @@ export class NotesHubService implements INotesHubService {
 
 		await this.iProviderManager.initializeProviders(config, this.commandPrefix, openNoteCommandId)
 
-		const configWatcher = this.iWorkspace.onDidChangeConfiguration(async (e) => {
+		const configWatcher = this.iWorkspace.onDidChangeConfiguration(async (e: any) => {
 			if (e.affectsConfiguration(this.configPrefix)) {
 				const action = await this.iWindow.showInformationMessage(
 					'A Notes Hub configuration change requires a reload to take effect.',
-					'Reload Window',
+					'Reload',
+					'Later',
 				)
 
-				if (action === 'Reload Window') {
-					this.iCommands.executeCommand('workbench.action.reloadWindow')
+				if (action === 'Reload') {
+					await this.iCommands.executeCommand('workbench.action.reloadWindow')
 				}
 			}
 		})

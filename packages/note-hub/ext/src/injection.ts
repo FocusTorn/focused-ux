@@ -1,10 +1,11 @@
 import type { AwilixContainer } from 'awilix'
 import { createContainer, InjectionMode, asValue, asClass, asFunction } from 'awilix'
-import type { ExtensionContext } from '@fux/shared'
+import type { IFileType,	IConfigurationService,	ICommonUtilsService,	IFileSystem,	IPathUtilsService,	IProcess,	IWindow,	IWorkspace,	IWorkspaceUtilsService,	IFrontmatterUtilsService,	IEnv,	ICommands } from '@fux/shared'
+import type { ExtensionContext } from 'vscode'
 import os from 'node:os'
 import path from 'node:path'
 import fs from 'node:fs/promises'
-import { FileTypeAdapter } from '@fux/shared'
+import { FileTypeAdapter, EnvAdapter, CommandsAdapter } from '@fux/shared'
 
 // F-UX Shared Imports
 import {
@@ -15,19 +16,6 @@ import {
 	ProcessAdapter,
 	WindowAdapter,
 	WorkspaceAdapter,
-} from '@fux/shared'
-import type {
-	IConfigurationService,
-	ICommonUtilsService,
-	IFileSystem,
-	IPathUtilsService,
-	IProcess,
-	IWindow,
-	IWorkspace,
-	IWorkspaceUtilsService,
-	IFrontmatterUtilsService,
-	IEnv,
-	ICommands,
 } from '@fux/shared'
 
 // Note Hub Core Imports
@@ -48,7 +36,6 @@ import { NotesHubModule } from './NotesHub.module.js'
 // Local Adapters
 import { WorkspaceUtilsAdapter } from './adapters/WorkspaceUtils.adapter.js'
 import { FrontmatterUtilsAdapter } from './adapters/FrontmatterUtils.adapter.js'
-import { EnvAdapter, CommandsAdapter } from '@fux/shared'
 
 export async function createDIContainer(context: ExtensionContext): Promise<AwilixContainer> {
 	const container = createContainer({
@@ -96,7 +83,7 @@ export async function createDIContainer(context: ExtensionContext): Promise<Awil
 			iFrontmatterUtils: IFrontmatterUtilsService
 			iPathUtils: IPathUtilsService
 			iFileTypeEnum: IFileType
-		}		) => new NotesHubProviderManager(
+		}) => new NotesHubProviderManager(
 			cradle.extensionContext,
 			cradle.iWindow,
 			cradle.iWorkspace,
@@ -113,15 +100,17 @@ export async function createDIContainer(context: ExtensionContext): Promise<Awil
 			iWorkspaceUtils: IWorkspaceUtilsService
 			iCommonUtils: ICommonUtilsService
 			iCommands: ICommands
+			iFileSystem: IFileSystem
 			iOsHomedir: typeof os.homedir
 			iPathJoin: typeof path.join
 			iPathNormalize: typeof path.normalize
-		}		) => new NotesHubConfigService(
+		}) => new NotesHubConfigService(
 			cradle.iWorkspace,
 			cradle.iPathUtils,
 			cradle.iWorkspaceUtils,
 			cradle.iCommonUtils,
 			cradle.iCommands,
+			cradle.iFileSystem,
 			cradle.iOsHomedir,
 			cradle.iPathJoin,
 			cradle.iPathNormalize,
@@ -145,7 +134,7 @@ export async function createDIContainer(context: ExtensionContext): Promise<Awil
 			iFspAccess: typeof fs.access
 			iFspRename: typeof fs.rename
 			iFileTypeEnum: IFileType
-		}		) => new NotesHubActionService(
+		}) => new NotesHubActionService(
 			cradle.extensionContext,
 			cradle.iWindow,
 			cradle.iWorkspace,
@@ -180,7 +169,11 @@ export async function createDIContainer(context: ExtensionContext): Promise<Awil
 			cradle.iActionService,
 			cradle.iProviderManager,
 		)).singleton(),
-		notesHubModule: asFunction((cradle: { notesHubService: INotesHubService, iWindow: IWindow }) => new NotesHubModule(cradle.notesHubService, cradle.iWindow)).singleton(),
+		notesHubModule: asFunction((cradle: { notesHubService: INotesHubService, iWindow: IWindow, iConfigurationService: IConfigurationService }) => {
+			const windowAdapter = new WindowAdapter(cradle.iConfigurationService)
+
+			return new NotesHubModule(cradle.notesHubService, windowAdapter)
+		}).singleton(),
 	})
 
 	return container
