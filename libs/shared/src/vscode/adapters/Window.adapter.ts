@@ -58,6 +58,10 @@ export class WindowAdapter implements IWindow, IWindowCCP, IWindowPB {
 	}
 
 	public async showTextDocument(doc: any): Promise<any> {
+		// Handle TextDocumentAdapter by extracting the underlying VSCode TextDocument
+		if (doc && typeof doc === 'object' && 'document' in doc && doc.document) {
+			return await vscode.window.showTextDocument(doc.document)
+		}
 		return await vscode.window.showTextDocument(doc)
 	}
 

@@ -98,7 +98,11 @@ export class NotesHubActionService implements INotesHubActionService {
 			return
 
 		try {
-			await this.iWorkspace.fs.rename(oldUri, newUri, { overwrite: false })
+			await this.iWorkspace.fs.rename(
+				oldUri,
+				(newUri as UriAdapter).uri,
+				{ overwrite: false },
+			)
 
 			const provider = await this.iProviderManager.getProviderForNote(item)
 
@@ -261,7 +265,11 @@ export class NotesHubActionService implements INotesHubActionService {
 						await this.iFspRename(sourceUri.fsPath, targetItemUri.fsPath)
 					}
 					else {
-						await this.iWorkspace.fs.copy(sourceUri, targetItemUri, { overwrite: true })
+						await this.iWorkspace.fs.copy(
+							(sourceUri as UriAdapter).uri,
+							(targetItemUri as UriAdapter).uri,
+							{ overwrite: true },
+						)
 					}
 				},
 			)
@@ -270,7 +278,7 @@ export class NotesHubActionService implements INotesHubActionService {
 
 			targetProvider?.refresh()
 
-			const sourceStats = await this.iWorkspace.fs.stat(sourceUri)
+			const sourceStats = await this.iWorkspace.fs.stat((sourceUri as UriAdapter).uri)
 			const sourceItemForProviderLookup = new NotesHubItem(this.iPathBasename(sourceUri.fsPath), sourceUri.fsPath, sourceStats.type === this.iFileTypeEnum.Directory)
 			const sourceProvider = await this.iProviderManager.getProviderForNote(sourceItemForProviderLookup)
 
@@ -293,34 +301,69 @@ export class NotesHubActionService implements INotesHubActionService {
 	public async newNoteInFolder( //>
 		targetFolderItem: INotesHubItem,
 	): Promise<void> {
+		console.log('[NotesHubAction] newNoteInFolder - ENTERED with targetFolderItem:', {
+			fileName: targetFolderItem?.fileName,
+			filePath: targetFolderItem?.filePath,
+			isDirectory: targetFolderItem?.isDirectory,
+			resourceUri: targetFolderItem?.resourceUri?.toString(),
+		})
+		
 		if (!targetFolderItem?.isDirectory || !targetFolderItem.resourceUri) {
+			console.log('[NotesHubAction] newNoteInFolder - validation failed, returning early')
 			this.iCommonUtils.errMsg('This command can only be used on a valid folder.')
 			return
 		}
 
+		console.log('[NotesHubAction] newNoteInFolder - validation passed, getting provider')
+
 		const provider = await this.iProviderManager.getProviderForNote(targetFolderItem)
 
 		if (!provider) {
+			console.log('[NotesHubAction] newNoteInFolder - provider not found')
 			this.iCommonUtils.errMsg('Could not determine provider for the target folder.')
 			return
 		}
 
+		console.log('[NotesHubAction] newNoteInFolder - provider found, getting notesDir')
+
 		const notesDir = targetFolderItem.filePath
+
+		console.log('[NotesHubAction] newNoteInFolder - notesDir:', notesDir)
+		console.log('[NotesHubAction] newNoteInFolder - notesDir type:', typeof notesDir)
+		console.log('[NotesHubAction] newNoteInFolder - notesDir length:', notesDir?.length)
+		console.log('[NotesHubAction] newNoteInFolder - notesDir trimmed:', notesDir?.trim())
+		
 		const result = await this.getNewFileNameWithExtension('NewNote')
 
-		if (!result)
+		if (!result) {
+			console.log('[NotesHubAction] newNoteInFolder - getNewFileNameWithExtension returned undefined')
 			return
+		}
+
+		console.log('[NotesHubAction] newNoteInFolder - result:', result)
 
 		const { newName, newExtension } = result
-		const sanitizedFileName = `${newName}${newExtension}` ? this.iPathUtils.sanitizePath(`${newName}${newExtension}`) : ''
-		const newNotePath = this.iPathJoin(notesDir, sanitizedFileName)
-		const newNoteUri = UriAdapter.file(newNotePath)
+		const newNotePath = this.iPathJoin(notesDir, newName + newExtension)
+
+		console.log('[NotesHubAction] newNoteInFolder - newNotePath:', newNotePath)
 
 		try {
-			await this.iWorkspace.fs.writeFile(newNoteUri, Buffer.from(`# ${newName}\n`, 'utf-8'))
+			console.log('[NotesHubAction] newNoteInFolder - calling UriAdapter.file with:', newNotePath)
+
+			const newNoteUri = UriAdapter.file(newNotePath)
+
+			console.log('[NotesHubAction] newNoteInFolder - UriAdapter.file succeeded, newNoteUri:', newNoteUri.toString())
+			
+			// Create the file with initial content before trying to open it
+			const initialContent = `# ${newName}\n\n`
+
+			await this.iWorkspace.fs.writeFile((newNoteUri as UriAdapter).uri, Buffer.from(initialContent, 'utf-8'))
+			
+			console.log('[NotesHubAction] newNoteInFolder - file created successfully')
+			
 			provider.refresh()
 
-			const doc = await this.iWorkspace.openTextDocument(newNoteUri)
+			const doc = await this.iWorkspace.openTextDocument((newNoteUri as UriAdapter).uri)
 
 			await this.iWindow.showTextDocument(doc)
 
@@ -331,6 +374,10 @@ export class NotesHubActionService implements INotesHubActionService {
 			}
 		}
 		catch (error) {
+			console.error('[NotesHubAction] newNoteInFolder - error in file operations:', error)
+			console.error('[NotesHubAction] newNoteInFolder - error type:', typeof error)
+			console.error('[NotesHubAction] newNoteInFolder - error message:', (error as Error)?.message)
+			console.error('[NotesHubAction] newNoteInFolder - error stack:', (error as Error)?.stack)
 			this.iCommonUtils.errMsg('Failed to create new note', error)
 		}
 	} //<
@@ -369,7 +416,8 @@ export class NotesHubActionService implements INotesHubActionService {
 		}
 
 		try {
-			await this.iWorkspace.fs.createDirectory(newFolderUri)
+			// Pass the raw VSCode URI to workspace.fs.createDirectory
+			await this.iWorkspace.fs.createDirectory((newFolderUri as UriAdapter).uri)
 			provider.refresh()
 
 			const newItemForReveal = await provider.getNotesHubItem((newFolderUri as UriAdapter).uri)
@@ -384,16 +432,48 @@ export class NotesHubActionService implements INotesHubActionService {
 	} //<
 
 	public async newNoteAtRoot(providerName: 'project' | 'remote' | 'global'): Promise<void> { //>
+		console.log('[NotesHubAction] newNoteAtRoot - called with providerName:', providerName)
+		
 		const provider = this.iProviderManager.getProviderInstance(providerName)
 
 		if (!provider) {
+			console.error('[NotesHubAction] newNoteAtRoot - provider not found:', providerName)
 			this.iCommonUtils.errMsg(`Notes Hub provider '${providerName}' is not enabled or available.`)
 			return
 		}
 
+		console.log('[NotesHubAction] newNoteAtRoot - provider found, notesDir:', provider.notesDir)
+		console.log('[NotesHubAction] newNoteAtRoot - provider.notesDir type:', typeof provider.notesDir)
+		console.log('[NotesHubAction] newNoteAtRoot - provider.notesDir length:', provider.notesDir?.length)
+		console.log('[NotesHubAction] newNoteAtRoot - provider.notesDir trimmed:', provider.notesDir?.trim())
+		
+		console.log('[NotesHubAction] newNoteAtRoot - about to create NotesHubItem with:', {
+			fileName: this.iPathBasename(provider.notesDir),
+			filePath: provider.notesDir,
+			isDirectory: true,
+		})
+		
 		const rootItem = new NotesHubItem(this.iPathBasename(provider.notesDir), provider.notesDir, true)
 
-		await this.newNoteInFolder(rootItem)
+		console.log('[NotesHubAction] newNoteAtRoot - rootItem created:', {
+			fileName: rootItem.fileName,
+			filePath: rootItem.filePath,
+			isDirectory: rootItem.isDirectory,
+			resourceUri: rootItem.resourceUri?.toString(),
+		})
+
+		console.log('[NotesHubAction] newNoteAtRoot - about to call newNoteInFolder with rootItem')
+		try {
+			await this.newNoteInFolder(rootItem)
+			console.log('[NotesHubAction] newNoteAtRoot - newNoteInFolder completed successfully')
+		}
+		catch (error) {
+			console.error('[NotesHubAction] newNoteAtRoot - newNoteInFolder failed with error:', error)
+			console.error('[NotesHubAction] newNoteAtRoot - error type:', typeof error)
+			console.error('[NotesHubAction] newNoteAtRoot - error message:', (error as Error)?.message)
+			console.error('[NotesHubAction] newNoteAtRoot - error stack:', (error as Error)?.stack)
+			throw error
+		}
 	} //<
 
 	public async newFolderAtRoot(providerName: 'project' | 'remote' | 'global'): Promise<void> { //>
@@ -424,18 +504,24 @@ export class NotesHubActionService implements INotesHubActionService {
 		prompt: string = 'Enter the new name (extension will be added if missing):',
 		defaultExtension: string = '.md',
 	): Promise<{ newName: string, newExtension: string } | undefined> {
+		console.log('[NotesHubAction] getNewFileNameWithExtension - ENTERED with:', { promptValue, prompt, defaultExtension })
+		
 		let newFileNameWithExt: string | undefined
 		let newFileName: string
 		let fileExtension: string
 
 		while (true) {
+			console.log('[NotesHubAction] getNewFileNameWithExtension - showing input box')
 			newFileNameWithExt = await this.iWindow.showInputBox({
 				prompt: `${prompt} Allowed: ${ALLOWED_EXTENSIONS_NOTES_HUB.join(', ')}`,
 				value: promptValue,
 			})
+			console.log('[NotesHubAction] getNewFileNameWithExtension - input box result:', newFileNameWithExt)
 
-			if (!newFileNameWithExt)
+			if (!newFileNameWithExt) {
+				console.log('[NotesHubAction] getNewFileNameWithExtension - no input, returning undefined')
 				return undefined
+			}
 
 			const parsedPath = this.iPathParse(newFileNameWithExt)
 
@@ -465,6 +551,7 @@ export class NotesHubActionService implements INotesHubActionService {
 			}
 
 			const sanitizedPath = this.iPathUtils.sanitizePath(filePath)
+
 			if (!sanitizedPath) {
 				return false
 			}

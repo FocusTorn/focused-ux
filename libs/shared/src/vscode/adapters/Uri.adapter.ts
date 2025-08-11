@@ -23,12 +23,29 @@ export class UriAdapter implements IUri {
 
 	static file(path: string): IUri {
 		// Validate path before creating URI
+		console.log('[UriAdapter] file() called with path:', path)
+		console.log('[UriAdapter] file() path type:', typeof path)
+		console.log('[UriAdapter] file() path length:', path?.length)
+		console.log('[UriAdapter] file() path trimmed:', path?.trim())
+		
 		if (!path || typeof path !== 'string' || path.trim() === '') {
 			console.warn('[UriAdapter] Invalid path provided to file():', path)
 			// Return a fallback URI to prevent crashes
 			return new UriAdapter(vscode.Uri.file('/invalid-path'))
 		}
-		return new UriAdapter(vscode.Uri.file(path))
+		
+		try {
+			console.log('[UriAdapter] file() calling vscode.Uri.file with:', path)
+			const vscodeUri = vscode.Uri.file(path)
+			console.log('[UriAdapter] file() vscode.Uri.file succeeded, creating UriAdapter')
+			return new UriAdapter(vscodeUri)
+		} catch (error) {
+			console.error('[UriAdapter] file() vscode.Uri.file failed:', error)
+			console.error('[UriAdapter] file() error type:', typeof error)
+			console.error('[UriAdapter] file() error message:', (error as Error)?.message)
+			console.error('[UriAdapter] file() error stack:', (error as Error)?.stack)
+			throw error
+		}
 	}
 
 	static joinPath(base: IUri, ...paths: string[]): IUri {

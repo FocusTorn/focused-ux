@@ -3,7 +3,12 @@
 
 
 
-# . "..\_scripts\shell\aka.ps1"
+if ($null -ne $FUX_PROFILE_LOADED) { return }
+
+$script:FUX_PROFILE_LOADED = $true
+
+
+
 . "$PSScriptRoot\aka.ps1"
 . "$PSScriptRoot\aka-lint.ps1"
 
@@ -13,51 +18,7 @@
 # └────────────────────────────────────────────────────────────────────────────┘
 
 
-# function prompt { #>
-    
-#     $ProjectRoot = "D:\_dev\!Projects\FocusedUX\FocusedUX\"
-    
-#     # ANSI COLOR CODES
-#     $Cyan = $PSStyle.ForegroundColor.Cyan
-#     $Reset = $PSStyle.Reset
-
-#     $CurrentPath = $PWD.Path # Get the current working directory
-
-#     # Normalize paths for consistent comparison (remove trailing backslashes)
-#     $NormalizedProjectRoot = $ProjectRoot.TrimEnd('\')
-#     $NormalizedCurrentPath = $CurrentPath.TrimEnd('\')
-
-#     # Check if the current path is exactly the project root or a subfolder
-#     if ($NormalizedCurrentPath -eq $NormalizedProjectRoot -or $NormalizedCurrentPath.StartsWith($NormalizedProjectRoot + "\")) {
-#         # Calculate the relative path
-#         if ($NormalizedCurrentPath -eq $NormalizedProjectRoot) {
-#             $RelativePath = "" # If at the root, relative path is empty
-#         } else {
-#             $RelativePath = $NormalizedCurrentPath.Substring($NormalizedProjectRoot.Length + 1)
-#         }
-
-#         # Construct the new prompt string
-#         # If $RelativePath is empty, it will be "[PS: focused-ux]: "
-#         # If $RelativePath is "packages\dynamicons", it will be "[PS: focused-ux] packages\dynamicons: "
-#         $pathSegment = if ($RelativePath -eq "") { "" } else { " $RelativePath" }
-        
-#         # return "${Cyan}(FUX)${pathSegment}:${Reset} "
-#         Write-Host -Object "${Cyan}(FUX)${pathSegment}>${Reset} " -NoNewline
-        
-#     }
-#     else {
-#         # If not within the focused-ux project, fall back to the default PowerShell prompt.
-#         $Host.UI.RawUI.WindowTitle = $CurrentPath # Keep the full path in the window title
-        
-#         # return "PS $CurrentPath>"
-#         Write-Host -Object "PS $CurrentPath>" -NoNewline
-#     }
-    
-#     return " " 
-    
-# } #<
-
-function prompt {
+function prompt { #>
     $ProjectRoot = "D:\_dev\!Projects\_fux\_FocusedUX\"
 
     # ANSI COLOR CODES
@@ -98,7 +59,7 @@ try {
             . $integrationScript
         }
     }
-} catch {}
+} catch {} #<
 
 
 # ┌────────────────────────────────────────────────────────────────────────────┐
@@ -106,15 +67,26 @@ try {
 # └────────────────────────────────────────────────────────────────────────────┘
 # Set-Alias -Name tt -Value "pnpm test" # Example: A shortcut to run tests in this project
 
-# Direct auditor access function
-function aka {
-    param(
-        [Parameter(ValueFromRemainingArguments=$true)]
-        [string[]]$Arguments
-    )
-    
-    tsx libs/tools/structure-auditor/src/main.ts @Arguments
-}
+
+# ┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+# └───────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+Write-Host -ForegroundColor Cyan "FocusedUX project profile loaded."
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ┌────────────────────────────────────────────────────────────────────────────┐
@@ -138,8 +110,6 @@ function aka {
 
 
 
-# ┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
-# └───────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 # if ([Environment]::GetCommandLineArgs().Contains('-NonInteractive')) {
 #   $Global:InteractiveMode = $false
@@ -148,7 +118,3 @@ function aka {
 # }
 
 # gci env: | Where-Object Name -like '*VSCODE*'
-
-# Write-Host "$($PSStyle.Dim)✅ Custom prompt created.$($PSStyle.Reset)" ""
-# Write-Host -ForegroundColor Cyan "✅ FocusedUX project profile loaded."
-# Write-Host "" 

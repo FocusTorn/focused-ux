@@ -582,7 +582,7 @@ function Invoke-NxCommand {
     else {
         # Handle Nx tasks
         if ($isDebug) {
-            Write-Host "$($PSStyle.Dim)  - Routing to: Nx Task (nx <target>)$($PSStyle.Reset)"
+            Write-Host "$($PSStyle.Dim)  - Routing to: Nx Task (nx target)$($PSStyle.Reset)"
         }
         
         # Handle full target expansion for aliases with full: true

@@ -1,104 +1,109 @@
 {
     "targets": {
         "b": "build",
-        "t": "test",
-        "tc": "test --coverage",
-        "tcw": "test --coverage --reporter=html",
+        "p": "package",
+        "pd": "package:dev",
+        "pub": "publish",
         "l": "lint",
         "tsc": "check-types",
         "v": "validate",
-        "p": "package",
-        "pd": "package:dev",
-        "pdo": "package:dev:only",
-        "pub": "publish",
-        "a": "audit",
+        "t": "test",
+        "tc": "test --coverage",
+        "tcw": "test --coverage --reporter=html",
         "c": "clean",
         "cc": "clean:cache",
         "cd": "clean:dist",
+        "a": "audit",
         "s": "status",
         "o": "optimize",
         "m": "monitor"
     },
 
     "packages": {
-        "ccpc": {
-            "name": "context-cherry-picker",
-            "suffix": "core"
-        },
         "ccp": {
             "name": "context-cherry-picker",
             "suffix": "ext",
             "full": true
         },
+        "ccpc": {
+            "name": "context-cherry-picker",
+            "suffix": "core"
+        },
         "ccpe": {
             "name": "context-cherry-picker",
             "suffix": "ext"
         },
-        "dcc": {
-            "name": "dynamicons",
-            "suffix": "core"
-        },
+        
         "dc": {
             "name": "dynamicons",
             "suffix": "ext",
             "full": true
         },
+        "dcc": {
+            "name": "dynamicons",
+            "suffix": "core"
+        },
         "dce": {
             "name": "dynamicons",
             "suffix": "ext"
+        },
+
+        "gw": {
+            "name": "ghost-writer",
+            "suffix": "ext",
+            "full": true
         },
         "gwc": {
             "name": "ghost-writer",
             "suffix": "core"
         },
-        "gw": {
-            "name": "ghost-writer", 
-            "suffix": "ext",
-            "full": true
-        },
         "gwe": {
             "name": "ghost-writer",
             "suffix": "ext"
         },
-        "pbc": {
-            "name": "project-butler",
-            "suffix": "core"
-        },
+        
         "pb": {
             "name": "project-butler",
             "suffix": "ext",
             "full": true
         },
+        "pbc": {
+            "name": "project-butler",
+            "suffix": "core"
+        },
         "pbe": {
             "name": "project-butler",
             "suffix": "ext"
         },
-        "nhc": {
-            "name": "note-hub",
-            "suffix": "core"
-        },
+        
         "nh": {
             "name": "note-hub",
             "suffix": "ext",
             "full": true
         },
+        "nhc": {
+            "name": "note-hub",
+            "suffix": "core"
+        },
         "nhe": {
             "name": "note-hub",
             "suffix": "ext"
         },
-        "aic": {
-            "name": "ai-agent-interactor",
-            "suffix": "core"
-        },
+        
         "ai": {
             "name": "ai-agent-interactor",
             "suffix": "ext",
             "full": true
         },
+        "aic": {
+            "name": "ai-agent-interactor",
+            "suffix": "core"
+        },
         "aie": {
             "name": "ai-agent-interactor",
             "suffix": "ext"
         },
+        
         "mockly": "@fux/mockly",
         "shared": "@fux/shared",
         "audit": "@fux/structure-auditor",

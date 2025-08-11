@@ -460,6 +460,7 @@ export class MocklyService implements IMocklyService {
 	private registerDefaultCommands(): void {
 		this.commands.registerCommand('mockly.version', () => this.version)
 		this.commands.registerCommand('mockly.reset', () => this.reset())
+		this.commands.registerCommand('setContext', () => Promise.resolve())
 		this.utils.debug('Default commands registered')
 	}
 
