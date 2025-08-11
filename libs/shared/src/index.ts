@@ -6,6 +6,7 @@ export type { IFrontmatterUtilsService } from './_interfaces/IFrontmatterUtilsSe
 export type { IProcess } from './_interfaces/IProcess.js'
 export type { IStorageService } from './_interfaces/IStorageService.js'
 export type { ICommonUtilsService, IPathUtilsService } from './_interfaces/IUtilServices.js'
+export type { IUriFactory } from './_interfaces/IUriFactory.js'
 
 export type {
 	IWindow,
@@ -65,6 +66,7 @@ export { EventEmitterAdapter } from './vscode/adapters/EventEmitter.adapter.js'
 export { ExtensionsAdapter } from './vscode/adapters/Extensions.adapter.js'
 export { ProgressAdapter } from './vscode/adapters/Progress.adapter.js'
 export { UriAdapter } from './vscode/adapters/Uri.adapter.js'
+export { VSCodeUriFactory } from './vscode/adapters/VSCodeUriFactory.js'
 export { RangeAdapter } from './vscode/adapters/Range.adapter.js'
 export { DocumentSymbolAdapter } from './vscode/adapters/DocumentSymbol.adapter.js'
 export { TextDocumentAdapter } from './vscode/adapters/TextDocument.adapter.js'

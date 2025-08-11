@@ -39,9 +39,9 @@ describe('NotesHubConfigService', () => {
 			iCommands,
 			iFileSystem,
 			() => '/home/user',
-			require('node:path').join,
-			// Mock normalize to preserve Unix-style paths for tests
-			vi.fn((path: string) => path.replace(/\\/g, '/')),
+			// Use Mockly's Node path utilities per testing strategy
+			mockly.node.path.join,
+			mockly.node.path.normalize,
 		)
 	})
 

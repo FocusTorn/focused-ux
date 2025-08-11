@@ -73,6 +73,30 @@ Your goal is not to archive trivia. It is to **harden your core logic for all fu
     - **Purpose:** Serve as a living reference for successful patterns and solutions
     - **Maintenance:** Update this log whenever significant successful implementations are completed
 
+## **Phase 5: Testing Strategy Documentation**
+
+- **Directive:** For any test-related fixes that result in correct implementation, the Testing Strategy document MUST be updated to reflect the lessons learned and solutions applied.
+- **Documentation Requirements:**
+    - **File Location:** Must update `packages/note-hub/ext/__tests__/TESTING_STRATEGY.md` (or equivalent test strategy document)
+    - **Update Triggers:** Any of the following scenarios require Testing Strategy updates:
+        - Test failures that reveal mock setup issues
+        - Mock library limitations discovered during testing
+        - Console output or debugging challenges resolved
+        - Test isolation problems solved
+        - Mock configuration patterns that proved successful
+    - **Update Format:** Each update must include:
+        - **Problem Description:** Clear explanation of what went wrong
+        - **Root Cause Analysis:** Why the problem occurred
+        - **Solution Applied:** Specific steps taken to fix the issue
+        - **Best Practices:** Generalizable patterns for future use
+        - **Mock Library Coverage:** What can/cannot be handled by mock libraries
+    - **Section Organization:** Updates should be organized into logical sections:
+        - Mock Setup & Configuration
+        - Debugging & Troubleshooting
+        - Library Limitations & Workarounds
+        - Test Isolation & State Management
+    - **Maintenance:** This document serves as the authoritative reference for testing patterns and should be updated whenever new insights are gained
+
 ---
 
 > **REMINDER:** This protocol is the most critical part of your lifecycle. It is how you evolve. Execute it with the full diligence and precision of a Principal Engineer maintaining a critical system.

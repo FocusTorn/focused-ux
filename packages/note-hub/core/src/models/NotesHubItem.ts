@@ -153,7 +153,7 @@ export class NotesHubItem implements INotesHubItem {
 	private getPriorityThemeColor(
 		priority: number,
 	): IThemeColor {
-		if (isNaN(priority) || priority < 0) {
+		if (Number.isNaN(priority) || priority < 0) {
 			priority = 0
 		}
 		

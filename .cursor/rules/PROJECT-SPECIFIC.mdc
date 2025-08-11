@@ -1,0 +1,105 @@
+---
+alwaysApply: true
+---
+
+## **Project Workflow Patterns**
+
+### **Nx Workspace Conventions**
+
+- **Build Commands:** Use `{alias} b` for building packages
+- **Test Commands:** Use `{alias} t` for running tests
+- **Lint Commands:** Use `{alias} l` for linting packages
+- **Type Checking:** Use `{alias} tsc` for TypeScript compilation checks
+
+### **Package Management**
+
+- **Package Manager:** Use `pnpm` as the primary package manager
+- **Workspace Commands:** Leverage Nx workspace commands for cross-package operations
+- **Dependency Management:** Use workspace dependencies (`workspace:*`) for internal packages
+
+---
+
+## **Testing Infrastructure**
+
+### **Mockly Library Usage**
+
+- **Mock Coverage:** Use mockly services where available for VSCode API mocking
+- **Fallback Strategy:** Create manual mocks for services not covered by mockly
+- **Test Isolation:** Always reset mock state between tests using `mocklyService.reset()`
+
+### **Test Console Output**
+
+- **Environment Variable:** Use `ENABLE_TEST_CONSOLE=true` to enable console output in tests
+- **Programmatic Control:** Use `enableTestConsoleOutput()` function for specific test suites
+- **Debugging:** Console output is suppressed by default; enable only when needed for debugging
+
+---
+
+## **File Organization**
+
+### **Project Structure**
+
+- **Packages:** Located in `packages/` directory
+- **Libraries:** Located in `libs/` directory
+- **Documentation:** Located in `docs/` directory
+- **Configuration:** Root-level configuration files (`.cursor/rules/`, `nx.json`, etc.)
+
+### **Documentation Standards**
+
+- **Actions Log:** Update `docs/Actions-Log.md` for successful implementations
+- **Testing Strategy:** Update `packages/note-hub/ext/__tests__/TESTING_STRATEGY.md` for test-related fixes
+- **Project Rules:** Keep project-specific rules in this file
+
+---
+
+## **Quality Assurance**
+
+### **Build Verification**
+
+- **Pre-Execution:** Always run `{alias} b` before testing to ensure clean builds
+- **Error Resolution:** Fix build errors before proceeding with other operations
+- **Cache Management:** Use `--skip-nx-cache` when troubleshooting build issues
+
+### **Test Execution**
+
+- **Full Test Suite:** Run complete test suites to ensure no regressions
+- **Test Isolation:** Ensure tests don't interfere with each other
+- **Mock Validation:** Verify that mocks properly simulate the behavior they're replacing
+
+---
+
+## **Project Requirements (Static)**
+
+The following principles must ALWAYS be followed as they are part of the project's foundational structure:
+
+- **VSCode API Import Rules:** Value imports for VSCode APIs and Node must come only from shared adapters
+    - Direct VSCode imports should be limited to types only, to keep code decoupled and allow complete injection.
+
+---
+
+## **Command Execution & Tooling**
+
+### **Build Tool Preferences**
+
+- Use `--skip-nx-cache` for troubleshooting Nx build issues unless otherwise specified
+- Prefer `pnpm` over `npm` for all package management tasks
+
+### **PowerShell Profile and Aliases Setup**
+
+- **CRITICAL**: At the beginning of each chat session, the AI assistant MUST follow these step-by-step instructions:
+    1. **Profile Loading**: Load the PowerShell profile using the `aka` command to access custom aliases and project-specific commands
+    2. **Alias Verification**: Verify that the profile loaded successfully and custom aliases are available
+    3. **Use Custom Aliases**: When a command has a custom alias configured in `.vscode/shell/pnpm_aliases.json`, use the custom alias instead of the native command, unless the native command is referenced in the posed question or request
+    4. **Testing Protocol**: When testing the alias file itself, run the native command first, followed by the alias command to compare behavior:
+
+        ```powershell
+        # Example: Test both native and alias versions
+        pnpm run build --filter=ghost-writer
+        gw b
+        ```
+
+    5. **FAILURE RECOVERY**: If profile loading fails, immediately halt all operations and report the failure before proceeding with any other tasks
+
+---
+
+> **Note:** This document contains project-specific rules that complement the universal APE Doctrine. Always refer to the APE Doctrine for universal principles, and use this document for project-specific workflows and conventions.

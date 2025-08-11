@@ -1,5 +1,7 @@
-import * as vscode from 'vscode'
+import type * as vscode from 'vscode'
 import type { IUri } from '../../_interfaces/IVSCode.js'
+import type { IUriFactory } from '../../_interfaces/IUriFactory.js'
+import { VSCodeUriFactory } from './VSCodeUriFactory.js'
 
 export class UriAdapter implements IUri {
 
@@ -17,64 +19,34 @@ export class UriAdapter implements IUri {
 		return this.uri.fsPath
 	}
 
+	// Static methods for backward compatibility - these delegate to the default factory
 	static create(uri: vscode.Uri): IUri {
-		return new UriAdapter(uri)
+		return UriAdapter.defaultFactory.create(uri)
 	}
 
 	static file(path: string): IUri {
-		// Validate path before creating URI
-		console.log('[UriAdapter] file() called with path:', path)
-		console.log('[UriAdapter] file() path type:', typeof path)
-		console.log('[UriAdapter] file() path length:', path?.length)
-		console.log('[UriAdapter] file() path trimmed:', path?.trim())
-		
-		if (!path || typeof path !== 'string' || path.trim() === '') {
-			console.warn('[UriAdapter] Invalid path provided to file():', path)
-			// Return a fallback URI to prevent crashes
-			return new UriAdapter(vscode.Uri.file('/invalid-path'))
-		}
-		
-		try {
-			console.log('[UriAdapter] file() calling vscode.Uri.file with:', path)
-
-			const vscodeUri = vscode.Uri.file(path)
-
-			console.log('[UriAdapter] file() vscode.Uri.file succeeded, creating UriAdapter')
-			return new UriAdapter(vscodeUri)
-		}
-		catch (error) {
-			console.error('[UriAdapter] file() vscode.Uri.file failed:', error)
-			console.error('[UriAdapter] file() error type:', typeof error)
-			console.error('[UriAdapter] file() error message:', (error as Error)?.message)
-			console.error('[UriAdapter] file() error stack:', (error as Error)?.stack)
-			throw error
-		}
+		return UriAdapter.defaultFactory.file(path)
 	}
 
 	static joinPath(base: IUri, ...paths: string[]): IUri {
-		const vscodeBase = (base as UriAdapter).uri
-
-		// Validate paths before joining
-		const validPaths = paths.filter(path => path && typeof path === 'string' && path.trim() !== '')
-
-		if (validPaths.length !== paths.length) {
-			console.warn('[UriAdapter] Invalid paths provided to joinPath():', paths)
-		}
-
-		return new UriAdapter(vscode.Uri.joinPath(vscodeBase, ...validPaths))
+		return UriAdapter.defaultFactory.joinPath(base, ...paths)
 	}
 
 	static dirname(uri: IUri): IUri {
-		const vscodeUri = (uri as UriAdapter).uri
+		return UriAdapter.defaultFactory.dirname(uri)
+	}
 
-		// Validate URI before processing
-		if (!vscodeUri || !vscodeUri.path) {
-			console.warn('[UriAdapter] Invalid URI provided to dirname():', uri)
-			// Return a fallback URI to prevent crashes
-			return new UriAdapter(vscode.Uri.file('/'))
-		}
+	// Default factory instance for backward compatibility
+	private static defaultFactory: IUriFactory = new VSCodeUriFactory()
 
-		return new UriAdapter(vscode.Uri.joinPath(vscodeUri, '..'))
+	// Method to set a custom factory (useful for testing)
+	static setFactory(factory: IUriFactory): void {
+		UriAdapter.defaultFactory = factory
+	}
+
+	// Method to get the current factory
+	static getFactory(): IUriFactory {
+		return UriAdapter.defaultFactory
 	}
 
 }

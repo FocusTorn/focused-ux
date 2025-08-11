@@ -25,6 +25,88 @@ This document outlines the comprehensive testing strategy for the Notes Hub exte
 - **Verify editor opening**: Always check `expect(mockWindow.showTextDocument).toHaveBeenCalled()`
 - **Verify active editor state**: Always check `expect(mockWindow.activeTextEditor).toBeDefined()`
 
+### 4. **Mockly Optimization Strategy** ⚠️ **NEW**
+
+- **Maximize Mockly Usage**: Use mockly services wherever possible instead of manual mocks
+- **Document Mockly Gaps**: Clearly identify and document what mockly cannot cover
+- **Fallback Strategy**: Use manual mocks only for interfaces that mockly cannot provide
+- **Consistent Pattern**: Follow the established pattern of ✅ MOCKLY CAN COVER vs ❌ MOCKLY CANNOT COVER
+
+#### Mockly Coverage Analysis:
+
+```typescript
+// ✅ MOCKLY CAN COVER: VSCode core services
+iWindow = {
+    ...mockly.window,
+    showInputBox: vi.fn().mockResolvedValue('new-folder'), // Custom behavior
+} as unknown as IWindow
+
+// ✅ MOCKLY CAN COVER: Workspace file system operations
+iWorkspace = {
+    ...mockly.workspace,
+    fs: {
+        // Ensure all required fs methods are available
+        stat: vi.fn(),
+        readFile: vi.fn(),
+        writeFile: vi.fn(),
+        createDirectory: vi.fn().mockResolvedValue(undefined), // Custom behavior
+        readDirectory: vi.fn(),
+        delete: vi.fn(),
+        copy: vi.fn(),
+        rename: vi.fn(),
+    },
+} as unknown as IWorkspace
+
+// ✅ MOCKLY CAN COVER: Node.js utilities
+const iFspAccess = mockly.node.fs.access as any
+const iFspRename = vi.fn() // ❌ MOCKLY CANNOT COVER: rename method not available
+
+// ✅ MOCKLY CAN COVER: Path utilities
+(p: string, c: string) => mockly.node.path.join(p, c) as any,
+(p: string) => mockly.node.path.normalize(p) as any,
+(p: string) => mockly.node.path.dirname(p) as any,
+(s: string) => ({
+    name: mockly.node.path.basename(s, mockly.node.path.extname(s)),
+    ext: mockly.node.path.extname(s),
+}) as any,
+(s: string) => mockly.node.path.extname(s) as any,
+
+// ❌ MOCKLY CANNOT COVER: Custom interfaces specific to shared library
+iCommon = {
+    errMsg: vi.fn(),
+    infoMsg: vi.fn(),
+    warnMsg: vi.fn(),
+    debugMsg: vi.fn(),
+} as unknown as ICommonUtilsService
+
+// ❌ MOCKLY CANNOT COVER: Custom service interfaces
+iProviderManager = {
+    getProviderForNote: vi.fn().mockResolvedValue({ /* ... */ }),
+    getProviderInstance: vi.fn().mockReturnValue({ notesDir: '/notes/project' }),
+    revealNotesHubItem: vi.fn(),
+}
+```
+
+### 5. **Node Utilities via Mockly (Tests)**
+
+- In tests, prefer Mockly's Node adapters for path and fs utilities to maintain consistency with the mocked VSCode environment
+- Use `mockly.node.path.join|dirname|basename|parse|extname|normalize` instead of `require('node:path')`
+- Example injection into services under test:
+
+```ts
+import { mockly } from '@fux/mockly'
+
+actionService = new NotesHubActionService(
+    /* ... */
+    mockly.node.path.join,
+    mockly.node.path.dirname,
+    mockly.node.path.basename,
+    mockly.node.path.parse,
+    mockly.node.path.extname
+    /* ... */
+)
+```
+
 ## Enhanced Mockly Capabilities
 
 ### MockTextDocument
@@ -370,7 +452,45 @@ it('should handle async operations correctly', async () => {
 
 ## Debugging and Troubleshooting
 
-### 1. **State Inspection**
+### 1. **Console Output Control** ⚠️ **UPDATED**
+
+#### Environment Variable Method (Recommended):
+
+```pwsh
+# Enable console output for all tests in the session
+$env:ENABLE_TEST_CONSOLE="true"; nh t
+
+# Or set the environment variable first
+$env:ENABLE_TEST_CONSOLE="true"
+nh t
+```
+
+#### Programmatic Method:
+
+```typescript
+import { enableTestConsoleOutput } from '../setup'
+
+describe('My Test Suite', () => {
+    beforeEach(() => {
+        // Enable console output for this test suite
+        enableTestConsoleOutput()
+    })
+
+    it('should show console output', () => {
+        console.log('🔍 This will now be visible!')
+        // Test code here
+    })
+})
+```
+
+#### Console Output Strategies:
+
+- **Environment Variable**: Set `ENABLE_TEST_CONSOLE=true` to enable console output globally
+- **Programmatic Control**: Use `enableTestConsoleOutput()` function in specific tests
+- **Default Behavior**: Console output is silenced by default to reduce test noise
+- **Debugging**: Enable console output when investigating test failures or complex scenarios
+
+### 2. **State Inspection**
 
 ```typescript
 // Print current state for debugging
@@ -457,6 +577,13 @@ it('should handle multiple operations efficiently', async () => {
 - Run tests on every commit
 - Performance regression testing
 - Cross-platform compatibility testing
+
+## Nx Aliases and Type Checking
+
+- Use workspace aliases to ensure consistent execution context:
+    - `nh tsc` → Type checks the ext project (`@fux/note-hub-ext:check-types`)
+    - `nh test` → Runs the ext tests (`@fux/note-hub-ext:test`)
+- The ext `tsconfig.json` is scoped to source files only for type-check (`include: src/**/*.ts`, `exclude: __tests__/**`) to avoid `rootDir` violations from test-time imports of core modules.
 
 ## Lessons Learned & Critical Rules
 

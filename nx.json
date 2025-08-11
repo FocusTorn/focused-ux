@@ -193,7 +193,10 @@
                     "{projectRoot}/**/*.jsx",
                     "{projectRoot}/**/*.json",
                     "{projectRoot}/**/*.jsonc"
-                ]
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
             }
         }, //<
         "lint:full": { //>
@@ -213,7 +216,10 @@
                     "{projectRoot}/**/*.jsx",
                     "{projectRoot}/**/*.json",
                     "{projectRoot}/**/*.jsonc"
-                ]
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
             }
         }, //<
 

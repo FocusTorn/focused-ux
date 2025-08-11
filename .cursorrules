@@ -1,0 +1,12 @@
+# Cursor Rules Configuration
+# This file controls which rule files are loaded in chat sessions
+
+# Always apply these rule files
+.cursor/rules/1_Operational_Doctrine.mdc
+.cursor/rules/PROJECT-SPECIFIC.mdc
+.cursor/rules/nx-rules.mdc
+
+# Apply these rules conditionally
+.cursor/rules/2_APE-Request.mdc
+.cursor/rules/3_APE-Refresh.mdc
+.cursor/rules/4_APE-Retro.mdc 

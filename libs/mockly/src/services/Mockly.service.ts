@@ -95,6 +95,9 @@ export class MocklyService implements IMocklyService {
 
 	// Private configuration storage
 	private configurationStorage = new Map<string, any>()
+	
+	// Configuration for test console output
+	private allowTestConsoleOutput = false
 
 	constructor() {
 		this.utils = new CoreUtilitiesService()
@@ -111,13 +114,43 @@ export class MocklyService implements IMocklyService {
 	}
 
 	// ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+	// │  CONFIGURATION METHODS                                                                          │
+	// └──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+	/**
+	 * Enable or disable test console output
+	 * @param allow - Whether to allow test console output to pass through
+	 */
+	setTestConsoleOutput(allow: boolean): void {
+		this.allowTestConsoleOutput = allow
+		this.utils.info(`Test console output ${allow ? 'enabled' : 'disabled'}`)
+	}
+
+	/**
+	 * Get current test console output setting
+	 */
+	getTestConsoleOutput(): boolean {
+		return this.allowTestConsoleOutput
+	}
+
+	// ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 	// │  WORKSPACE API                                                                                  │
 	// └──────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 	workspace = {
 		fs: {} as any, // Will be set in constructor
 
-		workspaceFolders: [{ uri: MockUri.file('/workspace') }],
+		workspaceFolders: [{
+			uri: {
+				fsPath: '/workspace',
+				toString: () => 'file:///workspace',
+				scheme: 'file',
+				authority: '',
+				path: '/workspace',
+				query: '',
+				fragment: '',
+			} as any,
+		}],
 
 		onDidChangeConfiguration: (listener: (e: any) => void): Disposable => {
 			const emitter = this.getOrCreateEventEmitter('onDidChangeConfiguration')

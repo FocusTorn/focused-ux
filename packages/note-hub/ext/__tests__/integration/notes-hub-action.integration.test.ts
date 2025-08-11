@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import '../setup'
+import { mockly } from '@fux/mockly'
 
 // Mockly provides node.fs functionality - no need to mock fs/promises manually
 // Use Mockly's built-in services for all VSCode and Node.js operations
@@ -76,8 +77,9 @@ describe('NotesHubActionService Integration Tests', () => {
 			mockCommands as any,
 			mockFileSystem as any,
 			() => '/tmp', // homedir
-			require('node:path').join,
-			require('node:path').normalize,
+			// Use Mockly's Node path utilities
+			mockly.node.path.join,
+			mockly.node.path.normalize,
 		)
 		
 		// Use Mockly's built-in window mocking instead of manual mocks
@@ -118,11 +120,12 @@ describe('NotesHubActionService Integration Tests', () => {
 			mockPathUtils,
 			providerManager,
 			mockCommands, // commands
-			require('node:path').join,
-			require('node:path').dirname,
-			require('node:path').basename,
-			require('node:path').parse,
-			require('node:path').extname,
+			// Use Mockly's Node path utilities
+			mockly.node.path.join,
+			mockly.node.path.dirname,
+			mockly.node.path.basename,
+			mockly.node.path.parse,
+			mockly.node.path.extname,
 			vi.fn(), // fspAccess
 			vi.fn(), // fspRename
 			mockFileType, // fileType

@@ -4,6 +4,113 @@ This document catalogs actions taken that resulted in correctly implemented outc
 
 ---
 
+## 2025-01-XX - Mockly Usage Optimization & Testing Strategy Enhancement
+
+**High-Level Summary:** Successfully analyzed and optimized test file usage of mockly services, identifying what can be covered by mockly vs. what requires manual mocks. Updated testing strategy to maximize mockly usage while clearly documenting gaps and fallback strategies. Implemented solution for enabling console output in tests.
+
+### Key Implementations:
+
+- **Mockly Coverage Analysis**: Systematically identified all services and utilities that can be provided by mockly vs. custom interfaces
+- **Testing Strategy Enhancement**: Added comprehensive mockly optimization guidelines to TESTING_STRATEGY.md
+- **Console Output Solution**: Implemented conditional console output control in test setup files
+- **Documentation Updates**: Updated both testing strategy and action log with findings and solutions
+
+### Mockly Coverage Analysis Results:
+
+#### ✅ **MOCKLY CAN COVER:**
+
+- VSCode core services: `window`, `workspace`, `commands`, `extensions`, `env`
+- VSCode types: `Uri`, `Position`, `Range`, `Disposable`, `EventEmitter`
+- Node.js utilities: `node.fs.access`, `node.path.*` (join, dirname, basename, parse, extname, normalize)
+- File system operations: `workspace.fs.*` (stat, readFile, writeFile, readDirectory, delete, copy, rename)
+
+#### ❌ **MOCKLY CANNOT COVER:**
+
+- Custom interfaces specific to shared library: `ICommonUtilsService`, `IFrontmatterUtilsService`, `IPathUtilsService`
+- Custom service interfaces: `INotesHubProviderManager`, `INotesHubProvider`
+- Node.js `fs.rename` method (not available in mockly.node.fs)
+- Extension-specific context and configuration
+
+### Console Output Solution:
+
+**Problem Identified:** Test setup files were mocking console methods (`console.log`, `console.info`, etc.) to reduce test noise, preventing debugging output from being visible.
+
+**Solution Implemented:**
+
+1. **Environment Variable Control**: `ENABLE_TEST_CONSOLE=true` enables console output globally
+2. **Programmatic Control**: `enableTestConsoleOutput()` function enables console output in specific tests
+3. **Conditional Setup**: Test setup now conditionally enables/disables console output based on configuration
+
+**Usage Examples:**
+
+```bash
+# Enable console output for debugging
+ENABLE_TEST_CONSOLE=true nh t
+
+# Programmatic control in tests
+import { enableTestConsoleOutput } from '../setup'
+enableTestConsoleOutput()
+console.log('🔍 Debug output now visible!')
+```
+
+### Testing Strategy Updates:
+
+- **Mockly Optimization Guidelines**: Clear patterns for maximizing mockly usage
+- **Fallback Strategies**: Documented when and how to use manual mocks
+- **Console Output Control**: Comprehensive debugging strategies
+- **Best Practices**: Updated patterns based on actual implementation findings
+
+### Impact and Benefits:
+
+- **Improved Test Debugging**: Developers can now see console output when investigating test failures
+- **Better Mockly Usage**: Clear guidelines for maximizing mockly coverage
+- **Reduced Manual Mocking**: More consistent use of mockly's built-in capabilities
+- **Enhanced Documentation**: Comprehensive testing strategy with real-world examples
+
+### Files Modified:
+
+- `packages/note-hub/ext/__tests__/setup.ts` - Added conditional console output control
+- `packages/note-hub/ext/__tests__/TESTING_STRATEGY.md` - Updated debugging section
+- `docs/Actions-Log.md` - Added this entry documenting the solution
+
+### Next Steps:
+
+- Apply similar console output control to other package test setups
+- Consider adding mockly configuration options for more granular control
+- Monitor test performance and reliability with the new console output system
+
+---
+
+## 2025-08-11 - Mockly Node Utilities Adoption & Type-Check Stabilization
+
+**High-Level Summary:** Standardized tests to use Mockly's Node path utilities and stabilized type-checking by scoping the ext project's check-types target to source files only. All tests and type checks pass via Nx aliases.
+
+### Key Implementations:
+
+- **Mockly Node Path Utilities**: Replaced direct `require('node:path').*` usage in tests with `mockly.node.path.*` for consistency with the Mockly environment
+    - File: `packages/note-hub/ext/__tests__/integration/notes-hub-action.integration.test.ts`
+    - Added `import { mockly } from '@fux/mockly'`
+    - Injected `mockly.node.path.join|dirname|basename|parse|extname` into `NotesHubActionService` and `NotesHubConfigService`
+
+- **Type-Check Scope Fix**: Updated `packages/note-hub/ext/tsconfig.json` to exclude tests from the `check-types` target to avoid `rootDir` TS6059 cross-boundary errors
+    - `include`: `src/**/*.ts`
+    - `exclude`: `__tests__/**`
+
+- **Aliases for Developer Workflow**: Validated and adopted workspace aliases
+    - `nh tsc`: type checks the ext project
+    - `nh test`: runs tests for the ext project
+
+### Result:
+
+- `nh tsc` → PASS
+- `nh test` → PASS (11 files, 60 tests: 58 passed, 2 skipped)
+
+### Lessons Learned:
+
+- **Use Mockly for Node adapters in tests** to maintain environment parity and cross-platform path normalization
+- **Keep check-types inputs bounded to project sources** to avoid `rootDir` violations when tests import other package sources
+- **Prefer aliases** (`nh tsc`, `nh test`) to ensure correct Nx context
+
 ## 2024-12-19 - Note Hub Integration Test Enhancement & Editor State Verification
 
 **High-Level Summary:** Successfully enhanced Note Hub integration tests to restore comprehensive editor state verification while maintaining test reliability. Achieved 58/60 tests passing with proper editor integration testing coverage.
