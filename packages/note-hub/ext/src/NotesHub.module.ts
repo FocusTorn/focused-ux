@@ -1,10 +1,9 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) =======================================================================
-import type { Disposable } from '@fux/shared'
+import type { Disposable, WindowAdapter } from '@fux/shared'
 import type { ExtensionContext } from 'vscode'
 import * as vscode from 'vscode'
-import type { WindowAdapter } from '@fux/shared'
 import type {
 	INotesHubItem,
 	INotesHubService,

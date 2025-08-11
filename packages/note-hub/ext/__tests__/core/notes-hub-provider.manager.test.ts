@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import '../setup'
 import { NotesHubProviderManager } from '@fux/note-hub-core'
 import type { ICommands, ICommonUtilsService, IFileType, IFrontmatterUtilsService, IPathUtilsService, IWindow, IWorkspace } from '@fux/shared'
-import { mockly } from '@fux/mockly'
+import { mocklyService } from '@fux/mockly'
 
 describe('NotesHubProviderManager', () => {
 	let mgr: NotesHubProviderManager
@@ -16,20 +16,19 @@ describe('NotesHubProviderManager', () => {
 	let extensionContext: any
 
 	beforeEach(() => {
+		// Reset Mockly for each test
+		mocklyService.reset()
+		
 		extensionContext = { subscriptions: [] }
 		
 		// Use Mockly's built-in window service instead of manual mocks
-		iWindow = {
-			...mockly.window,
-		} as unknown as IWindow
+		iWindow = mocklyService.window as unknown as IWindow
 
 		// Use Mockly's built-in workspace service instead of manual mocks
-		iWorkspace = {
-			...mockly.workspace,
-		} as unknown as IWorkspace
+		iWorkspace = mocklyService.workspace as unknown as IWorkspace
 
 		// Use Mockly's built-in commands service instead of manual mocks
-		iCommands = { ...mockly.commands } as unknown as ICommands
+		iCommands = mocklyService.commands as unknown as ICommands
 		
 		iCommonUtils = { errMsg: vi.fn(), infoMsg: vi.fn(), warnMsg: vi.fn(), debugMsg: vi.fn() } as unknown as ICommonUtilsService
 		iFrontmatterUtils = {} as unknown as IFrontmatterUtilsService

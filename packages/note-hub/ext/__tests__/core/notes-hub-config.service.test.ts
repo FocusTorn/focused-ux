@@ -24,7 +24,7 @@ describe('NotesHubConfigService', () => {
 		iCommonUtils = { errMsg: vi.fn(), infoMsg: vi.fn(), warnMsg: vi.fn(), debugMsg: vi.fn() } as unknown as ICommonUtilsService
 		
 		// Use Mockly's built-in commands service instead of manual mocks
-		iCommands = { 
+		iCommands = {
 			...mockly.commands,
 			executeCommand: vi.fn().mockResolvedValue(undefined),
 		} as unknown as ICommands

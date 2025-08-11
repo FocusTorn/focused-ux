@@ -5,10 +5,12 @@ import type { ExtensionContext } from 'vscode'
 import os from 'node:os'
 import path from 'node:path'
 import fs from 'node:fs/promises'
-import { FileTypeAdapter, EnvAdapter, CommandsAdapter } from '@fux/shared'
 
 // F-UX Shared Imports
 import {
+	FileTypeAdapter,
+	EnvAdapter,
+	CommandsAdapter,
 	ConfigurationService,
 	CommonUtilsAdapter,
 	FileSystemAdapter,

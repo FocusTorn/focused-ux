@@ -4,6 +4,9 @@ import * as path from 'node:path'
 import * as fs from 'node:fs/promises'
 import { CoreUtilitiesService } from './CoreUtilities.service.js'
 import { Position as MockPosition, Range as MockRange, Disposable as MockDisposable, EventEmitter as MockEventEmitter } from '../_vscCore/vscClasses.js'
+import { MockWindow } from '../_vscCore/MockWindow.js'
+import { MockFileSystem } from '../_vscCore/MockFileSystem.js'
+import { MockTextDocument } from '../_vscCore/MockTextDocument.js'
 import type { Buffer } from 'node:buffer'
 
 // Proper Uri mock class
@@ -52,7 +55,10 @@ class MockUri implements Uri {
 	}
 
 	static file(path: string): Uri {
-		return new MockUri('file', '', path, '', '')
+		// Normalize path to use forward slashes for consistency across platforms
+		const normalizedPath = path.replace(/\\/g, '/')
+
+		return new MockUri('file', '', normalizedPath, '', '')
 	}
 
 	static parse(uri: string): Uri {
@@ -66,8 +72,11 @@ class MockUri implements Uri {
 	static joinPath(base: Uri, ...paths: string[]): Uri {
 		const basePath = base.fsPath
 		const joinedPath = path.join(basePath, ...paths)
+		
+		// Normalize path to use forward slashes for consistency across platforms
+		const normalizedPath = joinedPath.replace(/\\/g, '/')
 
-		return new MockUri('file', '', joinedPath, '', '')
+		return new MockUri('file', '', normalizedPath, '', '')
 	}
 
 	static from(uri: Uri): Uri {
@@ -80,7 +89,8 @@ export class MocklyService implements IMocklyService {
 
 	private registeredCommands = new Map<string, (...args: any[]) => any>()
 	private eventListeners = new Map<string, MockEventEmitter<any>>()
-	private fileSystem = new Map<string, { content: Uint8Array, type: 'file' | 'directory' }>()
+	private mockFileSystem: MockFileSystem
+	private mockWindow: MockWindow
 	private utils: CoreUtilitiesService
 
 	// Private configuration storage
@@ -88,6 +98,13 @@ export class MocklyService implements IMocklyService {
 
 	constructor() {
 		this.utils = new CoreUtilitiesService()
+		this.mockFileSystem = new MockFileSystem(this.utils)
+		this.mockWindow = new MockWindow(this.utils)
+		
+		// Set the workspace and window properties after initialization
+		this.workspace.fs = this.mockFileSystem
+		this.window = this.mockWindow
+		
 		// Initialize with some default commands
 		this.registerDefaultCommands()
 		this.utils.info('MocklyService initialized')
@@ -98,90 +115,7 @@ export class MocklyService implements IMocklyService {
 	// └──────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 	workspace = {
-		fs: {
-			stat: async (uri: Uri): Promise<any> => {
-				const path = uri.fsPath
-				const item = this.fileSystem.get(path)
-
-				if (!item) {
-					throw new Error(`File not found: ${path}`)
-				}
-				return {
-					type: item.type,
-					ctime: Date.now(),
-					mtime: Date.now(),
-					size: item.content?.length || 0,
-				}
-			},
-
-			readFile: async (uri: Uri): Promise<Uint8Array> => {
-				const path = uri.fsPath
-				const item = this.fileSystem.get(path)
-
-				if (!item || item.type !== 'file') {
-					throw new Error(`File not found: ${path}`)
-				}
-				return item.content
-			},
-
-			writeFile: async (uri: Uri, content: Uint8Array): Promise<void> => {
-				const path = uri.fsPath
-
-				this.fileSystem.set(path, { content, type: 'file' })
-			},
-
-			createDirectory: async (uri: Uri): Promise<void> => {
-				const path = uri.fsPath
-
-				this.fileSystem.set(path, { content: new Uint8Array(), type: 'directory' })
-			},
-
-			readDirectory: async (uri: Uri): Promise<[string, number][]> => {
-				const path = uri.fsPath
-				const results: [string, number][] = []
-				
-				for (const [filePath, item] of this.fileSystem.entries()) {
-					if (filePath.startsWith(path) && filePath !== path) {
-						const relativePath = filePath.substring(path.length + 1)
-						const parts = relativePath.split('/')
-
-						if (parts.length === 1) {
-							results.push([parts[0], item.type === 'file' ? 1 : 2])
-						}
-					}
-				}
-				
-				return results
-			},
-
-			delete: async (uri: Uri, _options?: { recursive?: boolean, useTrash?: boolean }): Promise<void> => {
-				const path = uri.fsPath
-
-				if (!this.fileSystem.has(path)) {
-					throw new Error(`File not found: ${path}`)
-				}
-				this.fileSystem.delete(path)
-			},
-
-			copy: async (source: Uri, target: Uri, _options?: { overwrite?: boolean }): Promise<void> => {
-				const sourceItem = this.fileSystem.get(source.fsPath)
-
-				if (!sourceItem) {
-					throw new Error(`Source file not found: ${source.fsPath}`)
-				}
-				this.fileSystem.set(target.fsPath, sourceItem)
-			},
-
-			rename: async (source: Uri, target: Uri, _options?: { overwrite?: boolean }): Promise<void> => {
-				const sourceItem = this.fileSystem.get(source.fsPath)
-
-				if (!sourceItem) {
-					throw new Error(`Source file not found: ${source.fsPath}`)
-				}
-				this.fileSystem.delete(source.fsPath)
-				this.fileSystem.set(target.fsPath, sourceItem)
-			},
-		},
+		fs: {} as any, // Will be set in constructor
 
 		workspaceFolders: [{ uri: MockUri.file('/workspace') }],
 
@@ -206,16 +140,14 @@ export class MocklyService implements IMocklyService {
 		},
 
 		openTextDocument: async (uri: any): Promise<any> => {
-			const content = await this.workspace.fs.readFile(uri)
+			try {
+				const content = await this.workspace.fs.readFile(uri)
 
-			return {
-				uri,
-				fileName: uri.fsPath,
-				languageId: 'typescript',
-				version: 1,
-				isDirty: false,
-				isUntitled: false,
-				getText: () => new TextDecoder().decode(content),
+				return new MockTextDocument(uri, new TextDecoder().decode(content))
+			}
+			catch (_error) {
+				// If file doesn't exist, create a new document
+				return new MockTextDocument(uri, '')
 			}
 		},
 
@@ -263,59 +195,7 @@ export class MocklyService implements IMocklyService {
 	// │  WINDOW API                                                                                     │
 	// └──────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-	window = {
-		activeTextEditor: undefined,
-
-		showErrorMessage: (message: string): void => {
-			this.utils.error(`Window Error: ${message}`)
-		},
-
-		showInformationMessage: async (message: string, ...items: string[]): Promise<string | undefined> => {
-			this.utils.info(`Window Info: ${message}`)
-			return items[0]
-		},
-
-		showWarningMessage: async (message: string, options?: { modal?: boolean }, ...items: any[]): Promise<any> => {
-			this.utils.warn(`Window Warning: ${message}`)
-			return items[0]
-		},
-
-		showInputBox: async (options: any): Promise<string | undefined> => {
-			this.utils.info(`Input Box: ${options?.prompt || 'Enter value'}`)
-			return options?.value || ''
-		},
-
-		showTextDocument: async (doc: any): Promise<any> => {
-			this.utils.info(`Show Document: ${doc.uri?.fsPath}`)
-			return {
-				document: doc,
-				selection: new MockRange(0, 0, 0, 0),
-			}
-		},
-
-		createTreeView: (_viewId: string, _options: any): any => {
-			return {
-				onDidChangeSelection: this.getOrCreateEventEmitter('treeViewSelection').event,
-				onDidChangeVisibility: this.getOrCreateEventEmitter('treeViewVisibility').event,
-				dispose: () => {
-					// Clean up tree view
-				},
-			}
-		},
-
-		registerTreeDataProvider: (_viewId: string, _provider: any): any => {
-			return {
-				dispose: () => {
-					// Clean up provider
-				},
-			}
-		},
-
-		withProgress: async (options: any, task: () => Promise<any>): Promise<any> => {
-			this.utils.info(`Progress: ${options?.title || 'Processing...'}`)
-			return await task()
-		},
-	}
+	window: any // Will be set in constructor
 
 	// ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 	// │  COMMANDS API                                                                                   │
@@ -398,8 +278,18 @@ export class MocklyService implements IMocklyService {
 
 	node = {
 		path: {
-			join: (...paths: string[]): string => path.join(...paths),
-			normalize: (pathStr: string): string => path.normalize(pathStr),
+			join: (...paths: string[]): string => {
+				const joinedPath = path.join(...paths)
+
+				// Normalize path to use forward slashes for consistency across platforms
+				return joinedPath.replace(/\\/g, '/')
+			},
+			normalize: (pathStr: string): string => {
+				const normalizedPath = path.normalize(pathStr)
+
+				// Normalize path to use forward slashes for consistency across platforms
+				return normalizedPath.replace(/\\/g, '/')
+			},
 			dirname: (pathStr: string): string => path.dirname(pathStr),
 			basename: (pathStr: string, ext?: string): string => path.basename(pathStr, ext),
 			extname: (pathStr: string): string => path.extname(pathStr),
@@ -442,8 +332,11 @@ export class MocklyService implements IMocklyService {
 	reset(): void {
 		this.registeredCommands.clear()
 		this.eventListeners.clear()
-		this.fileSystem.clear()
+		this.mockFileSystem.clear()
+		this.mockWindow.clear()
+		this.configurationStorage.clear()
 		this.registerDefaultCommands()
+		this.utils.info('MocklyService reset')
 	}
 
 	// ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐

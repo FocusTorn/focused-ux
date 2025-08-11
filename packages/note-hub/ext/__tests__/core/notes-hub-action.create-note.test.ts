@@ -20,7 +20,7 @@ describe('NotesHubActionService - Create Note', () => {
 	beforeEach(async () => {
 		// Import after mocking to get the mocked versions
 		const { NotesHubActionService } = await import('../../../core/src/services/NotesHubAction.service.js')
-		const { NotesHubItem } = await import('../../../core/src/models/NotesHubItem.js')
+		const { NotesHubItem: _NotesHubItem } = await import('../../../core/src/models/NotesHubItem.js')
 		const { UriAdapter: ActualUriAdapter } = await import('@fux/shared')
 
 		// Create mock dependencies

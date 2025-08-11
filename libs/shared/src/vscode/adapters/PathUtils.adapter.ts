@@ -27,7 +27,8 @@ export class PathUtilsAdapter implements IPathUtilsService {
 			const posixPath = String(relativePath).replace(/\\/g, '/')
 
 			return posixPath.startsWith('.') ? posixPath : `./${posixPath}`
-		} catch (error) {
+		}
+		catch (error) {
 			console.warn('[PathUtils] Error calculating relative path:', { from, to, error })
 			return undefined
 		}

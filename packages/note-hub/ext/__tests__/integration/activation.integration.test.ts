@@ -18,7 +18,7 @@ describe('Note Hub Extension Activation (integration, mocked VSCode)', () => {
 
 	it('activates once and registers commands then deactivates cleanly', async () => {
 		const spyRegister = vi.spyOn(vscode.commands, 'registerCommand')
-		const spyExec = vi.spyOn(vscode.commands, 'executeCommand')
+		const _spyExec = vi.spyOn(vscode.commands, 'executeCommand')
 
 		// Sanity: container can be created (DI builds)
 		const container = await createDIContainer(context as any)

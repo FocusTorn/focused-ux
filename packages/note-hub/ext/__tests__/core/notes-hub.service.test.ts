@@ -7,6 +7,7 @@ import type { ICommands, ICommonUtilsService, IFileSystem, IWorkspace, IWorkspac
 import { mockly } from '@fux/mockly'
 
 describe('NotesHubService', () => {
+	/* eslint-disable unused-imports/no-unused-vars */
 	let svc: NotesHubService
 	let iWorkspace: IWorkspace
 	let iCommonUtils: ICommonUtilsService
@@ -14,7 +15,8 @@ describe('NotesHubService', () => {
 	let iFileSystem: IFileSystem
 	let iWorkspaceUtils: IWorkspaceUtilsService
 	let iProviderManager: any
-
+	/* eslint-enable unused-imports/no-unused-vars */
+    
 	beforeEach(() => {
 		// Use Mockly's built-in workspace service instead of manual mocks
 		iWorkspace = {

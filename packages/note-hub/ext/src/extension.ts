@@ -22,6 +22,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 	console.log(`[${constants.extension.name}] Activating...`)
 
 	const container = await createDIContainer(context)
+
 	notesHubModuleInstance = container.resolve('notesHubModule')
 
 	try {
@@ -29,7 +30,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		await notesHubModuleInstance.initializeModule()
 		context.subscriptions.push({ dispose: () => notesHubModuleInstance?.dispose() })
 		isActivated = true
-	} catch (error) {
+	}
+	catch (error) {
 		console.error(`[${constants.extension.name}] Error during NotesHubModule initialization:`, error)
 	}
 

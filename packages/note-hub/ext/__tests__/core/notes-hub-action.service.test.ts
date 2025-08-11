@@ -31,7 +31,7 @@ describe('NotesHubActionService', () => {
 			...mockly.window,
 			showTextDocument: vi.fn().mockResolvedValue(undefined),
 			withProgress: vi.fn().mockImplementation((options: any, task: any) => task()),
-			showWarningMessage: vi.fn().mockImplementation((message: string, options: any, ...actions: string[]) => {
+			showWarningMessage: vi.fn().mockImplementation((message: string, _options: any, ..._actions: string[]) => {
 				// Return 'Delete' for deleteItem test, 'Overwrite' for pasteItem test
 				if (message.includes('already exists. Overwrite?')) {
 					return Promise.resolve('Overwrite')
@@ -187,6 +187,7 @@ describe('NotesHubActionService', () => {
 		
 		// Mock UriAdapter.file to return a mock URI that works in tests
 		const originalFile = UriAdapter.file
+
 		UriAdapter.file = vi.fn((path: string) => ({
 			uri: { fsPath: path, toString: () => path },
 			fsPath: path,
@@ -198,7 +199,8 @@ describe('NotesHubActionService', () => {
 		try {
 			await svc.pasteItem(targetFolder as any)
 			console.log('pasteItem completed successfully')
-		} catch (error) {
+		}
+		catch (error) {
 			console.error('pasteItem failed with error:', error)
 		}
 		

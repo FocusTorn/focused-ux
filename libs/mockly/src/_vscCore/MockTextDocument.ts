@@ -1,40 +1,46 @@
-import type { TextDocument, Uri, Position, Range } from 'vscode'
-import { MockPosition, MockRange } from './vscClasses.js'
+import type { TextDocument, TextLine, Position as VSCodePosition, Range as VSCodeRange } from 'vscode'
+import { Position, Range } from './vscClasses.js'
 
 export class MockTextDocument implements TextDocument {
-	readonly uri: Uri
-	readonly fileName: string
-	readonly isUntitled: boolean
-	readonly languageId: string
-	readonly version: number
-	readonly isDirty: boolean
-	readonly isClosed: boolean
-	readonly eol: number
-	readonly lineCount: number
 
-	private _content: string
-	private _lines: string[]
-
-	constructor(uri: Uri, content: string = '', languageId: string = 'markdown') {
-		this.uri = uri
-		this.fileName = uri.fsPath
-		this.isUntitled = false
-		this.languageId = languageId
-		this.version = 1
-		this.isDirty = false
-		this.isClosed = false
-		this.eol = 1 // LF
-		this._content = content
-		this._lines = content ? content.split('\n') : ['']
-		this.lineCount = this._lines.length
+	public readonly uri: any
+	public readonly fileName: string
+	public readonly isUntitled: boolean
+	public readonly languageId: string
+	public readonly version: number
+	public get isDirty(): boolean {
+		return this._isDirty
 	}
 
-	getText(range?: Range): string {
+	public readonly isClosed: boolean
+	public readonly eol: number
+	public readonly encoding: string
+	private _lines: string[] = []
+	private _lineCount: number = 0
+	private _isDirty: boolean = false
+
+	constructor(uri: any, content: string = '') {
+		this.uri = uri
+		this.fileName = uri?.fsPath || uri?.path || 'mock-document.md'
+		this.isUntitled = false
+		this.languageId = 'markdown'
+		this.version = 1
+		this._isDirty = false
+		this.isClosed = false
+		this.eol = 1 // LF
+		this.encoding = 'utf8'
+		this.setContent(content)
+	}
+
+	get lineCount(): number {
+		return this._lineCount
+	}
+
+	getText(range?: VSCodeRange): string {
 		if (!range) {
-			return this._content
+			return this._lines.join('\n')
 		}
 
-		// Simple range extraction - in a real implementation this would be more sophisticated
 		const startLine = range.start.line
 		const endLine = range.end.line
 		const startChar = range.start.character
@@ -44,12 +50,12 @@ export class MockTextDocument implements TextDocument {
 			return this._lines[startLine]?.substring(startChar, endChar) || ''
 		}
 
-		const lines = this._lines.slice(startLine, endLine + 1)
-		if (lines.length > 0) {
-			lines[0] = lines[0].substring(startChar)
-			lines[lines.length - 1] = lines[lines.length - 1].substring(0, endChar)
-		}
+		const lines = [this._lines[startLine]?.substring(startChar) || '']
 
+		for (let i = startLine + 1; i < endLine; i++) {
+			lines.push(this._lines[i] || '')
+		}
+		lines.push(this._lines[endLine]?.substring(0, endChar) || '')
 		return lines.join('\n')
 	}
 
@@ -57,69 +63,123 @@ export class MockTextDocument implements TextDocument {
 		return this._lines[line] || ''
 	}
 
-	positionAt(offset: number): Position {
-		if (offset < 0) {
-			return new MockPosition(0, 0)
+	lineAt(lineOrPosition: number | VSCodePosition): TextLine {
+		let lineNumber: number
+
+		if (typeof lineOrPosition === 'number') {
+			lineNumber = lineOrPosition
+		}
+		else {
+			lineNumber = lineOrPosition.line
 		}
 
+		const lineText = this._lines[lineNumber] || ''
+
+		return {
+			lineNumber,
+			text: lineText,
+			range: new Range(lineNumber, 0, lineNumber, lineText.length),
+			rangeIncludingLineBreak: new Range(lineNumber, 0, lineNumber + 1, 0),
+			firstNonWhitespaceCharacterIndex: lineText.search(/\S/),
+			isEmptyOrWhitespace: /^\s*$/.test(lineText),
+		}
+	}
+
+	getWordRangeAtPosition(position: VSCodePosition, regex?: RegExp): VSCodeRange | undefined {
+		const lineText = this._lines[position.line] || ''
+
+		if (!lineText)
+			return undefined
+
+		if (regex) {
+			// Simple regex matching for mock purposes
+			const matches = lineText.match(regex)
+
+			if (matches) {
+				return new Range(position.line, 0, position.line, lineText.length)
+			}
+		}
+
+		// Simple word boundary detection
+		const wordRegex = /\b\w+\b/g
+		let match
+
+		while ((match = wordRegex.exec(lineText)) !== null) {
+			if (match.index <= position.character && match.index + match[0].length > position.character) {
+				return new Range(position.line, match.index, position.line, match.index + match[0].length)
+			}
+		}
+
+		return undefined
+	}
+
+	save(): Promise<boolean> {
+		this._isDirty = false
+		return Promise.resolve(true)
+	}
+
+	positionAt(offset: number): VSCodePosition {
 		let currentOffset = 0
-		for (let line = 0; line < this._lines.length; line++) {
-			const lineLength = this._lines[line].length + 1 // +1 for newline
+
+		for (let i = 0; i < this._lines.length; i++) {
+			// Add +1 for newline only if it's not the last line
+			const lineLength = this._lines[i].length + (i < this._lines.length - 1 ? 1 : 0)
+
 			if (currentOffset + lineLength > offset) {
-				const character = offset - currentOffset
-				return new MockPosition(line, character)
+				return new Position(i, offset - currentOffset)
 			}
 			currentOffset += lineLength
 		}
-
-		// If offset is beyond content, return position at end
-		return new MockPosition(this._lines.length - 1, this._lines[this._lines.length - 1]?.length || 0)
+		return new Position(this._lines.length, 0)
 	}
 
-	offsetAt(position: Position): number {
+	offsetAt(position: VSCodePosition): number {
 		let offset = 0
-		for (let line = 0; line < position.line; line++) {
-			offset += (this._lines[line]?.length || 0) + 1 // +1 for newline
+
+		for (let i = 0; i < position.line; i++) {
+			// Add +1 for newline only if it's not the last line
+			offset += this._lines[i].length + (i < this._lines.length - 1 ? 1 : 0)
 		}
-		offset += position.character
-		return offset
+		return offset + position.character
 	}
 
-	validateRange(range: Range): Range {
-		// Ensure range is within document bounds
-		const startLine = Math.max(0, Math.min(range.start.line, this.lineCount - 1))
-		const endLine = Math.max(0, Math.min(range.end.line, this.lineCount - 1))
-		
+	validateRange(range: VSCodeRange): VSCodeRange {
+		const startLine = Math.max(0, Math.min(range.start.line, this._lines.length - 1))
+		const endLine = Math.max(0, Math.min(range.end.line, this._lines.length - 1))
 		const startChar = Math.max(0, Math.min(range.start.character, this._lines[startLine]?.length || 0))
 		const endChar = Math.max(0, Math.min(range.end.character, this._lines[endLine]?.length || 0))
 
-		return new MockRange(startLine, startChar, endLine, endChar)
+		return new Range(startLine, startChar, endLine, endChar)
 	}
 
-	validatePosition(position: Position): Position {
-		const line = Math.max(0, Math.min(position.line, this.lineCount - 1))
+	validatePosition(position: VSCodePosition): VSCodePosition {
+		const line = Math.max(0, Math.min(position.line, this._lines.length - 1))
 		const character = Math.max(0, Math.min(position.character, this._lines[line]?.length || 0))
-		return new MockPosition(line, character)
+
+		return new Position(line, character)
 	}
 
-	// Mock methods for testing
 	setContent(content: string): void {
-		this._content = content
-		this._lines = content ? content.split('\n') : ['']
-		this.lineCount = this._lines.length
-		this.version++
+		// Split by newlines and filter out trailing empty lines
+		this._lines = content.split('\n')
+		// Remove trailing empty lines to match VSCode behavior
+		while (this._lines.length > 0 && this._lines[this._lines.length - 1] === '') {
+			this._lines.pop()
+		}
+		this._lineCount = this._lines.length
+		this._isDirty = true
 	}
 
 	getContent(): string {
-		return this._content
+		return this._lines.join('\n')
 	}
 
-	// Utility methods for testing
 	getLines(): string[] {
 		return [...this._lines]
 	}
 
 	getLineCount(): number {
-		return this.lineCount
+		return this._lineCount
 	}
-} 
+
+}

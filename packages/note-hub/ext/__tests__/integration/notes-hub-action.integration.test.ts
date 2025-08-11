@@ -15,8 +15,8 @@ describe('NotesHubActionService Integration Tests', () => {
 		const { NotesHubActionService } = await import('../../../core/src/services/NotesHubAction.service.js')
 		const { NotesHubProviderManager } = await import('../../../core/src/services/NotesHubProvider.manager.js')
 		const { NotesHubConfigService } = await import('../../../core/src/services/NotesHubConfig.service.js')
-		const { NotesHubItem } = await import('../../../core/src/models/NotesHubItem.js')
-		const { UriAdapter } = await import('@fux/shared')
+		const { NotesHubItem: _NotesHubItem } = await import('../../../core/src/models/NotesHubItem.js')
+		const { UriAdapter: _UriAdapter } = await import('@fux/shared')
 
 		// Create real service instances with minimal mocking
 		mockContext = {

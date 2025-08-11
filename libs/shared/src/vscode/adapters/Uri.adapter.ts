@@ -36,10 +36,13 @@ export class UriAdapter implements IUri {
 		
 		try {
 			console.log('[UriAdapter] file() calling vscode.Uri.file with:', path)
+
 			const vscodeUri = vscode.Uri.file(path)
+
 			console.log('[UriAdapter] file() vscode.Uri.file succeeded, creating UriAdapter')
 			return new UriAdapter(vscodeUri)
-		} catch (error) {
+		}
+		catch (error) {
 			console.error('[UriAdapter] file() vscode.Uri.file failed:', error)
 			console.error('[UriAdapter] file() error type:', typeof error)
 			console.error('[UriAdapter] file() error message:', (error as Error)?.message)
