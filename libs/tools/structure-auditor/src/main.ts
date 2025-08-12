@@ -6,7 +6,7 @@ import { errors, printGroupedErrors, printExpandedErrors } from './util/errors.j
 import { checkPackageJsonExtDependencies, checkNoUnusedDeps, checkVSCodeEngineVersion, checkPackageVersionFormat, checkCorePackageDependencies } from './checks/package-json.js'
 import { checkProjectJsonExt, checkProjectJsonPackaging, checkProjectJsonExternalsConsistency, checkProjectJsonExtExternals, checkProjectJsonLintAndTestTargets, checkProjectJsonLintAndTestTargetsLibs, checkProjectJsonTargetConsistency, checkUniversalTargets } from './checks/project-json.js'
 import { checkTsconfigExt, checkTsconfigCore, checkTsconfigShared, checkTsconfigLibPaths } from './checks/tsconfig.js'
-import { checkRequiredExtFiles, checkNoDynamicImports, checkNoVSCodeValueImports, checkVSCodeAdaptersInSharedOnly } from './checks/misc.js'
+import { checkRequiredExtFiles, checkNoDynamicImports, checkNoVSCodeValueImports, checkVSCodeAdaptersInSharedOnly, checkNoDynamicImportsInShared } from './checks/misc.js'
 
 // Load aliases from pnpm_aliases.json
 function loadAliases() {
@@ -231,7 +231,9 @@ function main() { //>
 
 	let ok = true
 
+	// Always audit shared tsconfig and shared-specific rules
 	ok = checkTsconfigShared() && ok
+	ok = checkNoDynamicImportsInShared() && ok
 
 	for (const item of itemsToAudit) {
 		// Check if it's a package or lib

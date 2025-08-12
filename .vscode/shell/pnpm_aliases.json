@@ -9,6 +9,7 @@
         "tsc": "check-types",
         "v": "validate",
         "t": "test",
+        "tf": "test:full",
         "tc": "test --coverage",
         "tcw": "test --coverage --reporter=html",
         "c": "clean",

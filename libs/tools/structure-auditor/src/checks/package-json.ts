@@ -4,7 +4,7 @@ import { addError } from '../util/errors.js'
 import { readJson, findJsonLocation } from '../util/fs.js'
 import { ROOT } from '../util/helpers.js'
 
-function checkDependencyImports(pkg: string, depName: string): boolean {
+function checkDependencyImports(pkg: string, depName: string): boolean { //>
 	const extSrcPath = path.join(ROOT, 'packages', pkg, 'ext', 'src')
 
 	if (!fs.existsSync(extSrcPath)) {
@@ -43,7 +43,7 @@ function checkDependencyImports(pkg: string, depName: string): boolean {
 	}
 	
 	return searchForImports(extSrcPath)
-}
+} //<
 
 export function checkPackageJsonExtDependencies(pkg: string) { //>
 	const pkgJsonPath = path.join(ROOT, 'packages', pkg, 'ext', 'package.json')
@@ -131,7 +131,7 @@ export function checkPackageJsonExtDependencies(pkg: string) { //>
 	return ok
 } //<
 
-export function checkCorePackageDependencies(pkg: string): boolean {
+export function checkCorePackageDependencies(pkg: string): boolean { //>
 	const corePkgJsonPath = path.join(ROOT, 'packages', pkg, 'core', 'package.json')
 	const extPkgJsonPath = path.join(ROOT, 'packages', pkg, 'ext', 'package.json')
 	
@@ -181,9 +181,9 @@ export function checkCorePackageDependencies(pkg: string): boolean {
 	}
 
 	return ok
-}
+} //<
 
-function getAllRuntimeDependencies(pkg: string, visited: Set<string>): Set<string> {
+function getAllRuntimeDependencies(pkg: string, visited: Set<string>): Set<string> { //>
 	const corePkgJsonPath = path.join(ROOT, 'packages', pkg, 'core', 'package.json')
 
 	if (!fs.existsSync(corePkgJsonPath)) {
@@ -225,9 +225,9 @@ function getAllRuntimeDependencies(pkg: string, visited: Set<string>): Set<strin
 	}
 
 	return allDeps
-}
+} //<
 
-function getTransitiveDependencies(depName: string): Set<string> {
+function getTransitiveDependencies(depName: string): Set<string> { //>
 	const transitiveDeps = new Set<string>()
 	
 	try {
@@ -252,9 +252,9 @@ function getTransitiveDependencies(depName: string): Set<string> {
 	}
 
 	return transitiveDeps
-}
+} //<
 
-function checkCoreRuntimeDependency(pkg: string, depName: string): boolean {
+function checkCoreRuntimeDependency(pkg: string, depName: string): boolean { //>
 	const coreSrcPath = path.join(ROOT, 'packages', pkg, 'core', 'src')
 
 	if (!fs.existsSync(coreSrcPath)) {
@@ -297,7 +297,7 @@ function checkCoreRuntimeDependency(pkg: string, depName: string): boolean {
 	}
 	
 	return searchForRuntimeImports(coreSrcPath)
-}
+} //<
 
 export function checkNoUnusedDeps(pkg: string) { //>
 	const pkgJsonPath = path.join(ROOT, 'packages', pkg, 'ext', 'package.json')

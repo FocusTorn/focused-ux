@@ -18,41 +18,7 @@ export default defineConfig({
 				'**/setup.ts',
 			],
 		},
-    setupFiles: ['./src/__tests__/setup.ts'],
-	},
-	resolve: {
-		alias: {
-			'@fux/shared': path.resolve(__dirname, './src/index.ts'),
-			'@fux/mockly': path.resolve(__dirname, '../mockly/src/index.ts'),
-			'vscode': path.resolve(__dirname, '../../vscode-test-adapter.ts'),
-		},
-	},
-	define: {
-		'process.env.NODE_ENV': '"test"',
-	},
-	optimizeDeps: {
-		exclude: ['vscode'],
-	},
-})
-
-export default defineConfig({
-	test: {
-		globals: true,
-		environment: 'node',
-		coverage: {
-			provider: 'v8',
-			reporter: ['text', 'json', 'html'],
-			exclude: [
-				'node_modules/',
-				'dist/',
-				'**/*.d.ts',
-				'**/*.config.*',
-				'**/coverage/**',
-				'**/*.test.ts',
-				'**/setup.ts',
-			],
-		},
-		setupFiles: ['./__tests__/setup.ts'],
+		setupFiles: ['./src/__tests__/setup.ts'],
 	},
 	resolve: {
 		alias: {

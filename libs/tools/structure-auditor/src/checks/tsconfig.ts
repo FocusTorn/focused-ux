@@ -145,6 +145,19 @@ export function checkTsconfigShared() { //>
 			addError('Missing \'composite: true\'', `libs/shared/tsconfig.lib.json${locationStr}`)
 			return false
 		}
+
+		// Ensure tests directory is excluded so setup files (e.g., src/__tests__/setup.ts)
+		// are not compiled during library builds.
+		const exclude: string[] = tsconfigLib.exclude || []
+		const hasTestsDirExclude = exclude.some((p: string) => p.replace(/\\/g, '/') === 'src/__tests__/**')
+
+		if (!hasTestsDirExclude) {
+			const location = findJsonLocation(tsconfigLibPath, 'exclude')
+			const locationStr = location ? `:${location.line}:${location.column}` : ''
+
+			addError('Missing tests directory exclude', `libs/shared/tsconfig.lib.json${locationStr}: exclude should include 'src/__tests__/**' to avoid compiling test setup files.`)
+			return false
+		}
 	}
 
 	return true

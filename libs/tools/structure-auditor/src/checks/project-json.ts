@@ -473,7 +473,7 @@ export function checkProjectJsonTargetConsistency(pkg: string) { //>
 
 		// Core packages should have the same targets except package-related ones
 		const coreExpectedTargets = expectedTargets.filter(target =>
-			!target.startsWith('package')
+			!target.startsWith('package'),
 		)
 
 		for (const targetName of coreExpectedTargets) {

@@ -109,10 +109,13 @@ function runNx(argv: string[]): number {
 		return 0
 	}
 
+	// Use platform shell for Windows to preserve expected alias/ENV behavior
 	const res = spawnSync('nx', argv, { stdio: 'inherit', shell: process.platform === 'win32' })
 
 	return res.status ?? 1
 }
+
+// Stream handling is opt-in; do not mutate output style or env here
 
 function runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: AliasConfig): number {
 	const projects: string[] = []
@@ -136,7 +139,9 @@ function runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: stri
 
 	const par = String(projects.length)
 
-	return runNx(['run-many', `--target=${targets[0]}`, `--projects=${projects.join(',')}`, `--parallel=${par}`, ...flags, ...targets.slice(1)])
+	const target = targets[0]
+
+	return runNx(['run-many', `--target=${target}`, `--projects=${projects.join(',')}`, `--parallel=${par}`, ...flags, ...targets.slice(1)])
 }
 
 function main() {
