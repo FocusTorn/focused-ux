@@ -31,11 +31,14 @@ describe('NotesHubService', () => {
 		// Use Mockly's built-in commands service instead of manual mocks
 		iCommands = { ...mockly.commands } as unknown as ICommands
 
+		// Non-Mockly: These are project-specific shared interfaces (not VSCode APIs).
+		// Mockly focuses on VSCode and Node adapters; we stub only the required surface.
 		iCommonUtils = { errMsg: vi.fn(), infoMsg: vi.fn(), warnMsg: vi.fn(), debugMsg: vi.fn() } as unknown as ICommonUtilsService
 		iFileSystem = { createDirectoryIfNeeded: vi.fn().mockResolvedValue(undefined) } as unknown as IFileSystem
 		iWorkspaceUtils = { getWorkspaceInfo: vi.fn().mockReturnValue({ primaryName: 'proj', workspaceName: 'proj' }) } as unknown as IWorkspaceUtilsService
 
 		// Create mock config service
+		// Non-Mockly: Config service is internal to Note Hub; manual stub ensures deterministic behavior.
 		const iConfigService = {
 			getNotesHubConfig: vi.fn().mockReturnValue({
 				isProjectNotesEnabled: true,
@@ -49,6 +52,7 @@ describe('NotesHubService', () => {
 		} as any
 
 		// Create mock action service
+		// Non-Mockly: Action service is internal to Note Hub; manual stub allows delegation assertions.
 		const iActionService = {
 			openNote: vi.fn(),
 			renameItem: vi.fn(),
@@ -64,6 +68,7 @@ describe('NotesHubService', () => {
 			newFolderAtRoot: vi.fn(),
 		} as any
 
+		// Non-Mockly: Provider manager is internal orchestration; stubbed to control side-effects.
 		iProviderManager = {
 			initializeProviders: vi.fn().mockResolvedValue(undefined),
 			dispose: vi.fn(),

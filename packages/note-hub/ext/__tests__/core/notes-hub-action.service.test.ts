@@ -56,11 +56,8 @@ describe('NotesHubActionService', () => {
 			},
 		} as unknown as IWorkspace
 
-		// Use Mockly's built-in env service instead of manual mocks
-		iEnv = {
-			...mockly.env,
-			clipboard: { writeText: vi.fn(), readText: vi.fn() },
-		} as unknown as IEnv
+		// Use Mockly's built-in env service (clipboard included)
+		iEnv = mockly.env as unknown as IEnv
 		
 		iCommon = { errMsg: vi.fn(), infoMsg: vi.fn(), warnMsg: vi.fn(), debugMsg: vi.fn() } as unknown as ICommonUtilsService
 		iFront = { getFrontmatter_validateFrontmatter: vi.fn().mockReturnValue(false) } as unknown as IFrontmatterUtilsService
@@ -87,9 +84,9 @@ describe('NotesHubActionService', () => {
 			revealNotesHubItem: vi.fn(),
 		}
 
-		// Create mock node.fs functions with Vitest mocks
-		iFspAccess = vi.fn()
-		iFspRename = vi.fn()
+		// Use Mockly's node.fs shims
+		iFspAccess = vi.fn().mockImplementation((p: string) => mockly.node.fs.access(p))
+		iFspRename = vi.fn().mockImplementation((a: string, b: string) => mockly.node.fs.rename(a, b))
 
 		// Set up mock implementations
 		;(iWorkspace.openTextDocument as any).mockResolvedValue({ uri: { fsPath: '/notes/project/n.md' } })
@@ -101,7 +98,6 @@ describe('NotesHubActionService', () => {
 		;(iWorkspace.fs.stat as any).mockResolvedValue({ type: 1 }) // File type
 		;(iCommands.executeCommand as any).mockResolvedValue(undefined)
 		iFspAccess.mockResolvedValue(undefined)
-		iFspRename.mockResolvedValue(undefined)
 
 		svc = new NotesHubActionService(
 			ctx,
@@ -174,7 +170,7 @@ describe('NotesHubActionService', () => {
 		console.log('Target folder resourceUri:', targetFolder.resourceUri?.fsPath)
 		
 		// Set up minimal mocks
-		;(iEnv.clipboard.readText as any).mockResolvedValue(sourceUri)
+		vi.spyOn(mockly.env.clipboard, 'readText').mockResolvedValue(sourceUri)
 		;(ctx.globalState.get as any).mockImplementation((key: string) => {
 			console.log('Global state get called with key:', key)
 			if (key === 'openNote.operation')

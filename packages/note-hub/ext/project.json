@@ -99,10 +99,7 @@
             "dependsOn": ["^test"],
             "options": {
                 "configFile": "packages/note-hub/ext/vitest.config.ts",
-                "reporter": "verbose",
-                "coverage": {
-                    "reporter": ["text", "lcov", "html"]
-                }
+                "reporters": "default"
             }
         }
         

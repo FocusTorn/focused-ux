@@ -30,72 +30,44 @@ describe('NotesHubActionService - Create Folder', () => {
 		// Enable console output for debugging by setting mockly log level to Info
 		const utils = new CoreUtilitiesService()
 
-		utils.setLogLevel(LogLevel.Info)
-
-		// ✅ MOCKLY CAN COVER: Extension context (basic structure)
-		ctx = {
+		utils.setLogLevel(LogLevel.Warning)
+		
+		// Node fs injections used by service (injected as dependencies)
+		const iFspAccess = vi.fn().mockResolvedValue(undefined)
+		const iFspRename = vi.fn()
+		
+		// ✅ MOCKLY CAN COVER
+		ctx = { //>
 			globalState: { update: vi.fn(), get: vi.fn() },
 			subscriptions: [],
-		}
-		
-		// ✅ MOCKLY CAN COVER: Window service with custom input box behavior
-		iWindow = {
+		} //<
+		iWindow = { //>
 			...mockly.window,
 			showInputBox: vi.fn().mockResolvedValue('new-folder'),
-		} as unknown as IWindow
-        
-		// ✅ MOCKLY CAN COVER: Workspace service with custom directory creation
-		iWorkspace = {
-			...mockly.workspace,
-			fs: {
-				// Ensure we have all the required fs methods
-				stat: vi.fn(),
-				readFile: vi.fn(),
-				writeFile: vi.fn(),
-				createDirectory: vi.fn().mockResolvedValue(undefined),
-				readDirectory: vi.fn(),
-				delete: vi.fn(),
-				copy: vi.fn(),
-				rename: vi.fn(),
-			},
-		} as unknown as IWorkspace
-        
-		// ✅ MOCKLY CAN COVER: Environment service with clipboard utilities
-		iEnv = {
-			...mockly.env,
-			clipboard: { writeText: vi.fn(), readText: vi.fn() },
-		} as unknown as IEnv
-        
-		// ✅ MOCKLY CAN COVER: Commands service
-		iCommands = {
+		} as unknown as IWindow //<
+		iEnv = mockly.env as unknown as IEnv //<
+		iCommands = { //>
 			...mockly.commands,
-		} as unknown as ICommands
-        
-		// ✅ MOCKLY CAN COVER: File type enum (using mockly's constants)
-		iFileType = {
+		} as unknown as ICommands //<
+		iFileType = { //>
 			File: 1,
 			Directory: 2,
-		} as unknown as IFileType
+		} as unknown as IFileType //<
         
-		// ❌ MOCKLY CANNOT COVER: Custom interface ICommonUtilsService
-		// This is a custom interface specific to the shared library
-		iCommon = {
+		iWorkspace = mockly.workspace as unknown as IWorkspace
+		vi.spyOn((mockly.workspace as any).fs, 'createDirectory').mockResolvedValue(undefined as any)
+		
+		// Custom interfaces for shared library
+		iCommon = { //>
 			errMsg: vi.fn(),
 			infoMsg: vi.fn(),
 			warnMsg: vi.fn(),
 			debugMsg: vi.fn(),
-		} as unknown as ICommonUtilsService
-		
-		// ❌ MOCKLY CANNOT COVER: Custom interface IFrontmatterUtilsService
-		// This is a custom interface specific to the shared library
-		iFront = {
+		} as unknown as ICommonUtilsService //<
+		iFront = { //>
 			getFrontmatter_validateFrontmatter: vi.fn().mockReturnValue(false),
-		} as unknown as IFrontmatterUtilsService
-		
-		// ❌ MOCKLY CANNOT COVER: Custom interface IPathUtilsService
-		// This is a custom interface specific to the shared library
-		// However, we can leverage mockly's node.path utilities for some operations
-		iPath = {
+		} as unknown as IFrontmatterUtilsService //<
+		iPath = { //>
 			sanitizePath: vi.fn((p: string) => p),
 			basename: vi.fn((p: string) => p.split('/').pop() || p),
 			dirname: vi.fn((p: string) => p.split('/').slice(0, -1).join('/') || '.'),
@@ -104,28 +76,19 @@ describe('NotesHubActionService - Create Folder', () => {
 				name: p.split('/').pop()?.split('.')[0] || '',
 				ext: p.includes('.') ? `.${p.split('.').pop()}` : '',
 			})),
-		} as unknown as IPathUtilsService
+		} as unknown as IPathUtilsService //<
 		
-		// ❌ MOCKLY CANNOT COVER: Custom service iProviderManager
-		// This is a custom service specific to the note-hub package
-		iProviderManager = {
+		// Custom service for note-hub package
+		iProviderManager = { //>
 			getProviderForNote: vi.fn().mockResolvedValue({
 				refresh: vi.fn(),
 				getNotesHubItem: vi.fn().mockResolvedValue(undefined),
 			}),
 			getProviderInstance: vi.fn().mockReturnValue({ notesDir: '/notes/project' }),
 			revealNotesHubItem: vi.fn(),
-		}
-
-		// ❌ MOCKLY CANNOT COVER: Node.js file system operations (they call real fs)
-		// Create proper mocks for file system operations
-		const iFspAccess = vi.fn().mockResolvedValue(undefined)
-        
-		// ❌ MOCKLY CANNOT COVER: rename method not available in mockly.node.fs
-		// Fall back to manual mock for this specific method
-		const iFspRename = vi.fn()
+		} //<
 		
-		svc = new NotesHubActionService(
+		svc = new NotesHubActionService( //>
 			ctx,
 			iWindow,
 			iWorkspace,
@@ -148,7 +111,7 @@ describe('NotesHubActionService - Create Folder', () => {
 			iFspAccess,
 			iFspRename,
 			iFileType,
-		)
+		) //<
 	})
 
 	it('passes raw VSCode Uri to workspace.fs.createDirectory (not UriAdapter)', async () => {

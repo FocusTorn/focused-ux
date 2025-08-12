@@ -69,10 +69,11 @@ export function checkNoDynamicImports(pkg: string) { //>
 } //<
 
 export function checkNoVSCodeValueImports(pkg: string) { //>
+	// Shared library is the designated home for VSCode value imports via adapters.
+	// Therefore, exclude `libs/shared` from this check entirely.
 	const dirsToScan = [
 		path.join(ROOT, 'packages', pkg, 'ext', 'src'),
 		path.join(ROOT, 'packages', pkg, 'core', 'src'),
-		path.join(ROOT, 'libs', 'shared', 'src'),
 	]
 	let found = false
 
@@ -176,7 +177,7 @@ export function checkVSCodeAdaptersInSharedOnly(pkg: string) { //>
 						for (const pattern of vscodeAdapterPatterns) {
 							if (pattern.test(line)) {
 								// Skip if this is just a string literal containing "vscode."
-								if (line.includes("'vscode.") || line.includes('"vscode.')) {
+								if (line.includes('\'vscode.') || line.includes('"vscode.')) {
 									continue
 								}
 								

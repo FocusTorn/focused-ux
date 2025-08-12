@@ -10,7 +10,7 @@
         "composite": true,
         "types": ["node"],
         "paths": {
-            "@fux/shared": ["../../libs/shared"]
+            "@fux/shared": ["../../libs/shared/src"]
         }
     },
     "include": ["src/**/*.ts"],

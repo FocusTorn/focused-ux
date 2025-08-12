@@ -11,14 +11,17 @@ import { checkRequiredExtFiles, checkNoDynamicImports, checkNoVSCodeValueImports
 // Load aliases from pnpm_aliases.json
 function loadAliases() {
 	const aliasesPath = path.join(ROOT, '.vscode', 'shell', 'pnpm_aliases.json')
+
 	if (!fs.existsSync(aliasesPath)) {
 		return { packages: {} }
 	}
 	
 	try {
 		const aliasesContent = fs.readFileSync(aliasesPath, 'utf-8')
+
 		return JSON.parse(aliasesContent)
-	} catch (error) {
+	}
+	catch (error) {
 		console.warn(`Warning: Could not load aliases from ${aliasesPath}: ${error}`)
 		return { packages: {} }
 	}
@@ -35,6 +38,7 @@ function resolvePackageName(input: string): string | null {
 			const packageName = input.replace('@fux/', '')
 			// Remove -core or -ext suffix to get the base package name
 			const baseName = packageName.replace(/-core$|-ext$/, '')
+
 			return baseName
 		}
 		// Handle package-name format (already a valid package name)
@@ -43,6 +47,7 @@ function resolvePackageName(input: string): string | null {
 	
 	// Check if it's an alias
 	const aliasData = aliases.packages?.[input]
+
 	if (aliasData) {
 		if (typeof aliasData === 'string') {
 			// Handle direct string aliases like "shared": "@fux/shared"
@@ -50,7 +55,8 @@ function resolvePackageName(input: string): string | null {
 				return aliasData.replace('@fux/', '')
 			}
 			return aliasData
-		} else if (aliasData.name) {
+		}
+		else if (aliasData.name) {
 			// Handle object aliases like { "name": "ghost-writer", "suffix": "ext" }
 			return aliasData.name
 		}
@@ -68,6 +74,7 @@ function showHelp() {
 	console.log('Options:')
 	console.log('  -l, --list     Show detailed output with line/column numbers')
 	console.log('  -g, --grouped  Show grouped output (default)')
+	console.log('  --warn-only    Do not exit with non-zero code; print findings and exit 0')
 	console.log('  -h, --help     Show this help message')
 	console.log('')
 	console.log('Examples:')
@@ -162,6 +169,7 @@ function main() { //>
 	const args = process.argv.slice(2)
 	let singleItemArg: string | null = null
 	let isExpanded = false
+	let warnOnly = false
 
 	// Check for help flags first
 	if (args.includes('-h') || args.includes('--help')) {
@@ -174,6 +182,9 @@ function main() { //>
 
 		if (arg === '-l' || arg === '--list') {
 			isExpanded = true
+		}
+		else if (arg === '--warn-only') {
+			warnOnly = true
 		}
 		else if (!arg.startsWith('-') && !singleItemArg) {
 			singleItemArg = arg
@@ -190,14 +201,17 @@ function main() { //>
 			// It's already a valid package name, use it as is
 			itemsToAudit.length = 0
 			itemsToAudit.push(inputArg)
-		} else {
+		}
+		else {
 			// Try to resolve as alias or project name
 			const resolvedPackage = resolvePackageName(inputArg)
+
 			if (resolvedPackage && allItems.includes(resolvedPackage)) {
 				// Use the resolved package name
 				itemsToAudit.length = 0
 				itemsToAudit.push(resolvedPackage)
-			} else {
+			}
+			else {
 				console.error(`${color(196)}Error: Package/lib '${inputArg}' not found in the 'packages' or 'libs' directories, and is not a valid alias.\x1B[0m`)
 				console.error(`${color(196)}Available packages: ${allItems.join(', ')}\x1B[0m`)
 				console.error(`${color(196)}Available aliases: ${Object.keys(loadAliases().packages || {}).join(', ')}\x1B[0m`)
@@ -247,11 +261,13 @@ function main() { //>
 			
 			// Check universal targets for core and ext
 			const coreProjectPath = path.join(ROOT, 'packages', item, 'core', 'project.json')
+
 			if (fs.existsSync(coreProjectPath)) {
 				ok = checkUniversalTargets(coreProjectPath, item, 'core') && ok
 			}
 			
 			const extProjectPath = path.join(ROOT, 'packages', item, 'ext', 'project.json')
+
 			if (fs.existsSync(extProjectPath)) {
 				ok = checkUniversalTargets(extProjectPath, item, 'ext') && ok
 			}
@@ -262,6 +278,7 @@ function main() { //>
 			
 			// Check universal targets for libs
 			const libProjectPath = path.join(ROOT, 'libs', item, 'project.json')
+
 			if (fs.existsSync(libProjectPath)) {
 				ok = checkUniversalTargets(libProjectPath, item, 'lib') && ok
 			}
@@ -277,6 +294,10 @@ function main() { //>
 	}
 
 	if (Object.keys(errors).length > 0) {
+		if (warnOnly) {
+			console.log(`${color(214)}Auditor findings present, but --warn-only specified. Exiting 0.[0m`)
+			process.exit(0)
+		}
 		process.exit(1)
 	}
 } //<

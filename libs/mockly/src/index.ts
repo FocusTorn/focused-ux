@@ -41,8 +41,12 @@ export type { IMocklyService }
 
 // Export services
 export { CoreUtilitiesService } from './services/CoreUtilities.service.js'
+export { MockUriFactoryService } from './services/MockUriFactory.service.js'
 
 // Export additional VSCode types and classes
 export * from './_vscCore/vscClasses.js'
 export * from './_vscCore/vscEnums.js'
 export * from './_vscCore/vscInterfaces.js'
+
+// Testing helpers (intentionally optional; used by consumer tests)
+export { createMockWindowWithEditor } from './testing/createMockWindowWithEditor.js'

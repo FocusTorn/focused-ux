@@ -11,6 +11,8 @@ describe('Note Hub Extension Activation (integration, mocked VSCode)', () => {
 	let context: any
 
 	beforeEach(() => {
+		// Non-Mockly: VSCode ExtensionContext is not provided by Mockly; we only need minimal shape
+		// for DI and command registration verification.
 		context = { subscriptions: [], globalState: { update: vi.fn(), get: vi.fn() } }
 		// ensure clean commands registry between tests
 		// Mockly exposes a reset command; but we can simply re-create container if needed
@@ -33,7 +35,7 @@ describe('Note Hub Extension Activation (integration, mocked VSCode)', () => {
 
 		expect(cmds.some(c => c.startsWith('nh.'))).toBe(true)
 
-		await deactivate()
+		deactivate()
 		// Note: setContext command execution is not part of the activation process
 		// The test was expecting a command that doesn't exist in the current implementation
 	})

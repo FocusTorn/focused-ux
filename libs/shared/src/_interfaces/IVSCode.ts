@@ -230,6 +230,7 @@ export interface IUri {
 	path: string
 	query: string
 	fsPath: string
+	toString: () => string
 }
 
 export interface IUriHandler {

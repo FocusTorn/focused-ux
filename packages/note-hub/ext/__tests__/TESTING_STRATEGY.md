@@ -107,6 +107,17 @@ actionService = new NotesHubActionService(
 )
 ```
 
+### 6. **Environment Clipboard via Mockly (Tests) ⚠️ NEW**
+
+- Prefer Mockly env clipboard shims over manual iEnv mocks in tests.
+- Use `mockly.env.clipboard.writeText` and `mockly.env.clipboard.readText` where clipboard is needed (copy/cut/paste flows).
+
+```ts
+// Inject env from DI as usual, or use mockly.env directly in tests
+vi.spyOn(mockly.env.clipboard, 'writeText').mockResolvedValue(undefined)
+vi.spyOn(mockly.env.clipboard, 'readText').mockResolvedValue('file:///notes/project/note.md')
+```
+
 ## Enhanced Mockly Capabilities
 
 ### MockTextDocument
@@ -114,6 +125,7 @@ actionService = new NotesHubActionService(
 ```typescript
 // Enhanced document with proper VSCode TextDocument interface
 const doc = new MockTextDocument(uri, content)
+// Trailing newlines are preserved; getText() returns exact content
 expect(doc.getText()).toBe(content)
 expect(doc.lineCount).toBe(2)
 expect(doc.positionAt(10)).toEqual(new Position(1, 2))
@@ -158,7 +170,8 @@ expect(mockWindow.showTextDocument).toHaveBeenCalled()
 
 // ALWAYS verify active editor is set
 expect(mockWindow.activeTextEditor).toBeDefined()
-expect(mockWindow.activeTextEditor?.document.uri.fsPath).toBe(expectedFilePath)
+// Normalize path separators for cross-platform
+expect(mockWindow.activeTextEditor?.document.uri.fsPath.replace(/\\/g, '/')).toBe(expectedFilePath)
 
 // Test editor functionality
 const editor = mockWindow.activeTextEditor
@@ -171,37 +184,10 @@ if (editor) {
 ### 2. **Mock Object Setup** ⚠️ **CRITICAL**
 
 ```typescript
-// Create mock window with ALL required IWindow properties
-const mockWindow = {
-    activeTextEditor: undefined,
-    showErrorMessage: vi.fn(),
-    withProgress: vi
-        .fn()
-        .mockImplementation(
-            async <T>(
-                options: { title: string; cancellable: boolean },
-                task: (progress: { report: (value: { message: string }) => void }) => Promise<T>
-            ): Promise<T> => {
-                return await task({ report: vi.fn() })
-            }
-        ),
-    showInformationMessage: vi.fn().mockResolvedValue(undefined),
-    showWarningMessage: vi.fn().mockResolvedValue(undefined),
-    showInputBox: vi.fn().mockResolvedValue('TestNote'),
-    showTextDocument: vi.fn().mockImplementation(async (doc: any) => {
-        // Create mock editor and set as active
-        const mockEditor = {
-            /* ... editor implementation ... */
-        }
-        mockWindow.activeTextEditor = mockEditor
-        return mockEditor
-    }),
-    createTreeView: vi.fn(),
-    registerTreeDataProvider: vi.fn(),
-    setStatusBarMessage: vi.fn(),
-    registerUriHandler: vi.fn(),
-    showTimedInformationMessage: vi.fn().mockResolvedValue(undefined),
-}
+// Prefer the shared helper to keep tests lean and consistent
+import { makeMockWindowWithEditor } from './helpers/mockWindow'
+
+const mockWindow = makeMockWindowWithEditor()
 ```
 
 ### 3. **Service Integration Testing** ⚠️ **ESSENTIAL**

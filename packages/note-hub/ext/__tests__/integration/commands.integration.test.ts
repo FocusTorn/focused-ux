@@ -8,6 +8,7 @@ describe('Note Hub Commands (integration, mocked VSCode)', () => {
 	let context: any
 
 	beforeEach(async () => {
+		// Non-Mockly: ExtensionContext minimal stub; Mockly does not supply it.
 		context = { subscriptions: [], globalState: { update: vi.fn(), get: vi.fn() } }
 		await activate(context as any)
 	})

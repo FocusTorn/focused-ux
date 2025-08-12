@@ -9,8 +9,7 @@ $script:FUX_PROFILE_LOADED = $true
 
 
 
-. "$PSScriptRoot\aka.ps1"
-. "$PSScriptRoot\aka-lint.ps1"
+. "$PSScriptRoot\..\..\libs\tools\aka\ps\aka.ps1"
 
 
 # ┌────────────────────────────────────────────────────────────────────────────┐

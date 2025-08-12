@@ -1,23 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { NotesHubActionService } from '../../../core/src/services/NotesHubAction.service.js'
 import { NotesHubItem } from '../../../core/src/models/NotesHubItem.js'
-import { mocklyService } from '@fux/mockly'
+import { mocklyService, mockly, createMockWindowWithEditor } from '@fux/mockly'
+import { createDIContainer } from '../../src/injection.js'
+import { asValue } from 'awilix'
 
 describe('NotesHubActionService - Enhanced Integration Tests', () => {
-	/* eslint-disable unused-imports/no-unused-vars */
-
-	let mockly: any
-	let actionService: NotesHubActionService
+	let actionService: any
 	let mockProvider: any
 	let mockWindow: any
-
-	/* eslint-enable unused-imports/no-unused-vars */
+	let container: any
     
-	beforeEach(() => {
-		// Reset Mockly for each test
+	beforeEach(async () => {
 		mocklyService.reset()
 
-		// Create a mock provider with enhanced functionality
+		// Create a mock window with all required IWindow properties (from Mockly testing helpers)
+		mockWindow = createMockWindowWithEditor()
+
+		// Create provider and provider manager mocks
 		mockProvider = {
 			notesDir: '/test/notes',
 			refresh: vi.fn(),
@@ -28,155 +27,22 @@ describe('NotesHubActionService - Enhanced Integration Tests', () => {
 			}),
 		}
 
-		// Create mock provider manager
 		const mockProviderManager = {
 			getProviderForNote: vi.fn().mockResolvedValue(mockProvider),
 			getProviderInstance: vi.fn().mockReturnValue(mockProvider),
 			revealNotesHubItem: vi.fn().mockResolvedValue(undefined),
 		}
 
-		// Create mock common utils
-		const mockCommonUtils = {
-			errMsg: vi.fn(),
-			infoMsg: vi.fn(),
-			delay: vi.fn().mockResolvedValue(undefined),
-		}
+		// Build DI container and override runtime adapters with our mocks
+		container = await createDIContainer({ subscriptions: [], globalState: { get: vi.fn(), update: vi.fn() } } as any)
+		container.register({
+			iWindow: asValue(mockWindow as any),
+			iWorkspace: asValue(mockly.workspace as any),
+			iProviderManager: asValue(mockProviderManager as any),
+			iEnv: asValue(mockly.env as any),
+		})
 
-		// Create mock frontmatter utils
-		const mockFrontmatterUtils = {
-			getFrontmatter: vi.fn().mockResolvedValue(undefined),
-			getFrontmatter_validateFrontmatter: vi.fn().mockReturnValue(false),
-		}
-
-		// Create mock path utils
-		const mockPathUtils = {
-			getDottedPath: vi.fn().mockImplementation((from: string, to: string) => to),
-			sanitizePath: vi.fn().mockImplementation((path: string) => path),
-		}
-
-		// Create mock env
-		const mockEnv = {
-			clipboard: {
-				writeText: vi.fn().mockResolvedValue(undefined),
-				readText: vi.fn().mockResolvedValue(''),
-			},
-		}
-
-		// Create mock commands
-		const mockCommands = {
-			registerCommand: vi.fn(),
-			executeCommand: vi.fn().mockResolvedValue(undefined),
-		}
-
-		// Create mock file type enum
-		const mockFileType = {
-			Unknown: 0,
-			File: 1,
-			Directory: 2,
-			SymbolicLink: 64,
-		}
-
-		// Create a mock window with all required IWindow properties
-		mockWindow = {
-			activeTextEditor: undefined,
-			showErrorMessage: vi.fn(),
-			withProgress: vi.fn().mockImplementation(async <T>(
-				options: { title: string, cancellable: boolean },
-				task: (progress: { report: (value: { message: string }) => void }) => Promise<T>,
-			): Promise<T> => {
-				return await task({ report: vi.fn() })
-			}),
-			showInformationMessage: vi.fn().mockResolvedValue(undefined),
-			showWarningMessage: vi.fn().mockResolvedValue(undefined),
-			showInputBox: vi.fn().mockResolvedValue('TestNote'),
-			showTextDocument: vi.fn().mockImplementation(async (doc: any) => {
-				// Create a mock text editor
-				const mockEditor = {
-					document: doc,
-					selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
-					moveCursor: vi.fn().mockImplementation((line: number, character: number) => {
-						mockEditor.selection.start = { line, character }
-						mockEditor.selection.end = { line, character }
-					}),
-					selectText: vi.fn().mockImplementation((startLine: number, startChar: number, endLine: number, endChar: number) => {
-						mockEditor.selection.start = { line: startLine, character: startChar }
-						mockEditor.selection.end = { line: endLine, character: endChar }
-					}),
-					modifyDocument: vi.fn().mockImplementation((content: string) => {
-						// Update the document content
-						if (doc.setContent) {
-							doc.setContent(content)
-						}
-					}),
-				}
-
-				// Set as active editor on both mock objects
-				mockWindow.activeTextEditor = mockEditor
-				mocklyService.window.activeTextEditor = mockEditor
-
-				return mockEditor
-			}),
-			createTreeView: vi.fn(),
-			registerTreeDataProvider: vi.fn(),
-			setStatusBarMessage: vi.fn(),
-			registerUriHandler: vi.fn(),
-			showTimedInformationMessage: vi.fn().mockResolvedValue(undefined),
-		}
-
-		// Create a mock workspace with all required IWorkspace properties
-		const mockWorkspace = {
-			...mocklyService.workspace,
-			workspaceFolders: [{ uri: { fsPath: '/workspace' } }],
-			openTextDocument: vi.fn().mockImplementation(async (uri: any) => {
-				// Create a mock text document
-				const mockDoc = {
-					uri,
-					getText: vi.fn().mockReturnValue('# TestNote\n\n'),
-					lineCount: 2,
-					positionAt: vi.fn().mockImplementation((offset: number) => ({ line: 0, character: offset })),
-					offsetAt: vi.fn().mockImplementation((position: any) => position.character),
-					setContent: vi.fn().mockImplementation((content: string) => {
-						mockDoc.getText = vi.fn().mockReturnValue(content)
-						mockDoc.lineCount = content.split('\n').length
-					}),
-				}
-
-				return mockDoc
-			}),
-		}
-
-		// Create the action service with enhanced mocks
-		actionService = new NotesHubActionService(
-			{
-				subscriptions: [],
-				workspaceState: { get: vi.fn(), update: vi.fn() },
-				globalState: { get: vi.fn(), update: vi.fn() },
-				secrets: { get: vi.fn(), update: vi.fn() },
-				extensionUri: { fsPath: '' },
-				extensionPath: '',
-				storageUri: { fsPath: '' },
-				logUri: { fsPath: '' },
-				extensionMode: 1,
-				environmentVariableCollection: { get: vi.fn(), replace: vi.fn() },
-				extension: { id: '', extensionUri: { fsPath: '' }, extensionPath: '', isBuiltin: false, packageJSON: {} },
-			} as any,
-			mockWindow,
-			mockWorkspace,
-			mockEnv,
-			mockCommonUtils,
-			mockFrontmatterUtils,
-			mockPathUtils,
-			mockProviderManager as any,
-			mockCommands,
-			mocklyService.node.path.join,
-			mocklyService.node.path.dirname,
-			mocklyService.node.path.basename,
-			mocklyService.node.path.parse,
-			mocklyService.node.path.extname,
-			vi.fn().mockResolvedValue(undefined), // Mock access function
-			vi.fn().mockResolvedValue(undefined), // Mock rename function
-			mockFileType,
-		)
+		actionService = container.resolve('iActionService')
 	})
 
 	describe('Enhanced Note Creation Workflow', () => {
@@ -216,7 +82,11 @@ describe('NotesHubActionService - Enhanced Integration Tests', () => {
 
 			// Verify active text editor is set
 			expect(mockWindow.activeTextEditor).toBeDefined()
-			expect(mockWindow.activeTextEditor?.document.uri.fsPath).toBe(expectedFilePath)
+
+			// Normalize path separators for cross-platform
+			const fsPath = mockWindow.activeTextEditor?.document.uri.fsPath.replace(/\\/g, '/')
+
+			expect(fsPath).toBe(expectedFilePath)
 
 			// Debug: Print test completion
 			console.log('\n=== Enhanced Integration Test Completed Successfully ===')
@@ -253,7 +123,7 @@ describe('NotesHubActionService - Enhanced Integration Tests', () => {
 
 			// Verify active editor points to the most recently created note
 			expect(mockWindow.activeTextEditor).toBeDefined()
-			expect(mockWindow.activeTextEditor?.document.uri.fsPath).toBe('/test/notes/project/Note2.md')
+			expect(mockWindow.activeTextEditor?.document.uri.fsPath.replace(/\\/g, '/')).toBe('/test/notes/project/Note2.md')
 		})
 
 		it('should properly handle file system operations with enhanced error handling', async () => {

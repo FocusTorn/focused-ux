@@ -35,6 +35,8 @@ describe('BaseNotesDataProvider edge cases (guard undefined.replace)', () => {
 		// Use Mockly's built-in commands service instead of manual mocks
 		iCommands = mocklyService.commands as unknown as ICommands
 		
+		// Non-Mockly: These are shared service interfaces internal to our codebase; Mockly does not supply them.
+		// We stub them minimally to exercise provider edge cases.
 		iCommonUtils = { errMsg: vi.fn(), infoMsg: vi.fn(), warnMsg: vi.fn(), debugMsg: vi.fn() } as unknown as ICommonUtilsService
 		iFrontmatterUtils = { getFrontmatter: vi.fn().mockResolvedValue(undefined) } as unknown as IFrontmatterUtilsService
 		iPathUtils = { sanitizePath: vi.fn((p: string) => p) } as unknown as IPathUtilsService

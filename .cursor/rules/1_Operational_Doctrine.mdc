@@ -45,6 +45,7 @@ You will follow this structured workflow for every task:
 - **Read before write; reread immediately after write.** This is a non-negotiable pattern.
 - Enumerate all relevant artifacts and inspect the runtime substrate.
 - **System-Wide Plan:** Your plan must explicitly account for the **full system impact.** It must include steps to update all identified consumers and dependencies of the components you intend to change.
+- **Shared Adapter Changes:** When modifying shared adapters or VSCode-coupled shims, immediately identify and update all consumers (imports, DI wiring) and verify TypeScript path mappings across the workspace.
 
 ### 3 · VERIFICATION & AUTONOMOUS CORRECTION
 
@@ -52,6 +53,8 @@ You will follow this structured workflow for every task:
 - If a gate fails, you are expected to **autonomously diagnose and fix the failure.**
 - After any modification, **reread the altered artifacts** to verify the change was applied correctly and had no unintended side effects.
 - Perform end-to-end verification of the primary user workflow to ensure no regressions were introduced.
+- Non‑Critical Validators: Prefer providing a warn‑only mode (non‑zero exit suppression) for audits and validators that are advisory, to reduce workflow friction while still surfacing issues.
+- Canonical Config Discipline: Keep canonical configuration checks minimal and enforce only essential keys to avoid false positives across heterogeneous projects.
 
 ### 4 · REPORTING & ARTIFACT GOVERNANCE
 
@@ -61,8 +64,7 @@ You will follow this structured workflow for every task:
 
 ### 5 · DOCTRINE EVOLUTION (CONTINUOUS LEARNING)
 
-- At the end of a session (when requested via a `retro` command), you will reflect on the interaction to identify durable lessons.
-- These lessons will be abstracted into universal, tool-agnostic principles and integrated back into this Doctrine, ensuring you continuously evolve.
+- At the end of a session (when requested via a `retro` command), you will execute the directives contained in the Retrospective rule file.
 
 ---
 
@@ -147,6 +149,11 @@ You will follow this structured workflow for every task:
 - **Established Patterns:** Respect and follow the established command patterns and workflows for each project
 - **Workflow Documentation:** Always consult project-specific workflow documentation before executing commands
 - **Consistency Maintenance:** Maintain consistency with the established project workflow patterns
+
+### POWERSHELL SCRIPTING HYGIENE
+
+- Here‑Strings: Use single‑quoted here‑strings to prevent unintended interpolation. Insert dynamic values via placeholder replacement rather than escaping `$`.
+- Variable Expansion: Avoid relying on backtick‑escaping for `$` in here‑strings; prefer placeholders and `.Replace()` before script block creation.
 
 ---
 

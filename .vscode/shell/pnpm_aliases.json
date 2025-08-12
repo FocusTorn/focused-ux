@@ -5,6 +5,7 @@
         "pd": "package:dev",
         "pub": "publish",
         "l": "lint",
+        "lf": "lint:full",
         "tsc": "check-types",
         "v": "validate",
         "t": "test",
@@ -19,6 +20,15 @@
         "m": "monitor"
     },
 
+    "expandables": {
+        "f": "fix",
+        "s": "skip-nx-cache",
+        "v": "verbose",
+        "d": "debug",
+        "stream": "output-style=stream",
+        "echo": "aka-echo"
+    },
+    
     "packages": {
         "ccp": {
             "name": "context-cherry-picker",

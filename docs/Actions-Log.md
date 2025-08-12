@@ -1,5 +1,142 @@
 # Actions Log
 
+## 2025-08-12 - Alias CLI: fix `nh tc` and add `-echo` preview flag
+
+**High-Level Summary:** Fixed alias expansion so `tc` correctly maps to multi-word targets, and introduced an ephemeral `-echo` flag to preview the resolved Nx command without running it.
+
+### Key Implementations:
+
+- Updated `libs/tools/aka/src/main.ts`:
+    - Split multi-word target shortcuts (e.g., `tc` → `test --coverage`) before expansion and invocation
+    - Added support for `-echo` (mapped to `--aka-echo`) that temporarily sets `AKA_ECHO=1` for a single invocation and restores prior state
+    - Ensured run-many aliases (`ext|core|all`) respect `-echo`
+- Extended `.vscode/shell/pnpm_aliases.json` `expandables` with `"echo": "aka-echo"`
+
+### Outcomes:
+
+- `nh tc` now runs `test:full --coverage` for `@fux/note-hub-ext`
+- `nh tc -echo` prints: `NX_CALL -> test:full @fux/note-hub-ext --coverage`
+- `ext tc -echo` prints a `run-many` invocation with `--coverage`
+- Lint checks pass for the modified files
+
+---
+
+## 2025-08-12 - Note Hub: Decouple TreeItemCollapsibleState via shared adapter
+
+**High-Level Summary:** Removed direct usage of `vscode.TreeItemCollapsibleState` in core code and replaced it with a shared `TreeItemCollapsibleStateAdapter` to keep VSCode value imports isolated to shared adapters.
+
+### Key Implementations:
+
+- Added `libs/shared/src/vscode/adapters/TreeItemCollapsibleState.adapter.ts` and exported it from `libs/shared/src/index.ts`
+- Updated `packages/note-hub/core/src/models/NotesHubItem.ts` and `packages/note-hub/core/src/providers/BaseNotesDataProvider.ts` to use the adapter
+- Adjusted tsconfig path mappings where needed to keep type checks green
+
+### Outcomes:
+
+- Core no longer imports VSCode enums directly
+- Aligns with repo rule: VSCode value imports must live in shared adapters
+- `nh tsc` → PASS
+
+---
+
+## 2025-08-12 - Note Hub: Decouple command registration via shared adapter
+
+**High-Level Summary:** Replaced direct `vscode.commands.registerCommand` usage in `@fux/note-hub-ext` with the shared `ICommands` adapter to enforce adapter-based decoupling and testability.
+
+### Key Implementations:
+
+- Updated `packages/note-hub/ext/src/NotesHub.module.ts` to accept `ICommands` via constructor and use `commandsAdapter.registerCommand(...)` for all registrations
+- Updated DI wiring in `packages/note-hub/ext/src/injection.ts` to pass `iCommands` into `NotesHubModule`
+
+### Outcomes:
+
+- Extension code no longer depends on `vscode.commands` directly
+- Improves adherence to repo rule: value imports for VSCode APIs must come only from shared adapters
+- Type checks remain green (`nh tsc`)
+
+---
+
+## 2025-08-12 - Alias Launcher migrated to TS CLI (`@fux/aka`) with PS shim
+
+**High-Level Summary:** Moved complex alias resolution logic out of PowerShell into a typed, testable TypeScript CLI under `libs/tools/aka`. The `aka.ps1` script now forwards all invocations to the CLI via `tsx`, ensuring consistent flag expansion and "full" target semantics across shells.
+
+### Key Implementations:
+
+- Added `libs/tools/aka` with `src/main.ts` implementing:
+    - Target shortcuts expansion (`l`→`lint`, `lf`→`lint:full`)
+    - Short/long flag expansion: `-f`→`--fix`, `-s`→`--skip-nx-cache`, `-fs`/`-sf` supported; `--fix`, `--skip-nx-cache` passthrough
+    - Full alias semantics: aliases marked `full` in `.vscode/shell/pnpm_aliases.json` map `l|lint|test|validate` to `lint:full|test:full|validate:full`
+    - Two-pass lint when `--fix` is present (with and then without `--fix`)
+    - Run-many support for `ext|core|all`
+- Moved PS shim into package: `libs/tools/aka/ps/aka.ps1`
+- Updated `.vscode/shell/profile.ps1` to source the package shim directly
+- Removed legacy stub; no `.vscode/shell/aka.ps1` needed anymore
+
+### Outcomes:
+
+- `nh l` now correctly lints the entire dependency chain from `ext` down
+- `nhc l` lints only core; `nhc lf` lints core + deps
+- `nhe l` lints only ext; `nhe lf` lints ext + deps
+- Flags accepted in any order/combination: `-f`, `-s`, `-fs`, `--fix`, `--skip-nx-cache`
+
+### Notes:
+
+- CLI reads `.vscode/shell/pnpm_aliases.json` as the single source of truth
+- Echo mode available for quick verification: `AKA_ECHO=1 tsx libs/tools/aka/src/main.ts nh l -fs`
+
+---
+
+## 2025-08-12 - Shared Mock Window Helper Extraction (Enhanced Integration Tests)
+
+**High-Level Summary:** Extracted the large inline `IWindow` mock from `notes-hub-action.enhanced-integration.test.ts` into a reusable helper to reduce duplication and improve readability while preserving editor utilities used in tests.
+
+### Key Implementations:
+
+- Created `packages/note-hub/ext/__tests__/helpers/mockWindow.ts` exporting `makeMockWindowWithEditor()`
+- Updated `notes-hub-action.enhanced-integration.test.ts` to consume the helper
+- Preserved editor helpers: `moveCursor`, `selectText`, `modifyDocument`
+
+### Outcomes:
+
+- Cleaner tests with reduced boilerplate
+- Consistent editor-state testing across suites
+- Test suite remains green: 58 passed, 2 skipped
+
+### Lessons Learned:
+
+- Centralize complex mocks used across multiple tests to avoid drift
+- Keep editor verification utilities together for consistent usage patterns
+
+---
+
+## 2025-08-11 - Note Hub DI-Based Integration Testing & Mockly Enhancements
+
+**High-Level Summary:** Migrated integration tests to resolve services via the DI container, reduced brittle mocks by adopting Mockly shims (workspace.fs, node.fs.rename), and fixed MockTextDocument newline semantics. Clarified test lanes and simplified coverage usage.
+
+### Key Implementations:
+
+- Integration tests resolve via `createDIContainer`; adapters overridden with Mockly (`iWorkspace`, `iWindow`, `iEnv`)
+- Added Mockly `node.fs.rename` shim wired to in-memory `workspace.fs.rename`
+- Preserved trailing newlines in `MockTextDocument.setContent`
+- Normalized path separators in cross-platform assertions
+- Simplified `test:full` (no coverage/verbose); use `tc`/`tcw` for coverage
+- Global build-before-test via Nx targetDefaults (cache keeps runs fast)
+- Added Mockly env clipboard shim to remove manual clipboard mocks (writeText/readText)
+
+### Outcomes:
+
+- Note Hub tests: 58 passed, 2 skipped
+- Type checks: green
+
+### Lessons Learned:
+
+- Prefer DI resolution for integration to mirror runtime
+- Prefer Mockly shims over ad-hoc mocks; normalize paths in asserts
+- Keep coverage in dedicated lanes; keep `test` fast and focused
+- Extend Mockly where low-risk gaps exist (e.g., env.clipboard) to reduce test boilerplate
+
+---
+
 This document catalogs actions taken that resulted in correctly implemented outcomes. Each entry serves as a reference for successful patterns and solutions.
 
 ---

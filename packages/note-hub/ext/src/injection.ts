@@ -171,10 +171,10 @@ export async function createDIContainer(context: ExtensionContext): Promise<Awil
 			cradle.iActionService,
 			cradle.iProviderManager,
 		)).singleton(),
-		notesHubModule: asFunction((cradle: { notesHubService: INotesHubService, iWindow: IWindow, iConfigurationService: IConfigurationService }) => {
+		notesHubModule: asFunction((cradle: { notesHubService: INotesHubService, iWindow: IWindow, iConfigurationService: IConfigurationService, iCommands: ICommands }) => {
 			const windowAdapter = new WindowAdapter(cradle.iConfigurationService)
 
-			return new NotesHubModule(cradle.notesHubService, windowAdapter)
+			return new NotesHubModule(cradle.notesHubService, windowAdapter, cradle.iCommands)
 		}).singleton(),
 	})
 

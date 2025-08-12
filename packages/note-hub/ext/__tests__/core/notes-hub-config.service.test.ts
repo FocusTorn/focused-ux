@@ -19,6 +19,8 @@ describe('NotesHubConfigService', () => {
 			...mockly.workspace,
 		} as unknown as IWorkspace
 
+		// Non-Mockly: These are project-specific shared services; Mockly does not provide them.
+		// We create minimal stubs to drive the unit under test deterministically.
 		iPathUtils = { sanitizePath: vi.fn((p: string) => p) } as unknown as IPathUtilsService
 		iWorkspaceUtils = { getWorkspaceInfo: vi.fn().mockReturnValue({ primaryName: 'proj', workspaceName: 'proj' }) } as unknown as IWorkspaceUtilsService
 		iCommonUtils = { errMsg: vi.fn(), infoMsg: vi.fn(), warnMsg: vi.fn(), debugMsg: vi.fn() } as unknown as ICommonUtilsService
@@ -29,6 +31,7 @@ describe('NotesHubConfigService', () => {
 			executeCommand: vi.fn().mockResolvedValue(undefined),
 		} as unknown as ICommands
 		
+		// Non-Mockly: FileSystem here is a shared wrapper, not VSCode workspace.fs. Minimal stub suffices.
 		iFileSystem = { createDirectory: vi.fn().mockResolvedValue(undefined) } as unknown as IFileSystem
 
 		svc = new NotesHubConfigService(
@@ -63,6 +66,8 @@ describe('NotesHubConfigService', () => {
 	})
 
 	it('expands ~ in configured paths', () => {
+		// Non-Mockly: Workspace configuration read is simulated via a spy/stub; Mockly forwards getConfiguration
+		// but we override return values to test expansion behavior.
 		(iWorkspace.getConfiguration as any) = vi.fn().mockReturnValue({
 			get: vi.fn((key: string, def?: any) => {
 				if (key === 'projectNotesPath')

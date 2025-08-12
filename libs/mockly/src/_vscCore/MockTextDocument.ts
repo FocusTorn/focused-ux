@@ -102,12 +102,13 @@ export class MockTextDocument implements TextDocument {
 
 		// Simple word boundary detection
 		const wordRegex = /\b\w+\b/g
-		let match
+		let match: RegExpExecArray | null = wordRegex.exec(lineText)
 
-		while ((match = wordRegex.exec(lineText)) !== null) {
+		while (match !== null) {
 			if (match.index <= position.character && match.index + match[0].length > position.character) {
 				return new Range(position.line, match.index, position.line, match.index + match[0].length)
 			}
+			match = wordRegex.exec(lineText)
 		}
 
 		return undefined
@@ -160,12 +161,8 @@ export class MockTextDocument implements TextDocument {
 	}
 
 	setContent(content: string): void {
-		// Split by newlines and filter out trailing empty lines
+		// Split by newlines and preserve trailing empty lines to reflect exact content
 		this._lines = content.split('\n')
-		// Remove trailing empty lines to match VSCode behavior
-		while (this._lines.length > 0 && this._lines[this._lines.length - 1] === '') {
-			this._lines.pop()
-		}
 		this._lineCount = this._lines.length
 		this._isDirty = true
 	}

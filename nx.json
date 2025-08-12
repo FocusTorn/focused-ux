@@ -1,119 +1,11 @@
 {
-    "nxCloudId": "685c28f2a5df05525dfa937b",
-    "$schema": "./node_modules/nx/schemas/nx-schema.json",
-    "defaultBase": "master",
-    "defaultRunner": "nx/tasks-runners/default",
-    "namedInputs": { //>
-        "default": [ //>
-            "{projectRoot}/**/*",
-            "sharedGlobals",
-            "!{projectRoot}/**/*.md",
-            "!{projectRoot}/**/*.markdown",
-            "!{projectRoot}/**/*.mdx",
-            "!{projectRoot}/**/*.png",
-            "!{projectRoot}/**/*.jpg",
-            "!{projectRoot}/**/*.jpeg",
-            "!{projectRoot}/**/*.gif",
-            "!{projectRoot}/**/*.svg",
-            "!{projectRoot}/**/*.ico",
-            "!{projectRoot}/**/*.pdf",
-            "!{projectRoot}/docs/**"
-        ], //<
-        "production": [ //>
-            "default",
-            "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-            "!{projectRoot}/tsconfig.spec.json",
-            "!{projectRoot}/src/test-setup.[jt]s"
-        ], //<
-        "test": [ //>
-            "default",
-            "{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-            "{projectRoot}/tsconfig.spec.json",
-            "{projectRoot}/src/test-setup.[jt]s"
-        ], //<
-        "lint": [ //>
-            "default",
-            "{projectRoot}/**/*.eslintrc.js",
-            "{projectRoot}/**/*.eslint.json"
-        ], //<
-        "docs": [ //>
-            "{projectRoot}/docs/**",
-            "{projectRoot}/**/*.md",
-            "{projectRoot}/**/*.markdown",
-            "{projectRoot}/**/*.mdx"
-        ], //<
-        "sharedGlobals": [ //>
-            "{workspaceRoot}/.github/workflows/ci.yml"
-        ] //<
-    }, //<
-    "release": { //>
-        "projectsRelationship": "independent",
-        "changelog": { //>
-            "projectChangelogs": true
-        }, //<
-        "projects": [ //>
-            "@fux/ghost-writer-core",
-            "@fux/ghost-writer-ext",
-            "@fux/note-hub-core",
-            "@fux/note-hub-ext",
-            "@fux/project-butler-core",
-            "@fux/project-butler-ext",
-            "@fux/context-cherry-picker-core",
-            "@fux/context-cherry-picker-ext",
-            "@fux/ai-agent-interactor-core",
-            "@fux/ai-agent-interactor-ext",
-            "@fux/dynamicons-core",
-            "@fux/dynamicons-ext",
-            "@fux/libs/shared",
-            "@fux/prune-nx-cache",
-            "@fux/mockly"
-        ], //<
-        "version": { //>
-            "preVersionCommand": "pnpm dlx nx run-many -t build",
-            "conventionalCommits": true
-        } //<
-    }, //<
-    "plugins": [ //>
-        { //> @nx/eslint/plugin
-            "plugin": "@nx/eslint/plugin",
-            "options": {
-                "targetName": "lint",
-                "configFile": "eslint.config.js"
-            },
-            "include": [
-                "packages/ghost-writer/core/**/*",
-                "packages/ghost-writer/ext/**/*",
-                "packages/project-butler/core/**/*",
-                "packages/project-butler/ext/**/*",
-                "packages/context-cherry-picker/core/**/*",
-                "packages/context-cherry-picker/ext/**/*",
-                "packages/ai-agent-interactor/core/**/*",
-                "packages/ai-agent-interactor/ext/**/*",
-                "packages/dynamicons/core/**/*",
-                "packages/dynamicons/ext/**/*",
-                "packages/note-hub/core/**/*",
-                "packages/note-hub/ext/**/*",
-                "libs/tools/prune-nx-cache/**/*",
-                "libs/mockly/**/*"
+    "targetDefaults": {
+        
+        "@nx/vite:test": { //>
+            "dependsOn": [
+                "^build"
             ]
         }, //<
-        { //> @nx/vite/plugin
-            "plugin": "@nx/vite/plugin",
-            "options": {
-                "buildTargetName": "build",
-                "testTargetName": "vite:test",
-                "serveTargetName": "serve",
-                "devTargetName": "dev",
-                "previewTargetName": "preview",
-                "serveStaticTargetName": "serve-static",
-                "typecheckTargetName": "typecheck",
-                "buildDepsTargetName": "build-deps",
-                "watchDepsTargetName": "watch-deps"
-            }
-        } //<
-    ], //<
-    "targetDefaults": {
-
         "@nx/esbuild:esbuild": { //>
             "cache": true,
             "inputs": [
@@ -191,8 +83,13 @@
                     "{projectRoot}/**/*.tsx",
                     "{projectRoot}/**/*.js",
                     "{projectRoot}/**/*.jsx",
+                    
                     "{projectRoot}/**/*.json",
                     "{projectRoot}/**/*.jsonc"
+                    
+                    // "{projectRoot}/src/**/*.{ts,tsx,js,jsx}",
+                    // "{projectRoot}/*.{json,jsonc}",
+                    // "!{projectRoot}/dist/**"
                 ],
                 "eslintConfig": "eslint.config.js",
                 "format": "stylish",
@@ -271,6 +168,13 @@
                 "cwd": "{workspaceRoot}"
             }
         }, //<
+        "audit:warn": { //>
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts {projectName} --warn-only",
+                "cwd": "{workspaceRoot}"
+            }
+        }, //<
         "audit:full": { //>
             "executor": "nx:run-commands",
             "dependsOn": [
@@ -307,6 +211,127 @@
                 "cwd": "{workspaceRoot}"
             }
         } //<
+        
+    },
+    
+    "plugins": [ //>
+   
+        { //> @nx/eslint/plugin
+            "plugin": "@nx/eslint/plugin",
+            "options": {
+                "targetName": "lint",
+                "configFile": "eslint.config.js"
+            },
+            "include": [
+                "packages/ghost-writer/core/**/*",
+                "packages/ghost-writer/ext/**/*",
+                "packages/project-butler/core/**/*",
+                "packages/project-butler/ext/**/*",
+                "packages/context-cherry-picker/core/**/*",
+                "packages/context-cherry-picker/ext/**/*",
+                "packages/ai-agent-interactor/core/**/*",
+                "packages/ai-agent-interactor/ext/**/*",
+                "packages/dynamicons/core/**/*",
+                "packages/dynamicons/ext/**/*",
+                "packages/note-hub/core/**/*",
+                "packages/note-hub/ext/**/*",
+                "libs/tools/prune-nx-cache/**/*",
+                "libs/mockly/**/*"
+            ]
+        }, //<
 
-    }
+        { //> @nx/vite/plugin
+            "plugin": "@nx/vite/plugin",
+            "options": {
+                "buildTargetName": "build",
+                "testTargetName": "vite:test",
+                "serveTargetName": "serve",
+                "devTargetName": "dev",
+                "previewTargetName": "preview",
+                "serveStaticTargetName": "serve-static",
+                "typecheckTargetName": "typecheck",
+                "buildDepsTargetName": "build-deps",
+                "watchDepsTargetName": "watch-deps"
+            }
+        } //<
+
+    ], //<
+    
+    "namedInputs": { //>
+        "default": [ //>
+            "{projectRoot}/**/*",
+            "sharedGlobals",
+            "!{projectRoot}/**/*.md",
+            "!{projectRoot}/**/*.markdown",
+            "!{projectRoot}/**/*.mdx",
+            "!{projectRoot}/**/*.png",
+            "!{projectRoot}/**/*.jpg",
+            "!{projectRoot}/**/*.jpeg",
+            "!{projectRoot}/**/*.gif",
+            "!{projectRoot}/**/*.svg",
+            "!{projectRoot}/**/*.ico",
+            "!{projectRoot}/**/*.pdf",
+            "!{projectRoot}/docs/**"
+        ], //<
+        "production": [ //>
+            "default",
+            "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+            "!{projectRoot}/tsconfig.spec.json",
+            "!{projectRoot}/src/test-setup.[jt]s"
+        ], //<
+        "test": [ //>
+            "default",
+            "{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+            "{projectRoot}/tsconfig.spec.json",
+            "{projectRoot}/src/test-setup.[jt]s"
+        ], //<
+        "lint": [ //>
+            "default",
+            "{projectRoot}/**/*.eslintrc.js",
+            "{projectRoot}/**/*.eslint.json"
+        ], //<
+        "docs": [ //>
+            "{projectRoot}/docs/**",
+            "{projectRoot}/**/*.md",
+            "{projectRoot}/**/*.markdown",
+            "{projectRoot}/**/*.mdx"
+        ], //<
+        "sharedGlobals": [ //>
+            "{workspaceRoot}/.github/workflows/ci.yml"
+        ] //<
+    }, //<
+    
+    "release": { //>
+        "projectsRelationship": "independent",
+        "changelog": { //>
+            "projectChangelogs": true
+        }, //<
+        "projects": [ //>
+            "@fux/ghost-writer-core",
+            "@fux/ghost-writer-ext",
+            "@fux/note-hub-core",
+            "@fux/note-hub-ext",
+            "@fux/project-butler-core",
+            "@fux/project-butler-ext",
+            "@fux/context-cherry-picker-core",
+            "@fux/context-cherry-picker-ext",
+            "@fux/ai-agent-interactor-core",
+            "@fux/ai-agent-interactor-ext",
+            "@fux/dynamicons-core",
+            "@fux/dynamicons-ext",
+            "@fux/libs/shared",
+            "@fux/prune-nx-cache",
+            "@fux/mockly"
+        ], //<
+        "version": { //>
+            "preVersionCommand": "pnpm dlx nx run-many -t build",
+            "conventionalCommits": true
+        } //<
+    }, //<
+    
+    "nxCloudId": "685c28f2a5df05525dfa937b",
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "defaultBase": "master",
+    "defaultRunner": "nx/tasks-runners/default"
+    
 }

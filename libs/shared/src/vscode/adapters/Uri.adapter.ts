@@ -19,6 +19,10 @@ export class UriAdapter implements IUri {
 		return this.uri.fsPath
 	}
 
+	toString(): string {
+		return this.uri.toString()
+	}
+
 	// Static methods for backward compatibility - these delegate to the default factory
 	static create(uri: vscode.Uri): IUri {
 		return UriAdapter.defaultFactory.create(uri)

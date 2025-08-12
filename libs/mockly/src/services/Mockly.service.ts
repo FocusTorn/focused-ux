@@ -293,6 +293,10 @@ export class MocklyService implements IMocklyService {
 		uiKind: 1,
 		uriScheme: 'file',
 		version: '1.0.0',
+		clipboard: {
+			writeText: async (_text: string) => Promise.resolve(),
+			readText: async () => Promise.resolve(''),
+		},
 	}
 
 	// ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -352,6 +356,13 @@ export class MocklyService implements IMocklyService {
 			},
 			unlink: async (filePath: string): Promise<void> => {
 				await fs.unlink(filePath)
+			},
+			rename: async (oldPath: string, newPath: string): Promise<void> => {
+				// Route through Mockly's in-memory file system for deterministic tests
+				const from = this.Uri.file(oldPath)
+				const to = this.Uri.file(newPath)
+
+				await this.workspace.fs.rename(from as any, to as any, { overwrite: true })
 			},
 		},
 	}

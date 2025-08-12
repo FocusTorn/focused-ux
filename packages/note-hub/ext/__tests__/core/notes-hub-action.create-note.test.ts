@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import '../setup'
+import { mockly } from '@fux/mockly'
 
 // Mockly provides node.fs functionality - no need to mock fs/promises manually
 // Use Mockly's built-in services for all VSCode and Node.js operations
@@ -88,7 +89,7 @@ describe('NotesHubActionService - Create Note', () => {
 			{ subscriptions: [], workspaceState: {}, globalState: {}, secrets: {}, extensionUri: { fsPath: '' }, extensionPath: '', storageUri: { fsPath: '' }, logUri: { fsPath: '' }, extensionMode: 1, environmentVariableCollection: {}, extension: { id: '', extensionUri: { fsPath: '' }, extensionPath: '', isBuiltin: false, packageJSON: {} } } as any, // context
 			iWindow,
 			iWorkspace,
-			{ clipboard: { readText: vi.fn(), writeText: vi.fn() } }, // env
+			{ clipboard: mockly.env.clipboard }, // env
 			iCommonUtils,
 			{ getFrontmatter: vi.fn(), getFrontmatter_validateFrontmatter: vi.fn() }, // frontmatterUtils
 			iPathUtils,

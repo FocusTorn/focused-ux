@@ -183,7 +183,9 @@ program
 	})
 
 program
-	.command('gc')
+	.command('purge')
+	.alias('gc')
+	.alias('p')
 	.description('Manually trigger garbage collection')
 	.action(async () => {
 		try {

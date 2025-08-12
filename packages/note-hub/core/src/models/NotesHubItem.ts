@@ -1,20 +1,9 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type {
-	ITreeItem,
-	IThemeIcon,
-	IThemeColor,
-	TreeItemLabel,
-} from '@fux/shared'
-import {
-	TreeItemAdapter,
-	ThemeIconAdapter,
-	ThemeColorAdapter,
-	UriAdapter,
-} from '@fux/shared'
+import type { ITreeItem, IThemeIcon, IThemeColor, TreeItemLabel } from '@fux/shared'
+import { TreeItemAdapter, ThemeIconAdapter, ThemeColorAdapter, UriAdapter, TreeItemCollapsibleStateAdapter } from '@fux/shared'
 import type { Uri } from 'vscode'
-import { TreeItemCollapsibleState } from 'vscode'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 
@@ -85,13 +74,13 @@ export class NotesHubItem implements INotesHubItem {
 	get iconPath(): IThemeIcon | undefined { return this.treeItem.iconPath }
 	set iconPath(value: IThemeIcon | undefined) { this.treeItem.iconPath = value }
 
-	get collapsibleState(): TreeItemCollapsibleState {
+	get collapsibleState(): number {
 		const state = this.treeItem.collapsibleState
 
-		return state || TreeItemCollapsibleState.None
+		return state ?? new TreeItemCollapsibleStateAdapter().None
 	}
 
-	set collapsibleState(value: TreeItemCollapsibleState) { this.treeItem.collapsibleState = value }
+	set collapsibleState(value: number) { this.treeItem.collapsibleState = value as any }
 
 	constructor(
 		fileName: string,
@@ -128,7 +117,7 @@ export class NotesHubItem implements INotesHubItem {
 
 		this.treeItem = TreeItemAdapter.create(
 			safeLabel,
-			isDirectory ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None,
+			isDirectory ? new TreeItemCollapsibleStateAdapter().Collapsed as any : new TreeItemCollapsibleStateAdapter().None as any,
 			(resourceUri as UriAdapter).uri,
 		)
 		

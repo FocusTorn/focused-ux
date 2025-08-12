@@ -1,0 +1,121 @@
+# **Mission: Retrospective & Doctrine Evolution**
+
+The operational phase of your work is complete. You will now transition to the role of **Meta-Architect.** Your mission is to conduct a critical retrospective of the entire preceding session, distill durable lessons, and integrate them into your:
+
+- **Operational Doctrine** (your rule file).
+- PROJECT-SPECIFIC.mdc
+
+Your goal is not to archive trivia. It is to **harden your core logic for all future missions.**
+
+---
+
+## **Execution Configuration & Constraints (APE-Retro Runtime)**
+
+- Always run all phases end-to-end autonomously. Do not ask for confirmation unless explicitly configured.
+- Honor these defaults unless the request overrides them:
+    - Show Recon Digest: ask (if specified yes/no, follow it)
+    - Approvals between phases: no (do not pause)
+    - Build-before-test: yes (leverage Nx cache)
+    - Post-Change Docs: mandatory (update Actions-Log and package Test Strategy when applicable in the same session)
+
+---
+
+## **Phase 0: Session Analysis (Chat-Only Reflection)**
+
+- **Directive:** Review every turn of the conversation from the initial user request up to this point. Synthesize your findings into a concise, self-critical analysis.
+- **Output (For this phase, keep in chat only):**
+    - Produce a bulleted list (≤ 10 points) of key behavioral insights.
+    - Focus on:
+        - **Successes:** What core principles or patterns led to an efficient and correct outcome?
+        - **Failures & Corrections:** Where did your approach fail? What was the root cause? How did the user's feedback correct your behavior?
+        - **Actionable Lessons:** What are the most critical, transferable lessons from this interaction?
+
+---
+
+## **Phase 1: Lesson Distillation**
+
+- **Directive:** From your analysis in Phase 0, you will now filter and abstract only the most valuable insights into **durable, universal principles.**
+- **Filtering Criteria (What to Keep):**
+    - ✅ **Universal Principles:** Lessons that apply across any language, framework, or project (e.g., "Always verify an environment variable exists before using it").
+    - ✅ **Critical Anti-Patterns:** Specific, dangerous actions that must be forbidden (e.g., "Never use streaming commands like `tail -f` which hang the terminal").
+    - ✅ **Effective Protocols:** High-level workflows that proved successful (e.g., The "KILL FIRST, THEN RUN" pattern for restarting services).
+    - ✅ **New User Feedback Patterns:** Insights from user corrections that reveal a flaw in your core logic.
+- **Discard Criteria (What to Ignore):**
+    - ❌ **Project-Specific Details:** File paths, port numbers, specific function names, API endpoints.
+    - ❌ **One-Off Trivia:** Information that is not a reusable pattern.
+    - ❌ **Session Narrative:** The story of what you did. Focus only on the _learning_.
+
+---
+
+## **Phase 2: Doctrine Integration**
+
+- **Directive:** Route lessons to the correct rule file based on scope and update accordingly.
+- **Rule File Discovery Protocol:**
+    1.  Preferred Target (Project-Specific): If the lesson pertains to this repo’s workflows, adapters, auditor behavior, or conventions, update `.cursor/rules/PROJECT-SPECIFIC.mdc`.
+    2.  Global Target (Operational Doctrine): Only when a lesson is truly universal and tool-agnostic, update `.cursor/rules/1_Operational_Doctrine.mdc`.
+    3.  Non-Duplication: If both could apply, prefer project-specific; update global only if it adds non-duplicative value.
+- **Integration Protocol:**
+    1.  **Read** the target rule file to understand its current structure.
+    2.  For each distilled lesson, find the most logical section to integrate it into.
+    3.  **Refine, Don't Just Append:** If a similar rule already exists, improve it with the new insight. If the rule is new, add it, ensuring it follows the established formatting.
+    4.  **Write-Location Checklist:** In your final report, explicitly list the files and sections updated.
+    5.  **Read-Write-Reread:** Reopen updated files and confirm changes before reporting completion.
+- **Instruction Quality Mandates:**
+    - **Voice:** Must be imperative and authoritative ("Always...", "Never...", "FORBIDDEN:...").
+    - **Language:** Must be 100% universal and tool-agnostic (natural language only).
+    - **Conciseness:** Rules must be clear, concise, and non-redundant.
+
+---
+
+## **Phase 3: Actions-Log Documentation**
+
+- **Directive:** Create or update the Actions-Log.md file in the `./docs` directory to catalog successful implementations and outcomes.
+- **Documentation Requirements:**
+    - **File Location:** Must be created in `./docs/Actions-Log.md`
+    - **Entry Format:** Each entry must include:
+        - Date and descriptive title (e.g., "2024-12-19 - Mockly Library Enhancement")
+        - High-level summary of goals and outcomes
+        - Key implementations and critical fixes applied
+        - Lessons learned and actionable insights
+    - **Entry Placement:** New entries MUST be added to the TOP of the document
+    - **Purpose:** Serve as a living reference for successful patterns and solutions
+    - **Maintenance:** Update this log whenever significant successful implementations are completed
+
+## **Phase 4: Testing Strategy Documentation**
+
+- **Directive:** For any test-related fixes that result in correct implementation, the Testing Strategy document MUST be updated to reflect the lessons learned and solutions applied.
+- **Documentation Requirements:**
+    - **File Location:** Must update `packages/note-hub/ext/__tests__/TESTING_STRATEGY.md` (or equivalent test strategy document)
+    - **Update Triggers:** Any of the following scenarios require Testing Strategy updates:
+        - Test failures that reveal mock setup issues
+        - Mock library limitations discovered during testing
+        - Console output or debugging challenges resolved
+        - Test isolation problems solved
+        - Mock configuration patterns that proved successful
+    - **Update Format:** Each update must include:
+        - **Problem Description:** Clear explanation of what went wrong
+        - **Root Cause Analysis:** Why the problem occurred
+        - **Solution Applied:** Specific steps taken to fix the issue
+        - **Best Practices:** Generalizable patterns for future use
+        - **Mock Library Coverage:** What can/cannot be handled by mock libraries
+    - **Section Organization:** Updates should be organized into logical sections:
+        - Mock Setup & Configuration
+        - Debugging & Troubleshooting
+        - Library Limitations & Workarounds
+        - Test Isolation & State Management
+    - **Maintenance:** This document serves as the authoritative reference for testing patterns and should be updated whenever new insights are gained
+
+---
+
+## **Phase 5: Final Report**
+
+- **Directive:** Conclude the session by presenting a clear, structured report.
+- **Report Structure:**
+    1.  **Status of Doctrine:** A single line: `✅ Operational Doctrine updated.` OR `ℹ️ No universal lessons were distilled; no updates required.`
+    2.  **Session Analysis:** The full, chat-only bulleted list you generated in Phase 0.
+
+---
+
+> **REMINDER:** This protocol is the most critical part of your lifecycle. It is how you evolve. Execute it with the full diligence and precision of a Principal Engineer maintaining a critical system.
+
+**Begin your retrospective now.**

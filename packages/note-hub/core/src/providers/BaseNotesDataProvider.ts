@@ -19,13 +19,13 @@ import {
 	UriAdapter,
 	RelativePatternAdapter,
 	TreeItemAdapter,
+	TreeItemCollapsibleStateAdapter,
 } from '@fux/shared'
 import { basename, dirname, extname, join, normalize } from 'node:path'
 import { constants as fsConstants } from 'node:fs'
 import { Buffer } from 'node:buffer'
 import { access as fspAccess } from 'node:fs/promises'
 import type { ExtensionContext, Uri, TreeItem } from 'vscode'
-import { TreeItemCollapsibleState } from 'vscode'
 import type { INotesHubDataProvider } from '../_interfaces/INotesHubDataProvider.js'
 import { NotesHubItem } from '../models/NotesHubItem.js'
 // import type { ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, IWindow, IWorkspace, ICommands } from '@fux/_utilities' (update to actual path)
@@ -171,19 +171,19 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 	public async getTreeItem(element: NotesHubItem): Promise<TreeItem> {
 		if (!this.notesDir) {
 			// Return inert TreeItem without constructing NotesHubItem (which requires a valid filePath)
-			const treeItem = TreeItemAdapter.create('Notes (disabled)', TreeItemCollapsibleState.None)
+			const treeItem = TreeItemAdapter.create('Notes (disabled)', new TreeItemCollapsibleStateAdapter().None as any)
 
 			return treeItem as any
 		}
 		try {
 			if (element.isDirectory) {
 				// If it's a root item (no parent), start it as expanded. Otherwise, collapsed.
-				element.collapsibleState = !element.parentUri
-					? TreeItemCollapsibleState.Expanded
-					: TreeItemCollapsibleState.Collapsed
+				const stateAdapter = new TreeItemCollapsibleStateAdapter()
+
+				element.collapsibleState = !element.parentUri ? (stateAdapter.Expanded as any) : (stateAdapter.Collapsed as any)
 			}
 			else {
-				element.collapsibleState = TreeItemCollapsibleState.None
+				element.collapsibleState = new TreeItemCollapsibleStateAdapter().None as any
 			}
 
 			if (element.isDirectory) {
@@ -227,7 +227,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 			// Return a basic tree item to prevent the tree view from breaking
 			const fallbackItem = new NotesHubItem('Error', element?.filePath || 'unknown', false)
 
-			fallbackItem.collapsibleState = TreeItemCollapsibleState.None
+			fallbackItem.collapsibleState = new TreeItemCollapsibleStateAdapter().None as any
 			return fallbackItem as any
 		}
 	}

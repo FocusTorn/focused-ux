@@ -1,9 +1,9 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) =======================================================================
-import type { Disposable, WindowAdapter } from '@fux/shared'
+import type { Disposable, WindowAdapter, ICommands } from '@fux/shared'
 import type { ExtensionContext } from 'vscode'
-import * as vscode from 'vscode'
+
 import type {
 	INotesHubItem,
 	INotesHubService,
@@ -20,6 +20,7 @@ export class NotesHubModule {
 	constructor(
 		private readonly notesHubService: INotesHubService,
 		private readonly windowAdapter: WindowAdapter,
+		private readonly commandsAdapter: ICommands,
 	) {
 		this.service = notesHubService
 	}
@@ -48,8 +49,7 @@ export class NotesHubModule {
 
 		return Object.entries(commandMap).map(([command, handler]) => {
 			try {
-				// Use vscode.commands.registerCommand directly since we don't have access to the commands adapter here
-				return vscode.commands.registerCommand(command, handler)
+				return this.commandsAdapter.registerCommand(command, handler)
 			}
 			catch (_error) {
 				// If command is already registered, just return a no-op disposable

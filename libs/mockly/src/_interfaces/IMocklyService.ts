@@ -53,6 +53,10 @@ export interface IMocklyService {
 		uiKind: number
 		uriScheme: string
 		version: string
+		clipboard: {
+			writeText: (text: string) => Promise<void>
+			readText: () => Promise<string>
+		}
 	}
 
 	// VSCode types and classes
@@ -81,6 +85,7 @@ export interface IMocklyService {
 			mkdir: (path: string, options?: any) => Promise<void>
 			rmdir: (path: string) => Promise<void>
 			unlink: (path: string) => Promise<void>
+			rename: (oldPath: string, newPath: string) => Promise<void>
 		}
 	}
 

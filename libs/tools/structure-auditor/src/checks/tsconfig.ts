@@ -8,7 +8,6 @@ const CANONICAL_TSCONFIG: Record<string, any> = { //>
 	extends: '../../../tsconfig.base.json',
 	compilerOptions: {
 		outDir: './dist',
-		rootDir: 'src',
 		composite: false,
 		declaration: false,
 		declarationMap: false,
