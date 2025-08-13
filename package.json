@@ -68,5 +68,14 @@
     "dependencies": {
         "chalk": "^5.5.0",
         "commander": "^14.0.0"
+    },
+    "pnpm": {
+        "overrides": {
+            "vitest": "^3.2.4",
+            "@vitest/ui": "^3.2.4",
+            "@vitest/coverage-v8": "^3.2.4",
+            "typescript@*": "5.8.3"
+        }
     }
+    
 }
