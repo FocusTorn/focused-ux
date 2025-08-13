@@ -35,11 +35,13 @@
         
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" }
-
+        "clean:cache": { "extends": "clean:cache" },
+        
+        "test": { "extends": "vite:test" },
+        "test:full": { "extends": "vite:test", "dependsOn": ["^test"] }
+        
     },
-    "tags": [],
-    "plugins": ["!@nx/vite/plugin"]
+    "tags": []
 }
 
 // "verify:dist:hash": {
