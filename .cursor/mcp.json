@@ -1,9 +1,9 @@
 {
     "mcpServers": {
         "nx-mcp": {
-            "command": "npx",
+            "command": "pnpm",
             "args": [
-                "-y",
+                "dlx",
                 "nx-mcp@latest"
             ]
         }
