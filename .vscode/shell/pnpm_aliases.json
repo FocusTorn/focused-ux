@@ -9,9 +9,11 @@
         "tsc": "check-types",
         "v": "validate",
         "t": "test",
+        "tw": "test --watch",
         "tf": "test:full",
+        "tfw": "test:full --watch",
         "tc": "test --coverage",
-        "tcw": "test --coverage --reporter=html",
+        "tch": "test --coverage --reporter=html",
         "c": "clean",
         "cc": "clean:cache",
         "cd": "clean:dist",
@@ -26,6 +28,9 @@
         "s": "skip-nx-cache",
         "v": "verbose",
         "d": "debug",
+        
+        "watch": "watch",
+        
         "stream": "output-style=stream",
         "echo": "aka-echo"
     },

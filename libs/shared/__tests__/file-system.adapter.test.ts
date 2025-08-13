@@ -15,6 +15,7 @@ describe('FileSystemAdapter', () => {
 		})
 
 		const { FileSystemAdapter } = await import('../src/vscode/adapters/FileSystem.adapter.js')
+		
 		const fs = new FileSystemAdapter()
 		const mod: any = await import('node:fs/promises')
 
