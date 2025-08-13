@@ -2,9 +2,11 @@ import { defineConfig } from 'vitest/config'
 import path from 'node:path'
 
 export default defineConfig({
+	root: __dirname,
 	test: {
 		globals: true,
 		environment: 'node',
+		include: ['src/__tests__/**/*.test.ts'],
 		coverage: {
 			provider: 'v8',
 			reporter: ['text', 'json', 'html'],
@@ -19,11 +21,15 @@ export default defineConfig({
 			],
 		},
 		setupFiles: ['./src/__tests__/setup.ts'],
+		reporters: [
+			['default', { summary: false }],
+		],
 	},
 	resolve: {
 		alias: {
 			'@fux/shared': path.resolve(__dirname, './src/index.ts'),
 			'vscode': path.resolve(__dirname, '../../vscode-test-adapter.ts'),
+			'@fux/mockly': path.resolve(__dirname, '../mockly/src/index.ts'),
 		},
 	},
 	define: {
