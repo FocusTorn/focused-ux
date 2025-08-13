@@ -4,14 +4,15 @@ describe('TreeItem-related adapters', () => {
 	it('TreeItemAdapter get/set and toVsCode', async () => {
 		vi.resetModules()
 
-		const TreeItem = class { constructor(public label: any, public collapsibleState?: any) {} }
-		const ThemeIcon = class { constructor(public id: string, public color?: any) {} }
-		const ThemeColor = class { constructor(public id: string) {} }
 
-		vi.mock('vscode', () => ({ TreeItem, ThemeIcon, ThemeColor }))
+		vi.mock('vscode', () => ({
+			TreeItem: class { constructor(public label: any, public collapsibleState?: any) {} },
+			ThemeIcon: class { constructor(public id: string, public color?: any) {} },
+			ThemeColor: class { constructor(public id: string) {} },
+		}))
 
 		const { TreeItemAdapter, ThemeIconAdapter, ThemeColorAdapter } = await import('../vscode/adapters/TreeItem.adapter.js')
-		const ti = new TreeItem('L', 1) as any
+		const ti = new (await import('vscode')).TreeItem('L', 1) as any
 		const a = new TreeItemAdapter(ti)
 
 		a.label = 'L2'
@@ -39,10 +40,12 @@ describe('TreeItem-related adapters', () => {
 	it('TreeItemFactoryAdapter variants', async () => {
 		vi.resetModules()
 
-		const TreeItem = class { constructor(public label: any, public collapsibleState?: any) {} } as any
-		const ThemeIcon = class { constructor(public id: string, public color?: any) {} } as any
 
-		vi.mock('vscode', () => ({ TreeItem, ThemeIcon, TreeItemCollapsibleState: { None: 0 } }))
+		vi.mock('vscode', () => ({
+			TreeItem: class { constructor(public label: any, public collapsibleState?: any) {} },
+			ThemeIcon: class { constructor(public id: string, public color?: any) {} },
+			TreeItemCollapsibleState: { None: 0 },
+		}))
 
 		const { TreeItemFactoryAdapter } = await import('../vscode/adapters/TreeItemFactory.adapter.js')
 		const f = new TreeItemFactoryAdapter()

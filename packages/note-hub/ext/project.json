@@ -87,9 +87,7 @@
             "outputs": ["{options.reportsDirectory}"],
             "options": {
                 "configFile": "packages/note-hub/ext/vitest.config.ts",
-                
                 "reporters": "default"
-                
             }
             
         },

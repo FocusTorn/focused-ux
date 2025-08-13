@@ -120,6 +120,34 @@
             }
         }, //<
 
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "options": {
+                "configFile": "{projectRoot}/vitest.config.ts",
+                "reporters": "default"
+            }
+            
+        },
+        
+        "test:full": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["^test"],
+            "options": {
+                "commands": []
+            }
+        },
+        
+        // "test:full": {
+        //     "executor": "@nx/vite:test",
+        //     "outputs": ["{options.reportsDirectory}"],
+        //     "dependsOn": ["^test"],
+        //     "options": {
+        //         "configFile": "{projectRoot}/vitest.config.ts",
+        //         "reporters": "default"
+        //     }
+        // },
+        
         "validate": { //>
             "executor": "nx:run-commands",
             "dependsOn": [
@@ -244,7 +272,7 @@
             "plugin": "@nx/vite/plugin",
             "options": {
                 "buildTargetName": "build",
-                "testTargetName": "vite:test",
+                "testTargetName": "test",
                 "serveTargetName": "serve",
                 "devTargetName": "dev",
                 "previewTargetName": "preview",

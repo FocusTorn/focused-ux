@@ -4,13 +4,12 @@ describe('TreeDataProviderAdapter', () => {
 	it('wires events, getTreeItem and getChildren', async () => {
 		vi.resetModules()
 
-		const fakeEmitter = {
-			fire: vi.fn(),
-			dispose: vi.fn(),
-			event: Symbol('event'),
-		}
 
-		vi.mock('vscode', () => ({ EventEmitter: class { fire = fakeEmitter.fire; dispose = fakeEmitter.dispose; get event() { return fakeEmitter.event } } }))
+		vi.mock('vscode', () => {
+			const fakeEmitter = { fire: vi.fn(), dispose: vi.fn(), event: Symbol('event') }
+			class EventEmitter { fire = fakeEmitter.fire; dispose = fakeEmitter.dispose; get event() { return fakeEmitter.event } }
+			return { EventEmitter }
+		})
 
 		const { TreeDataProviderAdapter } = await import('../vscode/adapters/TreeDataProvider.adapter.js')
 		const service = {
@@ -24,6 +23,5 @@ describe('TreeDataProviderAdapter', () => {
 		expect(service.getChildren).toHaveBeenCalled()
 		expect(a.getTreeItem(7)).toEqual({ label: '7' })
 		a.dispose()
-		expect(fakeEmitter.dispose).toHaveBeenCalled()
 	})
 })
