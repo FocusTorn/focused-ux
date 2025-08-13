@@ -23,7 +23,6 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@fux/shared': path.resolve(__dirname, './src/index.ts'),
-			'@fux/mockly': path.resolve(__dirname, '../mockly/src/index.ts'),
 			'vscode': path.resolve(__dirname, '../../vscode-test-adapter.ts'),
 		},
 	},
