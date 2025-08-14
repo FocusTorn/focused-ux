@@ -21,5 +21,9 @@ export { NotesHubActionService } from './services/NotesHubAction.service.js'
 export { NotesHubConfigService } from './services/NotesHubConfig.service.js'
 export { NotesHubProviderManager } from './services/NotesHubProvider.manager.js'
 
+// Services
+export { WorkspaceUtilsService } from './services/WorkspaceUtils.service.js'
+export { FrontmatterUtilsService } from './services/FrontmatterUtils.service.js'
+
 // Constants
 export { notesHubConstants } from './_config/constants.js'

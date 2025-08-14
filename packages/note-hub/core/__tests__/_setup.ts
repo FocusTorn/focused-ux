@@ -11,9 +11,35 @@ if (!ENABLE_CONSOLE_OUTPUT) {
 	console.error = vi.fn()
 }
 
-// Ensure any direct CommonJS require('vscode') from shared adapters resolves to our test adapter
-vi.mock('vscode', async () => {
-	const mod = await import('../../../vscode-test-adapter.ts')
+// Note: We do NOT mock the 'vscode' module here
+// Instead, tests should use the DI container with Mockly implementations
+// This provides proper dependency injection while keeping packages decoupled
 
-	return mod as any
-})
+// Mock the @fux/shared module to prevent VSCode import issues
+// Tests will use the DI container with Mockly implementations instead
+vi.mock('@fux/shared', () => ({
+	// Mock adapters that return Mockly implementations
+	WindowAdapter: vi.fn(),
+	WorkspaceAdapter: vi.fn(),
+	CommandsAdapter: vi.fn(),
+	UriAdapter: {
+		file: vi.fn(),
+		create: vi.fn(),
+	},
+	TreeItemAdapter: {
+		create: vi.fn(),
+	},
+	ThemeIconAdapter: {
+		create: vi.fn(),
+	},
+	ThemeColorAdapter: {
+		create: vi.fn(),
+	},
+	TreeItemCollapsibleStateAdapter: vi.fn().mockImplementation(() => ({
+		None: 0,
+		Collapsed: 1,
+		Expanded: 2,
+	})),
+	EventEmitterAdapter: vi.fn(),
+	// Add other adapters as needed
+}))

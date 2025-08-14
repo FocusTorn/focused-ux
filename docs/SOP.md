@@ -1,4 +1,6 @@
-# SOP: FocusedUX New Mono-Extension
+# SOP v3: Comprehensive Build System & Architecture Guidelines
+
+This document consolidates the valid parts from SOP and SOP v2, providing comprehensive guidelines for the FocusedUX monorepo architecture, build system, and development practices.
 
 ## 1. :: Project Overview <!-- Start Fold -->
 
@@ -10,7 +12,8 @@ The workspace contains the following packages:
 
 **Shared Libraries:**
 
-- `@fux/libs/shared` - Common services and utilities
+- `@fux/shared` - Common services and VSCode API abstractions
+- `@fux/mockly` - Testing utilities and mocks
 
 **Feature Packages:**
 
@@ -21,25 +24,28 @@ The workspace contains the following packages:
 - `@fux/project-butler-core` & `@fux/project-butler-ext`
 - `@fux/ai-agent-interactor-core` & `@fux/ai-agent-interactor-ext`
 
+**Tool Packages:**
+
+- `@fux/structure-auditor` - Workspace structure validation
+- `@fux/cursor-memory-optimizer` - Cursor optimization utilities
+- `@fux/prune-nx-cache` - Nx cache management
+
 ###### END: Project Overview (END) <!-- Close Fold -->
 
 ## 2. :: Package Archetypes <!-- Start Fold -->
 
-The monorepo consists of three primary package archetypes, each with a distinct purpose and configuration.
+The monorepo consists of four primary package archetypes, each with a distinct purpose and configuration.
+
+### 2.1. :: Package Types
 
 - **`shared` (Library):** Located in `libs/shared/`, contains shared services and abstractions (e.g., file utilities, VS Code API wrappers) intended for runtime use by other packages.
 - **`core` (Library):** Located in `packages/{feature}/core/`, contains a feature's abstract business logic. It is built to be tree-shakeable and is consumed by `ext` packages.
 - **`ext` (Application):** Located in `packages/{feature}/ext/`, contains the VSCode extension implementation. It depends on a `core` package and is bundled into a final, executable artifact.
+- **`tool` (Utility):** Located in `libs/tools/{tool-name}/`, contains standalone utilities that run directly with tsx (no build step).
 
----
-
-###### END: Package Archetypes (END) <!-- Close Fold -->
-
-## 2.1. :: Package Structure Decision Tree <!-- Start Fold -->
+### 2.2. :: Package Structure Decision Tree
 
 When creating a new package, use the following decision tree to determine the appropriate structure:
-
-### Decision Tree
 
 ```
 Is the package intended to be a VS Code extension?
@@ -61,25 +67,7 @@ Is the package intended to be a VS Code extension?
 │       └─ NO → Reconsider package purpose or consult team
 ```
 
-### Package Type Examples
-
-**VS Code Extensions (core/ext pattern):**
-
-- `packages/ghost-writer-core` + `packages/ghost-writer-ext`
-- `packages/dynamicons-core` + `packages/dynamicons-ext`
-- `packages/context-cherry-picker-core` + `packages/context-cherry-picker-ext`
-
-**Shared Libraries (shared pattern):**
-
-- `libs/shared` - Common services and VS Code adapters
-
-**Standalone Tools (tool pattern):**
-
-- `libs/tools/structure-auditor` - Runs with `tsx src/main.ts`
-- `libs/tools/cursor-memory-optimizer` - Runs with `tsx src/index.ts`
-- `libs/tools/prune-nx-cache` - Utility scripts
-
-### Tool Pattern Configuration
+### 2.3. :: Tool Pattern Configuration
 
 For standalone tools that run directly with tsx:
 
@@ -112,9 +100,6 @@ For standalone tools that run directly with tsx:
             "options": {
                 "command": "tsx libs/tools/tool-name/src/main.ts"
             }
-        },
-        "lint": {
-            "executor": "@nx/eslint:lint"
         }
     },
     "tags": ["tool"]
@@ -137,247 +122,419 @@ For standalone tools that run directly with tsx:
 }
 ```
 
-**Key Differences from Library Pattern:**
+###### END: Package Archetypes (END) <!-- Close Fold -->
 
-- No build step required (runs directly with tsx)
-- Runtime dependencies in `dependencies`, build tools in `devDependencies`
-- No declaration generation
-- Uses `nx:run-commands` executor for execution
-- No `tsconfig.lib.json` or `tsconfig.spec.json`
+## 3. :: Build System Architecture <!-- Start Fold -->
 
-###### END: Package Structure Decision Tree (END) <!-- Close Fold -->
+### 3.1. :: Build Configuration Requirements
 
-## 3. :: Key Configuration Principles <!-- Start Fold -->
+**Core Package (`tsconfig.lib.json`):**
 
-### 3.1. :: Dependency Flow
+```json
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+}
+```
 
-- **`core`:** MUST only have production `dependencies` on other `core` or `shared` packages. It MAY have `devDependencies` on development tools.
-- **`ext`:** MUST depend on its corresponding `core` package as a production `dependency`. It MAY depend on `shared` packages as `dependencies`.
-- **`shared`:** This package SHOULD have minimal dependencies and MUST NOT depend on any `core` or `ext` packages to avoid circular dependencies.
+**Extension Package (`tsconfig.json`):**
 
-### 3.2. :: Workspace (`pnpm-workspace.yaml`)
+```json
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+}
+```
 
-- All new packages, regardless of type, MUST be included in the `packages` list in the root `pnpm-workspace.yaml` file.
+### 3.2. :: Build Target Configuration
 
-### 3.3. :: `core` & `shared` Packages (Libraries)
+**Core Package (`project.json`):**
 
-- **Purpose:** To be consumed as a library.
-- **Build Strategy:** MUST use the `@nx/esbuild:esbuild` executor with `bundle: false` for its `build` target. This executor efficiently handles TypeScript transpilation and generates declaration files (`.d.ts`).
-- **`project.json`:** MUST use the global `build:core` target defined in `nx.json`:
-    ```json
-    {
+```json
+{
+    "targets": {
         "build": {
-            "extends": "build:core"
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
+            "options": {
+                "main": "packages/dynamicons/core/src/index.ts",
+                "outputPath": "packages/dynamicons/core/dist",
+                "tsConfig": "packages/dynamicons/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "packages/dynamicons/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": ["@fux/shared", "strip-json-comments"]
+            }
         }
     }
-    ```
-- **`tsconfig.lib.json`:** MUST include:
-    - `"emitDeclarationOnly": true` to generate only type declarations
-    - `"declaration": true` and `"declarationMap": true` for proper type support
-    - `"rootDir": "src"` to ensure a clean output structure
-- **`package.json`:**
-    - MUST define `"main"`, `"types"`, and a wildcard `"exports"` map to support deep imports.
+}
+```
 
-#### 3.3.1. :: Core Package Configuration Details
+**Extension Package (`project.json`):**
 
-**`package.json`:**
-
-- **`dependencies`**: **MUST** list all third-party libraries that are used at runtime within the `core` logic. For example, if a service uses `typescript` to parse code, `typescript` must be a production dependency here.
-- **`devDependencies`**: Should generally be empty, containing only type definitions (`@types/*`) if necessary.
-
-**`project.json`:**
-
-- The `build` target **MUST** have the following options:
-    - `"bundle": false`: `core` packages are libraries, not standalone bundles.
-    - `"external": ["dep1", "dep2", ...]` : This array **MUST** list every third-party package from the `dependencies` section of its `package.json`. This provides essential metadata to the build system.
-
-**`tsconfig.lib.json`:**
-
-- **`references`**: **MUST** include a path to the `tsconfig.lib.json` of any local `workspace:*` dependencies (e.g., `../../../libs/shared/tsconfig.lib.json`).
-- **`paths`**: **MUST** contain mappings for all `workspace:*` dependencies to their `src` directory.
-
-### 3.4. :: `ext` Package (Application)
-
-- **Purpose:** To be published as a final, bundled VS Code extension.
-- **Build Strategy:** MUST use the `@nx/esbuild:esbuild` executor with `bundle: true` to create a single, optimized output file.
-- **`project.json`:** MUST use the global `build:extension` target defined in `nx.json`:
-    ```json
-    {
+```json
+{
+    "targets": {
         "build": {
-            "extends": "build:extension"
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
+            "options": {
+                "entryPoints": ["packages/dynamicons/ext/src/extension.ts"],
+                "outputPath": "packages/dynamicons/ext/dist",
+                "format": ["cjs"],
+                "metafile": true,
+                "platform": "node",
+                "bundle": true,
+                "external": [
+                    "vscode",
+                    "awilix",
+                    "js-yaml",
+                    "strip-json-comments",
+                    "@fux/shared",
+                    "@fux/dynamicons-core"
+                ],
+                "sourcemap": true,
+                "main": "packages/dynamicons/ext/src/extension.ts",
+                "tsConfig": "packages/dynamicons/ext/tsconfig.json",
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/dynamicons/ext/assets/",
+                        "output": "./assets/"
+                    }
+                ]
+            }
         }
     }
-    ```
-- **`tsconfig.json`:** MUST include:
-    - Proper `references` to core packages
+}
+```
 
-#### 3.4.1. :: Third-Party Dependency Management
+### 3.3. :: Global Targets in nx.json
 
-- **Externalization Strategy:** Third-party runtime dependencies are externalized from the bundle to keep the CJS file size small.
-- **Packaging Process:** The `create-vsix.js` script manually constructs `node_modules` by copying resolved dependencies from the workspace during packaging.
-- **Dependency Resolution:** All third-party dependencies listed in the `ext` package's `package.json` are automatically resolved and included in the final VSIX package.
-- **Bundle Optimization:** This approach results in significantly smaller bundle sizes while maintaining full functionality.
-    - `"rootDir": "src"` for clean output structure
-- **`package.json`:**
-    - MUST define the `"main"` field pointing to the bundled output (e.g., `./dist/extension.cjs`).
-    - MUST NOT include `"module"`, `"types"`, or `"exports"`, as it is not consumed as a library.
-    - **Crucially, all consumed workspace packages (e.g., `@fux/shared`, `@fux/my-feature-core`) MUST be listed in `dependencies`, not `devDependencies`.** This ensures their own production dependencies are correctly installed by the packaging script.
-- **Packaging:** MUST include a `.vscodeignore` file to exclude source code (`src/`), configuration files, and other development artifacts from the final VSIX package.
+The workspace defines standardized global targets in `nx.json` under `targetDefaults`:
 
-#### 3.4.2. :: Extension Package Configuration Details
+**Build Targets:**
 
-**`package.json`:**
+```json
+{
+    "build:core": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": ["{options.outputPath}"],
+        "dependsOn": ["^build"],
+        "options": {
+            "bundle": false,
+            "sourcemap": true,
+            "target": "es2022",
+            "keepNames": true,
+            "declarationRootDir": "{projectRoot}/src",
+            "thirdParty": false,
+            "deleteOutputPath": true
+        }
+    },
+    "build:extension": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": ["{options.outputPath}"],
+        "dependsOn": ["^build"],
+        "options": {
+            "bundle": true,
+            "format": ["cjs"],
+            "metafile": true,
+            "platform": "node",
+            "sourcemap": true,
+            "target": "es2022"
+        }
+    }
+}
+```
 
-- **`dependencies`**: **MUST** list the superset of all third-party dependencies required by the entire feature (both `ext` and its corresponding `core` package). It **MUST** also list its local `workspace:*` dependencies (e.g., `@fux/<feature>-core`, `@fux/shared`). This file dictates the versions that will be installed in the final package.
-- **`devDependencies`**: Should generally only contain type definitions (`@types/*`) and other build-time tools like `typescript`.
+###### END: Build System Architecture (END) <!-- Close Fold -->
 
-**`project.json`:**
+## 4. :: Critical Rules <!-- Start Fold -->
 
-- The `build` target **MUST** have the following options:
-    - `"bundle": true`: This is the critical setting that creates the self-contained extension.
-    - `"external": ["vscode", "dep1", "dep2", ...]` : This array **MUST** contain `"vscode"` and all third-party runtime dependencies listed in the `ext` package's `package.json`. Third-party dependencies are externalized to keep the CJS bundle size small and are resolved during packaging via the `create-vsix.js` script.
-    - `"assets"`: **MUST** be configured to copy the extension's `assets` directory to the output `dist` folder.
+### 4.1. :: Adapter Architecture
 
-**`tsconfig.json`:**
+**Rule:** All adapters MUST be in the shared package (`@fux/shared`).
 
-- **`references`**: **MUST** include paths to the `tsconfig.lib.json` of all `workspace:*` dependencies (e.g., `../core/tsconfig.lib.json`, `../../../libs/shared/tsconfig.lib.json`).
+**Rationale:**
 
-### 3.5. :: Build & Task Execution (`nx.json`)
+- Ensures consistent abstraction across all packages
+- Prevents duplication of adapter logic
+- Maintains single source of truth for VSCode API abstractions
 
-- **Global Targets:** The workspace defines standardized global targets in `nx.json` under `targetDefaults`:
-    - `build:core`: For shared libraries with declaration generation
-    - `build:extension`: For VSCode extensions with bundling and optimization
-- **Dependency Graph:** All `build` targets MUST include `"dependsOn": ["^build"]` to ensure Nx builds dependencies first.
-- **Caching:** Cacheable operations (`build`, `lint`, etc.) SHOULD be defined in the `tasksRunnerOptions` section.
+**Implementation:**
 
-### 3.6. :: PowerShell Aliases (`custom_pnpm_aliases.ps1`)
+- Create adapters in `libs/shared/src/vscode/adapters/`
+- Export adapters from `libs/shared/src/index.ts`
+- Import adapters from `@fux/shared` in all packages
 
-- **Command Structure:** Aliases MUST be implemented to construct and execute the idiomatic `pnpm nx <target> <project>` command.
-- **Alias Mapping:** New aliases SHOULD be added to the central `$packageAliases` hashtable for dynamic generation.
+**Example:**
 
-###### END: Key Configuration Principles (END) <!-- Close Fold -->
+```typescript
+// ✅ Correct - Import from shared package
+import { FileSystemAdapter, PathAdapter } from '@fux/shared'
 
-## 4. :: Code Generation and Scaffolding <!-- Start Fold -->
+// ❌ Incorrect - Create local adapters
+class LocalFileSystemAdapter implements IFileSystem {
+    // Implementation
+}
+```
 
-### 4.1. :: Use of Native Generators
+### 4.2. :: VSCode Value Import Restrictions
 
-- **Directive**: When creating scaffolding or code generation logic, Nx's native generator capabilities (e.g., `@nx/devkit`) **MUST** be used in favor of custom, standalone scripts. This ensures that new code adheres to workspace conventions, integrates with the Nx graph, and remains maintainable alongside the core tooling.
+**Rule:** NO VSCode values are to be imported outside of adapters in the shared package.
 
-### 4.2. :: Default Functionality of Generated Code
+**Rationale:**
 
-- **Directive**: A generated module or package **MUST** be fully functional and runnable "out-of-the-box" without requiring manual correction.
-- **Directive**: This includes, but is not limited to, correct build configurations, valid launch/task definitions, and complete dependency injection setups for all essential, shared services (e.g., `IPathUtilsService`, `ICommonUtilsService`). Commenting out essential registrations in generated code is a deviation.
+- Maintains decoupling from VSCode API
+- Enables complete dependency injection
+- Facilitates testing and mocking
 
-###### END: Code Generation and Scaffolding (END) <!-- Close Fold -->
+**Implementation:**
 
-## 5. :: Build Configuration Discoveries <!-- Start Fold -->
+- Only import VSCode types (using `import type`) outside of adapters
+- All VSCode value imports must be in shared package adapters
+- Use shared adapters for all VSCode API interactions
 
-### 5.1. :: ESBuild vs SWC
+**Example:**
 
-- **Discovery**: ESBuild provides better performance and more control over bundling than SWC for our use case.
-- **Core Packages**: Use ESBuild with `bundle: false` and `declarationRootDir` for optimal declaration generation.
-- **Extension Packages**: Use ESBuild with `bundle: true`, tree-shaking, and minification for optimal bundle sizes.
+```typescript
+// ✅ Correct - Import only types
+import type { ExtensionContext, Uri } from 'vscode'
 
-### 5.2. :: TypeScript Configuration
+// ✅ Correct - Use shared adapter
+import { UriAdapter } from '@fux/shared'
+const uri = UriAdapter.file(path)
 
-- **Discovery**: `emitDeclarationOnly: true` in `tsconfig.lib.json` prevents TypeScript compilation conflicts during ESBuild bundling.
-- **Core Packages**: Must have `declaration: true` and `declarationMap: true` for proper type support.
-- **Extension Packages**: Must reference core packages in `tsconfig.json` but not compile their source files.
+// ❌ Incorrect - Direct VSCode value import
+import { Uri } from 'vscode'
+const uri = Uri.file(path)
+```
 
-### 5.3. :: Bundle Size Optimization
+### 4.3. :: Dependency Management
 
-- **Discovery**: Individual exports (manual tree-shaking) can significantly reduce bundle size compared to barrel exports.
-- **Strategy**: Use individual exports in shared packages to enable better tree-shaking in extensions.
-- **Result**: Project Butler extension achieves 0.14 MB bundle size vs 3.57 MB for Ghost Writer (due to TypeScript AST dependencies).
+**Rule:** Build-only dependencies must be in `devDependencies`.
 
-### 5.4. :: Global Targets
+**Rationale:**
 
-- **Discovery**: Global targets in `nx.json` eliminate configuration duplication and ensure consistency.
-- **Implementation**: All packages now use `build:core` or `build:extension` targets instead of duplicating configuration.
-- **Benefits**: Simplified maintenance, consistent builds, and easier new package creation.
+- Prevents extraneous dependencies in production packages
+- Reduces VSIX package size
+- Avoids packaging issues
 
-###### END: Build Configuration Discoveries (END) <!-- Close Fold -->
+**Implementation:**
 
-## 6. :: Standard Workflow <!-- Start Fold -->
+- Runtime dependencies: `dependencies`
+- Build/development dependencies: `devDependencies`
+- Script-only dependencies: `devDependencies`
 
-### 6.1. :: Creating New Features
+**Example:**
 
-1. **Use Generators:** Use the built-in Nx generators to create new packages:
+```json
+{
+    "dependencies": {
+        "@fux/shared": "workspace:*",
+        "awilix": "^12.0.5",
+        "js-yaml": "^4.1.0"
+    },
+    "devDependencies": {
+        "puppeteer": "^24.10.0",
+        "sharp": "^0.34.2",
+        "svgo": "^3.3.2",
+        "tsx": "^4.20.1"
+    }
+}
+```
 
-    ```bash
-    # Create a core package
-    nx g ./generators:core --name=my-feature --description="My feature core functionality" --directory=packages/my-feature
+### 4.4. :: Externalization Strategy
 
-    # Create an extension package
-    nx g ./generators:ext --name=my-feature --displayName="F-UX: My Feature" --description="My feature extension" --corePackage=my-feature --directory=packages/my-feature
-    ```
+**Rule:** All third-party dependencies must be properly externalized.
 
-2. **Implement Logic:** The `core` and `ext` packages will be implemented following the principles outlined above.
+**Rationale:**
 
-3. **Verify:** The build will be tested from the monorepo root using the `pnpm nx build <project-name>` command to ensure correctness.
+- Ensures clean dependency management
+- Prevents bundling issues
+- Maintains compatibility with VSCode extension requirements
 
-### 6.2. :: Development Workflow
+**Implementation:**
 
-1. **Build Dependencies:** Ensure all core packages are built before building extensions
-2. **Build Extension:** Build the extension package for testing
-3. **Package for Testing:** Create a development VSIX package for local installation
-4. **Test:** Install and test the extension in VSCode
-5. **Iterate:** Make changes and repeat the build/test cycle
+- List all runtime dependencies in `external` array in build configuration
+- Use static imports for externalized packages
+- Never use dynamic imports for externalized packages
 
-###### END: Standard Workflow (END) <!-- Close Fold -->
+**Example:**
 
-## 7. :: Technical Constraints & Best Practices <!-- Start Fold -->
+```json
+{
+    "external": [
+        "vscode",
+        "awilix",
+        "js-yaml",
+        "strip-json-comments",
+        "@fux/shared",
+        "@fux/dynamicons-core"
+    ]
+}
+```
 
-### 7.1. :: TypeScript Configuration
+### 4.5. :: Node.js Module Import Restrictions
 
-- **Core packages**: Must have `declaration: true` and `declarationMap: true` in `tsconfig.lib.json`
-- **Extension packages**: Must reference core packages in `tsconfig.json` but not compile their source files
-- **Project references**: Ext packages must reference `tsconfig.lib.json` files, not main `tsconfig.json` files
-- **Composite mode**: Core packages must have `composite: true` in both `tsconfig.json` and `tsconfig.lib.json`
+**Rule:** NO direct Node.js module imports in extension code.
 
-### 7.2. :: VSCode Type Version Management
+**Rationale:**
 
-- **All packages must use the same `@types/vscode` version** to avoid TypeScript compatibility issues
-- **Current standard**: `"@types/vscode": "^1.99.3"` (compatible with Cursor)
-- **Critical constraint**: For extensions to work in Cursor, VSCode version must be 1.99.3 or lower
-- **Configuration API**: Use type assertions (`as`) instead of generic type arguments for `WorkspaceConfiguration.get()` calls
+- VSCode extensions should not include Node.js built-in modules as dependencies
+- Direct imports cause these modules to be bundled, leading to packaging failures
+- Maintains compatibility with VSCode extension requirements
 
-### 7.2.1. :: VSCode Adapters and Types Centralization
+**Implementation:**
 
-- **VSCode adapters and types MUST be centralized in the shared package only**
-- **Core packages**: MUST NOT contain any VSCode adapters, VSCode API usage, or VSCode value imports
-- **Extension packages**: MUST NOT contain VSCode adapters; they should use adapters from the shared package
-- **Shared package**: Contains all VSCode adapters and provides interfaces for VSCode API interactions
-- **Type imports**: Core and ext packages MAY import VSCode types for interface definitions, but MUST NOT use VSCode APIs directly
-- **Adapter pattern**: All VSCode API interactions must go through adapters in the shared package to maintain decoupling
+- Use VSCode's built-in file system API through workspace adapters
+- Create proper abstractions that use shared module adapters
+- Never import `node:fs`, `node:path`, or other Node.js built-ins directly
 
-**Exceptions:**
+**Example:**
 
-- Test files and setup files may contain VSCode imports for mocking purposes
-- NO exceptions for extension.ts files - all VSCode coupling must be in shared package only
+```typescript
+// ✅ Correct - Use VSCode's built-in file system
+import { workspace } from 'vscode'
+const fs = workspace.fs
 
-### 7.3. :: Dependency Injection with Awilix
+// ✅ Correct - Use shared adapter
+import { FileSystemAdapter } from '@fux/shared'
+const fs = new FileSystemAdapter()
 
-- **Framework**: The project uses **awilix** for dependency injection across all packages.
-- **Container Setup**: Each extension package includes an `injection.ts` file that sets up the DI container.
-- **Service Registration**: All services (core, shared, and adapters) are registered in the DI container.
-- **Static Imports**: `awilix` and other externalized packages **MUST** be imported using static, top-level `import` statements to allow the bundler to correctly externalize them.
+// ❌ Incorrect - Direct Node.js import
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+```
 
-    ```typescript
-    // Correct - static import
-    import { createContainer, asClass, asFunction } from 'awilix'
-    ```
+**Common Node.js modules to avoid:**
 
-- **Externalization**: Awilix must be listed in `external` in extension build options and in `dependencies` in `package.json`.
+- `node:fs` / `node:fs/promises`
+- `node:path`
+- `node:url`
+- `node:os`
+- `node:crypto`
+- `node:child_process`
 
-#### 7.3.1. :: Dependency Injection Best Practices
+### 4.6. :: Shared Path Alias Resolution
+
+**Rule:** The TypeScript path alias for `@fux/shared` must point to the package root (`libs/shared`), not `libs/shared/src`.
+
+**Rationale:**
+
+- Ensures consumers use the referenced project's declaration output instead of inlining sources
+- Prevents `rootDir` and `include` errors in composite projects under NodeNext/ESM
+- Aligns all packages on a consistent import strategy for the shared adapters
+
+**Implementation:**
+
+- In each consumer `tsconfig.lib.json`, set the path mapping to the package root
+- Keep a project reference to `libs/shared/tsconfig.lib.json`
+
+**Example (Correct):**
+
+```json
+{
+    "compilerOptions": {
+        "paths": {
+            "@fux/shared": ["../../../libs/shared"]
+        }
+    },
+    "references": [{ "path": "../../../libs/shared/tsconfig.lib.json" }]
+}
+```
+
+**Example (Incorrect):**
+
+```json
+{
+    "compilerOptions": {
+        "paths": {
+            "@fux/shared": ["../../../libs/shared/src"]
+        }
+    }
+}
+```
+
+### 4.7. :: Explicit End-Goal Execution (No-Confirmation Mode)
+
+**Rule:** When a task is stated with an explicit end goal (e.g., "add this feature and write tests that go green" or "achieve 100% across all 4 coverage columns"), proceed continuously toward the goal without asking for confirmation to continue.
+
+**Rationale:** Reduces iteration latency and enforces outcome-driven execution. Prompts for confirmation are redundant when the goal is precisely specified.
+
+**Implementation:**
+
+- Continue autonomously until the stated end condition is met (e.g., tests green with 100% across statements, branches, functions, and lines).
+- Only pause to request input when a true blocking ambiguity is encountered and cannot be resolved via local research.
+- Apply necessary edits (code, tests, config) in one sequence per goal; verify with builds/tests before concluding.
+
+###### END: Critical Rules (END) <!-- Close Fold -->
+
+## 5. :: Dependency Injection with Awilix <!-- Start Fold -->
+
+### 5.1. :: Framework
+
+The project uses **awilix** for dependency injection across all packages.
+
+### 5.2. :: Container Setup
+
+Each extension package includes an `injection.ts` file that sets up the DI container.
+
+### 5.3. :: Service Registration
+
+All services (core, shared, and adapters) are registered in the DI container.
+
+### 5.4. :: Static Imports
+
+`awilix` and other externalized packages **MUST** be imported using static, top-level `import` statements to allow the bundler to correctly externalize them.
+
+```typescript
+// Correct - static import
+import { createContainer, asClass, asFunction } from 'awilix'
+```
+
+### 5.5. :: Dependency Injection Best Practices
 
 - **One Container Per Extension:** Each extension has its own DI container, created in its `injection.ts` file.
 - **Use Factories for Dependencies:** Services that depend on other services or adapters **MUST** be registered using factory functions (`asFunction`) to ensure `awilix` can correctly resolve the dependency graph.
 - **Register All Dependencies:** The container **MUST** provide a concrete implementation for every interface required by the services it resolves. This includes adapters for VS Code APIs (`IWindow`, `IWorkspace`) and shared utilities (`IPathUtilsService`, etc.).
 - **Import Required Interfaces:** All interfaces used in DI registration **MUST** be imported from their respective packages to ensure proper typing and resolution.
 
-#### 7.3.2. :: Common DI Pitfalls & Troubleshooting
+### 5.6. :: Common DI Pitfalls & Troubleshooting
 
 - **`AwilixResolutionError`:** This is the most common error and almost always means a dependency is missing from the container.
     - **Symptom:** `Could not resolve 'someService'.`
@@ -385,7 +542,7 @@ For standalone tools that run directly with tsx:
     - **Solution:** Trace the dependency chain for the service that failed to resolve and ensure every required interface has a corresponding adapter or service registered in the container.
 
 - **Hallucinated Adapters:** Do not assume an adapter exists in `@fux/shared`.
-    - **Symptom:** TypeScript error `Module '"@fux/shared"' has no exported member 'SomeAdapter'`.
+    - **Symptom:** TypeScript error `Module '"@fux/shared"' has no exported member 'SomeAdapter'.`
     - **Cause:** Attempting to import an adapter that does not exist in the shared library.
     - **Solution:** Verify the exports of `@fux/shared/src/index.ts`. If an adapter is needed but not present, it **MUST** be created locally within the `ext` package's `src/adapters` directory.
 
@@ -399,55 +556,497 @@ For standalone tools that run directly with tsx:
     - **Cause:** Missing interface imports from core packages
     - **Solution:** Import all required interfaces from the core package and use factory functions (`asFunction`) for proper dependency injection.
 
-### 7.4. :: Externalization of Node Packages
+###### END: Dependency Injection with Awilix (END) <!-- Close Fold -->
 
-- Any node package used at runtime (e.g., `awilix`, `js-yaml`) must:
-    - Be listed in `external` in the `ext` package's build options (`project.json`).
-    - Be in `dependencies` (not `devDependencies`) in the `ext` package's `package.json`.
-    - Be imported using **static `import` statements** everywhere (including in `shared`/`core` packages) to ensure the bundler can correctly identify and externalize it.
-- **Never use dynamic `import()` for externalized packages**, as this will cause them to be incorrectly bundled.
+## 6. :: Package Injection Patterns & Relationships <!-- Start Fold -->
 
-### 7.5. :: Packaging Script (`scripts/create-vsix.js`)
+### 6.1. :: Injection Hierarchy Overview
+
+The FocusedUX monorepo follows a strict injection hierarchy that maintains clean separation of concerns and prevents circular dependencies:
+
+```
+VSCode Extension (ext package)
+    ↓
+Core Package (core package)
+    ↓
+Shared Library (shared package)
+    ↓
+VSCode APIs (raw VSCode values)
+```
+
+**Key Principles:**
+
+- **Shared packages** contain VSCode API adapters and common utilities
+- **Core packages** contain business logic and depend on shared adapters
+- **Extension packages** contain VSCode-specific logic and depend on both core and shared
+- **No circular dependencies** are allowed between these layers
+
+### 6.2. :: Package Injection Responsibilities
+
+#### 6.2.1. :: Shared Package (`@fux/shared`)
+
+**Purpose:** Provide VSCode API abstractions and common utilities
+**Dependencies:** Direct VSCode API imports (`import * as vscode from 'vscode'`)
+**Injection Pattern:** Self-contained, no external DI container needed
+
+**What Shared Provides:**
+
+- VSCode API adapters (FileSystemAdapter, WindowAdapter, etc.)
+- Common utility services (ConfigurationService, CommonUtilsAdapter, etc.)
+- Interface definitions for all adapters and services
+- Pure utility functions and classes
+
+**Example Shared Service:**
+
+```typescript
+// libs/shared/src/services/Configuration.service.ts
+export class ConfigurationService implements IConfigurationService {
+    constructor(
+        private readonly fileSystem: IFileSystem,
+        private readonly process: IProcess
+    ) {}
+
+    // Implementation using injected adapters
+}
+```
+
+#### 6.2.2. :: Core Package (`@fux/{feature}-core`)
+
+**Purpose:** Contain business logic and domain services
+**Dependencies:** `@fux/shared` adapters and services
+**Injection Pattern:** Self-contained DI container for core services
+
+**What Core Provides:**
+
+- Business logic services (NotesHubService, GhostWriterService, etc.)
+- Domain models and interfaces
+- Core functionality independent of VSCode
+
+**Core Package DI Container:**
+
+```typescript
+// packages/{feature}/core/src/injection.ts
+export function createCoreContainer(): AwilixContainer {
+    const container = createContainer({
+        injectionMode: InjectionMode.PROXY,
+    })
+
+    // Register shared adapters
+    container.register({
+        iFileSystem: asClass(FileSystemAdapter).singleton(),
+        iWindow: asClass(WindowAdapter).singleton(),
+        iWorkspace: asClass(WorkspaceAdapter).singleton(),
+        // ... other shared adapters
+    })
+
+    // Register core services using factories
+    container.register({
+        iFeatureService: asFunction(
+            (cradle: { iFileSystem: IFileSystem; iWindow: IWindow; iWorkspace: IWorkspace }) =>
+                new FeatureService(cradle.iFileSystem, cradle.iWindow, cradle.iWorkspace)
+        ).singleton(),
+    })
+
+    return container
+}
+```
+
+#### 6.2.3. :: Extension Package (`@fux/{feature}-ext`)
+
+**Purpose:** VSCode extension implementation and UI logic
+**Dependencies:** `@fux/{feature}-core` and `@fux/shared`
+**Injection Pattern:** Main DI container that orchestrates everything
+
+**What Extension Provides:**
+
+- VSCode command implementations
+- UI providers and views
+- Extension lifecycle management
+- Integration between core logic and VSCode
+
+### 6.3. :: Correct Injection Flow
+
+#### 6.3.1. :: Extension Package Injection
+
+**Pattern:** Extension packages should inject both shared adapters AND core services
+
+```typescript
+// packages/{feature}/ext/src/injection.ts
+export async function createDIContainer(context: ExtensionContext): Promise<AwilixContainer> {
+    const container = createContainer({
+        injectionMode: InjectionMode.PROXY,
+    })
+
+    // 1. Register VSCode context and Node.js primitives
+    container.register({
+        extensionContext: asValue(context),
+        iOsHomedir: asValue(os.homedir),
+        iPathJoin: asValue(path.join),
+        // ... other Node.js primitives
+    })
+
+    // 2. Register shared adapters (from @fux/shared)
+    container.register({
+        iFileSystem: asClass(FileSystemAdapter).singleton(),
+        iWindow: asClass(WindowAdapter).singleton(),
+        iWorkspace: asClass(WorkspaceAdapter).singleton(),
+        iPathUtils: asClass(PathUtilsAdapter).singleton(),
+        iProcess: asClass(ProcessAdapter).singleton(),
+        iEnv: asClass(EnvAdapter).singleton(),
+        iCommands: asClass(CommandsAdapter).singleton(),
+        // ... other shared adapters
+    })
+
+    // 3. Register local adapters (extension-specific)
+    container.register({
+        iLocalAdapter: asFunction(
+            (cradle: { iFileSystem: IFileSystem }) => new LocalAdapter(cradle.iFileSystem)
+        ).singleton(),
+    })
+
+    // 4. Register core services using factories (from @fux/{feature}-core)
+    container.register({
+        iFeatureService: asFunction(
+            (cradle: {
+                iFileSystem: IFileSystem
+                iWindow: IWindow
+                iWorkspace: IWorkspace
+                iLocalAdapter: ILocalAdapter
+            }) =>
+                new FeatureService(
+                    cradle.iFileSystem,
+                    cradle.iWindow,
+                    cradle.iWorkspace,
+                    cradle.iLocalAdapter
+                )
+        ).singleton(),
+    })
+
+    // 5. Register extension-specific services
+    container.register({
+        iExtensionService: asFunction(
+            (cradle: { iFeatureService: IFeatureService; iWindow: IWindow }) =>
+                new ExtensionService(cradle.iFeatureService, cradle.iWindow)
+        ).singleton(),
+    })
+
+    return container
+}
+```
+
+#### 6.3.2. :: Core Package Service Construction
+
+**Pattern:** Core services should be constructed using factories that inject shared adapters
+
+```typescript
+// packages/{feature}/core/src/services/Feature.service.ts
+export class FeatureService implements IFeatureService {
+    constructor(
+        private readonly fileSystem: IFileSystem,
+        private readonly window: IWindow,
+        private readonly workspace: IWorkspace
+    ) {}
+
+    async performAction(path: string): Promise<void> {
+        // Use injected adapters for VSCode operations
+        const exists = await this.fileSystem.access(path)
+        if (!exists) {
+            await this.window.showErrorMessage(`Path not found: ${path}`)
+            return
+        }
+
+        // Business logic here
+        await this.workspace.fs.writeFile(path, content)
+    }
+}
+```
+
+### 6.4. :: What Went Wrong & How to Fix It
+
+#### 6.4.1. :: Previous Injection Problems
+
+**Problem 1: Missing Shared Adapter Injection**
+
+- **Symptom:** Core services couldn't access VSCode APIs
+- **Root Cause:** Core packages weren't injecting shared adapters
+- **Solution:** Always inject shared adapters into core services
+
+**Problem 2: Circular Dependencies**
+
+- **Symptom:** `AwilixResolutionError` or import loops
+- **Root Cause:** Packages trying to import from each other
+- **Solution:** Maintain strict hierarchy: shared → core → ext
+
+**Problem 3: Manual Service Construction**
+
+- **Symptom:** Services created outside DI container
+- **Root Cause:** Not using factory functions for complex dependencies
+- **Solution:** Use `asFunction` with proper dependency injection
+
+**Problem 4: Missing Interface Imports**
+
+- **Symptom:** TypeScript errors about missing types
+- **Root Cause:** Not importing interfaces from core packages
+- **Solution:** Import all required interfaces and use factory functions
+
+#### 6.4.2. :: Correct Injection Patterns
+
+**✅ DO:**
+
+- Inject shared adapters into core services
+- Use factory functions (`asFunction`) for complex dependencies
+- Register all services in the DI container
+- Import interfaces from core packages
+- Use singleton registration for most services
+
+**❌ DON'T:**
+
+- Create services outside the DI container
+- Skip dependency injection for complex services
+- Import VSCode values directly in core packages
+- Create circular dependencies between packages
+- Assume adapters exist without checking exports
+
+### 6.5. :: Testing Injection Patterns
+
+#### 6.5.1. :: Unit Testing Core Services
+
+**Pattern:** Test core services with Mockly shims for shared adapters
+
+```typescript
+// packages/{feature}/core/__tests__/Feature.service.test.ts
+import { mockly, mocklyService } from '@fux/mockly'
+import { FeatureService } from '../src/services/Feature.service.js'
+
+describe('FeatureService', () => {
+    let service: FeatureService
+
+    beforeEach(() => {
+        mocklyService.reset()
+        // Core services can use Mockly since shared adapters are abstractions
+        // that Mockly already mocks - no need to reinvent the wheel
+        service = new FeatureService(
+            mockly.workspace.fs, // Mockly's mocked file system
+            mockly.window, // Mockly's mocked window
+            mockly.workspace // Mockly's mocked workspace
+        )
+    })
+
+    it('should handle file not found', async () => {
+        // Mockly provides realistic VSCode-like behavior
+        mockly.workspace.fs.access = vi.fn().mockRejectedValue(new Error('Not found'))
+
+        await service.performAction('/nonexistent')
+
+        expect(mockly.window.showErrorMessage).toHaveBeenCalledWith('Path not found: /nonexistent')
+    })
+
+    it('should process file successfully', async () => {
+        // Mockly adapters provide the same interface as real shared adapters
+        mockly.workspace.fs.access = vi.fn().mockResolvedValue(undefined)
+        mockly.workspace.fs.readFile = vi.fn().mockResolvedValue('file content')
+        mockly.workspace.fs.writeFile = vi.fn().mockResolvedValue(undefined)
+
+        await service.performAction('/test/path')
+
+        expect(mockly.workspace.fs.writeFile).toHaveBeenCalledWith('/test/path', expect.any(String))
+    })
+})
+```
+
+**Why Mockly for Core Services:**
+
+- **Shared adapters are abstractions** of VSCode values that Mockly already mocks
+- **No need to reinvent** the wheel with custom mocks
+- **Mockly provides realistic behavior** that matches the shared adapter interfaces
+- **Consistent testing approach** across all package types
+- **Better test isolation** and maintainability
+
+#### 6.5.2. :: Integration Testing Extensions
+
+**Pattern:** Test extensions with DI container and Mockly shims
+
+```typescript
+// packages/{feature}/ext/__tests__/integration/Feature.integration.test.ts
+describe('Feature Integration', () => {
+    let container: AwilixContainer
+    let mocklyService: IMocklyService
+
+    beforeEach(async () => {
+        container = await createDIContainer(mockContext)
+        mocklyService = container.resolve<IMocklyService>('mocklyService')
+        mocklyService.reset()
+    })
+
+    it('should complete full workflow', async () => {
+        const featureService = container.resolve<IFeatureService>('iFeatureService')
+
+        // Test the full integration
+        await featureService.performAction('/test/path')
+
+        expect(mocklyService.window.showInformationMessage).toHaveBeenCalled()
+    })
+})
+```
+
+### 6.6. :: Migration Checklist
+
+When fixing injection patterns in existing packages:
+
+- [ ] **Audit Dependencies:** Ensure no circular imports between packages
+- [ ] **Inject Shared Adapters:** All core services should use shared adapters
+- [ ] **Use Factory Functions:** Complex services should use `asFunction` registration
+- [ ] **Register Everything:** All services must be in the DI container
+- [ ] **Import Interfaces:** Use proper interface imports from core packages
+- [ ] **Test Integration:** Verify DI container resolves all dependencies
+- [ ] **Remove Manual Construction:** No services created outside container
+- [ ] **Validate Hierarchy:** Confirm shared → core → ext dependency flow
+
+### 6.7. :: Common Injection Scenarios
+
+#### 6.7.1. :: File System Operations
+
+**Pattern:** Core services inject FileSystemAdapter for file operations
+
+```typescript
+// Core service
+export class FileProcessorService {
+    constructor(private readonly fileSystem: IFileSystem) {}
+
+    async processFile(path: string): Promise<void> {
+        const content = await this.fileSystem.readFile(path)
+        // Process content...
+        await this.fileSystem.writeFile(path, processedContent)
+    }
+}
+
+// Extension injection
+container.register({
+    iFileProcessor: asFunction(
+        (cradle: { iFileSystem: IFileSystem }) => new FileProcessorService(cradle.iFileSystem)
+    ).singleton(),
+})
+```
+
+#### 6.7.2. :: User Interface Operations
+
+**Pattern:** Core services inject WindowAdapter for user interactions
+
+```typescript
+// Core service
+export class UserInteractionService {
+    constructor(private readonly window: IWindow) {}
+
+    async confirmAction(message: string): Promise<boolean> {
+        const choice = await this.window.showInformationMessage(message, 'Yes', 'No')
+        return choice === 'Yes'
+    }
+}
+
+// Extension injection
+container.register({
+    iUserInteraction: asFunction(
+        (cradle: { iWindow: IWindow }) => new UserInteractionService(cradle.iWindow)
+    ).singleton(),
+})
+```
+
+#### 6.7.3. :: Workspace Operations
+
+**Pattern:** Core services inject WorkspaceAdapter for workspace operations
+
+```typescript
+// Core service
+export class WorkspaceManagerService {
+    constructor(private readonly workspace: IWorkspace) {}
+
+    async getWorkspaceFolders(): Promise<string[]> {
+        const folders = await this.workspace.workspaceFolders
+        return folders.map((folder) => folder.uri.fsPath)
+    }
+}
+
+// Extension injection
+container.register({
+    iWorkspaceManager: asFunction(
+        (cradle: { iWorkspace: IWorkspace }) => new WorkspaceManagerService(cradle.iWorkspace)
+    ).singleton(),
+})
+```
+
+###### END: Package Injection Patterns & Relationships (END) <!-- Close Fold -->
+
+## 7. :: Packaging Script <!-- Start Fold -->
+
+### 6.1. :: Role
 
 The role of the packaging script is to create a self-contained VSIX with a clean, production-only `node_modules` folder. It **MUST NOT** bundle third-party dependencies into the `extension.cjs`.
 
-Its responsibilities are:
+### 6.2. :: Responsibilities
 
-1.  **Clean and Prepare:** It creates a temporary deployment directory.
-2.  **Copy Artifacts:** It copies the necessary project files (`dist`, `assets`, `README.md`, etc.) into the deployment directory.
-3.  **Prepare `package.json`:** It copies the original `package.json`, removes the `dependencies` and `devDependencies` properties, and updates the `version` for dev builds. This is crucial because `vsce` uses this file for metadata, but we don't want it to run an `install` step.
-4.  **Resolve Dependency Tree:** It runs `pnpm list --prod --json --depth=Infinity` on the original extension package to get a complete, structured list of all production dependencies and their exact locations on disk.
-5.  **Manually Construct `node_modules`:** It recursively walks the resolved dependency tree and physically copies each required package from its source location (usually the monorepo's central `.pnpm` store) into the deployment directory's `node_modules` folder. This creates a flat, physical `node_modules` structure that is compatible with `vsce`.
-6.  **Filter Workspace Packages:** It automatically skips workspace packages (those with `link:` versions) since they are not needed in the final VSIX.
-7.  **Copy Nested Dependencies:** It recursively copies all nested dependencies to ensure complete dependency resolution (e.g., `awilix` requires `camel-case` and `fast-glob`).
-8.  **Package VSIX:** It runs `vsce package` on the deployment directory to create the final VSIX file. The `--no-dependencies` flag **MUST** be used to prevent `vsce` from running its own dependency checks, which would fail against the manually constructed `node_modules` folder.
+1. **Clean and Prepare:** It creates a temporary deployment directory.
+2. **Copy Artifacts:** It copies the necessary project files (`dist`, `assets`, `README.md`, etc.) into the deployment directory.
+3. **Prepare `package.json`:** It copies the original `package.json`, removes the `dependencies` and `devDependencies` properties, and updates the `version` for dev builds. This is crucial because `vsce` uses this file for metadata, but we don't want it to run an `install` step.
+4. **Resolve Dependency Tree:** It runs `pnpm list --prod --json --depth=Infinity` on the original extension package to get a complete, structured list of all production dependencies and their exact locations on disk.
+5. **Manually Construct `node_modules`:** It recursively walks the resolved dependency tree and physically copies each required package from its source location (usually the monorepo's central `.pnpm` store) into the deployment directory's `node_modules` folder. This creates a flat, physical `node_modules` structure that is compatible with `vsce`.
+6. **Filter Workspace Packages:** It automatically skips workspace packages (those with `link:` versions) since they are not needed in the final VSIX.
+7. **Copy Nested Dependencies:** It recursively copies all nested dependencies to ensure complete dependency resolution (e.g., `awilix` requires `camel-case` and `fast-glob`).
+8. **Package VSIX:** It runs `vsce package` on the deployment directory to create the final VSIX file. The `--no-dependencies` flag **MUST** be used to prevent `vsce` from running its own dependency checks, which would fail against the manually constructed `node_modules` folder.
 
-### 7.6. :: Common Build Issues
+### 6.3. :: Package Script Configuration
 
-- **TypeScript Declaration Errors**: Ensure core packages have `declaration: true` and `declarationMap: true` in `tsconfig.lib.json`.
-- **Bundle Size Issues**: Check for unnecessary dependencies (like TypeScript AST usage) and consider individual exports.
-- **Import Resolution Errors**: Verify `tsconfig.json` has proper `references` and `emitDeclarationOnly: true`.
-- **Inconsistent tsconfig.json**: Leads to subtle build and type errors—keep them aligned.
-- **Missing Path Mappings**: When TypeScript reports "File not found" errors for source directories, check that all `@fux/*` packages have proper path mappings in `tsconfig.base.json` and that `libs/shared/tsconfig.lib.json` includes explicit path overrides.
-- **Path Sanitization Issues**: The `PathUtilsAdapter.santizePath()` method is designed for filenames only, not full file paths. Always sanitize individual components before joining paths to avoid drive letter corruption.
+**Package Script (`scripts/create-vsix.js`):**
+
+- Must exclude build-only dependencies from production bundle
+- Should only include runtime dependencies in the final VSIX
+- Use `pnpm list --prod --json --depth=Infinity` to get production dependencies only
+- Ensure `devDependencies` are not included in the final package
+
+###### END: Packaging Script (END) <!-- Close Fold -->
+
+## 7. :: Common Build Issues <!-- Start Fold -->
+
+### 7.1. :: TypeScript Declaration Errors
+
+Ensure core packages have `declaration: true` and `declarationMap: true` in `tsconfig.lib.json`.
+
+### 7.2. :: Bundle Size Issues
+
+Check for unnecessary dependencies (like TypeScript AST usage) and consider individual exports.
+
+### 7.3. :: Import Resolution Errors
+
+Verify `tsconfig.json` has proper `references` and `emitDeclarationOnly: true`.
+
+### 7.4. :: Inconsistent tsconfig.json
+
+Leads to subtle build and type errors—keep them aligned.
+
+### 7.5. :: Missing Path Mappings
+
+When TypeScript reports "File not found" errors for source directories, check that all `@fux/*` packages have proper path mappings in `tsconfig.base.json` and that `libs/shared/tsconfig.lib.json` includes explicit path overrides.
+
+### 7.6. :: Path Sanitization Issues
+
+The `PathUtilsAdapter.santizePath()` method is designed for filenames only, not full file paths. Always sanitize individual components before joining paths to avoid drive letter corruption.
 
 ### 7.7. :: TypeScript Configuration Troubleshooting
 
 #### 7.7.1. :: "File not found" Errors for Source Directories
 
-**Problem**: The TypeScript language server in VS Code reports errors like:
+**Problem:** The TypeScript language server in VS Code reports errors like:
 
 ```
 File 'd:/path/to/project/libs/shared/src' not found.
 ```
 
-**Root Cause**: Incorrect or polluted `paths` alias configuration in the TypeScript composite project setup. Placing `paths` in the root `tsconfig.base.json` causes all projects to inherit all paths, leading to resolution errors for projects that do not have a direct dependency on those paths.
+**Root Cause:** Incorrect or polluted `paths` alias configuration in the TypeScript composite project setup. Placing `paths` in the root `tsconfig.base.json` causes all projects to inherit all paths, leading to resolution errors for projects that do not have a direct dependency on those paths.
 
-**Solution**:
+**Solution:**
 
-1.  **Remove `paths` from `tsconfig.base.json`**: The `compilerOptions.paths` property **MUST** be removed from the root `tsconfig.base.json` file to prevent path pollution.
+1. **Remove `paths` from `tsconfig.base.json`:** The `compilerOptions.paths` property **MUST** be removed from the root `tsconfig.base.json` file to prevent path pollution.
 
-2.  **Define `paths` in the Root `tsconfig.json`**: Add all workspace path aliases to the `compilerOptions.paths` property in the **root `tsconfig.json`** file. This provides a global mapping for the IDE and tooling without affecting individual project builds.
+2. **Define `paths` in the Root `tsconfig.json`:** Add all workspace path aliases to the `compilerOptions.paths` property in the **root `tsconfig.json`** file. This provides a global mapping for the IDE and tooling without affecting individual project builds.
 
     ```json
     // In the root tsconfig.json
@@ -460,7 +1059,7 @@ File 'd:/path/to/project/libs/shared/src' not found.
     }
     ```
 
-3.  **Define Relative `paths` in Library `tsconfig.lib.json`**: For each `core` or `shared` library, its `tsconfig.lib.json` **MUST** define a `paths` property that maps only its direct workspace dependencies using the correct **relative paths**.
+3. **Define Relative `paths` in Library `tsconfig.lib.json`:** For each `core` or `shared` library, its `tsconfig.lib.json` **MUST** define a `paths` property that maps only its direct workspace dependencies using the correct **relative paths**.
 
     ```json
     // In packages/my-feature/core/tsconfig.lib.json, which depends on @fux/shared
@@ -471,31 +1070,31 @@ File 'd:/path/to/project/libs/shared/src' not found.
     }
     ```
 
-**Verification**: After making these changes, restart the VS Code TypeScript server to ensure the errors are resolved. The workspace audit script (`scripts/audit-feature-structure.ts`) also validates this configuration.
+**Verification:** After making these changes, restart the VS Code TypeScript server to ensure the errors are resolved. The workspace audit script (`scripts/audit-feature-structure.ts`) also validates this configuration.
 
 #### 7.7.2. :: Path Mapping Best Practices
 
-- **Base Config**: Use absolute paths from workspace root in `tsconfig.base.json`
-- **Package Config**: Use relative paths in individual package `tsconfig.lib.json` files
-- **Consistency**: Ensure all `@fux/*` packages referenced in imports have corresponding path mappings
-- **Validation**: Always test TypeScript compilation after adding new packages or changing path mappings
+- **Base Config:** Use absolute paths from workspace root in `tsconfig.base.json`
+- **Package Config:** Use relative paths in individual package `tsconfig.lib.json` files
+- **Consistency:** Ensure all `@fux/*` packages referenced in imports have corresponding path mappings
+- **Validation:** Always test TypeScript compilation after adding new packages or changing path mappings
 
 ### 7.8. :: Performance Optimization
 
-- **Bundle Size**: Use individual exports, externalize heavy dependencies, and enable tree-shaking
-- **Build Time**: Leverage Nx caching and proper dependency ordering with `dependsOn: ["^build"]`
-- **Type Safety**: Ensure proper TypeScript configuration for declaration generation
-- **Dependency Hygiene**: No unused or duplicate dependencies in any package
+- **Bundle Size:** Use individual exports, externalize heavy dependencies, and enable tree-shaking
+- **Build Time:** Leverage Nx caching and proper dependency ordering with `dependsOn: ["^build"]`
+- **Type Safety:** Ensure proper TypeScript configuration for declaration generation
+- **Dependency Hygiene:** No unused or duplicate dependencies in any package
 
 ### 7.9. :: Webview State Management
 
-- **Directive**: When updating the state of a VS Code webview, a targeted `postMessage` approach **SHOULD** be preferred over replacing the entire HTML content.
-- **Pattern**:
-    1.  The extension host sends a message to the webview containing only the data that has changed (e.g., `{ command: 'settingUpdated', settingId: '...', value: '...' }`).
-    2.  A script within the webview listens for these messages and performs the necessary, specific DOM manipulations to reflect the new state.
-- **Rationale**: This pattern is more performant as it avoids a full re-parse and re-render of the webview's HTML. It is also more reliable and less prone to race conditions or content-flashing artifacts that can occur with full HTML replacement.
+- **Directive:** When updating the state of a VS Code webview, a targeted `postMessage` approach **SHOULD** be preferred over replacing the entire HTML content.
+- **Pattern:**
+    1. The extension host sends a message to the webview containing only the data that has changed (e.g., `{ command: 'settingUpdated', settingId: '...', value: '...' }`).
+    2. A script within the webview listens for these messages and performs the necessary, specific DOM manipulations to reflect the new state.
+- **Rationale:** This pattern is more performant as it avoids a full re-parse and re-render of the webview's HTML. It is also more reliable and less prone to race conditions or content-flashing artifacts that can occur with full HTML replacement.
 
-###### END: Technical Constraints & Best Practices (END) <!-- Close Fold -->
+###### END: Common Build Issues (END) <!-- Close Fold -->
 
 ## 8. :: Package Generators <!-- Start Fold -->
 
@@ -523,8 +1122,9 @@ nx g ./generators:core --name=my-feature --description="My feature core function
 
 **Creating an extension package:**
 
-````bash
-nx g ./generators:ext --name=my-feature --displayName="F-UX: My Feature" --description="My feature extension" --corePackage=my-feature --directory=packages/my-feature```
+```bash
+nx g ./generators:ext --name=my-feature --displayName="F-UX: My Feature" --description="My feature extension" --corePackage=my-feature --directory=packages/my-feature
+```
 
 ### 8.3. :: Complete Feature Creation Workflow
 
@@ -592,11 +1192,11 @@ nx build @fux/ghost-writer-ext
 
 # Build with production configuration
 nx build @fux/ghost-writer-ext --configuration=production
-````
+```
 
-### 8.3. :: Batch Commands
+### 9.2. :: Batch Commands
 
-````bash
+```bash
 # Build all packages
 nx run-many --target=build --all
 
@@ -604,7 +1204,8 @@ nx run-many --target=build --all
 nx run-many --target=build --projects=@fux/*-ext
 
 # Build all core packages
-nx run-many --target=build --projects=@fux/*-core```
+nx run-many --target=build --projects=@fux/*-core
+```
 
 ### 9.3. :: Packaging Commands
 
@@ -614,9 +1215,9 @@ nx run @fux/ghost-writer-ext:package:dev
 
 # Create production package
 nx run @fux/ghost-writer-ext:package
-````
+```
 
-### 8.4. :: Clean Commands
+### 9.4. :: Clean Commands
 
 ```bash
 # Clean cache for a specific project
@@ -631,20 +1232,20 @@ nx run @fux/ghost-writer-ext:clean
 
 ###### END: Build Commands Reference (END) <!-- Close Fold -->
 
-## 9. :: Common Pitfalls & Lessons Learned <!-- Start Fold -->
+## 10. :: Common Pitfalls & Lessons Learned <!-- Start Fold -->
 
-### 9.1. :: Package.json Module Type Mismatch
+### 10.1. :: Package.json Module Type Mismatch
 
-**Problem**: TypeScript compilation shows warning: `"Package type is set to "module" but "cjs" format is included. Going to use "esm" format instead."`
+**Problem:** TypeScript compilation shows warning: `"Package type is set to "module" but "cjs" format is included. Going to use "esm" format instead."`
 
-**Root Cause**: Mismatch between `package.json` configuration and build output format:
+**Root Cause:** Mismatch between `package.json` configuration and build output format:
 
 - `package.json` has `"type": "module"` (indicating ESM)
 - Build configuration uses `"format": ["cjs"]` (producing CommonJS)
 
-**Solution**: Remove `"type": "module"` from `package.json` for VS Code extension packages that use CommonJS build format.
+**Solution:** Remove `"type": "module"` from `package.json` for VS Code extension packages that use CommonJS build format.
 
-**Affected Packages**: All extension packages that use `@nx/esbuild:esbuild` with `"format": ["cjs"]`:
+**Affected Packages:** All extension packages that use `@nx/esbuild:esbuild` with `"format": ["cjs"]`:
 
 - `packages/project-butler/ext/package.json`
 - `packages/context-cherry-picker/ext/package.json`
@@ -653,15 +1254,16 @@ nx run @fux/ghost-writer-ext:clean
 - `packages/dynamicons/ext/package.json`
 - `packages/ai-agent-interactor/ext/package.json`
 
-**Prevention**: When creating new extension packages, ensure `package.json` doesn't include `"type": "module"` if the build configuration uses CommonJS format.
+**Prevention:** When creating new extension packages, ensure `package.json` doesn't include `"type": "module"` if the build configuration uses CommonJS format.
 
-### 9.2. :: Unused Variables Best Practice
+### 10.2. :: Unused Variables Best Practice
 
-**Problem**: ESLint errors like `'line' is defined but never used. Allowed unused args must match /^_/u`
+**Problem:** ESLint errors like `'line' is defined but never used. Allowed unused args must match /^_/u`
 
-**Root Cause**: Function parameters or variables that are declared but never used
+**Root Cause:** Function parameters or variables that are declared but never used
 
-**Solution**: Prefix unused variables with `_` to indicate they are intentionally unused:
+**Solution:** Prefix unused variables with `_` to indicate they are intentionally unused:
+
 ```typescript
 // ❌ Wrong - causes ESLint error
 function processData(data: string, line: number) {
@@ -676,24 +1278,26 @@ function processData(data: string, _line: number) {
 }
 ```
 
-**Best Practices**:
-- **Function Parameters**: Prefix with `_` if the parameter is required by the interface but not used in implementation
-- **Variables**: Prefix with `_` if declared but intentionally unused
-- **Consistency**: Always use `_` prefix, never remove parameters that are part of a required interface
-- **Documentation**: Consider adding a comment explaining why the parameter is unused if it's not obvious
+**Best Practices:**
 
-**Common Scenarios**:
+- **Function Parameters:** Prefix with `_` if the parameter is required by the interface but not used in implementation
+- **Variables:** Prefix with `_` if declared but intentionally unused
+- **Consistency:** Always use `_` prefix, never remove parameters that are part of a required interface
+- **Documentation:** Consider adding a comment explaining why the parameter is unused if it's not obvious
+
+**Common Scenarios:**
+
 - Adapter implementations where interface requires parameters you don't need
 - Event handlers where you only need some parameters
 - Callback functions where you only use specific arguments
 
-### 9.3. :: TypeScript Import Errors
+### 10.3. :: TypeScript Import Errors
 
-**Problem**: TypeScript errors like `'"@fux/shared"' has no exported member named 'ExtensionContext'`
+**Problem:** TypeScript errors like `'"@fux/shared"' has no exported member named 'ExtensionContext'`
 
-**Root Cause**: Importing VS Code types from `@fux/shared` instead of directly from `vscode`
+**Root Cause:** Importing VS Code types from `@fux/shared` instead of directly from `vscode`
 
-**Solution**: Import VS Code types directly from `vscode`:
+**Solution:** Import VS Code types directly from `vscode`:
 
 ```typescript
 // ❌ Wrong
@@ -703,7 +1307,7 @@ import type { ExtensionContext, Disposable, Uri } from '@fux/shared'
 import type { ExtensionContext, Disposable, Uri } from 'vscode'
 ```
 
-**Common Types to Import from vscode**:
+**Common Types to Import from vscode:**
 
 - `ExtensionContext`
 - `Disposable`
@@ -714,13 +1318,13 @@ import type { ExtensionContext, Disposable, Uri } from 'vscode'
 - `TreeItemCollapsibleState`
 - `ProgressLocation`
 
-### 9.4. :: Container Scope Issues
+### 10.4. :: Container Scope Issues
 
-**Problem**: `Cannot find name 'container'` in catch blocks or other scopes
+**Problem:** `Cannot find name 'container'` in catch blocks or other scopes
 
-**Root Cause**: Container variable declared inside try block but accessed in catch block
+**Root Cause:** Container variable declared inside try block but accessed in catch block
 
-**Solution**: Declare container variable outside try block:
+**Solution:** Declare container variable outside try block:
 
 ```typescript
 let container: any = null
@@ -735,9 +1339,55 @@ try {
 }
 ```
 
+### 10.5. :: Extraneous Dependencies Problem
+
+**Issue:** After fixing TypeScript errors, the packaging process fails with extraneous dependencies errors.
+
+**Root Cause:**
+
+- Build-only dependencies (e.g., `puppeteer`, `sharp`, `svgo`, `tsx`) were incorrectly placed in `dependencies` instead of `devDependencies`
+- These dependencies are used only during asset generation and build scripts, not at runtime
+- When the extension package depends on the core package, these build dependencies get pulled in as production dependencies
+
+**Solution:**
+
+- Move all build-only dependencies to `devDependencies` in both core and extension packages
+- Ensure only runtime dependencies remain in `dependencies`
+
+### 10.6. :: Node.js Module Import Issues
+
+**Issue:** Direct Node.js module imports in extension code cause packaging failures.
+
+**Root Cause:**
+
+- VSCode extensions should not include Node.js built-in modules as dependencies
+- Direct imports of `node:fs`, `node:path`, etc. cause these modules to be bundled
+
+**Solution:**
+
+- Use VSCode's built-in file system API through workspace adapters
+- Create proper abstractions that use shared module adapters instead of direct Node.js imports
+
 ###### END: Common Pitfalls & Lessons Learned (END) <!-- Close Fold -->
 
-## 10. :: Nx Workspace Maintenance & Best Practices <!-- Start Fold -->
+## 11. :: Migration Checklist <!-- Start Fold -->
+
+When migrating existing code to SOP v3:
+
+- [ ] Move build-only dependencies to `devDependencies`
+- [ ] Ensure all adapters are in shared package
+- [ ] Remove direct VSCode value imports
+- [ ] Update TypeScript configurations
+- [ ] Verify build target configurations
+- [ ] Test packaging process
+- [ ] Run full validation chain
+- [ ] Update documentation
+- [ ] Implement universal targets
+- [ ] Verify structure auditor compliance
+
+###### END: Migration Checklist (END) <!-- Close Fold -->
+
+## 12. :: Nx Workspace Maintenance & Best Practices <!-- Start Fold -->
 
 All contributors must follow the Nx optimizations and best practices outlined in [docs/Nx_Optimizations.md](./Nx_Optimizations.md). This document covers:
 

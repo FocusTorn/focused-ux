@@ -16,7 +16,6 @@ export default defineConfig({
 		alias: {
 			'@fux/shared': path.resolve(__dirname, '../../../libs/shared/src/index.ts'),
 			'@fux/mockly': path.resolve(__dirname, '../../../libs/mockly/src/index.ts'),
-			'vscode': path.resolve(__dirname, '../../../vscode-test-adapter.ts'),
 		},
 	},
 	optimizeDeps: {

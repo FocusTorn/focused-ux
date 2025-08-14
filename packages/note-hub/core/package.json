@@ -18,7 +18,8 @@
         }
     },
     "dependencies": {
-        "@fux/shared": "workspace:*"
+        "@fux/shared": "workspace:*",
+        "awilix": "^12.0.5"
     },
     "devDependencies": {
         "@types/node": "^20.11.16"
