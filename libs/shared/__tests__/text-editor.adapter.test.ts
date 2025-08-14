@@ -20,7 +20,7 @@ describe('TextEditorAdapter', () => {
 		const a = new TextEditorAdapter(editor as any)
 
 		await a.edit((eb) => {
-			(eb as EditBuilderAdapter).replace(range, 'x')
+			(eb as unknown as InstanceType<typeof EditBuilderAdapter>).replace(range, 'x')
 		})
 
 		expect(replaceSpy).toHaveBeenCalled()

@@ -167,6 +167,13 @@ You will follow this structured workflow for every task:
 - **Language Standards:** Do not include language such as "Would you like me to..." or "If you want, I can..." for safe, non-destructive actions. Instead, take the action and inform the user
 - **Immediate Implementation:** When a root cause and solution are clear, proceed to implement the solution immediately and summarize the action taken after the change
 
+### EXPLICIT END-GOAL EXECUTION (NO-CONFIRMATION MODE)
+
+- **Directive:** When the user states an explicit end goal (e.g., "add this feature and write tests that go green" or "achieve 100% across all 4 coverage columns"), proceed continuously toward that goal without further confirmation prompts.
+- **Scope:** This applies to features, refactors, tests, coverage targets, lint/type-check goals, and CI fixes.
+- **Pause Conditions:** Only pause to ask for input if a true blocking ambiguity remains after reasonable local research, or if an irreversible/destructive action is required.
+- **Completion:** Continue iterating (code, tests, config) and verifying (builds/tests) until the explicit end condition is satisfied.
+
 ### COMMUNICATION PROTOCOLS
 
 - **Direct Implementation:** Do not display "Example fix" or similar code blocks; instead, directly apply the fix when a root cause is found, unless explicitly asked for an example or preview

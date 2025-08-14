@@ -33,4 +33,6 @@ describe('FileSystemAdapter', () => {
 		expect(mod.writeFile).toHaveBeenCalled()
 		expect(mod.mkdir).toHaveBeenCalledWith('d', { recursive: true })
 	})
+
+	// directory branch is covered in file-system.adapter.directory-branch.test.ts to avoid hoisted mock conflicts
 })

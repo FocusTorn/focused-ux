@@ -498,6 +498,18 @@ import { join } from 'node:path'
 }
 ```
 
+### 4.8. Explicit End-Goal Execution (No-Confirmation Mode)
+
+**Rule:** When a task is stated with an explicit end goal (e.g., "add this feature and write tests that go green" or "achieve 100% across all 4 coverage columns"), proceed continuously toward the goal without asking for confirmation to continue.
+
+**Rationale:** Reduces iteration latency and enforces outcome-driven execution. Prompts for confirmation are redundant when the goal is precisely specified.
+
+**Implementation:**
+
+- Continue autonomously until the stated end condition is met (e.g., tests green with 100% across statements, branches, functions, and lines).
+- Only pause to request input when a true blocking ambiguity is encountered and cannot be resolved via local research.
+- Apply necessary edits (code, tests, config) in one sequence per goal; verify with builds/tests before concluding.
+
 ## 5. Migration Checklist
 
 When migrating existing code to SOP v2:

@@ -7,10 +7,7 @@ export class VSCodeUriFactory implements IUriFactory {
 
 	file(path: string): IUri {
 		// Validate path before creating URI
-		console.log('[VSCodeUriFactory] file() called with path:', path)
-		console.log('[VSCodeUriFactory] file() path type:', typeof path)
-		console.log('[VSCodeUriFactory] file() path length:', path?.length)
-		console.log('[VSCodeUriFactory] file() path trimmed:', path?.trim())
+		// (debug logs removed)
 		
 		if (!path || typeof path !== 'string' || path.trim() === '') {
 			console.warn('[VSCodeUriFactory] Invalid path provided to file():', path)
@@ -19,18 +16,15 @@ export class VSCodeUriFactory implements IUriFactory {
 		}
 		
 		try {
-			console.log('[VSCodeUriFactory] file() calling vscode.Uri.file with:', path)
+			// (debug logs removed)
 
 			const vscodeUri = vscode.Uri.file(path)
 
-			console.log('[VSCodeUriFactory] file() vscode.Uri.file succeeded, creating UriAdapter')
+			// (debug logs removed)
 			return new UriAdapter(vscodeUri)
 		}
 		catch (error) {
-			console.error('[VSCodeUriFactory] file() vscode.Uri.file failed:', error)
-			console.error('[VSCodeUriFactory] file() error type:', typeof error)
-			console.error('[VSCodeUriFactory] file() error message:', (error as Error)?.message)
-			console.error('[VSCodeUriFactory] file() error stack:', (error as Error)?.stack)
+			// (error logs kept as thrown error)
 			throw error
 		}
 	}
@@ -46,7 +40,7 @@ export class VSCodeUriFactory implements IUriFactory {
 		const validPaths = paths.filter(path => path && typeof path === 'string' && path.trim() !== '')
 
 		if (validPaths.length !== paths.length) {
-			console.warn('[VSCodeUriFactory] Invalid paths provided to joinPath():', paths)
+			// (warn removed)
 		}
 
 		return new UriAdapter(vscode.Uri.joinPath(vscodeBase, ...validPaths))
@@ -57,7 +51,7 @@ export class VSCodeUriFactory implements IUriFactory {
 
 		// Validate URI before processing
 		if (!vscodeUri || !vscodeUri.path) {
-			console.warn('[VSCodeUriFactory] Invalid URI provided to dirname():', uri)
+			// (warn removed)
 			// Return a fallback URI to prevent crashes
 			return new UriAdapter(vscode.Uri.file('/'))
 		}

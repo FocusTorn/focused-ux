@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { showTimedInformationMessage } from '@fux/shared'
-import type { IProgressWindow } from '@fux/shared'
+import { showTimedInformationMessage } from '../src/utils/showTimedInformationMessage.js'
+import type { IProgressWindow } from '../src/utils/showTimedInformationMessage.js'
 
 describe('showTimedInformationMessage', () => {
 	it('invokes withProgress with provided title and waits approximately duration', async () => {
@@ -9,8 +9,10 @@ describe('showTimedInformationMessage', () => {
 		const window: IProgressWindow = {
 			withProgress: async (options, task) => {
 				calls.push({ title: options.title })
-				await task({ report: (_v) => {} })
-				return undefined as unknown as void
+
+				const result = await task({ report: (_v) => {} })
+
+				return result
 			},
 		}
 

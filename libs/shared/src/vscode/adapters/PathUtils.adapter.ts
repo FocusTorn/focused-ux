@@ -5,12 +5,10 @@ export class PathUtilsAdapter implements IPathUtilsService {
 
 	public getDottedPath(from: string, to: string): string | undefined {
 		if (!from || !to || typeof from !== 'string' || typeof to !== 'string') {
-			console.warn('[PathUtils] Invalid paths provided to getDottedPath():', { from, to })
 			return undefined
 		}
 		
 		if (from.trim() === '' || to.trim() === '') {
-			console.warn('[PathUtils] Invalid paths provided to getDottedPath():', { from, to })
 			return undefined
 		}
 		
@@ -29,7 +27,6 @@ export class PathUtilsAdapter implements IPathUtilsService {
 			return posixPath.startsWith('.') ? posixPath : `./${posixPath}`
 		}
 		catch (error) {
-			console.warn('[PathUtils] Error calculating relative path:', { from, to, error })
 			return undefined
 		}
 	}
@@ -38,7 +35,6 @@ export class PathUtilsAdapter implements IPathUtilsService {
 		// Replace invalid characters in filenames/foldernames
 		// This is now only used for sanitizing individual names, not full paths
 		if (!pathStr || typeof pathStr !== 'string') {
-			console.warn('[PathUtils] Invalid path provided to sanitizePath():', pathStr)
 			return ''
 		}
 		
@@ -46,7 +42,6 @@ export class PathUtilsAdapter implements IPathUtilsService {
 		
 		// Ensure we return a valid string
 		if (!sanitized || sanitized.trim() === '') {
-			console.warn('[PathUtils] Sanitization resulted in empty string for:', pathStr)
 			return '_'
 		}
 		

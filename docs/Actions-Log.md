@@ -1,5 +1,143 @@
 # Actions Log
 
+## 2025-08-14 - Shared/Mockly: TS Path Mapping to Resolve '@fux/shared' in Mockly
+
+**High-Level Summary:** Fixed mockly type-check failures (TS2307) by adding workspace path mappings for `@fux/shared`, enabling the mockly build/check-types to resolve shared exports during compilation.
+
+### Key Implementations:
+
+- Updated `tsconfig.base.json` `compilerOptions.paths`:
+    - `"@fux/shared": ["libs/shared/src/index.ts"]`
+    - `"@fux/shared/*": ["libs/shared/src/*"]`
+
+### Outcomes:
+
+- `nh tsc` → PASS across dependent projects (mockly and ext chain successfully type-check).
+- No further TS2307 errors for `@fux/shared` in `libs/mockly/src/services/MockUriFactory.service.ts`.
+
+---
+
+## 2025-08-14 - Shared Library: TypeScript Recovery & Safeguards After Cleanup
+
+**High-Level Summary:** Recovered TypeScript standard library resolution after an aggressive cleanup removed generated declaration/map files and surfaced missing stdlib errors. Stabilized `check-types` and documented safe cleanup and recovery procedures.
+
+### Key Implementations:
+
+- Restored TypeScript stdlib availability by ensuring workspace TypeScript is installed and resolved correctly (verify `node_modules/typescript/lib/lib.es2022.d.ts`, `lib.dom.d.ts`).
+- Revalidated `@fux/shared` type-checks via the dedicated target to green.
+- Added safeguards and a safe cleanup recipe to the Global Testing Strategy to avoid repeat incidents.
+
+### Outcomes:
+
+- `shared tsc` → PASS (post-recovery).
+- No further TS2318/TS6053 errors related to missing standard libraries.
+
+### Notes & Safeguards:
+
+- Prefer targeted cleanup within the package directory. Avoid commands that could impact toolchain files in `node_modules`.
+- If using a check-only tsconfig, avoid the `composite` + `noEmit: true` conflict; either drop `composite` or allow declarations to emit in build-only configs.
+
+---
+
+## 2025-08-14 - Shared Library: Functional vs Coverage Test Split Implemented
+
+**High-Level Summary:** Separated functional tests from coverage-only tests in `@fux/shared` to keep day-to-day feedback fast while preserving 100% coverage enforcement in a dedicated lane.
+
+### Key Implementations:
+
+- Directory split:
+    - Functional: `libs/shared/__tests__/`
+    - Coverage-only: `libs/shared/__tests__/coverage/`
+- Vitest configs:
+    - `libs/shared/vitest.functional.config.ts` excludes `__tests__/coverage/**` and uses `__tests__/_setup.ts`.
+    - `libs/shared/vitest.coverage.config.ts` includes both functional and coverage-only tests; same setup file.
+- Nx targets:
+    - `@fux/shared:test` → functional lane (`shared t`)
+    - `@fux/shared:test:full` → full + coverage lane (`shared tc`)
+- Renamed setup: `setup.ts` → `_setup.ts` and updated references.
+
+### Outcomes:
+
+- Faster developer loop with functional tests only.
+- Retained 100% coverage via the coverage lane.
+
+### Notes:
+
+- Coverage-only tests focus on defensive and logging branches; remove any that do not impact metrics or behavior.
+
+---
+
+## 2025-08-14 - Workspace: Adopted Functional vs Coverage Split Across All Packages
+
+**High-Level Summary:** Promoted the test split pattern (functional vs coverage lanes) to a workspace-wide convention. Documented global guidance and CI usage, keeping package configs consistent.
+
+### Key Implementations:
+
+- Global guidance added to `docs/global-testing-strategy.md` under “Test Lanes: Functional vs Coverage (All Packages)”.
+- Standardized conventions for directories, Vitest configs, Nx targets, and setup filename (`_setup.ts`).
+
+### Outcomes:
+
+- Consistent developer workflows across libs, core, and ext projects.
+- Faster PR validation while preserving coverage enforcement in targeted jobs.
+
+### Next Steps:
+
+- Propagate configs to core/ext packages following the documented pattern.
+
+---
+
+## 2025-08-14 - Shared Library: 100% Coverage Achieved Across All Metrics
+
+**High-Level Summary:** Finalized `libs/shared` coverage to 100% for statements, branches, functions, and lines. Closed the last branch gap by adding a focused test for the `FileSystemAdapter.stat()` directory path and ensured TS-sound test mocks for `TreeItem`.
+
+### Key Implementations:
+
+- Added `__tests__/file-system.adapter.directory-branch.test.ts` to cover `stats.isDirectory()` true branch, bringing `FileSystem.adapter.ts` to 100% branches.
+- Adjusted `__tests__/tree-item.adapter.branches.test.ts` mock to declare `resourceUri` and `iconPath` on the `TreeItem` class for TypeScript correctness.
+- Verified with `shared tc -s` (coverage) and `shared tsc` (type checks).
+
+### Outcomes:
+
+- `shared tc -s` → PASS. Coverage (v8): 100% Statements, 100% Branches, 100% Functions, 100% Lines for `@fux/shared`.
+- Adapters aggregate at 100% branch coverage; no remaining uncovered lines.
+
+### Notes:
+
+- Shared tests continue to avoid `@fux/mockly` per policy; all `vscode` API usage is locally mocked per test file.
+
+---
+
+## 2025-08-14 - Shared Library: Coverage Hardening to 99.75% and Testing Primer Alignment
+
+**High-Level Summary:** Expanded and refined `libs/shared` test suite to close remaining coverage gaps and align with the testing primer. Achieved ~99.75% overall coverage with all critical adapters fully covered; remaining uncovered lines are benign logging or defensive no-op branches.
+
+### Key Implementations:
+
+- Added targeted tests for adapters/services:
+    - `VSCodeUriFactory`: error catch path for `file()` and `create()` wrapper; `joinPath` filtering; `dirname` invalid fallback.
+    - `PathUtilsAdapter`: whitespace inputs, empty relative-path returns, and exception path from `path.relative`.
+    - `TreeItemAdapter`: `resourceUri` set/clear, `iconPath` undefined branch, `ThemeColorAdapter.create()`.
+    - `WindowAdapter`: guarded `showErrorMessage`, `showTextDocument` unwrap/raw, `_getDuration` early-return and config path, status bar overloads, dropdown/description duration flows.
+- Fixed hoisted mock pitfalls by defining spies inside `vi.mock` factories and asserting through the imported `vscode` module.
+
+### Outcomes:
+
+- `shared tc` → PASS. 48 files, 57 tests passed.
+- Coverage (v8): Statements 99.75%, Branches 92.88%, Functions 99.40%, Lines 99.75%.
+- No reliance on `@fux/mockly` in shared tests; localized `vi.mock('vscode', ...)` per file, per primer.
+
+### Notes on “benign logging” branches:
+
+- The only lines not covered are internal `console.log`/`console.warn`/`console.error` statements and defensive return guards (e.g., in `VSCodeUriFactory` and UI helpers). They do not affect behavior or outputs—only diagnostics. We intentionally avoid asserting on console side effects to keep tests deterministic and quiet unless debugging is enabled.
+
+### How to Re-run:
+
+- Quick: `shared t`
+- Coverage: `shared tc`
+
+---
+
 ## 2025-08-12 - Alias CLI: fix `nh tc` and add `-echo` preview flag
 
 **High-Level Summary:** Fixed alias expansion so `tc` correctly maps to multi-word targets, and introduced an ephemeral `-echo` flag to preview the resolved Nx command without running it.

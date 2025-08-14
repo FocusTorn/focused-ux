@@ -35,7 +35,23 @@
         
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" }
+        "clean:cache": { "extends": "clean:cache" },
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "options": {
+                "configFile": "packages/note-hub/core/vitest.functional.config.ts",
+                "reporters": "default"
+            }
+        },
+        "test:full": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "options": {
+                "configFile": "packages/note-hub/core/vitest.coverage.config.ts",
+                "reporters": "default"
+            }
+        }
      
     },
     "tags": []

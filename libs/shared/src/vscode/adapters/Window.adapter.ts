@@ -145,13 +145,12 @@ export class WindowAdapter implements IWindow, IWindowCCP, IWindowPB {
 		await showTimedInformationMessageUtil(this, safeMessage, finalDurationMs)
 	}
 
-	private async _getDuration(duration?: number, configKey?: string): Promise<number> {
+	private async _getDuration(duration?: number, configKey: string = 'FocusedUX.info_message_show_seconds'): Promise<number> {
 		if (duration !== undefined) {
 			return duration
 		}
 
-		const configKeyToUse = configKey || 'FocusedUX.info_message_show_seconds'
-		const durationSeconds = await this.configurationService.get<number>(configKeyToUse, 1.5)
+		const durationSeconds = await this.configurationService.get<number>(configKey, 1.5)
 
 		return durationSeconds * 1000
 	}
