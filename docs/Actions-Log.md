@@ -1,5 +1,38 @@
 # Actions Log
 
+## 2025-08-14 - Core Package Testing: DI Architecture & Mockly Integration Lessons
+
+**High-Level Summary:** Conducted comprehensive retrospective on note-hub-core refactoring, identifying critical lessons about core package testing architecture and DI patterns that must be followed across all core packages.
+
+### Key Implementations:
+
+- **Complete DI Refactor:** Refactored note-hub-core to be fully DI-reliant, eliminating all direct `@fux/shared` imports
+- **Testing Architecture Rules:** Established "No Shared During Tests" rule - core package tests must NEVER import from `@fux/shared`
+- **Mockly Integration:** Implemented Mockly as complete replacement for shared library during testing via DI container injection
+- **Documentation Updates:** Enhanced global testing strategy and SOP with clear testing anti-patterns and troubleshooting guides
+
+### Critical Lessons Learned:
+
+- **Test Environment Isolation:** Must isolate test environment from VSCode imports at module level, not just service level
+- **Complete Implementation First:** Implement full architectural changes before testing, avoid incremental fixes
+- **Mockly vs Hard-Coded Mocks:** Never create hard-coded mocks when comprehensive mock libraries exist
+- **DI Architecture Understanding:** Core container injects functionality into ext packages and orchestrator extensions
+
+### Outcomes:
+
+- note-hub-core builds error-free with full DI architecture
+- Established clear testing patterns for all future core package development
+- Updated project rules with critical testing anti-patterns and best practices
+
+### Anti-Patterns Identified:
+
+- ❌ Aliasing `@fux/shared` to mock files in test configurations
+- ❌ Partial replacement of shared dependencies - must be complete replacement
+- ❌ Testing before completing architectural refactoring
+- ❌ Creating hard-coded mocks when comprehensive mock libraries exist
+
+---
+
 ## 2025-08-14 - Shared/Mockly: TS Path Mapping to Resolve '@fux/shared' in Mockly
 
 **High-Level Summary:** Fixed mockly type-check failures (TS2307) by adding workspace path mappings for `@fux/shared`, enabling the mockly build/check-types to resolve shared exports during compilation.
@@ -84,6 +117,32 @@
 ### Next Steps:
 
 - Propagate configs to core/ext packages following the documented pattern.
+
+---
+
+## 2025-08-14 - Documentation: Core Container Architecture Clarification
+
+**High-Level Summary:** Significantly enhanced the SOP documentation to clarify the critical role of core containers in the FocusedUX architecture, including their purpose beyond testing and their role in enabling orchestrator extensions.
+
+### Key Implementations:
+
+- **Enhanced Core Container Documentation:** Added comprehensive section explaining that core containers are the "orchestration hub" for feature functionality across the entire system
+- **Orchestrator Extension Pattern:** Documented how core containers enable future orchestrator extensions to coordinate multiple features through cross-feature workflows
+- **Modern Integration Patterns:** Added examples showing how extensions should consume core containers directly instead of reconstructing services
+- **Architectural Principles:** Clarified that core containers are the primary service providers, not just for testing, and maintain architectural boundaries
+
+### Key Architectural Clarifications:
+
+- **Core containers inject functionality into extensions** - they're not just for testing
+- **Extensions consume core containers** - they don't reconstruct services manually
+- **Orchestrators aggregate multiple core containers** - enabling seamless cross-feature coordination
+- **All consumers get consistent service instances** - ensuring system-wide consistency
+
+### Outcomes:
+
+- Clear understanding that the FocusedUX monorepo is designed as a **coordinated ecosystem**, not just independent extensions
+- Documentation now properly explains the core container's role in the broader architecture
+- Future developers will understand how to properly use core containers for extension integration and orchestrator patterns
 
 ---
 
@@ -543,6 +602,284 @@ console.log('🔍 Debug output now visible!')
 - File system operations must be completed before attempting to open documents
 - Adapter patterns require consistent usage throughout the codebase
 - Comprehensive testing must cover both unit and integration scenarios
+
+---
+
+## 2024-12-19 - Testing Architecture Clarification & Documentation Updates
+
+### Problem Identified
+
+The testing architecture was not clearly documented, leading to confusion about:
+
+- Why core packages shouldn't import from shared during tests
+- How different package types should approach testing
+- What causes VSCode import errors in tests
+
+### Root Cause Analysis
+
+1. **Shared packages import VSCode** - They need VSCode to create adapters
+2. **Core packages import shared types** - They need interfaces for type safety
+3. **Tests don't have VSCode** - VSCode isn't available in test environments
+4. **Importing shared during tests** - Causes VSCode import failures
+
+### Solution Implemented
+
+Updated both `docs/global-testing-strategy.md` and `docs/SOP.md` with:
+
+1. **Clear Testing Architecture Section** - Explaining the different approaches for each package type
+2. **Critical Testing Principle** - "Core packages should NOT import from @fux/shared during tests"
+3. **Package Testing Approaches** - Specific patterns for shared, core, and extension packages
+4. **Troubleshooting Section** - Common VSCode import errors and solutions
+5. **Why This Architecture** - Benefits and rationale
+
+### Key Testing Patterns Clarified
+
+#### Shared Packages (libs/shared, libs/mockly)
+
+- **Strategy:** Test adapters by mocking VSCode directly with `vi.mock('vscode')`
+- **Why:** Shared packages create adapters that wrap VSCode APIs
+
+#### Core Packages (packages/{feature}/core)
+
+- **Strategy:** Test business logic by injecting Mockly shims directly
+- **Why:** Core packages contain business logic that should be tested with mocked dependencies
+- **Critical:** NO imports from @fux/shared during tests
+
+#### Extension Packages (packages/{feature}/ext)
+
+- **Strategy:** Test integration using DI containers with Mockly shims
+- **Why:** Extensions need to test the full integration of core services and shared adapters
+
+### Benefits of This Architecture
+
+1. **Prevents Circular Dependencies** - Core packages don't import shared during tests
+2. **Proper Test Isolation** - Each package type tests its own concerns
+3. **Mockly Provides Realistic Behavior** - Mockly shims implement the same interfaces as shared adapters
+4. **No VSCode Import Issues** - Tests don't need VSCode to be available
+
+### Files Modified
+
+- `docs/global-testing-strategy.md` - Added comprehensive testing architecture section
+- `docs/SOP.md` - Added critical testing rule and troubleshooting section
+
+### Lessons Learned
+
+- **Documentation clarity is critical** for complex architectural decisions
+- **Testing patterns must be explicitly documented** to prevent confusion
+- **Different package types require different testing approaches** - this must be clear
+- **VSCode import errors in tests** are almost always caused by importing from shared during tests
+
+### Next Steps
+
+- Apply this clarified testing architecture to fix nhc tests
+- Ensure all packages follow the documented patterns
+- Use this as a reference for future package development
+
+---
+
+## 2024-12-19 - VSCode Import Rules Clarification
+
+### Problem
+
+Documentation was unclear about VSCode import rules, incorrectly suggesting that type imports could cause hoisting issues.
+
+### Root Cause
+
+Misunderstanding of TypeScript's type import behavior - type imports are completely removed at runtime and cannot cause hoisting or bundling issues.
+
+### Solution
+
+Updated documentation to clarify the correct VSCode import rules:
+
+- **Type imports are safe:** `import type { ExtensionContext, Uri } from 'vscode'` - no hoisting issues
+- **Value imports are problematic:** `import * as vscode from 'vscode'` - causes hoisting issues
+- **Auditor correctly only flags value imports** because type imports are removed at runtime
+
+### Key Patterns Clarified
+
+- Use type imports when you need VSCode types for interface definitions
+- Use shared adapters for runtime VSCode functionality
+- The structure auditor's enforcement is correct and targeted
+
+### Benefits
+
+- Developers can confidently use VSCode type imports without fear of hoisting issues
+- Clear distinction between safe type imports and problematic value imports
+- Documentation aligns with actual auditor behavior
+
+### Files Modified
+
+- `docs/SOP.md` - Added VSCode Type Version Management section
+
+---
+
+## 2025-08-14 - Documentation: Critical Testing Architecture Rule Clarification
+
+**Files Modified:**
+
+- `docs/global-testing-strategy.md`
+- `docs/SOP.md`
+
+**Changes Applied:**
+
+- Made the "Core packages should NEVER import from @fux/shared during tests" rule much more prominent with 🚨 emojis and clear formatting
+- Added detailed explanations of why this rule exists and what happens when it's violated
+- Added troubleshooting guides with specific error messages and their root causes
+- Added prominent warning boxes in multiple sections to reinforce this critical rule
+- Enhanced migration checklists to include testing-specific items
+
+**Outcomes:**
+
+- The critical testing architecture rule is now impossible to miss
+- Developers have clear guidance on what NOT to do and why
+- Troubleshooting guide helps identify when this rule is being violated
+- Migration checklist ensures proper testing setup during refactoring
+
+**Key Improvements:**
+
+- Added prominent warning boxes with ⚠️ symbols in multiple sections
+- Created troubleshooting guide with specific error messages and root causes
+- Enhanced migration checklists to include testing-specific verification steps
+- Made the rule impossible to miss with clear formatting and repetition
+- `docs/global-testing-strategy.md` - Added VSCode Import Rules section
+
+### Lessons Learned
+
+- Type imports are completely safe and don't cause runtime issues
+- Only value imports from VSCode cause hoisting and bundling problems
+- Documentation should distinguish between compile-time types and runtime values
+
+---
+
+## 2024-12-19 - VSCode Test Adapter Architecture Improvement
+
+### Problem Identified
+
+The `vscode-test-adapter.ts` file was located at the workspace root, but it's only used by the shared package for testing. This created architectural confusion and potential cross-package dependencies.
+
+### Root Cause Analysis
+
+1. **Misplaced Ownership** - Test adapter was at workspace root but belonged to shared package
+2. **Cross-Package References** - Other packages were incorrectly referencing shared's test utilities
+3. **Architectural Inconsistency** - Not following the pattern of package self-containment
+4. **Confusion** - Unclear where the test adapter belonged and who should use it
+
+### Solution Implemented
+
+**Move `vscode-test-adapter.ts` into the shared package** where it belongs:
+
+1. **New Location:** `libs/shared/vscode-test-adapter.ts`
+2. **Updated Documentation:** Clarified ownership and usage patterns
+3. **Migration Steps:** Documented how to move from root to shared package
+4. **Clear Guidelines:** Other packages must NOT reference shared's test adapter
+
+### Architectural Benefits
+
+#### 1. **Better Encapsulation**
+
+- Shared package contains everything it needs for testing
+- No more root-level test utilities cluttering the workspace
+
+#### 2. **Clear Ownership**
+
+- `vscode-test-adapter.ts` clearly belongs to `@fux/shared`
+- No ambiguity about where test utilities live
+
+#### 3. **No Cross-Package Dependencies**
+
+- Other packages don't depend on shared's test utilities
+- Cleaner dependency graph and better test isolation
+
+#### 4. **Consistent with Architecture**
+
+- Follows the established pattern of package self-containment
+- Aligns with the principle that packages should be independent
+
+### Implementation Details
+
+#### Shared Package Configuration
+
+```typescript
+// libs/shared/vitest.functional.config.ts
+export default defineConfig({
+    resolve: {
+        alias: {
+            vscode: path.resolve(__dirname, './vscode-test-adapter.ts'),
+        },
+    },
+})
+```
+
+#### Other Packages Must NOT Reference It
+
+```typescript
+// ❌ WRONG - Don't reference shared's test adapter
+resolve: {
+    alias: {
+        'vscode': path.resolve(__dirname, '../../../vscode-test-adapter.ts'),
+    }
+}
+
+// ✅ CORRECT - Only alias shared and mockly
+resolve: {
+    alias: {
+        '@fux/shared': path.resolve(__dirname, '../../../libs/shared/src/index.ts'),
+        '@fux/mockly': path.resolve(__dirname, '../../../libs/mockly/src/index.ts'),
+    }
+}
+```
+
+### Files Modified
+
+- `docs/global-testing-strategy.md` - Updated shared package testing examples and troubleshooting
+- `docs/SOP.md` - Added comprehensive section on VSCode test adapter ownership
+- `docs/Actions-Log.md` - Documented this architectural improvement
+
+### Migration Steps Documented
+
+1. **Move the file** to `libs/shared/vscode-test-adapter.ts`
+2. **Update shared package vitest configs** to reference it locally
+3. **Remove any references** from other package vitest configs
+4. **Delete the root-level file** after confirming shared tests still work
+
+### Lessons Learned
+
+- **Test utilities belong with the packages that use them** - not at workspace root
+- **Package self-containment** is a key architectural principle
+- **Clear ownership** prevents confusion and cross-package dependencies
+- **Documentation must reflect architectural decisions** to prevent future confusion
+
+### Next Steps
+
+- Actually move the `vscode-test-adapter.ts` file from root to `libs/shared/`
+- Update shared package vitest configs to reference it locally
+- Remove any cross-package references to the test adapter
+- Verify shared package tests still work after the move
+
+---
+
+## 2025-08-14 - Documentation: Why Not Hard-Coded Mocks Clarification
+
+**What was done:**
+
+- Added new section "🚨 WHY NOT HARD-CODED MOCKS? 🚨" to both `docs/global-testing-strategy.md` and `docs/SOP.md`
+- Explained the problems with hard-coded mocks vs. the benefits of using Mockly
+- Added troubleshooting sections that specifically address common symptoms of violating the "no shared during tests" rule
+- Provided clear examples of wrong vs. correct approaches
+
+**Outcomes:**
+
+- Developers now understand why hard-coded mocks are problematic
+- Clear guidance on using Mockly instead of reinventing the wheel
+- Troubleshooting sections help identify and fix common testing architecture violations
+- Golden rule established: "If you're mocking @fux/shared, you're doing it wrong. Use Mockly instead."
+
+**Lessons learned:**
+
+- The question "Why are we doing hard-coded mocks instead of using Mockly?" revealed a fundamental misunderstanding
+- Documentation needs to explain not just the rules, but the reasoning behind them
+- Troubleshooting sections with specific error messages and fixes are invaluable for developers
+- Clear examples of wrong vs. correct approaches help prevent common mistakes
 
 ---
 

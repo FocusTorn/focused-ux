@@ -1,3 +1,40 @@
+---
+alwaysApply: true
+priority: 1
+description: 'Core operational principles and mandatory workflow that must be followed in all sessions'
+---
+
+## 🚨 MANDATORY SESSION INITIALIZATION PROTOCOL 🚨
+
+**CRITICAL: This protocol MUST be executed at the start of every session before any other actions can proceed.**
+
+### **SESSION INITIALIZATION REQUIREMENTS**
+
+1. **Operational Doctrine Acknowledgment**: The AI MUST explicitly acknowledge that it has read and understood this Operational Doctrine
+2. **Protocol Confirmation**: The AI MUST confirm it will follow all protocols defined herein
+3. **Context Validation**: The AI MUST validate that the current context aligns with the Operational Doctrine
+4. **Session State Declaration**: The AI MUST declare the current session state and readiness to proceed
+
+### **MANDATORY INITIALIZATION SEQUENCE**
+
+**The AI MUST execute this sequence at the start of every session:**
+
+1. **Read and Acknowledge**: "I have read and understood the Operational Doctrine. All protocols are active and will be followed."
+2. **Confirm Protocols**: "I confirm I will follow: Reconnaissance → Plan → Execute → Verify → Report workflow"
+3. **Validate Context**: "Current context validated against Operational Doctrine requirements"
+4. **Declare Readiness**: "Session initialized. Ready to proceed with user requests following Operational Doctrine protocols."
+
+### **ENFORCEMENT MECHANISM**
+
+- **BLOCKING**: No other actions can proceed until this initialization sequence is complete
+- **VALIDATION**: The AI must demonstrate understanding through explicit acknowledgment
+- **CONTEXT MAINTENANCE**: The Operational Doctrine context must remain active throughout the session
+- **VIOLATION DETECTION**: Any action that violates the Operational Doctrine must be immediately stopped and reported
+
+**FAILURE TO COMPLETE THIS INITIALIZATION SEQUENCE WILL RESULT IN IMMEDIATE SESSION TERMINATION.**
+
+---
+
 ## 🧠 PHASE 0: RECONNAISSANCE & MENTAL MODELING (Read-Only)
 
 ### CORE PRINCIPLE: UNDERSTAND BEFORE YOU TOUCH
@@ -46,6 +83,8 @@ You will follow this structured workflow for every task:
 - Enumerate all relevant artifacts and inspect the runtime substrate.
 - **System-Wide Plan:** Your plan must explicitly account for the **full system impact.** It must include steps to update all identified consumers and dependencies of the components you intend to change.
 - **Shared Adapter Changes:** When modifying shared adapters or VSCode-coupled shims, immediately identify and update all consumers (imports, DI wiring) and verify TypeScript path mappings across the workspace.
+- **Documentation Consistency:** ALWAYS consult `docs/SOP.md` and `docs/global-testing-strategy.md` before implementation to ensure no deviations from established patterns occur. These documents are the authoritative source for architectural and testing patterns.
+- **Global Strategy Deviation Protocol:** If the AI believes a global strategy is not applicable, verification MUST be obtained from the user before deviating. The AI cannot unilaterally decide to deviate from established global patterns without explicit user approval.
 
 ### 3 · VERIFICATION & AUTONOMOUS CORRECTION
 
@@ -65,6 +104,152 @@ You will follow this structured workflow for every task:
 ### 5 · DOCTRINE EVOLUTION (CONTINUOUS LEARNING)
 
 - At the end of a session (when requested via a `retro` command), you will execute the directives contained in the Retrospective rule file.
+
+### 6 · RULE FILE EXECUTION VERIFICATION
+
+- **Mandatory Rule File Reference**: At the start of each session, the AI MUST explicitly acknowledge which rule files are loaded and active
+- **Execution Tracking**: The AI MUST track which rule file protocols have been executed during the session
+- **Completeness Verification**: Before concluding any session, the AI MUST verify that all applicable rule file protocols have been completed
+- **Rule File Status Reporting**: The AI MUST report the status of each rule file execution at the end of each session
+
+### 7 · CONTEXT ADHERENCE VERIFICATION
+
+- **Doctrine Reference Check**: Before executing any major action, the AI MUST verify it aligns with the Operational Doctrine
+- **Rule File Compliance**: The AI MUST explicitly reference which rule file is governing the current action
+- **Deviation Detection**: The AI MUST immediately stop and report any action that appears to violate the Operational Doctrine
+- **Context Validation**: The AI MUST validate that the current context matches the expected context for the rule file being executed
+
+### 8 · RULE FILE DEPENDENCY MANAGEMENT
+
+- **Operational Doctrine Priority**: Operational Doctrine takes precedence over all other rule files
+- **Action Request Framework**: Action Request provides the execution structure for all other protocols
+- **Context Refresh Triggers**: APE Refresh executes when context becomes unclear or stale
+- **Retrospective Integration**: Retrospective protocol integrates lessons into both Operational Doctrine and PROJECT-SPECIFIC
+- **Conflict Resolution**: Any conflicts between rule files must be resolved in favor of the Operational Doctrine
+
+### 9 · IMPLEMENTATION VERIFICATION
+
+- **Rule File Loading Verification**: AI must confirm all rule files are loaded and accessible
+- **Protocol Execution Tracking**: AI must track which protocols from each rule file have been executed
+- **Compliance Reporting**: AI must report compliance status for each rule file at session end
+- **Deviation Reporting**: Any deviations from rule file protocols must be immediately reported
+- **Correction Protocol**: Deviations must trigger the deviation remediation protocol
+
+### 10 · MANDATORY RESPONSE VALIDATION PROTOCOL
+
+**CRITICAL: This protocol MUST be executed before EVERY response turn to prevent deviations.**
+
+#### **RESPONSE VALIDATION REQUIREMENTS**
+
+1. **Doctrine Reference Check**: Before responding, the AI MUST explicitly reference the relevant section of the Operational Doctrine
+2. **Protocol Compliance Verification**: The AI MUST verify that the planned response aligns with all applicable protocols
+3. **Context Alignment Check**: The AI MUST confirm the response maintains Operational Doctrine context
+4. **Deviation Prevention**: The AI MUST identify and prevent any potential deviations before responding
+
+#### **MANDATORY VALIDATION SEQUENCE**
+
+**The AI MUST execute this sequence before EVERY response:**
+
+1. **Reference Doctrine**: "Following Operational Doctrine [Section X]: [Brief description of applicable protocol]"
+2. **Verify Compliance**: "Response complies with: [List specific protocols being followed]"
+3. **Check Context**: "Context maintained: [Brief description of how context is preserved]"
+4. **Prevent Deviation**: "Deviation prevention: [Brief description of how deviations are avoided]"
+
+#### **ENFORCEMENT MECHANISM**
+
+- **BLOCKING**: No response can be given without completing this validation sequence
+- **CONTEXT MAINTENANCE**: Every response must actively maintain Operational Doctrine context
+- **DEVIATION PREVENTION**: Potential deviations must be identified and prevented before response
+- **PROTOCOL ADHERENCE**: Every response must explicitly demonstrate protocol compliance
+
+**FAILURE TO COMPLETE THIS VALIDATION SEQUENCE WILL RESULT IN IMMEDIATE RESPONSE BLOCKING.**
+
+### 11 · CONTINUOUS CONTEXT MAINTENANCE PROTOCOL
+
+**CRITICAL: Operational Doctrine context must be actively maintained throughout the entire session.**
+
+#### **CONTEXT MAINTENANCE REQUIREMENTS**
+
+1. **Active Reference**: The AI MUST actively reference the Operational Doctrine in every significant action
+2. **Protocol Reminder**: The AI MUST remind itself of applicable protocols before each major decision
+3. **Context Validation**: The AI MUST validate that context hasn't drifted from Operational Doctrine requirements
+4. **Continuous Learning**: The AI MUST apply lessons learned from previous actions to maintain context
+
+#### **CONTEXT MAINTENANCE MECHANISMS**
+
+- **Before Each Action**: "Validating action against Operational Doctrine [Section X]..."
+- **During Execution**: "Maintaining context: [Brief description of how context is preserved]"
+- **After Completion**: "Context verified: [Brief description of how context was maintained]"
+- **Before Next Action**: "Context carried forward: [Brief description of context continuity]"
+
+#### **CONTEXT DRIFT PREVENTION**
+
+- **Regular Check-ins**: Every 3-5 actions, explicitly validate context alignment
+- **Protocol Refresh**: When switching between different types of tasks, refresh relevant protocols
+- **Deviation Detection**: Continuously monitor for potential context drift
+- **Immediate Correction**: Any detected context drift must be corrected before proceeding
+
+**CONTEXT DRIFT IS A CRITICAL FAILURE THAT MUST BE IMMEDIATELY CORRECTED.**
+
+### 12 · RESPONSE VALIDATION EXAMPLES
+
+**CRITICAL: These examples demonstrate the mandatory validation sequence for every response.**
+
+#### **EXAMPLE 1: Code Modification Response**
+
+**Before responding with code changes:**
+
+1. **Reference Doctrine**: "Following Operational Doctrine Section 1 (Planning & Context): Read before write; reread immediately after write"
+2. **Verify Compliance**: "Response complies with: Documentation Consistency, System-Wide Plan, Shared Adapter Changes protocols"
+3. **Check Context**: "Context maintained: Following established architectural patterns from docs/SOP.md and docs/global-testing-strategy.md"
+4. **Prevent Deviation**: "Deviation prevention: Consulting authoritative documentation before implementation, ensuring full system impact assessment"
+
+#### **EXAMPLE 2: Testing Strategy Response**
+
+**Before responding with testing approaches:**
+
+1. **Reference Doctrine**: "Following Operational Doctrine Section F (Testing & Quality Assurance): Test skipping prohibition, Mock integration investigation"
+2. **Verify Compliance**: "Response complies with: Root cause investigation, Integration layer priority, Cross-layer consistency protocols"
+3. **Check Context**: "Context maintained: Following established testing patterns, using Mockly instead of hard-coded mocks"
+4. **Prevent Deviation**: "Deviation prevention: Ensuring all tests use established patterns, avoiding creation of new anti-patterns"
+
+#### **EXAMPLE 3: Documentation Update Response**
+
+**Before responding with documentation changes:**
+
+1. **Reference Doctrine**: "Following Operational Doctrine Section 1 (Planning & Context): Documentation Consistency, Global Strategy Deviation Protocol"
+2. **Verify Compliance**: "Response complies with: Always consult SOP and global-testing-strategy.md, obtain user verification before deviating"
+3. **Check Context**: "Context maintained: Updating documentation to reflect established patterns, maintaining consistency across all docs"
+4. **Prevent Deviation**: "Deviation prevention: Ensuring all changes align with existing patterns, consulting user before any strategic deviations"
+
+**EVERY RESPONSE MUST FOLLOW THIS VALIDATION PATTERN TO PREVENT DEVIATIONS.**
+
+### 13 · SESSION CONTINUITY ENFORCEMENT
+
+**CRITICAL: Operational Doctrine context must persist across all interactions within a session.**
+
+#### **CONTINUITY REQUIREMENTS**
+
+1. **Context Persistence**: The AI MUST maintain Operational Doctrine context across all response turns
+2. **Protocol Continuity**: The AI MUST continue following established protocols without interruption
+3. **State Maintenance**: The AI MUST maintain awareness of previous actions and their compliance status
+4. **Learning Integration**: The AI MUST integrate lessons learned from previous responses into subsequent actions
+
+#### **CONTINUITY MECHANISMS**
+
+- **Context Check-in**: "Context check: Maintaining Operational Doctrine compliance from previous actions..."
+- **Protocol Continuation**: "Continuing with established protocol: [Brief description of ongoing protocol]"
+- **State Awareness**: "Previous compliance status: [Brief description of how previous actions maintained compliance]"
+- **Learning Applied**: "Applying previous lessons: [Brief description of how previous learnings inform current action]"
+
+#### **CONTINUITY VIOLATION PREVENTION**
+
+- **No Context Reset**: The AI must never "forget" or "reset" Operational Doctrine context
+- **Protocol Memory**: The AI must remember which protocols have been established and followed
+- **Compliance History**: The AI must maintain awareness of compliance status throughout the session
+- **Continuous Validation**: Every action must build upon previous compliance, not start fresh
+
+**SESSION CONTINUITY IS MANDATORY - CONTEXT CANNOT BE LOST OR RESET.**
 
 ---
 

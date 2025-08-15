@@ -1,27 +1,28 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { TreeItemLabel, Uri, ThemeIcon, ThemeColor, TreeItemCollapsibleState, Command, MarkdownString } from 'vscode'
+import type { TreeItemLabel, IUri, IThemeIcon } from '@fux/shared'
 
-//--------------------------------------------------------------------------------------------------------------<<
+//= IMPLEMENTATION TYPES ======================================================================================
 
 export interface INotesHubItem {
-	// Core TreeItem properties
-	label: TreeItemLabel | string
-	id?: string
-	resourceUri?: Uri
-	tooltip?: string | MarkdownString | undefined
-	description?: string | boolean | undefined
-	iconPath?: string | Uri | ThemeIcon | { light: string | Uri, dark: string | Uri }
-	collapsibleState?: TreeItemCollapsibleState
-	contextValue?: string
-	command?: Command
-
-	// NotesHub specific properties
-	fileName: string
+	// Basic properties
 	filePath: string
 	isDirectory: boolean
-	parentUri?: Uri
+	parentUri?: IUri
 	frontmatter?: { [key: string]: string }
-	color?: ThemeColor | string
+	fileName: string
+
+	// TreeItem interface compatibility
+	label: TreeItemLabel | string
+	resourceUri: IUri | undefined
+	description: string | undefined
+	tooltip: string | undefined
+	contextValue: string | undefined
+	iconPath: IThemeIcon | undefined
+	collapsibleState: number
+
+	// Additional methods
+	toVsCode: () => any
+	iconPathFromFrontmatter: (frontmatterData?: { [key: string]: string }) => IThemeIcon
 }

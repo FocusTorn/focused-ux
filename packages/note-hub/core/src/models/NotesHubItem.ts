@@ -1,13 +1,41 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { ITreeItem, IThemeIcon, IThemeColor, TreeItemLabel } from '@fux/shared'
-import { TreeItemAdapter, ThemeIconAdapter, ThemeColorAdapter, UriAdapter, TreeItemCollapsibleStateAdapter } from '@fux/shared'
-import type { Uri } from 'vscode'
-
+// Local interface definitions to avoid importing from shared
 //= IMPLEMENTATION TYPES ======================================================================================
 
 import type { INotesHubItem } from '../_interfaces/INotesHubItem.js'
+
+export interface ITreeItem {
+	label: string | TreeItemLabel | undefined
+	resourceUri?: IUri
+	description?: string | boolean
+	tooltip?: string | any
+	contextValue?: string
+	iconPath?: IThemeIcon
+	collapsibleState: number | undefined
+}
+
+export interface IThemeIcon {
+	readonly id: string
+	readonly color?: IThemeColor
+}
+
+export interface IThemeColor {
+	readonly id: string
+}
+
+export interface IUri {
+	path: string
+	query: string
+	fsPath: string
+	toString: () => string
+}
+
+export interface TreeItemLabel {
+	label: string
+	highlights?: [number, number][]
+}
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -29,9 +57,16 @@ export class NotesHubItem implements INotesHubItem {
 
 	public filePath: string
 	public isDirectory: boolean
-	public parentUri?: Uri
+	public parentUri?: IUri
 	public frontmatter?: { [key: string]: string }
 	public fileName: string
+
+	// Injected services
+	private treeItemAdapter: any
+	private themeIconAdapter: any
+	private themeColorAdapter: any
+	private uriAdapter: any
+	private treeItemCollapsibleStateAdapter: any
 
 	// TreeItem interface compatibility
 	get label(): TreeItemLabel | string {
@@ -42,14 +77,14 @@ export class NotesHubItem implements INotesHubItem {
 
 	set label(value: TreeItemLabel | string) { this.treeItem.label = value }
 
-	get resourceUri(): Uri | undefined {
+	get resourceUri(): IUri | undefined {
 		const iUri = this.treeItem.resourceUri
 
-		return iUri ? (iUri as UriAdapter).uri : undefined
+		return iUri ? (iUri as any).uri : undefined
 	}
 
-	set resourceUri(value: Uri | undefined) {
-		this.treeItem.resourceUri = value ? UriAdapter.create(value) : undefined
+	set resourceUri(value: IUri | undefined) {
+		this.treeItem.resourceUri = value ? this.uriAdapter.file(value.fsPath) : undefined
 	}
 
 	get description(): string | undefined {
@@ -77,7 +112,7 @@ export class NotesHubItem implements INotesHubItem {
 	get collapsibleState(): number {
 		const state = this.treeItem.collapsibleState
 
-		return state ?? new TreeItemCollapsibleStateAdapter().None
+		return state ?? this.treeItemCollapsibleStateAdapter.None
 	}
 
 	set collapsibleState(value: number) { this.treeItem.collapsibleState = value as any }
@@ -86,7 +121,12 @@ export class NotesHubItem implements INotesHubItem {
 		fileName: string,
 		filePath: string,
 		isDirectory: boolean,
-		parentUri?: Uri,
+		treeItemAdapter: any,
+		themeIconAdapter: any,
+		themeColorAdapter: any,
+		uriAdapter: any,
+		treeItemCollapsibleStateAdapter: any,
+		parentUri?: IUri,
 		frontmatter?: { [key: string]: string },
 	) {
 		let displayLabel = fileName
@@ -105,20 +145,27 @@ export class NotesHubItem implements INotesHubItem {
 		this.parentUri = parentUri
 		this.frontmatter = frontmatter
 
+		// Store injected services
+		this.treeItemAdapter = treeItemAdapter
+		this.themeIconAdapter = themeIconAdapter
+		this.themeColorAdapter = themeColorAdapter
+		this.uriAdapter = uriAdapter
+		this.treeItemCollapsibleStateAdapter = treeItemCollapsibleStateAdapter
+
 		if (!filePath || filePath.trim() === '') {
 			console.error('Error creating NotesHubItem: filePath is invalid.', filePath)
 			throw new Error('Invalid filePath provided for NotesHubItem')
 		}
 
-		const resourceUri = UriAdapter.file(filePath)
+		const resourceUri = this.uriAdapter.file(filePath)
 
 		// Ensure we only ever pass a string as the label to VS Code's TreeItem
 		const safeLabel: string = typeof displayLabel === 'string' ? displayLabel : String(displayLabel)
 
-		this.treeItem = TreeItemAdapter.create(
+		this.treeItem = this.treeItemAdapter.create(
 			safeLabel,
-			isDirectory ? new TreeItemCollapsibleStateAdapter().Collapsed as any : new TreeItemCollapsibleStateAdapter().None as any,
-			(resourceUri as UriAdapter).uri,
+			isDirectory ? this.treeItemCollapsibleStateAdapter.Collapsed as any : this.treeItemCollapsibleStateAdapter.None as any,
+			(resourceUri as any).uri,
 		)
 		
 		// Only assign description when it's a proper string; otherwise leave undefined
@@ -127,7 +174,7 @@ export class NotesHubItem implements INotesHubItem {
 		this.treeItem.contextValue = isDirectory ? 'notesHubFolderItem' : 'notesHubFileItem'
 		
 		if (isDirectory) {
-			this.treeItem.iconPath = ThemeIconAdapter.create('folder')
+			this.treeItem.iconPath = this.themeIconAdapter.create('folder')
 		}
 		else {
 			this.treeItem.iconPath = this.iconPathFromFrontmatter(frontmatter)
@@ -136,7 +183,7 @@ export class NotesHubItem implements INotesHubItem {
 
 	// Allow provider to unwrap to a raw VS Code TreeItem when needed
 	public toVsCode(): any {
-		return (this.treeItem as unknown as TreeItemAdapter as any).toVsCode?.() ?? this.treeItem
+		return (this.treeItem as unknown as any).toVsCode?.() ?? this.treeItem
 	}
 
 	private getPriorityThemeColor(
@@ -148,20 +195,20 @@ export class NotesHubItem implements INotesHubItem {
 		
 		const colorId = priorityColorIds[Math.min(priority, priorityColorIds.length - 1)] || priorityColorIds[0]
 
-		return ThemeColorAdapter.create(colorId)
+		return this.themeColorAdapter.create(colorId)
 	}
 
 	public iconPathFromFrontmatter(
 		frontmatterData?: { [key: string]: string },
 	): IThemeIcon {
 		if (!frontmatterData) {
-			return ThemeIconAdapter.create(NOTESHUB_DEFAULT_NOTE_ICON, ThemeColorAdapter.create(NOTESHUB_DEFAULT_NOTE_COLOR_ID))
+			return this.themeIconAdapter.create(NOTESHUB_DEFAULT_NOTE_ICON, this.themeColorAdapter.create(NOTESHUB_DEFAULT_NOTE_COLOR_ID))
 		}
 
 		const iconName = frontmatterData.Codicon || frontmatterData.Icon || NOTESHUB_DEFAULT_NOTE_ICON
 		
 		if (!iconName || typeof iconName !== 'string') {
-			return ThemeIconAdapter.create(NOTESHUB_DEFAULT_NOTE_ICON, ThemeColorAdapter.create(NOTESHUB_DEFAULT_NOTE_COLOR_ID))
+			return this.themeIconAdapter.create(NOTESHUB_DEFAULT_NOTE_ICON, this.themeColorAdapter.create(NOTESHUB_DEFAULT_NOTE_COLOR_ID))
 		}
 		
 		const match = iconName.match(/^([{[($]{0,2})(.*?)([}\])$]?)$/)
@@ -169,8 +216,8 @@ export class NotesHubItem implements INotesHubItem {
 		const priority = Number.parseInt(frontmatterData.Priority, 10)
 
 		return Number.isNaN(priority)
-			? ThemeIconAdapter.create(usedIcon)
-			: ThemeIconAdapter.create(usedIcon, this.getPriorityThemeColor(priority))
+			? this.themeIconAdapter.create(usedIcon)
+			: this.themeIconAdapter.create(usedIcon, this.getPriorityThemeColor(priority))
 	}
 
 }

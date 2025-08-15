@@ -1,7 +1,3 @@
----
-alwaysApply: true
----
-
 ## **Project Workflow Patterns**
 
 ### **Nx Workspace Conventions**
@@ -44,6 +40,20 @@ alwaysApply: true
 - **Environment Variable:** Use `ENABLE_TEST_CONSOLE=true` to enable console output in tests
 - **Programmatic Control:** Use `enableTestConsoleOutput()` function for specific test suites
 - **Debugging:** Console output is suppressed by default; enable only when needed for debugging
+
+### **Core Package Testing Architecture**
+
+- **CRITICAL RULE - No Shared During Tests:** Core package tests must NEVER import from `@fux/shared`
+- **Mockly Complete Replacement:** Mockly completely replaces shared library during testing via DI container injection
+- **Test Environment Isolation:** Isolate test environment from VSCode imports at module level, not just service level
+- **Complete Implementation First:** Implement full architectural changes before testing, avoid incremental fixes
+
+### **Testing Anti-Patterns**
+
+- **FORBIDDEN:** Creating hard-coded mocks when comprehensive mock libraries exist
+- **FORBIDDEN:** Aliasing `@fux/shared` to mock files in test configurations
+- **FORBIDDEN:** Partial replacement of shared dependencies - must be complete replacement
+- **FORBIDDEN:** Testing before completing architectural refactoring
 
 ---
 
@@ -120,11 +130,11 @@ The following principles must ALWAYS be followed as they are part of the project
 
 - **CRITICAL**: At the beginning of each chat session, the AI assistant MUST follow these step-by-step instructions: 3. **Use Custom Aliases**: When a command has a custom alias configured in `.vscode/shell/pnpm_aliases.json`, use the custom alias instead of the native command, unless the native command is referenced in the posed question or request 4. **Testing Protocol**: When testing the alias file itself, run the native command first, followed by the alias command to compare behavior:
 
-            ```powershell
-            # Example: Test both native and alias versions
-            pnpm run build --filter=ghost-writer
-            gw b
-            ```
+              ```powershell
+              # Example: Test both native and alias versions
+              pnpm run build --filter=ghost-writer
+              gw b
+              ```
 
     5. **FAILURE RECOVERY**: If profile loading fails, immediately halt all operations and report the failure before proceeding with any other tasks
 

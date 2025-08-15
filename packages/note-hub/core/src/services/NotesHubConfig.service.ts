@@ -2,7 +2,6 @@
 
 // _UTILITIES (direct imports) ================================================================================
 import type { IWorkspace, IPathUtilsService, IWorkspaceUtilsService, ICommonUtilsService, ICommands, IFileSystem } from '@fux/shared'
-import { UriAdapter } from '@fux/shared'
 import type * as nodeOs from 'node:os'
 import type * as nodePath from 'node:path'
 import type { INotesHubConfigService, NotesHubConfig } from '../_interfaces/INotesHubConfigService.js'
@@ -24,6 +23,7 @@ export class NotesHubConfigService implements INotesHubConfigService {
 		private readonly iOsHomedir: typeof nodeOs.homedir,
 		private readonly iPathJoin: typeof nodePath.join,
 		private readonly iPathNormalize: typeof nodePath.normalize,
+		private readonly uriAdapter: any,
 	) {}
 
 	public getNotesHubConfig(configPrefix: string): NotesHubConfig { //>
@@ -126,7 +126,7 @@ export class NotesHubConfigService implements INotesHubConfigService {
 				return
 			}
 
-			const uriAdapter = UriAdapter.file(normalizedPath)
+			const uriAdapter = this.uriAdapter.file(normalizedPath)
 			const uri = (uriAdapter as any).uri // Access the underlying VSCode URI
 
 			// console.warn(`[NotesHubConfig] createDirectoryIfNeeded called with:`, {

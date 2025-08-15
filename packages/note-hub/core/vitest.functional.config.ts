@@ -11,18 +11,23 @@ export default defineConfig({
 		// Exclude coverage-only tests from functional runs
 		exclude: ['**/__tests__/coverage/**', 'node_modules/**'],
 		include: ['__tests__/**/*.test.ts', '__tests__/**/*.spec.ts'],
+		// Mock the shared module to prevent VSCode import issues
+		mockReset: true,
+		// Completely exclude shared library from test environment
+		environment: 'node',
+		// Ensure mocks are applied before any imports
+		autoMock: true,
 	},
 	resolve: {
 		alias: {
-			'@fux/shared': path.resolve(__dirname, '../../../libs/shared/src/index.ts'),
 			'@fux/mockly': path.resolve(__dirname, '../../../libs/mockly/src/index.ts'),
 		},
 	},
 	optimizeDeps: {
 		exclude: ['vscode'],
-		include: ['@fux/shared', '@fux/mockly'],
+		include: ['@fux/mockly'],
 	},
 	deps: {
-		inline: ['@fux/shared', '@fux/mockly'],
+		inline: ['@fux/mockly'],
 	},
 })

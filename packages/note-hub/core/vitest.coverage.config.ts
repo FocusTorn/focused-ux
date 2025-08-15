@@ -18,16 +18,14 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			'@fux/shared': path.resolve(__dirname, '../../../libs/shared/src/index.ts'),
 			'@fux/mockly': path.resolve(__dirname, '../../../libs/mockly/src/index.ts'),
-			'vscode': path.resolve(__dirname, '../../../vscode-test-adapter.ts'),
 		},
 	},
 	optimizeDeps: {
 		exclude: ['vscode'],
-		include: ['@fux/shared', '@fux/mockly'],
+		include: ['@fux/mockly'],
 	},
 	deps: {
-		inline: ['@fux/shared', '@fux/mockly'],
+		inline: ['@fux/mockly'],
 	},
 })

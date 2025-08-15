@@ -21,7 +21,444 @@ This document captures practical testing strategies across the monorepo. It is i
 
 ###### END: Core Principles <!-- Close Fold -->
 
-## 3. :: Test Lanes: Functional vs Coverage (All Packages) <!-- Start Fold -->
+## 3. :: Testing Architecture & Package Boundaries <!-- Start Fold -->
+
+### 3.1. :: 🚨 CRITICAL TESTING PRINCIPLE 🚨
+
+**Core packages should NEVER import from @fux/shared during tests. EVER.**
+
+This is a fundamental architectural rule that prevents circular dependency issues and ensures proper test isolation. When testing core packages:
+
+- ❌ **NO imports from @fux/shared**
+- ❌ **NO shared library involvement**
+- ❌ **NO shared adapter imports**
+- ✅ **ONLY Mockly shims injected through DI**
+- ✅ **ONLY Mockly services for all dependencies**
+
+**Why This Rule Exists:**
+
+1. **Shared packages import VSCode** - They need VSCode to create adapters
+2. **Tests don't have VSCode** - VSCode isn't available in test environments
+3. **Importing shared during tests** - Causes VSCode import failures
+4. **Circular dependencies** - Core packages importing shared during tests creates dependency loops
+
+**The Solution:**
+
+- **Shared packages** test their adapters by mocking VSCode directly with `vi.mock('vscode')`
+- **Core packages** test business logic by injecting Mockly shims directly (NO shared imports)
+- **Extension packages** test integration using DI containers with Mockly shims
+
+### 3.1.1. :: 🚨 WHY NOT HARD-CODED MOCKS? 🚨
+
+**The Problem with Hard-Coded Mocks:**
+
+When you create hard-coded mocks like this:
+
+```typescript
+// ❌ WRONG - Hard-coded mocks
+vi.mock('@fux/shared', () => ({
+    TreeItemAdapter: {
+        create: vi.fn().mockReturnValue({
+            /* hard-coded object */
+        }),
+    },
+    UriAdapter: {
+        file: vi.fn().mockReturnValue({
+            /* hard-coded object */
+        }),
+    },
+}))
+```
+
+**What Happens:**
+
+1. **You're reinventing the wheel** - Mockly already provides comprehensive VSCode API mocks
+2. **Your mocks become stale** - They don't match the real adapter behavior
+3. **Tests become brittle** - Hard-coded values break when adapters change
+4. **You're still importing shared** - Even though you're mocking it, the import still happens
+
+**The Right Approach - Use Mockly:**
+
+```typescript
+// ✅ CORRECT - Use Mockly shims
+import { mockly, mocklyService } from '@fux/mockly'
+
+// Mockly provides real VSCode API mocks that adapters can use
+const service = new FeatureService(
+    mockly.workspace.fs, // Real file system mock
+    mockly.window, // Real window mock
+    mockly.workspace, // Real workspace mock
+    mockly.commands, // Real commands mock
+    mockly.node.path // Real path utilities mock
+)
+```
+
+**Why Mockly is Better:**
+
+1. **Comprehensive coverage** - Mockly mocks ALL VSCode APIs, not just what you think you need
+2. **Realistic behavior** - Mockly mocks behave like real VSCode APIs
+3. **Maintained** - Mockly is kept up-to-date with VSCode API changes
+4. **Consistent** - All packages use the same mock implementations
+5. **No shared imports** - Tests never see the shared library
+
+**The Golden Rule:**
+
+> **"If you're mocking @fux/shared, you're doing it wrong. Use Mockly instead."**
+>
+> - Mockly = ✅ Correct approach
+> - Hard-coded mocks = ❌ Wrong approach
+> - Importing shared during tests = ❌ Never do this
+
+### 3.2. :: Package Testing Approaches
+
+#### 3.2.1. :: Shared Packages (libs/shared, libs/mockly)
+
+**Testing Strategy:** Test adapters by mocking VSCode directly
+**Why:** Shared packages create adapters that wrap VSCode APIs, so they need to test the adapter logic with mocked VSCode
+
+**Implementation:** Shared packages include their own `vscode-test-adapter.ts` that redirects VSCode calls to Mockly shims
+
+```typescript
+// libs/shared/vscode-test-adapter.ts
+import { mockly } from '@fux/mockly'
+
+// Redirect VSCode calls to Mockly shims
+export const workspace = {
+    ...mockly.workspace,
+    createFileSystemWatcher: () => ({
+        onDidCreate: mockly.EventEmitter.prototype.on,
+        onDidChange: mockly.EventEmitter.prototype.on,
+        onDidDelete: mockly.EventEmitter.prototype.on,
+    }),
+}
+
+export const window = {
+    ...mockly.window,
+    showInformationMessage: mockly.window.showInformationMessage,
+    showErrorMessage: mockly.window.showErrorMessage,
+}
+
+// ... other VSCode API mocks
+```
+
+**Vitest Configuration:**
+
+```typescript
+// libs/shared/vitest.functional.config.ts
+import { defineConfig } from 'vitest/config'
+import base from '../../vitest.base'
+import path from 'node:path'
+
+export default defineConfig({
+    ...base,
+    root: __dirname,
+    test: {
+        ...base.test,
+        setupFiles: ['./__tests__/_setup.ts'],
+        // Exclude coverage-only tests from functional runs
+        exclude: ['**/__tests__/coverage/**'],
+    },
+    resolve: {
+        alias: {
+            vscode: path.resolve(__dirname, './vscode-test-adapter.ts'),
+        },
+    },
+    optimizeDeps: { exclude: ['vscode'] },
+})
+```
+
+**Test Example:**
+
+```typescript
+// libs/shared/__tests__/window.adapter.test.ts
+import { describe, it, expect, vi } from 'vitest'
+
+describe('WindowAdapter', () => {
+    it('should handle showInformationMessage', async () => {
+        vi.resetModules()
+        vi.mock('vscode', () => ({
+            window: {
+                showInformationMessage: vi.fn().mockResolvedValue('result'),
+            },
+        }))
+
+        const { WindowAdapter } = await import('../src/vscode/adapters/Window.adapter.js')
+        // Test the adapter...
+    })
+})
+```
+
+#### 3.2.2. :: Core Packages (packages/{feature}/core)
+
+> ⚠️ **CRITICAL WARNING** ⚠️
+>
+> **Core packages MUST NEVER import from @fux/shared during tests.**
+>
+> - Use Mockly shims ONLY
+> - NO shared library imports
+> - NO shared adapter imports
+> - Tests should be completely isolated from shared
+
+**Testing Strategy:** Test business logic by injecting Mockly shims directly
+**Why:** Core packages contain business logic that should be tested with mocked dependencies, not real shared adapters
+
+```typescript
+// packages/{feature}/core/__tests__/services/FeatureService.test.ts
+import { mockly, mocklyService } from '@fux/mockly'
+import { FeatureService } from '../src/services/FeatureService.js'
+
+describe('FeatureService', () => {
+    beforeEach(() => {
+        mocklyService.reset()
+    })
+
+    it('should process data', async () => {
+        // Inject Mockly shims directly - NO imports from @fux/shared
+        const service = new FeatureService(
+            mockly.workspace.fs, // Mockly's mocked file system
+            mockly.window, // Mockly's mocked window
+            mockly.workspace // Mockly's mocked workspace
+        )
+
+        // Test business logic...
+    })
+})
+```
+
+#### 3.2.3. :: Extension Packages (packages/{feature}/ext)
+
+**Testing Strategy:** Test integration using DI containers with Mockly shims
+**Why:** Extensions need to test the full integration of core services and shared adapters
+
+```typescript
+// packages/{feature}/ext/__tests__/integration/Feature.integration.test.ts
+import { mockly, mocklyService } from '@fux/mockly'
+import { createDIContainer } from '../../src/injection.js'
+import type { AwilixContainer } from 'awilix'
+
+describe('Feature Integration', () => {
+    let container: AwilixContainer
+
+    beforeEach(() => {
+        mocklyService.reset()
+        container = createDIContainer()
+    })
+
+    it('should integrate properly', async () => {
+        // Test the full integration...
+    })
+})
+```
+
+### 3.3. :: 🚨 TROUBLESHOOTING: "NO SHARED DURING TESTS" VIOLATIONS 🚨
+
+**When You See These Errors, You're Violating the "No Shared During Tests" Rule:**
+
+#### 3.3.1. :: VSCode Import Errors
+
+**Symptoms:**
+
+```
+Error: Cannot find package 'vscode' imported from 'libs/shared/dist/vscode/adapters/Window.adapter.js'
+```
+
+**Root Cause:** Your test is importing from `@fux/shared`, which contains VSCode value imports. The shared library is being loaded during tests.
+
+**The Fix:**
+
+1. **Remove ALL imports from @fux/shared in test files**
+2. **Use Mockly shims instead**
+3. **Ensure your DI container only contains Mockly services**
+
+#### 3.3.2. :: Module Resolution Failures
+
+**Symptoms:**
+
+```
+Module not found: Can't resolve '@fux/shared' in 'packages/note-hub/core/__tests__/...'
+```
+
+**Root Cause:** Your test is trying to import from shared, but the test environment doesn't have access to it.
+
+**The Fix:**
+
+1. **Don't import from shared in tests**
+2. **Use Mockly for all dependencies**
+3. **Create test-specific DI containers**
+
+#### 3.3.3. :: Circular Dependency Warnings
+
+**Symptoms:**
+
+```
+Circular dependency detected: packages/note-hub/core -> libs/shared -> packages/note-hub/core
+```
+
+**Root Cause:** Core package tests are importing from shared, creating a dependency loop.
+
+**The Fix:**
+
+1. **Break the cycle by removing shared imports**
+2. **Use Mockly for all test dependencies**
+3. **Ensure tests are completely isolated**
+
+#### 3.3.4. :: Test Environment Crashes
+
+**Symptoms:**
+
+```
+TypeError: Cannot read properties of undefined (reading 'workspace')
+```
+
+**Root Cause:** Test is trying to access VSCode APIs that aren't available in the test environment.
+
+**The Fix:**
+
+1. **Mock VSCode at the module level**
+2. **Use Mockly for all VSCode API access**
+3. **Never import shared adapters in tests**
+
+**The Complete Fix Pattern:**
+
+```typescript
+// ❌ WRONG - This will cause VSCode import failures
+import { TreeItemAdapter } from '@fux/shared'
+
+// ✅ CORRECT - Use Mockly directly
+import { mockly } from '@fux/mockly'
+
+// ❌ WRONG - Hard-coded mocks
+vi.mock('@fux/shared', () => ({
+    /* mocks */
+}))
+
+// ✅ CORRECT - Mock VSCode, use Mockly for services
+vi.mock('vscode', () => ({
+    /* VSCode mocks */
+}))
+
+// ❌ WRONG - Importing shared in tests
+const adapter = new TreeItemAdapter()
+
+// ✅ CORRECT - Use Mockly shims
+const service = new FeatureService(mockly.workspace.fs, mockly.window)
+```
+
+### 3.3. :: Why This Architecture?
+
+1. **Prevents Circular Dependencies:** Core packages don't import shared during tests
+2. **Proper Test Isolation:** Each package type tests its own concerns
+3. **Mockly Provides Realistic Behavior:** Mockly shims implement the same interfaces as shared adapters
+4. **No VSCode Import Issues:** Tests don't need VSCode to be available
+5. **Package Self-Containment:** Each package contains its own testing utilities
+
+### 3.4. :: VSCode Test Adapter Ownership
+
+**Important:** The `vscode-test-adapter.ts` belongs exclusively to the shared package because:
+
+- **Shared packages import VSCode** - They need to mock VSCode during tests
+- **Other packages use Mockly** - They don't need VSCode mocking
+- **Self-containment** - Shared package should contain everything it needs for testing
+- **No cross-dependencies** - Other packages shouldn't depend on shared's test utilities
+
+**Location:** `libs/shared/vscode-test-adapter.ts`
+**Usage:** Only by shared package vitest configs
+**Other packages:** Must NOT reference this file
+
+### 3.5. :: Common Mistakes to Avoid
+
+❌ **Don't import from @fux/shared in core package tests**
+
+```typescript
+// WRONG - This will cause VSCode import issues
+import { WindowAdapter } from '@fux/shared'
+```
+
+✅ **Do use Mockly shims directly in core package tests**
+
+```typescript
+// CORRECT - Use Mockly directly
+import { mockly } from '@fux/mockly'
+const service = new FeatureService(mockly.window, mockly.workspace)
+```
+
+### 3.6. :: What Happens When You Break This Rule?
+
+**Symptoms of Violating the "No Shared During Tests" Rule:**
+
+1. **VSCode Import Errors:**
+
+    ```
+    Error: Cannot find package 'vscode' imported from 'libs/shared/dist/...'
+    ```
+
+2. **Module Resolution Failures:**
+
+    ```
+    Error: Cannot resolve module '@fux/shared' in test environment
+    ```
+
+3. **Circular Dependency Warnings:**
+
+    ```
+    Warning: Circular dependency detected
+    ```
+
+4. **Test Environment Crashes:**
+    ```
+    TypeError: Cannot read properties of undefined (reading 'workspace')
+    ```
+
+**Root Cause:**
+
+- Shared library imports VSCode APIs
+- Tests don't have VSCode available
+- Importing shared during tests tries to resolve VSCode
+- This causes the test environment to fail
+
+**The Fix:**
+
+- Remove ALL shared imports from test files
+- Use Mockly shims for all dependencies
+- Ensure test setup provides Mockly services through DI
+- Verify no shared library code is executed during tests
+
+❌ **Don't try to mock VSCode in core package tests**
+
+```typescript
+// WRONG - Core packages shouldn't mock VSCode
+vi.mock('vscode', () => ({ ... }))
+```
+
+✅ **Do let Mockly handle all VSCode mocking**
+
+```typescript
+// CORRECT - Mockly already provides everything needed
+mocklyService.reset() // Reset state between tests
+```
+
+❌ **Don't reference vscode-test-adapter.ts from other packages**
+
+```typescript
+// WRONG - This file is ONLY for shared package tests
+resolve: {
+    alias: {
+        'vscode': path.resolve(__dirname, '../../../vscode-test-adapter.ts'),
+    }
+}
+```
+
+✅ **Do keep vscode-test-adapter.ts in the shared package only**
+
+```typescript
+// CORRECT - Shared package contains its own test adapter
+// libs/shared/vscode-test-adapter.ts
+// libs/shared/vitest.functional.config.ts references it locally
+```
+
+###### END: Testing Architecture & Package Boundaries (END) <!-- Close Fold -->
+
+## 4. :: Test Lanes: Functional vs Coverage (All Packages) <!-- Start Fold -->
 
 - **Goal:** Keep day-to-day feedback fast while preserving 100% coverage guarantees.
 - **Directory Layout (convention):**
@@ -326,6 +763,7 @@ UriAdapter.setFactory(new LocalMockUriFactory())
 **Mockly-First Strategy:** Core packages should use Mockly for testing since shared adapters are abstractions of VSCode values that Mockly already mocks.
 
 **Why Mockly for Core:**
+
 - Shared adapters are thin wrappers around VSCode APIs
 - Mockly provides realistic VSCode-like behavior at the source
 - No need to reinvent mocking logic
@@ -334,6 +772,7 @@ UriAdapter.setFactory(new LocalMockUriFactory())
 ### 5.3. :: Test Structure
 
 **Directory Layout:**
+
 ```
 packages/{feature}/core/
 ├── __tests__/
@@ -348,7 +787,8 @@ packages/{feature}/core/
 └── vitest.coverage.config.ts               # Coverage lane config
 ```
 
-**Setup File (_setup.ts):**
+**Setup File (\_setup.ts):**
+
 ```typescript
 import { vi } from 'vitest'
 import { mockly, mocklyService } from '@fux/mockly'
@@ -383,9 +823,9 @@ describe('FeatureService', () => {
         mocklyService.reset()
         // Inject Mockly shims directly - they implement the same interfaces
         service = new FeatureService(
-            mockly.workspace.fs,  // Mockly's mocked file system
-            mockly.window,        // Mockly's mocked window
-            mockly.workspace      // Mockly's mocked workspace
+            mockly.workspace.fs, // Mockly's mocked file system
+            mockly.window, // Mockly's mocked window
+            mockly.workspace // Mockly's mocked workspace
         )
     })
 
@@ -394,15 +834,15 @@ describe('FeatureService', () => {
         mockly.workspace.fs.access = vi.fn().mockResolvedValue(undefined)
         mockly.workspace.fs.readFile = vi.fn().mockResolvedValue('file content')
         mockly.workspace.fs.writeFile = vi.fn().mockResolvedValue(undefined)
-        
+
         await service.processFile('/test/path')
-        
+
         expect(mockly.workspace.fs.writeFile).toHaveBeenCalledWith('/test/path', expect.any(String))
     })
 
     it('should handle file not found errors', async () => {
         mockly.workspace.fs.access = vi.fn().mockRejectedValue(new Error('Not found'))
-        
+
         await expect(service.processFile('/nonexistent')).rejects.toThrow('Not found')
         expect(mockly.window.showErrorMessage).toHaveBeenCalledWith('File not found: /nonexistent')
     })
@@ -415,10 +855,10 @@ describe('FeatureService', () => {
 it('should apply business rules correctly', async () => {
     // Test business logic independent of VSCode APIs
     const result = await service.applyBusinessRule('input data')
-    
+
     expect(result).toMatchObject({
         status: 'success',
-        processedData: expect.any(String)
+        processedData: expect.any(String),
     })
 })
 
@@ -431,12 +871,14 @@ it('should validate input parameters', () => {
 ### 5.5. :: Mockly Usage Best Practices
 
 **✅ DO:**
+
 - Use `mocklyService.reset()` in `beforeEach` for test isolation
 - Mock specific Mockly methods when you need custom behavior
 - Test business logic independently of VSCode API behavior
 - Use Mockly's realistic defaults when possible
 
 **❌ DON'T:**
+
 - Create custom mocks for shared adapter interfaces
 - Assume Mockly behavior without testing it
 - Skip `mocklyService.reset()` between tests
@@ -448,6 +890,7 @@ it('should validate input parameters', () => {
 - Coverage: `{package-alias} tf` (coverage tests for target package and dependencies)
 
 **Examples:**
+
 - `gw t` → functional tests for ghost-writer-core only
 - `gw tf` → coverage tests for ghost-writer-core and all dependencies
 
@@ -478,6 +921,7 @@ it('should validate input parameters', () => {
 **Integration-First Strategy:** Extension packages should use integration testing with the DI container and Mockly shims for realistic VSCode behavior.
 
 **Why Integration for Extensions:**
+
 - Extensions orchestrate multiple services and adapters
 - DI container wiring is complex and should be tested
 - Mockly provides realistic VSCode environment simulation
@@ -486,6 +930,7 @@ it('should validate input parameters', () => {
 ### 6.3. :: Test Structure
 
 **Directory Layout:**
+
 ```
 packages/{feature}/ext/
 ├── __tests__/
@@ -501,7 +946,8 @@ packages/{feature}/ext/
 └── vitest.coverage.config.ts               # Coverage lane config
 ```
 
-**Setup File (_setup.ts):**
+**Setup File (\_setup.ts):**
+
 ```typescript
 import { vi } from 'vitest'
 import { mockly, mocklyService } from '@fux/mockly'
@@ -537,7 +983,7 @@ describe('Feature Workflow Integration', () => {
 
     beforeEach(async () => {
         mocklyService.reset()
-        
+
         // Create mock VSCode context
         mockContext = {
             subscriptions: [],
@@ -546,7 +992,7 @@ describe('Feature Workflow Integration', () => {
             extensionPath: '/test/extension',
             storagePath: '/test/storage',
         }
-        
+
         // Create DI container with Mockly shims
         container = await createDIContainer(mockContext)
     })
@@ -557,11 +1003,11 @@ describe('Feature Workflow Integration', () => {
             mockly.Uri.file('/test/workspace/file.txt'),
             new TextEncoder().encode('test content')
         )
-        
+
         // Execute workflow through DI container
         const featureService = container.resolve('iFeatureService')
         const result = await featureService.executeWorkflow('/test/workspace/file.txt')
-        
+
         // Verify end-to-end behavior
         expect(result).toBeDefined()
         expect(mockly.window.showInformationMessage).toHaveBeenCalledWith(
@@ -572,9 +1018,9 @@ describe('Feature Workflow Integration', () => {
     it('should handle command execution', async () => {
         // Test command registration and execution
         const commandService = container.resolve('iCommandService')
-        
+
         await commandService.executeCommand('feature.processFile', '/test/file.txt')
-        
+
         expect(mockly.commands.executeCommand).toHaveBeenCalledWith(
             'feature.processFile',
             '/test/file.txt'
@@ -588,7 +1034,7 @@ describe('Feature Workflow Integration', () => {
 ```typescript
 it('should register commands correctly', async () => {
     const extension = container.resolve('extensionService')
-    
+
     // Verify commands are registered
     expect(mockly.commands.registerCommand).toHaveBeenCalledWith(
         'feature.processFile',
@@ -599,12 +1045,13 @@ it('should register commands correctly', async () => {
 it('should handle command errors gracefully', async () => {
     // Mock file system error
     mockly.workspace.fs.access = vi.fn().mockRejectedValue(new Error('Permission denied'))
-    
+
     const commandService = container.resolve('iCommandService')
-    
-    await expect(commandService.executeCommand('feature.processFile', '/protected/file.txt'))
-        .rejects.toThrow('Permission denied')
-    
+
+    await expect(
+        commandService.executeCommand('feature.processFile', '/protected/file.txt')
+    ).rejects.toThrow('Permission denied')
+
     expect(mockly.window.showErrorMessage).toHaveBeenCalledWith(
         expect.stringContaining('Failed to process file')
     )
@@ -616,26 +1063,26 @@ it('should handle command errors gracefully', async () => {
 ```typescript
 it('should provide tree view data', async () => {
     const treeProvider = container.resolve('iTreeDataProvider')
-    
+
     // Mock workspace data
     mockly.workspace.workspaceFolders = [
-        { uri: mockly.Uri.file('/test/workspace'), name: 'Test Workspace' }
+        { uri: mockly.Uri.file('/test/workspace'), name: 'Test Workspace' },
     ]
-    
+
     const treeItems = await treeProvider.getChildren()
-    
+
     expect(treeItems).toHaveLength(1)
     expect(treeItems[0].label).toBe('Test Workspace')
 })
 
 it('should handle empty workspace gracefully', async () => {
     const treeProvider = container.resolve('iTreeDataProvider')
-    
+
     // Mock empty workspace
     mockly.workspace.workspaceFolders = []
-    
+
     const treeItems = await treeProvider.getChildren()
-    
+
     expect(treeItems).toHaveLength(0)
 })
 ```
@@ -643,6 +1090,7 @@ it('should handle empty workspace gracefully', async () => {
 ### 6.5. :: Mockly Usage Best Practices
 
 **✅ DO:**
+
 - Use `mocklyService.reset()` in `beforeEach` for test isolation
 - Mock VSCode context and environment realistically
 - Test end-to-end workflows through the DI container
@@ -650,6 +1098,7 @@ it('should handle empty workspace gracefully', async () => {
 - Use Mockly's built-in mocks (Uri, Memento, etc.)
 
 **❌ DON'T:**
+
 - Test individual services in isolation (use integration approach)
 - Mock VSCode APIs directly (use Mockly shims)
 - Skip DI container setup in tests
@@ -661,6 +1110,7 @@ it('should handle empty workspace gracefully', async () => {
 - Coverage: `{package-alias} tf` (coverage tests for target package and dependencies)
 
 **Examples:**
+
 - `gw t` → functional tests for ghost-writer-ext only
 - `gw tf` → coverage tests for ghost-writer-ext and all dependencies
 
@@ -682,9 +1132,9 @@ it('should handle empty workspace gracefully', async () => {
 ```typescript
 it('should activate extension correctly', async () => {
     const extension = container.resolve('extensionService')
-    
+
     await extension.activate()
-    
+
     expect(mockly.window.showInformationMessage).toHaveBeenCalledWith(
         expect.stringContaining('Extension activated')
     )
@@ -692,9 +1142,9 @@ it('should activate extension correctly', async () => {
 
 it('should deactivate extension gracefully', async () => {
     const extension = container.resolve('extensionService')
-    
+
     await extension.deactivate()
-    
+
     // Verify cleanup
     expect(extension.isActive).toBe(false)
 })
@@ -792,8 +1242,75 @@ pnpm test:full              # Uses vitest.coverage.config.ts
 
 ###### END: Aka Aliases & Test Commands (END) <!-- Close Fold -->
 
-## 9. :: Non-Authoritative Guidance Notice <!-- Start Fold -->
+## 9. :: Package-Specific Testing Deviations <!-- Start Fold -->
+
+### 9.1. :: When Global Strategy Doesn't Fit
+
+While this document provides strong defaults, some packages may require deviations due to:
+
+- **Unique architectural constraints** (e.g., legacy integration requirements)
+- **Specialized testing needs** (e.g., performance testing, integration testing)
+- **External tooling requirements** (e.g., specific test runners, frameworks)
+- **Legacy code patterns** that cannot be immediately refactored
+
+### 9.2. :: Deviation Documentation Requirements
+
+**If your package MUST deviate from global testing strategy:**
+
+1. **Document the deviation** in your package's `__tests__/TESTING_STRATEGY.md`
+2. **Explain why** the global strategy doesn't fit
+3. **Provide specific examples** of how your approach differs
+4. **Reference this section** as the source of global strategy
+5. **Update when possible** to align with global strategy
+
+### 9.3. :: Deviation Examples
+
+**Example 1: Legacy Integration Testing**
+
+```markdown
+## Deviation from Global Strategy
+
+**Why:** This package integrates with legacy systems that require specific test setup
+**How:** Uses custom test runner instead of Vitest
+**Reference:** See Global Testing Strategy section 9 for standard approach
+```
+
+**Example 2: Performance Testing Requirements**
+
+```markdown
+## Deviation from Global Strategy
+
+**Why:** Performance benchmarks require different timing and isolation strategies
+**How:** Disables mock timers and uses real I/O for performance measurement
+**Reference:** See Global Testing Strategy section 2 for standard determinism rules
+```
+
+### 9.4. :: Deviation Review Process
+
+**Before implementing a deviation:**
+
+1. **Verify necessity** - Can the global strategy be adapted instead?
+2. **Document rationale** - Why is the deviation required?
+3. **Plan alignment** - How can this be brought back to global strategy?
+4. **Review regularly** - Reassess deviation necessity during refactoring
+
+**Remember:** Deviations should be temporary exceptions, not permanent patterns.
+
+###### END: Package-Specific Testing Deviations (END) <!-- Close Fold -->
+
+## 10. :: Non-Authoritative Guidance Notice <!-- Start Fold -->
 
 These strategies encode what worked, what did not, and the best practices we have converged on. They are strong defaults—not mandates. Testing is fluid and dynamic; adapt as needed for each package while honoring architectural rules (e.g., adapter boundaries, DI, determinism).
+
+###### END: Non-Authoritative Guidance Notice (END) <!-- Close Fold -->
+
+### **VSCode Import Rules**
+
+- **Type Imports Are Safe:** `import type { ExtensionContext, Uri } from 'vscode'` is completely safe and won't cause hoisting issues
+- **Value Imports Are Problematic:** `import * as vscode from 'vscode'` or `import { ExtensionContext } from 'vscode'` cause hoisting and bundling issues
+- **Auditor Enforcement:** The structure auditor only flags value imports, not type imports, because type imports are removed at runtime
+- **Testing Strategy:**
+    - **Shared packages:** Use `vi.mock('vscode')` + `vscode-test-adapter.ts` for complete VSCode API mocking
+    - **Core/Ext packages:** Use Mockly shims directly, avoid importing from shared during tests
 
 ###### END: Non-Authoritative Guidance Notice (END) <!-- Close Fold -->

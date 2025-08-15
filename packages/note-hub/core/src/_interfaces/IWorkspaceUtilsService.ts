@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { Uri, WorkspaceFolder } from 'vscode'
+import type { IUri, IWorkspaceFolder } from '@fux/shared'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -9,16 +9,25 @@ export interface WorkspaceInfo {
 	inWorkspace: boolean
 	workspaceName?: string
 	multiRoot: boolean
-	primaryUri?: Uri
+	primaryUri?: IUri
 	primaryName?: string
-	multiRootByIndex: Uri[]
-	multiRootByName: { [key: string]: Uri }
-	workspaceFolders?: readonly WorkspaceFolder[]
+	multiRootByIndex: IUri[]
+	multiRootByName: { [key: string]: IUri }
+	workspaceFolders?: readonly IWorkspaceFolder[]
 	safeWorkspaceName: string
 	isRemote: boolean
 	remoteUserAndHost?: string
 }
 
 export interface IWorkspaceUtilsService {
-	getWorkspaceInfo: () => WorkspaceInfo
+	workspaceName?: string
+	multiRoot: boolean
+	primaryUri?: IUri
+	primaryName?: string
+	multiRootByIndex: IUri[]
+	multiRootByName: { [key: string]: IUri }
+	workspaceFolders?: readonly IWorkspaceFolder[]
+	safeWorkspaceName: string
+	isRemote: boolean
+	remoteUserAndHost?: string
 }

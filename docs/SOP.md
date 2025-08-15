@@ -556,6 +556,27 @@ import { createContainer, asClass, asFunction } from 'awilix'
     - **Cause:** Missing interface imports from core packages
     - **Solution:** Import all required interfaces from the core package and use factory functions (`asFunction`) for proper dependency injection.
 
+#### 6.5.3. :: Core Container Summary
+
+**The Core Container is the Heart of the System:**
+
+The core container serves multiple critical roles in the FocusedUX architecture:
+
+1. **Service Orchestration:** Provides all business logic services with proper dependencies
+2. **Extension Integration:** Enables extensions to consume core functionality without reconstruction
+3. **Orchestrator Enablement:** Allows future orchestrator extensions to coordinate multiple features
+4. **Testing Foundation:** Provides consistent service instances for both unit and integration tests
+5. **Architectural Boundary:** Maintains clean separation between VSCode-specific and business logic
+
+**Key Architectural Principles:**
+
+- **Core containers are the primary service providers** - not just for testing
+- **Extensions consume core containers** - they don't reconstruct services
+- **Orchestrators aggregate multiple core containers** - enabling cross-feature workflows
+- **All consumers get the same service instances** - ensuring consistency across the system
+
+This architecture makes the FocusedUX monorepo not just a collection of independent extensions, but a **coordinated ecosystem** where features can work together seamlessly through the orchestrator pattern.
+
 ###### END: Dependency Injection with Awilix (END) <!-- Close Fold -->
 
 ## 6. :: Package Injection Patterns & Relationships <!-- Start Fold -->
@@ -622,7 +643,16 @@ export class ConfigurationService implements IConfigurationService {
 - Domain models and interfaces
 - Core functionality independent of VSCode
 
-**Core Package DI Container:**
+**Core Package DI Container - The Orchestration Hub:**
+
+The core container serves as the **primary orchestration point** for feature functionality across the entire system. It's not just for testing - it's the central hub that:
+
+1. **Injects core functionality into extensions:** The `ext` package uses the core container to get access to all business logic services
+2. **Enables orchestrator extensions:** Future orchestrator extensions will use core containers from multiple features to coordinate cross-feature workflows
+3. **Provides consistent service access:** All consumers (ext, orchestrators, tests) get the same service instances with the same dependencies
+4. **Maintains architectural boundaries:** Keeps VSCode-specific logic separate from business logic
+
+**Core Container Architecture:**
 
 ```typescript
 // packages/{feature}/core/src/injection.ts
@@ -631,7 +661,7 @@ export function createCoreContainer(): AwilixContainer {
         injectionMode: InjectionMode.PROXY,
     })
 
-    // Register shared adapters
+    // Register shared adapters (VSCode API abstractions)
     container.register({
         iFileSystem: asClass(FileSystemAdapter).singleton(),
         iWindow: asClass(WindowAdapter).singleton(),
@@ -639,7 +669,7 @@ export function createCoreContainer(): AwilixContainer {
         // ... other shared adapters
     })
 
-    // Register core services using factories
+    // Register core business logic services
     container.register({
         iFeatureService: asFunction(
             (cradle: { iFileSystem: IFileSystem; iWindow: IWindow; iWorkspace: IWorkspace }) =>
@@ -649,6 +679,29 @@ export function createCoreContainer(): AwilixContainer {
 
     return container
 }
+```
+
+**Core Container Usage Patterns:**
+
+```typescript
+// 1. Extension package consumption
+// packages/{feature}/ext/src/injection.ts
+const coreContainer = createCoreContainer()
+const featureService = coreContainer.resolve('iFeatureService')
+
+// 2. Orchestrator extension consumption (future)
+// packages/orchestrator/ext/src/injection.ts
+const noteHubContainer = createNoteHubCoreContainer()
+const ghostWriterContainer = createGhostWriterCoreContainer()
+const orchestratorService = new OrchestratorService(
+    noteHubContainer.resolve('iNotesHubService'),
+    ghostWriterContainer.resolve('iGhostWriterService')
+)
+
+// 3. Testing consumption
+// packages/{feature}/core/__tests__/_setup.ts
+const testContainer = createCoreContainer()
+// Override with Mockly services for testing
 ```
 
 #### 6.2.3. :: Extension Package (`@fux/{feature}-ext`)
@@ -761,9 +814,141 @@ export class FeatureService implements IFeatureService {
 }
 ```
 
-### 6.4. :: What Went Wrong & How to Fix It
+#### 6.3.3. :: Core Container Integration Pattern
 
-#### 6.4.1. :: Previous Injection Problems
+**The Modern Approach - Using Core Container Directly:**
+
+Instead of manually reconstructing services in the extension, the modern pattern is to **consume the core container directly**:
+
+```typescript
+// packages/{feature}/ext/src/injection.ts
+export async function createDIContainer(context: ExtensionContext): Promise<AwilixContainer> {
+    const container = createContainer({
+        injectionMode: InjectionMode.PROXY,
+    })
+
+    // 1. Register VSCode context and Node.js primitives
+    container.register({
+        extensionContext: asValue(context),
+        iOsHomedir: asValue(os.homedir),
+        iPathJoin: asValue(path.join),
+    })
+
+    // 2. Create and integrate the core container
+    const coreContainer = createCoreContainer()
+
+    // 3. Register core services directly from the core container
+    container.register({
+        iFeatureService: asValue(coreContainer.resolve('iFeatureService')),
+        iNotesHubService: asValue(coreContainer.resolve('iNotesHubService')),
+        // ... other core services
+    })
+
+    // 4. Register extension-specific services that depend on core services
+    container.register({
+        iExtensionService: asFunction(
+            (cradle: { iFeatureService: IFeatureService }) =>
+                new ExtensionService(cradle.iFeatureService)
+        ).singleton(),
+    })
+
+    return container
+}
+```
+
+**Benefits of Core Container Integration:**
+
+- **Consistency:** Same service instances across all consumers
+- **Maintainability:** Single source of truth for service configuration
+- **Testability:** Easy to mock by overriding core container services
+- **Orchestration Ready:** Core services are immediately available for orchestrator extensions
+
+### 6.4. :: Orchestrator Extension Pattern
+
+#### 6.4.1. :: Orchestrator Architecture
+
+The core container design enables a powerful **orchestrator extension pattern** where a single extension can coordinate multiple features:
+
+```typescript
+// packages/orchestrator/ext/src/injection.ts
+export async function createOrchestratorContainer(
+    context: ExtensionContext
+): Promise<AwilixContainer> {
+    const container = createContainer({
+        injectionMode: InjectionMode.PROXY,
+    })
+
+    // 1. Create core containers for all features
+    const noteHubContainer = createNoteHubCoreContainer()
+    const ghostWriterContainer = createGhostWriterCoreContainer()
+    const contextCherryPickerContainer = createContextCherryPickerCoreContainer()
+
+    // 2. Register core services from all features
+    container.register({
+        iNotesHubService: asValue(noteHubContainer.resolve('iNotesHubService')),
+        iGhostWriterService: asValue(ghostWriterContainer.resolve('iGhostWriterService')),
+        iContextCherryPickerService: asValue(
+            contextCherryPickerContainer.resolve('iContextCherryPickerService')
+        ),
+    })
+
+    // 3. Register orchestrator services that coordinate multiple features
+    container.register({
+        iWorkflowOrchestrator: asFunction(
+            (cradle: {
+                iNotesHubService: INotesHubService
+                iGhostWriterService: IGhostWriterService
+                iContextCherryPickerService: IContextCherryPickerService
+            }) =>
+                new WorkflowOrchestrator(
+                    cradle.iNotesHubService,
+                    cradle.iGhostWriterService,
+                    cradle.iContextCherryPickerService
+                )
+        ).singleton(),
+    })
+
+    return container
+}
+```
+
+**Orchestrator Service Example:**
+
+```typescript
+// packages/orchestrator/ext/src/services/WorkflowOrchestrator.service.ts
+export class WorkflowOrchestrator {
+    constructor(
+        private readonly notesHub: INotesHubService,
+        private readonly ghostWriter: IGhostWriterService,
+        private readonly contextCherryPicker: IContextCherryPickerService
+    ) {}
+
+    async executeNoteWritingWorkflow(notePath: string, context: string): Promise<void> {
+        // 1. Use Note Hub to get note content
+        const note = await this.notesHub.getNote(notePath)
+
+        // 2. Use Context Cherry Picker to analyze context
+        const contextAnalysis = await this.contextCherryPicker.analyzeContext(context)
+
+        // 3. Use Ghost Writer to enhance the note
+        await this.ghostWriter.enhanceNote(note, contextAnalysis)
+
+        // 4. Save back to Note Hub
+        await this.notesHub.saveNote(note)
+    }
+}
+```
+
+**Benefits of Orchestrator Pattern:**
+
+- **Cross-Feature Coordination:** Single extension can orchestrate complex workflows across multiple features
+- **Reusable Core Logic:** Core services are consumed without modification
+- **Consistent Architecture:** Same DI patterns across all packages
+- **Scalable Design:** Easy to add new features to orchestrator workflows
+
+### 6.5. :: What Went Wrong & How to Fix It
+
+#### 6.5.1. :: Previous Injection Problems
 
 **Problem 1: Missing Shared Adapter Injection**
 
@@ -789,7 +974,7 @@ export class FeatureService implements IFeatureService {
 - **Root Cause:** Not importing interfaces from core packages
 - **Solution:** Import all required interfaces and use factory functions
 
-#### 6.4.2. :: Correct Injection Patterns
+#### 6.5.2. :: Correct Injection Patterns
 
 **✅ DO:**
 
@@ -809,7 +994,102 @@ export class FeatureService implements IFeatureService {
 
 ### 6.5. :: Testing Injection Patterns
 
+#### 6.5.0. :: 🚨 CRITICAL TESTING ARCHITECTURE RULE 🚨
+
+**Core packages should NEVER import from @fux/shared during tests. EVER.**
+
+This is a fundamental architectural rule that prevents circular dependency issues and ensures proper test isolation. When testing core packages:
+
+- ❌ **NO imports from @fux/shared**
+- ❌ **NO shared library involvement**
+- ❌ **NO shared adapter imports**
+- ✅ **ONLY Mockly shims injected through DI**
+- ✅ **ONLY Mockly services for all dependencies**
+
+**Why This Rule Exists:**
+
+1. **Shared packages import VSCode** - They need VSCode to create adapters
+2. **Core packages import shared types** - They need interfaces for type safety
+3. **Tests don't have VSCode** - VSCode isn't available in test environments
+4. **Importing shared during tests** - Causes VSCode import failures
+
+**The Solution:**
+
+- **Shared packages** test their adapters by mocking VSCode directly with `vi.mock('vscode')`
+- **Core packages** test business logic by injecting Mockly shims directly (no shared imports)
+- **Extension packages** test integration using DI containers with Mockly shims
+
+#### 6.5.0.1. :: 🚨 WHY NOT HARD-CODED MOCKS? 🚨
+
+**The Problem with Hard-Coded Mocks:**
+
+When you create hard-coded mocks like this:
+
+```typescript
+// ❌ WRONG - Hard-coded mocks
+vi.mock('@fux/shared', () => ({
+    TreeItemAdapter: {
+        create: vi.fn().mockReturnValue({
+            /* hard-coded object */
+        }),
+    },
+    UriAdapter: {
+        file: vi.fn().mockReturnValue({
+            /* hard-coded object */
+        }),
+    },
+}))
+```
+
+**What Happens:**
+
+1. **You're reinventing the wheel** - Mockly already provides comprehensive VSCode API mocks
+2. **Your mocks become stale** - They don't match the real adapter behavior
+3. **Tests become brittle** - Hard-coded values break when adapters change
+4. **You're still importing shared** - Even though you're mocking it, the import still happens
+
+**The Right Approach - Use Mockly:**
+
+```typescript
+// ✅ CORRECT - Use Mockly shims
+import { mockly, mocklyService } from '@fux/mockly'
+
+// Mockly provides real VSCode API mocks that adapters can use
+const service = new FeatureService(
+    mockly.workspace.fs, // Real file system mock
+    mockly.window, // Real window mock
+    mockly.workspace, // Real workspace mock
+    mockly.commands, // Real commands mock
+    mockly.node.path // Real path utilities mock
+)
+```
+
+**Why Mockly is Better:**
+
+1. **Comprehensive coverage** - Mockly mocks ALL VSCode APIs, not just what you think you need
+2. **Realistic behavior** - Mockly mocks behave like real VSCode APIs
+3. **Maintained** - Mockly is kept up-to-date with VSCode API changes
+4. **Consistent** - All packages use the same mock implementations
+5. **No shared imports** - Tests never see the shared library
+
+**The Golden Rule:**
+
+> **"If you're mocking @fux/shared, you're doing it wrong. Use Mockly instead."**
+>
+> - Mockly = ✅ Correct approach
+> - Hard-coded mocks = ❌ Wrong approach
+> - Importing shared during tests = ❌ Never do this
+
 #### 6.5.1. :: Unit Testing Core Services
+
+> ⚠️ **CRITICAL WARNING** ⚠️
+>
+> **Core packages MUST NEVER import from @fux/shared during tests.**
+>
+> - Use Mockly shims ONLY
+> - NO shared library imports
+> - NO shared adapter imports
+> - Tests should be completely isolated from shared
 
 **Pattern:** Test core services with Mockly shims for shared adapters
 
@@ -879,28 +1159,213 @@ describe('Feature Integration', () => {
     })
 
     it('should complete full workflow', async () => {
-        const featureService = container.resolve<IFeatureService>('iFeatureService')
-
-        // Test the full integration
-        await featureService.performAction('/test/path')
-
-        expect(mocklyService.window.showInformationMessage).toHaveBeenCalled()
+        const featureService = container.resolve('iFeatureService')
+        // Test integration...
     })
 })
 ```
 
-### 6.6. :: Migration Checklist
+#### 6.5.3. :: 🚨 TROUBLESHOOTING: "NO SHARED DURING TESTS" VIOLATIONS 🚨
+
+**When You See These Errors, You're Violating the "No Shared During Tests" Rule:**
+
+##### 6.5.3.1. :: VSCode Import Errors
+
+**Symptoms:**
+
+```
+Error: Cannot find package 'vscode' imported from 'libs/shared/dist/vscode/adapters/Window.adapter.js'
+```
+
+**Root Cause:** Your test is importing from `@fux/shared`, which contains VSCode value imports. The shared library is being loaded during tests.
+
+**The Fix:**
+
+1. **Remove ALL imports from @fux/shared in test files**
+2. **Use Mockly shims instead**
+3. **Ensure your DI container only contains Mockly services**
+
+##### 6.5.3.2. :: Module Resolution Failures
+
+**Symptoms:**
+
+```
+Module not found: Can't resolve '@fux/shared' in 'packages/note-hub/core/__tests__/...'
+```
+
+**Root Cause:** Your test is trying to import from shared, but the test environment doesn't have access to it.
+
+**The Fix:**
+
+1. **Don't import from shared in tests**
+2. **Use Mockly for all dependencies**
+3. **Create test-specific DI containers**
+
+##### 6.5.3.3. :: Circular Dependency Warnings
+
+**Symptoms:**
+
+```
+Circular dependency detected: packages/note-hub/core -> libs/shared -> packages/note-hub/core
+```
+
+**Root Cause:** Core package tests are importing from shared, creating a dependency loop.
+
+**The Fix:**
+
+1. **Break the cycle by removing shared imports**
+2. **Use Mockly for all test dependencies**
+3. **Ensure tests are completely isolated**
+
+##### 6.5.3.4. :: Test Environment Crashes
+
+**Symptoms:**
+
+```
+TypeError: Cannot read properties of undefined (reading 'workspace')
+```
+
+**Root Cause:** Test is trying to access VSCode APIs that aren't available in the test environment.
+
+**The Fix:**
+
+1. **Mock VSCode at the module level**
+2. **Use Mockly for all VSCode API access**
+3. **Never import shared adapters in tests**
+
+**The Complete Fix Pattern:**
+
+```typescript
+// ❌ WRONG - This will cause VSCode import failures
+import { TreeItemAdapter } from '@fux/shared'
+
+// ✅ CORRECT - Use Mockly directly
+import { mockly } from '@fux/mockly'
+
+// ❌ WRONG - Hard-coded mocks
+vi.mock('@fux/shared', () => ({
+    /* mocks */
+}))
+
+// ✅ CORRECT - Mock VSCode, use Mockly for services
+vi.mock('vscode', () => ({
+    /* VSCode mocks */
+}))
+
+// ❌ WRONG - Importing shared in tests
+const adapter = new TreeItemAdapter()
+
+// ✅ CORRECT - Use Mockly shims
+const service = new FeatureService(mockly.workspace.fs, mockly.window)
+```
+
+### 6.6. :: Testing Troubleshooting Guide
+
+**When You See These Errors, You're Violating the "No Shared During Tests" Rule:**
+
+1. **VSCode Import Errors:**
+
+    ```
+    Error: Cannot find package 'vscode' imported from 'libs/shared/dist/...'
+    ```
+
+2. **Module Resolution Failures:**
+
+    ```
+    Error: Cannot resolve module '@fux/shared' in test environment
+    ```
+
+3. **Circular Dependency Warnings:**
+
+    ```
+    Warning: Circular dependency detected
+    ```
+
+4. **Test Environment Crashes:**
+    ```
+    TypeError: Cannot read properties of undefined (reading 'workspace')
+    ```
+
+**Root Cause:**
+
+- Shared library imports VSCode APIs
+- Tests don't have VSCode available
+- Importing shared during tests tries to resolve VSCode
+- This causes the test environment to fail
+
+**The Fix:**
+
+- Remove ALL shared imports from test files
+- Use Mockly shims for all dependencies
+- Ensure test setup provides Mockly services through DI
+- Verify no shared library code is executed during tests
+
+### 6.7. :: Migration Checklist
 
 When fixing injection patterns in existing packages:
 
 - [ ] **Audit Dependencies:** Ensure no circular imports between packages
 - [ ] **Inject Shared Adapters:** All core services should use shared adapters
 - [ ] **Use Factory Functions:** Complex services should use `asFunction` registration
+- [ ] **Remove Shared Imports from Tests:** Ensure NO @fux/shared imports in test files
+- [ ] **Use Mockly in Test Setup:** All test dependencies should come from Mockly
+- [ ] **Verify Test Isolation:** Tests should not execute any shared library code
 - [ ] **Register Everything:** All services must be in the DI container
 - [ ] **Import Interfaces:** Use proper interface imports from core packages
 - [ ] **Test Integration:** Verify DI container resolves all dependencies
 - [ ] **Remove Manual Construction:** No services created outside container
 - [ ] **Validate Hierarchy:** Confirm shared → core → ext dependency flow
+
+### 6.7. :: Troubleshooting VSCode Import Errors in Tests
+
+**Error:** `Cannot find package 'vscode' imported from '.../shared/src/vscode/adapters/Window.adapter.ts'`
+
+**Root Cause:** You're importing from `@fux/shared` during tests, but shared packages need VSCode to be available.
+
+**Solutions:**
+
+1. **For Core Package Tests:**
+
+    ```typescript
+    // ❌ WRONG - Don't import from shared during tests
+    import { WindowAdapter } from '@fux/shared'
+
+    // ✅ CORRECT - Use Mockly shims directly
+    import { mockly } from '@fux/mockly'
+    const service = new FeatureService(mockly.window, mockly.workspace)
+    ```
+
+2. **For Extension Package Tests:**
+
+    ```typescript
+    // ❌ WRONG - Don't import from shared during tests
+    import { WindowAdapter } from '@fux/shared'
+
+    // ✅ CORRECT - Use DI container with Mockly shims
+    const container = await createDIContainer(mockContext)
+    const service = container.resolve('iFeatureService')
+    ```
+
+3. **Check Your Vitest Config:**
+
+    ```typescript
+    // ❌ WRONG - Don't alias vscode to test-adapter in core packages
+    resolve: {
+        alias: {
+            'vscode': path.resolve(__dirname, '../../vscode-test-adapter.ts'),
+        }
+    }
+
+    // ✅ CORRECT - Only alias shared and mockly
+    resolve: {
+        alias: {
+            '@fux/shared': path.resolve(__dirname, '../../../libs/shared/src/index.ts'),
+            '@fux/mockly': path.resolve(__dirname, '../../../libs/mockly/src/index.ts'),
+        }
+    }
+    ```
+
+**Remember:** The `vscode-test-adapter.ts` is ONLY for shared package tests and should be located within the shared package itself (`libs/shared/vscode-test-adapter.ts`). Core and extension packages should use Mockly directly.
 
 ### 6.7. :: Common Injection Scenarios
 
@@ -974,6 +1439,74 @@ container.register({
 })
 ```
 
+### 6.8. :: VSCode Test Adapter Ownership
+
+**Important:** The `vscode-test-adapter.ts` file belongs exclusively to the shared package and should not be referenced by other packages.
+
+#### 6.8.1. :: Correct Location
+
+```typescript
+// ✅ CORRECT - vscode-test-adapter.ts is inside the shared package
+libs/shared/
+├── src/
+├── __tests__/
+├── vscode-test-adapter.ts  // ← This file belongs here
+├── vitest.functional.config.ts
+└── vitest.coverage.config.ts
+```
+
+#### 6.8.2. :: Shared Package Configuration
+
+The shared package's vitest config should reference the adapter locally:
+
+```typescript
+// libs/shared/vitest.functional.config.ts
+export default defineConfig({
+    resolve: {
+        alias: {
+            vscode: path.resolve(__dirname, './vscode-test-adapter.ts'),
+        },
+    },
+})
+```
+
+#### 6.8.3. :: Other Packages Must NOT Reference It
+
+**Core and Extension Packages:**
+
+```typescript
+// ❌ WRONG - Don't reference the shared package's test adapter
+resolve: {
+    alias: {
+        'vscode': path.resolve(__dirname, '../../../vscode-test-adapter.ts'),
+    }
+}
+
+// ✅ CORRECT - Only alias shared and mockly
+resolve: {
+    alias: {
+        '@fux/shared': path.resolve(__dirname, '../../../libs/shared/src/index.ts'),
+        '@fux/mockly': path.resolve(__dirname, '../../../libs/mockly/src/index.ts'),
+    }
+}
+```
+
+#### 6.8.4. :: Why This Architecture?
+
+1. **Encapsulation:** Shared package contains everything it needs for testing
+2. **Ownership:** Clear ownership of the test adapter
+3. **No Cross-Package Dependencies:** Other packages don't depend on shared's test utilities
+4. **Consistency:** Follows the established pattern of package self-containment
+
+#### 6.8.5. :: Migration Steps
+
+If you currently have `vscode-test-adapter.ts` at the workspace root:
+
+1. **Move the file** to `libs/shared/vscode-test-adapter.ts`
+2. **Update shared package vitest configs** to reference it locally
+3. **Remove any references** from other package vitest configs
+4. **Delete the root-level file** after confirming shared tests still work
+
 ###### END: Package Injection Patterns & Relationships (END) <!-- Close Fold -->
 
 ## 7. :: Packaging Script <!-- Start Fold -->
@@ -1004,7 +1537,7 @@ The role of the packaging script is to create a self-contained VSIX with a clean
 
 ###### END: Packaging Script (END) <!-- Close Fold -->
 
-## 7. :: Common Build Issues <!-- Start Fold -->
+## 8. :: Common Build Issues <!-- Start Fold -->
 
 ### 7.1. :: TypeScript Declaration Errors
 
@@ -1096,7 +1629,7 @@ File 'd:/path/to/project/libs/shared/src' not found.
 
 ###### END: Common Build Issues (END) <!-- Close Fold -->
 
-## 8. :: Package Generators <!-- Start Fold -->
+## 9. :: Package Generators <!-- Start Fold -->
 
 The workspace includes Nx generators for creating new packages with the correct configuration from the start.
 
@@ -1367,6 +1900,13 @@ try {
 
 - Use VSCode's built-in file system API through workspace adapters
 - Create proper abstractions that use shared module adapters instead of direct Node.js imports
+
+### **VSCode Type Version Management**
+
+- **Type Imports Are Safe:** `import type { ExtensionContext, Uri } from 'vscode'` is completely safe and won't cause hoisting issues
+- **Value Imports Are Problematic:** `import * as vscode from 'vscode'` or `import { ExtensionContext } from 'vscode'` cause hoisting and bundling issues
+- **Auditor Enforcement:** The structure auditor only flags value imports, not type imports, because type imports are removed at runtime
+- **Best Practice:** Use type imports for VSCode types when you need them, but prefer shared adapters for runtime functionality
 
 ###### END: Common Pitfalls & Lessons Learned (END) <!-- Close Fold -->
 

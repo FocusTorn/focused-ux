@@ -345,7 +345,13 @@ importers:
       '@fux/shared':
         specifier: workspace:*
         version: link:../../../libs/shared
+      awilix:
+        specifier: ^12.0.5
+        version: 12.0.5
     devDependencies:
+      '@fux/mockly':
+        specifier: workspace:*
+        version: link:../../../libs/mockly
       '@types/node':
         specifier: ^20.11.16
         version: 20.19.10

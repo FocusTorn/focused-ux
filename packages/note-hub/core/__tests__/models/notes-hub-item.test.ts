@@ -1,9 +1,31 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { NotesHubItem } from '../../src/models/NotesHubItem.js'
 
-// Shared types
-import type { ITreeItem, IThemeIcon, IThemeColor } from '@fux/shared'
-import type { Uri } from 'vscode'
+// Test-specific types (no shared imports)
+interface ITreeItem {
+	label: string | undefined
+	resourceUri?: any
+	description?: string | boolean
+	tooltip?: string
+	contextValue?: string
+	iconPath?: any
+	collapsibleState: number | undefined
+}
+
+interface IThemeIcon {
+	id: string
+	themeIcon?: string
+}
+
+interface IThemeColor {
+	id: string
+}
+
+interface Uri {
+	fsPath: string
+	path: string
+	toString: () => string
+}
 
 // Mock the shared adapters
 vi.mock('@fux/shared', () => ({

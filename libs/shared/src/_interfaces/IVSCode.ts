@@ -68,6 +68,13 @@ export interface IWorkspace {
 	openTextDocument: (uri: any) => Promise<ITextDocument>
 }
 
+//= WORKSPACE FOLDER INTERFACE ===========================================================================
+export interface IWorkspaceFolder {
+	uri: IUri
+	name: string
+	index: number
+}
+
 //= PROCESS INTERFACE ===========================================================================
 export interface IProcess {
 	get workspaceRoot(): string | undefined
@@ -105,13 +112,13 @@ export interface ICommonUtils {
 //= TREE DATA PROVIDER INTERFACES ===========================================================================
 export interface ITreeDataProvider<T> {
 	onDidChangeTreeData: Event<T | undefined | null | void>
-	getTreeItem: (element: T) => ITreeItem
+	getTreeItem: (element: T) => Promise<ITreeItem>
 	getChildren: (element?: T) => Promise<T[]>
 }
 
 export interface ITreeDragAndDropController<T> {
 	onDidChangeTreeData: Event<T | undefined | null | void>
-	getTreeItem: (element: T) => ITreeItem
+	getTreeItem: (element: T) => Promise<ITreeItem>
 	getChildren: (element?: T) => Promise<T[]>
 }
 

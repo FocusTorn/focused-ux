@@ -4,7 +4,7 @@
 import type { IWorkspaceUtilsService, WorkspaceInfo } from '../_interfaces/IWorkspaceUtilsService.js'
 
 //= INJECTED TYPES ============================================================================================
-import type { IWorkspace } from '@fux/shared'
+import type { IWorkspace, IUri, IWorkspaceFolder } from '@fux/shared'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -13,6 +13,67 @@ export class WorkspaceUtilsService implements IWorkspaceUtilsService {
 	constructor(
 		private readonly iWorkspace: IWorkspace,
 	) {}
+
+	// Interface properties
+	public get workspaceName(): string | undefined {
+		const info = this.getWorkspaceInfo()
+
+		return info.workspaceName
+	}
+
+	public get multiRoot(): boolean {
+		const info = this.getWorkspaceInfo()
+
+		return info.multiRoot
+	}
+
+	public get primaryUri(): IUri | undefined {
+		const info = this.getWorkspaceInfo()
+
+		return info.primaryUri
+	}
+
+	public get primaryName(): string | undefined {
+		const info = this.getWorkspaceInfo()
+
+		return info.primaryName
+	}
+
+	public get multiRootByIndex(): IUri[] {
+		const info = this.getWorkspaceInfo()
+
+		return info.multiRootByIndex
+	}
+
+	public get multiRootByName(): { [key: string]: IUri } {
+		const info = this.getWorkspaceInfo()
+
+		return info.multiRootByName
+	}
+
+	public get workspaceFolders(): readonly IWorkspaceFolder[] | undefined {
+		const info = this.getWorkspaceInfo()
+
+		return info.workspaceFolders
+	}
+
+	public get safeWorkspaceName(): string {
+		const info = this.getWorkspaceInfo()
+
+		return info.safeWorkspaceName
+	}
+
+	public get isRemote(): boolean {
+		const info = this.getWorkspaceInfo()
+
+		return info.isRemote
+	}
+
+	public get remoteUserAndHost(): string | undefined {
+		const info = this.getWorkspaceInfo()
+
+		return info.remoteUserAndHost
+	}
 
 	public getWorkspaceInfo(): WorkspaceInfo {
 		const workspaceFolders = this.iWorkspace.workspaceFolders

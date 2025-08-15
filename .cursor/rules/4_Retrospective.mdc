@@ -84,14 +84,32 @@ Your goal is not to archive trivia. It is to **harden your core logic for all fu
 ## **Phase 4: Testing Strategy Documentation**
 
 - **Directive:** For any test-related fixes that result in correct implementation, the Testing Strategy document MUST be updated to reflect the lessons learned and solutions applied.
+
+## **Phase 4.1: Documentation Consistency Verification**
+
+- **Directive:** Ensure that SOP and Global Testing Strategy documents are ALWAYS actively referenced to prevent deviations from established patterns.
+- **Verification Requirements:**
+    - **Before Implementation:** Always consult `docs/SOP.md` and `docs/global-testing-strategy.md` for established patterns
+    - **During Implementation:** Reference these documents to ensure no deviations occur
+    - **After Implementation:** Verify that the implementation aligns with documented patterns
+    - **Documentation Updates:** If patterns change, update both documents to maintain consistency
+- **Critical Rules:**
+    - **SOP Compliance:** All architectural decisions must align with `docs/SOP.md` patterns
+    - **Testing Strategy Alignment:** All testing approaches must follow `docs/global-testing-strategy.md` guidelines
+    - **Deviation Documentation:** Any required deviations must be documented with clear rationale
+    - **Pattern Evolution:** Successful new patterns should be integrated into global documentation
+    - **Deviation Verification:** The AI MUST obtain explicit user verification before deviating from global strategies, even if the AI believes the strategy is not applicable
 - **Documentation Requirements:**
-    - **File Location:** Must update `packages/note-hub/ext/__tests__/TESTING_STRATEGY.md` (or equivalent test strategy document)
+    - **Primary Location:** Must update `docs/global-testing-strategy.md` for global testing patterns and lessons learned
+    - **Package-Specific Location:** Update `packages/{package}/__tests__/TESTING_STRATEGY.md` for package-specific deviations or unique testing requirements
     - **Update Triggers:** Any of the following scenarios require Testing Strategy updates:
         - Test failures that reveal mock setup issues
         - Mock library limitations discovered during testing
         - Console output or debugging challenges resolved
         - Test isolation problems solved
         - Mock configuration patterns that proved successful
+        - New testing anti-patterns identified
+        - Successful testing approaches that should be standardized
     - **Update Format:** Each update must include:
         - **Problem Description:** Clear explanation of what went wrong
         - **Root Cause Analysis:** Why the problem occurred
@@ -103,7 +121,7 @@ Your goal is not to archive trivia. It is to **harden your core logic for all fu
         - Debugging & Troubleshooting
         - Library Limitations & Workarounds
         - Test Isolation & State Management
-    - **Maintenance:** This document serves as the authoritative reference for testing patterns and should be updated whenever new insights are gained
+    - **Maintenance:** These documents serve as the authoritative reference for testing patterns and should be updated whenever new insights are gained
 
 ---
 

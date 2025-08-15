@@ -46,7 +46,9 @@ export type {
 	ITreeDataProvider,
 	ITreeDragAndDropController,
 	ITreeView,
+	IWorkspaceFolder,
 } from './_interfaces/IVSCode.js'
+
 export type { SimpleEventEmitter, TreeItemFactory, Disposable } from './_interfaces/IVSCode.js'
 
 // VSCode Adapters
@@ -84,6 +86,7 @@ export type { IWorkspaceUtilsService } from './_interfaces/IWorkspaceUtilsServic
 
 // Services
 export { ConfigurationService } from './services/Configuration.service.js'
+export { StorageService } from './services/Storage.service.js'
 
 // Utility functions
 export { showTimedInformationMessage } from './utils/showTimedInformationMessage.js'

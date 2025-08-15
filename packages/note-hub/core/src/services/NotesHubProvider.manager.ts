@@ -2,7 +2,6 @@
 
 // _UTILITIES (direct imports) ================================================================================
 import type { IWindow, IWorkspace, ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, ICommands, IFileType } from '@fux/shared'
-import type { ExtensionContext, Disposable } from 'vscode'
 import type { INotesHubProviderManager } from '../_interfaces/INotesHubProviderManager.js'
 import type { INotesHubDataProvider } from '../_interfaces/INotesHubDataProvider.js'
 import type { INotesHubItem } from '../_interfaces/INotesHubItem.js'
@@ -10,6 +9,7 @@ import { ProjectNotesDataProvider } from '../providers/ProjectNotesDataProvider.
 import { RemoteNotesDataProvider } from '../providers/RemoteNotesDataProvider.js'
 import { GlobalNotesDataProvider } from '../providers/GlobalNotesDataProvider.js'
 import type { NotesHubConfig } from '../_interfaces/INotesHubConfigService.js'
+import type { IExtensionContext, Disposable } from '@fux/shared'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -21,7 +21,7 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 	private disposables: Disposable[] = []
 
 	constructor(
-		private readonly iContext: ExtensionContext,
+		private readonly iContext: IExtensionContext,
 		private readonly iWindow: IWindow,
 		private readonly iWorkspace: IWorkspace,
 		private readonly iCommands: ICommands,
@@ -29,6 +29,11 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 		private readonly iFrontmatterUtils: IFrontmatterUtilsService,
 		private readonly iPathUtils: IPathUtilsService,
 		private readonly iFileTypeEnum: IFileType,
+		private readonly treeItemAdapter: any,
+		private readonly themeIconAdapter: any,
+		private readonly themeColorAdapter: any,
+		private readonly uriAdapter: any,
+		private readonly treeItemCollapsibleStateAdapter: any,
 	) {}
 
 	public async initializeProviders(config: NotesHubConfig, commandPrefix: string, openNoteCommandId: string): Promise<void> { //>
@@ -50,6 +55,11 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.iPathUtils,
 				this.iFileTypeEnum,
 				openNoteCommandId,
+				this.treeItemAdapter,
+				this.themeIconAdapter,
+				this.themeColorAdapter,
+				this.uriAdapter,
+				this.treeItemCollapsibleStateAdapter,
 			)
 			this.projectNotesProvider.initializeTreeView(`${commandPrefix}.projectNotesView`)
 			this.disposables.push(this.projectNotesProvider)
@@ -67,6 +77,11 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.iPathUtils,
 				this.iFileTypeEnum,
 				openNoteCommandId,
+				this.treeItemAdapter,
+				this.themeIconAdapter,
+				this.themeColorAdapter,
+				this.uriAdapter,
+				this.treeItemCollapsibleStateAdapter,
 			)
 			this.remoteNotesProvider.initializeTreeView(`${commandPrefix}.remoteNotesView`)
 			this.disposables.push(this.remoteNotesProvider)
@@ -84,6 +99,11 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.iPathUtils,
 				this.iFileTypeEnum,
 				openNoteCommandId,
+				this.treeItemAdapter,
+				this.themeIconAdapter,
+				this.themeColorAdapter,
+				this.uriAdapter,
+				this.treeItemCollapsibleStateAdapter,
 			)
 			this.globalNotesProvider.initializeTreeView(`${commandPrefix}.globalNotesView`)
 			this.disposables.push(this.globalNotesProvider)

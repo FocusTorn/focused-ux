@@ -1,18 +1,10 @@
 // ESLint & Imports -->>
 
 // _UTILITIES ==================================================================================================
-import type {
-	IWindow,
-	IWorkspace,
-	ICommands,
-	ICommonUtilsService,
-	IFrontmatterUtilsService,
-	IPathUtilsService,
-	IFileType,
-	Event,
-	IFileSystemWatcher,
-	ProviderResult,
-} from '@fux/shared'
+
+import type { IExtensionContext, IUri, ITreeItem, IFileSystemWatcher, Event, ProviderResult, IFileType, IFrontmatterUtilsService, IWindow, IWorkspace, ICommands, ICommonUtilsService, IPathUtilsService } from '@fux/shared'
+import type { INotesHubItem } from '../_interfaces/INotesHubItem.js'
+import type { INotesHubDataProvider } from '../_interfaces/INotesHubDataProvider.js'
 import {
 	EventEmitterAdapter,
 	ThemeIconAdapter,
@@ -25,8 +17,6 @@ import { basename, dirname, extname, join, normalize } from 'node:path'
 import { constants as fsConstants } from 'node:fs'
 import { Buffer } from 'node:buffer'
 import { access as fspAccess } from 'node:fs/promises'
-import type { ExtensionContext, Uri, TreeItem } from 'vscode'
-import type { INotesHubDataProvider } from '../_interfaces/INotesHubDataProvider.js'
 import { NotesHubItem } from '../models/NotesHubItem.js'
 // import type { ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, IWindow, IWorkspace, ICommands } from '@fux/_utilities' (update to actual path)
 
@@ -56,7 +46,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 		public readonly notesDir: string,
 		public readonly providerName: 'project' | 'remote' | 'global',
 		private readonly openNoteCommandId: string,
-		protected readonly iContext: ExtensionContext,
+		protected readonly iContext: IExtensionContext,
 		protected readonly iWindow: IWindow,
 		protected readonly iWorkspace: IWorkspace,
 		protected readonly iCommands: ICommands,
@@ -64,6 +54,11 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 		protected readonly iFrontmatterUtils: IFrontmatterUtilsService,
 		protected readonly iPathUtils: IPathUtilsService,
 		protected readonly iFileTypeEnum: IFileType,
+		protected readonly treeItemAdapter: any,
+		protected readonly themeIconAdapter: any,
+		protected readonly themeColorAdapter: any,
+		protected readonly uriAdapter: any,
+		protected readonly treeItemCollapsibleStateAdapter: any,
 	) {
 		// Guard: invalid notesDir makes provider inert
 		if (!this.notesDir || typeof this.notesDir !== 'string' || this.notesDir.trim() === '') {
@@ -145,7 +140,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 
 		// Parent is the provider root
 		if (parentPath === rootPath) {
-			return new NotesHubItem(basename(this.notesDir), this.notesDir, true)
+			return new NotesHubItem(basename(this.notesDir), this.notesDir, true, this.treeItemAdapter, this.themeIconAdapter, this.themeColorAdapter, this.uriAdapter, this.treeItemCollapsibleStateAdapter)
 		}
 
 		// Construct the parent item synchronously without I/O
@@ -154,21 +149,21 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 		
 		// Validate parentParentPath before creating URI
 		if (!parentParentPath || parentParentPath.trim() === '' || parentParentPath === parentPath) {
-			return new NotesHubItem(parentName, parentPath, true)
+			return new NotesHubItem(parentName, parentPath, true, this.treeItemAdapter, this.themeIconAdapter, this.themeColorAdapter, this.uriAdapter, this.treeItemCollapsibleStateAdapter)
 		}
 
 		try {
 			const parentParentUri = (UriAdapter.file(parentParentPath) as any).uri
 
-			return new NotesHubItem(parentName, parentPath, true, parentParentUri)
+			return new NotesHubItem(parentName, parentPath, true, this.treeItemAdapter, this.themeIconAdapter, this.themeColorAdapter, this.uriAdapter, this.treeItemCollapsibleStateAdapter, parentParentUri)
 		}
 		catch (error) {
 			console.warn('[BaseNotesDataProvider] Error creating parent URI:', { parentParentPath, error })
-			return new NotesHubItem(parentName, parentPath, true)
+			return new NotesHubItem(parentName, parentPath, true, this.treeItemAdapter, this.themeIconAdapter, this.themeColorAdapter, this.uriAdapter, this.treeItemCollapsibleStateAdapter)
 		}
 	}//<
 
-	public async getTreeItem(element: NotesHubItem): Promise<TreeItem> {
+	public async getTreeItem(element: INotesHubItem): Promise<ITreeItem> {
 		if (!this.notesDir) {
 			// Return inert TreeItem without constructing NotesHubItem (which requires a valid filePath)
 			const treeItem = TreeItemAdapter.create('Notes (disabled)', new TreeItemCollapsibleStateAdapter().None as any)
@@ -225,14 +220,23 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 			})
 			
 			// Return a basic tree item to prevent the tree view from breaking
-			const fallbackItem = new NotesHubItem('Error', element?.filePath || 'unknown', false)
+			const fallbackItem = new NotesHubItem(
+				'Error',
+				element?.filePath || 'unknown',
+				false,
+				this.treeItemAdapter,
+				this.themeIconAdapter,
+				this.themeColorAdapter,
+				this.uriAdapter,
+				this.treeItemCollapsibleStateAdapter,
+			)
 
-			fallbackItem.collapsibleState = new TreeItemCollapsibleStateAdapter().None as any
+			fallbackItem.collapsibleState = this.treeItemCollapsibleStateAdapter.None as any
 			return fallbackItem as any
 		}
 	}
 
-	public async getChildren(element?: NotesHubItem): Promise<NotesHubItem[]> {
+	public async getChildren(element?: INotesHubItem): Promise<INotesHubItem[]> {
 		if (!this.notesDir) {
 			return []
 		}
@@ -246,14 +250,23 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 			}
 
 			if (!element) { // Root level for this provider
-				const rootFolderItem = new NotesHubItem(basename(this.notesDir), this.notesDir, true)
+				const rootFolderItem = new NotesHubItem(
+					basename(this.notesDir),
+					this.notesDir,
+					true,
+					this.treeItemAdapter,
+					this.themeIconAdapter,
+					this.themeColorAdapter,
+					this.uriAdapter,
+					this.treeItemCollapsibleStateAdapter,
+				)
 
 				return [rootFolderItem]
 			}
 
 			if (element.isDirectory && element.resourceUri) {
 				const entries = await this.iWorkspace.fs.readDirectory(element.resourceUri)
-				const items: NotesHubItem[] = []
+				const items: INotesHubItem[] = []
 
 				for (const [name, fileType] of entries) {
 					// Validate name before processing
@@ -281,7 +294,18 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 						}
 						
 						try {
-							const item = new NotesHubItem(name, filePath, isDir, element.resourceUri, frontmatter)
+							const item = new NotesHubItem(
+								name,
+								filePath,
+								isDir,
+								this.treeItemAdapter,
+								this.themeIconAdapter,
+								this.themeColorAdapter,
+								this.uriAdapter,
+								this.treeItemCollapsibleStateAdapter,
+								element.resourceUri,
+								frontmatter,
+							)
 
 							items.push(item)
 						}
@@ -311,7 +335,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 		}
 	}
 
-	public async getNotesHubItem(uri: Uri): Promise<NotesHubItem | undefined> {
+	public async getNotesHubItem(uri: IUri): Promise<NotesHubItem | undefined> {
 		if (!this.notesDir) {
 			return undefined
 		}
@@ -330,7 +354,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 			const parentPath = dirname(filePath)
 			
 			// Validate parentPath before creating URI
-			let parentUri: Uri | undefined
+			let parentUri: IUri | undefined
 
 			if (parentPath !== filePath && parentPath.trim() !== '') {
 				try {
@@ -356,7 +380,18 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 			}
 			
 			try {
-				return new NotesHubItem(fileName, filePath, isDirectory, parentUri, frontmatter)
+				return new NotesHubItem(
+					fileName,
+					filePath,
+					isDirectory,
+					this.treeItemAdapter,
+					this.themeIconAdapter,
+					this.themeColorAdapter,
+					this.uriAdapter,
+					this.treeItemCollapsibleStateAdapter,
+					parentUri,
+					frontmatter,
+				)
 			}
 			catch (itemError) {
 				console.warn('[BaseNotesDataProvider] Error creating NotesHubItem:', { fileName, filePath, itemError })
@@ -379,7 +414,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 		}
 	}
 
-	private sortItems(a: NotesHubItem, b: NotesHubItem): number { //>
+	private sortItems(a: INotesHubItem, b: INotesHubItem): number { //>
 		const aIsDir = a.isDirectory ? 0 : 1
 		const bIsDir = b.isDirectory ? 0 : 1
 		const aLabel = typeof a.label === 'string' ? a.label : a.label?.label || ''
@@ -430,9 +465,9 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 			return
 		}
 
-		// Convert the VSCode URI to an IUri object before using UriAdapter.joinPath
-		const workspaceUri = UriAdapter.create(workspaceFolder.uri)
-		const gitignoreUriAdapter = UriAdapter.joinPath(workspaceUri, '.gitignore')
+		// Convert the VSCode URI to an IUri object before using uriAdapter.joinPath
+		const workspaceUri = this.uriAdapter.create(workspaceFolder.uri)
+		const gitignoreUriAdapter = this.uriAdapter.joinPath(workspaceUri, '.gitignore')
 		// Access the underlying VSCode URI for the workspace fs API
 		const gitignoreUri = (gitignoreUriAdapter as any).uri
 

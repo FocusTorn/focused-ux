@@ -1,8 +1,8 @@
 // ESLint & Imports -->>
 
 // _UTILITIES ==================================================================================================
-import type { ExtensionContext } from 'vscode'
-import type { IWindow, IWorkspace, ICommands, ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, IFileType } from '@fux/shared'
+import type { IWindow, IWorkspace, ICommonUtilsService, IPathUtilsService, IFrontmatterUtilsService, ICommands, IExtensionContext, IFileType } from '@fux/shared'
+
 import { BaseNotesDataProvider } from './BaseNotesDataProvider.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
@@ -12,7 +12,7 @@ export class GlobalNotesDataProvider extends BaseNotesDataProvider {
 	// Awilix-ready constructor (no decorators)
 	constructor(
 		notesDir: string,
-		context: ExtensionContext,
+		context: IExtensionContext,
 		window: IWindow,
 		workspace: IWorkspace,
 		commands: ICommands,
@@ -21,8 +21,13 @@ export class GlobalNotesDataProvider extends BaseNotesDataProvider {
 		pathUtils: IPathUtilsService,
 		fileTypeEnum: IFileType,
 		openNoteCommandId: string,
+		treeItemAdapter: any,
+		themeIconAdapter: any,
+		themeColorAdapter: any,
+		uriAdapter: any,
+		treeItemCollapsibleStateAdapter: any,
 	) {
-		super(notesDir, 'global', openNoteCommandId, context, window, workspace, commands, commonUtils, frontmatterUtils, pathUtils, fileTypeEnum)
+		super(notesDir, 'global', openNoteCommandId, context, window, workspace, commands, commonUtils, frontmatterUtils, pathUtils, fileTypeEnum, treeItemAdapter, themeIconAdapter, themeColorAdapter, uriAdapter, treeItemCollapsibleStateAdapter)
 	}
 
 }

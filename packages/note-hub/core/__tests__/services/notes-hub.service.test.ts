@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { mockly, mocklyService } from '@fux/mockly'
 import { NotesHubService } from '../../src/services/NotesHub.service.js'
 
 // Shared types
@@ -9,25 +10,16 @@ import type { INotesHubProviderManager } from '../../src/_interfaces/INotesHubPr
 import type { INotesHubItem } from '../../src/_interfaces/INotesHubItem.js'
 
 describe('NotesHubService', () => {
-	let iWorkspace: IWorkspace
-	let iWindow: IWindow
-	let iCommands: ICommands
 	let iConfigService: INotesHubConfigService
 	let iActionService: INotesHubActionService
 	let iProviderManager: INotesHubProviderManager
 
 	beforeEach(() => {
-		iWorkspace = {
-			onDidChangeConfiguration: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-		} as unknown as IWorkspace
-
-		iWindow = {
-			showInformationMessage: vi.fn().mockResolvedValue('Later'),
-		} as unknown as IWindow
-
-		iCommands = {
-			executeCommand: vi.fn(),
-		} as unknown as ICommands
+		mocklyService.reset()
+		
+		// Core packages should use Mockly since shared adapters are abstractions
+		// that Mockly already mocks - no need to reinvent the wheel
+		// Mockly provides realistic VSCode-like behavior at the source
 
 		const defaultCfg: NotesHubConfig = {
 			projectNotesPath: '/p',
@@ -68,7 +60,15 @@ describe('NotesHubService', () => {
 	})
 
 	it('initializeNotesHub wires config, directories and provider manager', async () => {
-		const svc = new NotesHubService(iWorkspace, iWindow, iCommands, iConfigService, iActionService, iProviderManager)
+		// Inject Mockly shims directly - they implement the same interfaces
+		const svc = new NotesHubService(
+			mockly.workspace,  // Mockly's mocked workspace
+			mockly.window,     // Mockly's mocked window
+			mockly.commands,   // Mockly's mocked commands
+			iConfigService, 
+			iActionService, 
+			iProviderManager
+		)
 
 		await svc.initializeNotesHub('nh', 'nh')
 
@@ -78,7 +78,15 @@ describe('NotesHubService', () => {
 	})
 
 	it('delegates actions to action service', async () => {
-		const svc = new NotesHubService(iWorkspace, iWindow, iCommands, iConfigService, iActionService, iProviderManager)
+		// Inject Mockly shims directly - they implement the same interfaces
+		const svc = new NotesHubService(
+			mockly.workspace,  // Mockly's mocked workspace
+			mockly.window,     // Mockly's mocked window
+			mockly.commands,   // Mockly's mocked commands
+			iConfigService, 
+			iActionService, 
+			iProviderManager
+		)
 		const item = { filePath: '/p/a.md' } as INotesHubItem
 
 		await svc.openNote(item)
