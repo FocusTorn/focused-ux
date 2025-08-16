@@ -19,6 +19,11 @@
             "factory": "./lib/generator#default",
             "schema": "./lib/schema.json",
             "description": "Create a library package"
+        },
+        "test-scaffold": {
+            "factory": "./test-scaffold/generator#default",
+            "schema": "./test-scaffold/schema.json",
+            "description": "Scaffold test directory structure with consistent setup files"
         }
     }
 }

@@ -1,4 +1,3 @@
-import type { IFileSystem, IProcess } from '@fux/shared'
 import type { IProjectButlerService } from '../_interfaces/IProjectButlerService.js'
 import type { ITerminalProvider } from '../_interfaces/ITerminal.js'
 import type { IWindow } from '../_interfaces/IWindow.js'
@@ -8,10 +7,18 @@ import { load as loadYaml } from 'js-yaml'
 export class ProjectButlerService implements IProjectButlerService {
 
 	constructor(
-		private readonly fileSystem: IFileSystem,
+		private readonly fileSystem: {
+			access: (path: string) => Promise<void>
+			copyFile: (src: string, dest: string) => Promise<void>
+			stat: (path: string) => Promise<import('vscode').FileStat>
+			readFile: (path: string) => Promise<string>
+			writeFile: (path: string, data: Uint8Array) => Promise<void>
+		},
 		private readonly window: IWindow,
 		private readonly terminalProvider: ITerminalProvider,
-		private readonly process: IProcess,
+		private readonly process: {
+			getWorkspaceRoot: () => string | undefined
+		},
 	) {}
 
 	public async updateTerminalPath(uri?: string): Promise<void> {
@@ -24,7 +31,7 @@ export class ProjectButlerService implements IProjectButlerService {
 			}
 
 			const stats = await this.fileSystem.stat(finalUri)
-			const pathToSend = stats.type === 'directory' ? finalUri : path.dirname(finalUri)
+			const pathToSend = stats.type === 2 ? finalUri : path.dirname(finalUri) // 2 = FileType.Directory
 			const cdCommand = `cd "${pathToSend}"`
 			const terminal = this.terminalProvider.activeTerminal || this.terminalProvider.createTerminal('F-UX Terminal')
 
@@ -82,7 +89,7 @@ export class ProjectButlerService implements IProjectButlerService {
 
 			if (finalUri) {
 				const stats = await this.fileSystem.stat(finalUri)
-				const pathToSend = stats.type === 'directory' ? finalUri : path.dirname(finalUri)
+				const pathToSend = stats.type === 2 ? finalUri : path.dirname(finalUri) // 2 = FileType.Directory
 
 				command = `cd "${pathToSend}" && poetry shell`
 			}

@@ -19,13 +19,18 @@ export interface IMocklyService {
 		createFileSystemWatcher: (pattern: any) => any
 		openTextDocument: (uri: Uri) => Promise<any>
 		getConfiguration: (section?: string) => any
+		getWorkspaceRoot: () => string
 	}
 
 	window: {
 		activeTextEditor: any | undefined
+		activeTextEditorUri: string | undefined
+		activeTerminal: any | undefined
+		createTerminal: (name: string) => any
 		showErrorMessage: (message: string) => void
 		showInformationMessage: (message: string, ...items: string[]) => Promise<string | undefined>
 		showWarningMessage: (message: string, options?: { modal?: boolean }, ...items: any[]) => Promise<any>
+
 		showInputBox: (options: any) => Promise<string | undefined>
 		showTextDocument: (doc: any) => Promise<any>
 		createTreeView: (viewId: string, options: any) => any

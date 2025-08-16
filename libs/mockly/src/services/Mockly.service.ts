@@ -7,6 +7,7 @@ import { Position as MockPosition, Range as MockRange, Disposable as MockDisposa
 import { MockWindow } from '../_vscCore/MockWindow.js'
 import { MockFileSystem } from '../_vscCore/MockFileSystem.js'
 import { MockTextDocument } from '../_vscCore/MockTextDocument.js'
+import { MockTextEditor } from '../_vscCore/MockTextEditor.js'
 import type { Buffer } from 'node:buffer'
 
 // Proper Uri mock class
@@ -107,6 +108,13 @@ export class MocklyService implements IMocklyService {
 		// Set the workspace and window properties after initialization
 		this.workspace.fs = this.mockFileSystem
 		this.window = this.mockWindow
+		
+		// Initialize with a default active editor for testing
+		const defaultUri = MockUri.file('/test/default.txt')
+		const defaultDocument = new MockTextDocument(defaultUri, 'Default test document')
+		const defaultEditor = new MockTextEditor(defaultDocument)
+
+		this.mockWindow.setActiveTextEditor(defaultEditor)
 		
 		// Initialize with some default commands
 		this.registerDefaultCommands()
@@ -221,6 +229,10 @@ export class MocklyService implements IMocklyService {
 					return undefined
 				},
 			}
+		},
+
+		getWorkspaceRoot: (): string => {
+			return '/workspace/root'
 		},
 	}
 
@@ -379,6 +391,16 @@ export class MocklyService implements IMocklyService {
 		this.mockFileSystem.clear()
 		this.mockWindow.clear()
 		this.configurationStorage.clear()
+		
+		// Restore default active editor after clearing
+		const defaultUri = MockUri.file('/test/default.txt')
+		const defaultDocument = new MockTextDocument(defaultUri, 'Default test document')
+		const defaultEditor = new MockTextEditor(defaultDocument)
+
+		this.mockWindow.setActiveTextEditor(defaultEditor)
+		
+		this.utils.info('MocklyService.reset() - default editor restored')
+		
 		this.registerDefaultCommands()
 		this.utils.info('MocklyService reset')
 	}

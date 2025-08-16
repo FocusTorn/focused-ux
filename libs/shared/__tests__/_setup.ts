@@ -1,58 +1,39 @@
 import { vi } from 'vitest'
-import process from 'node:process'
-import type { IUri } from '../src/_interfaces/IVSCode.js'
-import type { IUriFactory } from '../src/_interfaces/IUriFactory.js'
-import { UriAdapter } from '../src/vscode/adapters/Uri.adapter.js'
+import { mockly, mocklyService } from '@fux/mockly'
 
+// Reset Mockly state between tests
+beforeEach(() => {
+    mocklyService.reset()
+})
+
+// Console output configuration for tests
+// Set this to true to enable console output for debugging
 const ENABLE_CONSOLE_OUTPUT = process.env.ENABLE_TEST_CONSOLE === 'true'
 
-if (!ENABLE_CONSOLE_OUTPUT) {
-	console.log = vi.fn()
-	console.info = vi.fn()
-	console.warn = vi.fn()
-	console.error = vi.fn()
+if (ENABLE_CONSOLE_OUTPUT) {
+    // Enable console output for debugging
+    console.log('🔍 Test console output enabled - use ENABLE_TEST_CONSOLE=true to enable')
+} else {
+    // Non-Mockly: Console is not a VSCode API and Mockly does not shim it.
+    // We silence console by default to reduce noise and make assertions stable.
+    // Use ENABLE_TEST_CONSOLE=true to opt-in when debugging.
+    console.log = vi.fn()
+    console.info = vi.fn()
+    console.warn = vi.fn()
+    console.error = vi.fn()
 }
 
-class LocalMockUriFactory implements IUriFactory {
-
-	file(path: string): IUri {
-		const mockUri = {
-			fsPath: path,
-			path,
-			scheme: 'file',
-			authority: '',
-			query: '',
-			fragment: '',
-			toString: () => `file://${path}`,
-		}
-
-		return new UriAdapter(mockUri as any)
-	}
-
-	create(uri: any): IUri {
-		const path = uri?.fsPath ?? uri?.path ?? String(uri)
-
-		return this.file(path)
-	}
-
-	joinPath(base: IUri, ...paths: string[]): IUri {
-		const basePath = (base as any).uri?.fsPath ?? (base as any).uri?.path ?? String(base)
-		const fullPath = [basePath, ...paths]
-			.join('/')
-			.replace(/\\/g, '/')
-			.replace(/\/+/g, '/')
-
-		return this.file(fullPath)
-	}
-
-	dirname(uri: IUri): IUri {
-		const basePath = (uri as any).uri?.fsPath ?? (uri as any).uri?.path ?? String(uri)
-		const pathString = typeof basePath === 'string' ? basePath : String(basePath)
-		const dirPath = pathString.split('/').slice(0, -1).join('/') || '/'
-
-		return this.file(dirPath)
-	}
-
+// Export a function to enable console output programmatically
+export function enableTestConsoleOutput() {
+    if (!ENABLE_CONSOLE_OUTPUT) {
+        // Restore original console methods
+        console.log = console.log || (() => {})
+        console.info = console.info || (() => {})
+        console.warn = console.warn || (() => {})
+        console.error = console.error || (() => {})
+        console.log('🔍 Test console output enabled programmatically')
+    }
 }
 
-UriAdapter.setFactory(new LocalMockUriFactory())
+// Export Mockly for use in tests
+export { mockly, mocklyService }

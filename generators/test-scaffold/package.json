@@ -1,0 +1,5 @@
+{
+    "name": "@fux/test-scaffold-generator",
+    "version": "1.0.0",
+    "description": "Generator for scaffolding test directory structure with consistent setup files"
+}

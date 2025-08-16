@@ -1,6 +1,5 @@
 import { createContainer, InjectionMode, asValue, asClass } from 'awilix'
-import { ProjectButlerService } from '@fux/project-butler-core'
-import type { ITerminalProvider } from '@fux/project-butler-core'
+import { createCoreContainer } from '@fux/project-butler-core'
 import { ConfigurationService, TerminalAdapter, WindowAdapter, ProcessAdapter, WorkspaceAdapter } from '@fux/shared'
 import type { IFileSystem } from '@fux/shared'
 import { FileSystemAdapter } from './_adapters/FileSystem.adapter.js'
@@ -12,7 +11,7 @@ export async function createDIContainer(_context: ExtensionContext): Promise<imp
 		injectionMode: InjectionMode.PROXY,
 	})
     
-	// Register Adapters
+	// Register shared adapters from @fux/shared
 	container.register({
 		fileSystem: asClass(FileSystemAdapter).singleton(),
 		workspace: asClass(WorkspaceAdapter).singleton(),
@@ -33,19 +32,20 @@ export async function createDIContainer(_context: ExtensionContext): Promise<imp
 		configurationService,
 	) as any
 
-	const projectButlerService = new ProjectButlerService(
-		container.resolve('fileSystem') as IFileSystem,
-		windowAdapter,
-		container.resolve('terminalProvider') as ITerminalProvider,
-		processAdapter,
-	)
+	// Create the core container with injected shared adapters
+	const coreContainer = createCoreContainer({
+		fileSystem: container.resolve('fileSystem'),
+		window: windowAdapter,
+		terminalProvider: container.resolve('terminalProvider'),
+		process: processAdapter,
+	})
 
-	// Register the manually created instances as values
+	// Register the core container services
 	container.register({
 		configurationService: asValue(configurationService),
 		window: asValue(windowAdapter),
 		process: asValue(processAdapter),
-		projectButlerService: asValue(projectButlerService),
+		projectButlerService: asValue(coreContainer.cradle.projectButlerService),
 	})
 
 	return container

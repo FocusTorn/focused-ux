@@ -1,0 +1,19 @@
+rules:
+    # CRITICAL: Universal Operational Doctrine MUST load first (priority: 1)
+    # Contains all universal AI behavior protocols, operational workflows, and enforcement mechanisms
+    - file: .cursor/rules/Universal-Operational-Doctrine.mdc
+
+    # FocusedUX-specific operational guidelines (priority: 2)
+    # Contains project-specific workflows, testing patterns, and architectural rules
+    - file: .cursor/rules/FocusedUX-Operational-Doctrine.mdc
+
+    # Nx-specific guidance and tools (priority: 3)
+    # Contains Nx workspace conventions and build system guidance
+    - file: .cursor/rules/nx-rules.mdc
+
+    # Context refresh and retrospective protocols (conditional)
+    # Contains universal learning integration and session improvement protocols
+    - file: .cursor/rules/Retrospective-Protocol.mdc
+      when:
+          # This rule is triggered when the user message contains the word "retro"
+          userMessage: 'retro'

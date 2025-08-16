@@ -39,7 +39,6 @@ export function createMockWindowWithEditor(defaultInput: string = 'TestNote') {
 			}
 
 			windowMock.activeTextEditor = editor
-			mocklyService.window.activeTextEditor = editor
 			return editor
 		}),
 	}

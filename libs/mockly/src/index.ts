@@ -10,24 +10,24 @@ const mocklyService = container.resolve<IMocklyService>('mocklyService')
 // Export the mockly API (simulating the vscode namespace)
 export const mockly = {
 	// Core VSCode API simulation
-	workspace: mocklyService.workspace,
-	window: mocklyService.window,
-	commands: mocklyService.commands,
-	extensions: mocklyService.extensions,
-	env: mocklyService.env,
+	get workspace() { return mocklyService.workspace },
+	get window() { return mocklyService.window },
+	get commands() { return mocklyService.commands },
+	get extensions() { return mocklyService.extensions },
+	get env() { return mocklyService.env },
 
 	// VSCode types and classes
-	Uri: mocklyService.Uri,
-	Position: mocklyService.Position,
-	Range: mocklyService.Range,
-	Disposable: mocklyService.Disposable,
-	EventEmitter: mocklyService.EventEmitter,
+	get Uri() { return mocklyService.Uri },
+	get Position() { return mocklyService.Position },
+	get Range() { return mocklyService.Range },
+	get Disposable() { return mocklyService.Disposable },
+	get EventEmitter() { return mocklyService.EventEmitter },
 
 	// Node.js utilities
-	node: mocklyService.node,
+	get node() { return mocklyService.node },
 
 	// Version info
-	version: mocklyService.version,
+	get version() { return mocklyService.version },
 }
 
 // Export the service instance for advanced usage and testing

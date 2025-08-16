@@ -36,7 +36,9 @@ export class MockFileSystem {
 		}
 	}
 
-	async readFile(uri: Uri): Promise<Uint8Array> {
+	async readFile(uri: Uri): Promise<Uint8Array>
+	async readFile(uri: Uri, encoding: 'utf8'): Promise<string>
+	async readFile(uri: Uri, encoding?: 'utf8'): Promise<Uint8Array | string> {
 		const filePath = this.normalizePath(uri.fsPath)
 		const item = this.fileSystem.get(filePath)
 
@@ -44,10 +46,17 @@ export class MockFileSystem {
 			throw new Error(`File not found: ${filePath}`)
 		}
 
+		// Return string if utf8 encoding is requested, otherwise return Uint8Array
+		if (encoding === 'utf8') {
+			return new TextDecoder().decode(item.content)
+		}
+
 		return item.content
 	}
 
-	async writeFile(uri: Uri, content: Uint8Array): Promise<void> {
+	async writeFile(uri: Uri, content: Uint8Array | string): Promise<void> {
+		// Convert string content to Uint8Array if needed
+		const contentArray = typeof content === 'string' ? new TextEncoder().encode(content) : content
 		const filePath = this.normalizePath(uri.fsPath)
 		const now = Date.now()
 
@@ -59,14 +68,14 @@ export class MockFileSystem {
 		}
 
 		this.fileSystem.set(filePath, {
-			content,
+			content: contentArray,
 			type: 'file',
 			ctime: now,
 			mtime: now,
-			size: content.length,
+			size: contentArray.length,
 		})
 
-		this.utils.debug(`File written: ${filePath} (${content.length} bytes)`)
+		this.utils.debug(`File written: ${filePath} (${contentArray.length} bytes)`)
 	}
 
 	async createDirectory(uri: Uri): Promise<void> {
@@ -160,7 +169,7 @@ export class MockFileSystem {
 		}
 
 		// Check if target exists and overwrite is not allowed
-		if (this.fileSystem.has(targetPath) && !options?.overwrite) {
+		if (this.fileSystem.has(targetPath) && options?.overwrite === false) {
 			throw new Error(`Target already exists: ${targetPath}`)
 		}
 
@@ -186,7 +195,7 @@ export class MockFileSystem {
 		}
 
 		// Check if target exists and overwrite is not allowed
-		if (this.fileSystem.has(targetPath) && !options?.overwrite) {
+		if (this.fileSystem.has(targetPath) && options?.overwrite === false) {
 			throw new Error(`Target already exists: ${targetPath}`)
 		}
 

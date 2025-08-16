@@ -1,14 +1,20 @@
-import type { IFileSystem, FileStats, DirectoryEntry } from '@fux/shared'
 import * as fs from 'node:fs/promises'
+import type { FileStat } from 'vscode'
 
-export class FileSystemAdapter implements IFileSystem {
+/**
+ * FileSystem adapter that implements the interface expected by ProjectButlerService
+ * This adapter wraps Node.js fs operations to match VSCode's FileStat interface
+ */
+export class FileSystemAdapter {
 
-	public async stat(path: string): Promise<FileStats> {
+	public async stat(path: string): Promise<FileStat> {
 		const stats = await fs.stat(path)
 
 		return {
-			type: stats.isDirectory() ? 'directory' : 'file',
+			type: stats.isDirectory() ? 2 : 1, // 2 = Directory, 1 = File
 			size: stats.size,
+			ctime: stats.birthtime.getTime(),
+			mtime: stats.mtime.getTime(),
 		}
 	}
 
@@ -24,16 +30,8 @@ export class FileSystemAdapter implements IFileSystem {
 		return fs.readFile(path, 'utf-8')
 	}
 
-	public readDirectory(_path: string): Promise<DirectoryEntry[]> {
-		throw new Error('Method not implemented.')
-	}
-
 	public writeFile(path: string, content: Uint8Array): Promise<void> {
 		return fs.writeFile(path, content)
-	}
-
-	public async createDirectory(path: string): Promise<void> {
-		await fs.mkdir(path, { recursive: true })
 	}
 
 }

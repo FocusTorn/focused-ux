@@ -1,6 +1,44 @@
-import type { TextEditor, TextDocument, Uri, ProgressOptions, Progress, InputBoxOptions, QuickPickOptions, QuickPickItem, TreeView, TreeDataProvider } from 'vscode'
+import type { TextEditor, TextDocument, Uri, ProgressOptions, Progress, InputBoxOptions, QuickPickOptions, QuickPickItem, TreeView, TreeDataProvider, Terminal } from 'vscode'
 import { MockTextEditor } from './MockTextEditor.js'
 import { MockTextDocument } from './MockTextDocument.js'
+
+// Mock Terminal class for testing
+
+class MockTerminal implements Terminal {
+
+	name: string
+	processId: Promise<number | undefined>
+	creationOptions: any
+	exitStatus: any
+	state: any
+	shellIntegration: any
+
+	constructor(name: string) {
+		this.name = name
+		this.processId = Promise.resolve(1)
+		this.creationOptions = {}
+		this.exitStatus = undefined
+		this.state = 1 // TerminalState.Running
+		this.shellIntegration = undefined
+	}
+
+	sendText(_text: string, _addNewLine?: boolean): void {
+		// Mock implementation - do nothing but don't throw
+	}
+
+	show(_preserveFocus?: boolean): void {
+		// Mock implementation - do nothing but don't throw
+	}
+
+	hide(): void {
+		// Mock implementation - do nothing but don't throw
+	}
+
+	dispose(): void {
+		// Mock implementation - do nothing but don't throw
+	}
+
+}
 
 export class MockWindow {
 
@@ -9,6 +47,8 @@ export class MockWindow {
 	private _textEditors: TextEditor[] = []
 	private _treeViews = new Map<string, TreeView<any>>()
 	private _treeDataProviders = new Map<string, TreeDataProvider<any>>()
+	private _activeTerminal?: Terminal
+	private _terminals: Terminal[] = []
 	private _utils: any
 
 	constructor(utils?: any) {
@@ -20,12 +60,35 @@ export class MockWindow {
 		return this._activeTextEditor
 	}
 
+	get activeTextEditorUri(): string | undefined {
+		return this._activeTextEditor?.document.uri.fsPath
+	}
+
 	get visibleTextEditors(): TextEditor[] {
 		return [...this._visibleTextEditors]
 	}
 
 	get textEditors(): TextEditor[] {
 		return [...this._textEditors]
+	}
+
+	// Terminal API methods
+	get activeTerminal(): Terminal | undefined {
+		return this._activeTerminal
+	}
+
+	createTerminal(name: string): Terminal {
+		const terminal = new MockTerminal(name)
+
+		this._terminals.push(terminal)
+		this._activeTerminal = terminal
+		
+		// Safely call debug if it exists
+		if (this._utils && typeof this._utils.debug === 'function') {
+			this._utils.debug(`Created terminal: ${name}`)
+		}
+
+		return terminal
 	}
 
 	async showTextDocument(document: TextDocument | Uri, _column?: number): Promise<TextEditor> {
@@ -59,7 +122,10 @@ export class MockWindow {
 			this._visibleTextEditors.push(editor)
 		}
 
-		this._utils.debug(`Show text document: ${uri.fsPath}`)
+		// Safely call debug if it exists
+		if (this._utils && typeof this._utils.debug === 'function') {
+			this._utils.debug(`Show text document: ${uri.fsPath}`)
+		}
 		return editor
 	}
 
@@ -153,6 +219,11 @@ export class MockWindow {
 	// Enhanced methods for testing
 	setActiveTextEditor(editor: TextEditor | undefined): void {
 		this._activeTextEditor = editor
+		
+		// Debug logging
+		if (this._utils && typeof this._utils.info === 'function') {
+			this._utils.info(`MockWindow.setActiveTextEditor() called with: ${editor ? editor.document.uri.fsPath : 'undefined'}`)
+		}
 	}
 
 	addTextEditor(editor: TextEditor): void {
@@ -223,6 +294,13 @@ export class MockWindow {
 		this._textEditors = []
 		this._treeViews.clear()
 		this._treeDataProviders.clear()
+		this._activeTerminal = undefined
+		this._terminals = []
+		
+		// Debug logging
+		if (this._utils && typeof this._utils.info === 'function') {
+			this._utils.info('MockWindow.clear() called - activeTextEditor cleared')
+		}
 	}
 
 }

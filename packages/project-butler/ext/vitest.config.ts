@@ -7,7 +7,7 @@ export default defineConfig({
 	root: __dirname,
 	test: {
 		...base.test,
-		include: ['{src,test}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+		include: ['{src,test,__tests__}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
 		setupFiles: ['./__tests__/setup.ts'],
 		// Ensure watch is not disabled; UI depends on it
 		// watch: true,
@@ -15,9 +15,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@fux/project-butler-core': path.resolve(__dirname, '../core/src'),
-			'@fux/shared': path.resolve(__dirname, '../../../libs/shared/src'),
 			'@fux/mockly': path.resolve(__dirname, '../../../libs/mockly/src'),
-			'vscode': path.resolve(__dirname, '../../../vscode-test-adapter.ts'),
 		},
 	},
 	optimizeDeps: { exclude: ['vscode'] },

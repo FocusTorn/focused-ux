@@ -8,8 +8,7 @@
     "dependencies": {
         "awilix": "^12.0.5",
         "js-yaml": "^4.1.0",
-        "@fux/project-butler-core": "workspace:*",
-        "@fux/shared": "workspace:*"
+        "@fux/project-butler-core": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^24.0.10",

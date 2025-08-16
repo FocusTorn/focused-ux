@@ -4,8 +4,7 @@
     "sourceRoot": "libs/shared/src",
     "projectType": "library",
     "targets": {
-       
-        "build": { //>
+        "build": {
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "options": {
@@ -23,8 +22,7 @@
                 "deleteOutputPath": true,
                 "external": ["js-yaml"]
             }
-        }, //<
-
+        },
         "check-types": {
             "executor": "nx:run-commands",
             "options": {
@@ -32,17 +30,33 @@
                 "cwd": "."
             }
         },
-        "lint": { "extends": "lint" },
-        "lint:full": { "extends": "lint:full" },
-        "validate": { "extends": "validate" },
-        "validate:full": { "extends": "validate:full" },
-        "audit": { "extends": "audit" },
-        "audit:full": { "extends": "audit:full" },
-        
-        "clean": { "extends": "clean" },
-        "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" },
-        
+        "lint": {
+            "extends": "lint"
+        },
+        "lint:full": {
+            "extends": "lint:full"
+        },
+        "validate": {
+            "extends": "validate"
+        },
+        "validate:full": {
+            "extends": "validate:full"
+        },
+        "audit": {
+            "extends": "audit"
+        },
+        "audit:full": {
+            "extends": "audit:full"
+        },
+        "clean": {
+            "extends": "clean"
+        },
+        "clean:dist": {
+            "extends": "clean:dist"
+        },
+        "clean:cache": {
+            "extends": "clean:cache"
+        },
         "test": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
@@ -57,44 +71,9 @@
             "options": {
                 "configFile": "libs/shared/vitest.coverage.config.ts",
                 "reporters": "default"
-            }
+            },
+            "dependsOn": ["^test"]
         }
-        
     },
     "tags": []
 }
-
-// "verify:dist:hash": {
-//     "executor": "nx:run-commands",
-//     "options": {
-//         "command": "node ../../scripts/verify-dist-hash.cjs",
-//         "cwd": "libs/shared"
-//     }
-// },
-// "build:with-verify": {
-//     "executor": "nx:run-commands",
-//     "options": {
-//         "commands": ["nx run @fux/shared:build", "nx run @fux/shared:verify:dist:hash"]
-//     }
-// },
-
-// "test": { //>
-//     "extends": "vite:test",
-//     "dependsOn": ["^build"],
-// }, //<
-// "test:full": { //>
-//     "extends": "vite:test",
-//     "dependsOn": ["^test"],
-// } //<
-        
-// "test": { //>
-//     "executor": "@nx/vite:test",
-//     "outputs": ["{options.reportsDirectory}"],
-//     "options": {
-//         "configFile": "libs/shared/vitest.config.ts",
-//         "reporters": "default"
-//     }
-// } //<
-        
-// "test": { "extends": "test" },
-// "test:full": { "extends": "test:full" }

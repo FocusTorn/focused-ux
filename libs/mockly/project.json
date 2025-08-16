@@ -4,20 +4,15 @@
     "sourceRoot": "libs/mockly/src",
     "projectType": "library",
     "targets": {
-       
-        "build": { //>
+        "build": {
             "executor": "@nx/esbuild:esbuild",
-            "outputs": [
-                "{options.outputPath}"
-            ],
+            "outputs": ["{options.outputPath}"],
             "options": {
                 "main": "libs/mockly/src/index.ts",
                 "outputPath": "libs/mockly/dist",
                 "tsConfig": "libs/mockly/tsconfig.lib.json",
                 "platform": "node",
-                "format": [
-                    "esm"
-                ],
+                "format": ["esm"],
                 "bundle": false,
                 "sourcemap": true,
                 "target": "es2022",
@@ -25,35 +20,50 @@
                 "declarationRootDir": "libs/mockly/src",
                 "thirdParty": false,
                 "deleteOutputPath": true,
-                "external": [
-                    "vscode",
-                    "typescript",
-                    "awilix",
-                    "js-yaml"
-                ]
+                "external": ["vscode", "typescript", "awilix", "js-yaml"]
             }
-        }, //<
-       
-        "check-types": { "extends": "check-types" },
-        "lint": { "extends": "lint" },
-        "lint:full": { "extends": "lint:full" },
-        "validate": { "extends": "validate" },
-        "validate:full": { "extends": "validate:full" },
-        "audit": { "extends": "audit" },
-        "audit:full": { "extends": "audit:full" },
-        
-        "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" },
-        
-        "test": { //>
+        },
+        "check-types": {
+            "extends": "check-types"
+        },
+        "lint": {
+            "extends": "lint"
+        },
+        "lint:full": {
+            "extends": "lint:full"
+        },
+        "validate": {
+            "extends": "validate"
+        },
+        "validate:full": {
+            "extends": "validate:full"
+        },
+        "audit": {
+            "extends": "audit"
+        },
+        "audit:full": {
+            "extends": "audit:full"
+        },
+        "clean:dist": {
+            "extends": "clean:dist"
+        },
+        "clean:cache": {
+            "extends": "clean:cache"
+        },
+        "test": {
             "extends": "vite:test",
-            "dependsOn": ["^build"]
-        }, //<
-        "test:full": { //>
+            "dependsOn": ["^build"],
+            "options": {
+                "configFile": "libs/mockly/vitest.functional.config.ts"
+            }
+        },
+        "test:full": {
             "extends": "vite:test",
-            "dependsOn": ["^test"]
-        } //<
-    
+            "dependsOn": ["^test"],
+            "options": {
+                "configFile": "libs/mockly/vitest.coverage.config.ts"
+            }
+        }
     },
     "tags": []
 }

@@ -1,0 +1,347 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+## **File Organization**
+
+### **Project Structure**
+
+- **Packages:** Located in `packages/` directory
+- **Libraries:** Located in `libs/` directory
+- **Documentation:** Located in `docs/` directory
+- **Configuration:** Root-level configuration files (`.cursor/rules/`, `nx.json`, etc.)
+
+### **Documentation Standards**
+
+- **Actions Log:** Update `docs/Actions-Log.md` for successful implementations
+- **Testing Strategy:** Update `packages/note-hub/ext/__tests__/TESTING_STRATEGY.md` for test-related fixes
+- **Project Rules:** Keep project-specific rules in this file
+- **MANDATE – Post-Change Documentation:** After a correctly finalized implementation:
+    - Append a concise entry to `docs/Actions-Log.md` summarizing the change, outcomes, and lessons
+    - If the change affects testing for a package, update that package's `__tests__/TESTING_STRATEGY.md` with the new guidance/examples
+    - Do this in the same session as the change; do not defer
+
+---
+
+## **Quality Assurance**
+
+### **Build Verification**
+
+- **Pre-Execution:** Always run `{alias} b` before testing to ensure clean builds
+- **Error Resolution:** Fix build errors before proceeding with other operations
+- **Cache Management:** Use `--skip-nx-cache` when troubleshooting build issues
+
+### **Test Execution**
+
+- **Full Test Suite:** Run complete test suites to ensure no regressions
+- **Test Isolation:** Ensure tests don't interfere with each other
+- **Mock Validation:** Verify that mocks properly simulate the behavior they're replacing
+- **Lanes:**
+    - `t` runs project tests (no coverage)
+    - `tc`/`tcw` run tests with coverage; do not enable coverage in generic test targets
+    - Build-before-test is enabled via Nx target defaults and uses cache; avoid `-s` unless diagnosing cache issues
+
+---
+
+## **Project Requirements (Static)**
+
+The following principles must ALWAYS be followed as they are part of the project's foundational structure:
+
+- **VSCode API Import Rules:** Value imports for VSCode APIs and Node must come only from shared adapters
+    - Direct VSCode imports should be limited to types only, to keep code decoupled and allow complete injection.
+
+### Shared Adapter Change Protocol
+
+- When modifying shared adapters or VSCode-coupled shims in `libs/shared`, you MUST:
+    - Identify and update all consumers (imports, DI wiring) in affected packages within the same session
+    - Verify TypeScript path mappings for `@fux/shared` across projects to keep type checks green
+    - Run `nh tsc` and the auditor afterwards; fix any fallout immediately
+
+### Auditor Behavior & Ergonomics
+
+- Canonical tsconfig enforcement must remain minimal; do not enforce non-essential keys (e.g., `rootDir`) unless required
+- Provide a warn-only mode for auditor tasks to surface issues without failing developer workflows when appropriate
+
+---
+
+## **Command Execution & Tooling**
+
+### **Build Tool Preferences**
+
+- Use `--skip-nx-cache` for troubleshooting Nx build issues unless otherwise specified
+- Prefer `pnpm` over `npm` for all package management tasks
+
+### **PowerShell Profile and Aliases Setup**
+
+- **CRITICAL**: At the beginning of each chat session, the AI assistant MUST follow these step-by-step instructions: 3. **Use Custom Aliases**: When a command has a custom alias configured in `.vscode/shell/pnpm_aliases.json`, use the custom alias instead of the native command, unless the native command is referenced in the posed question or request 4. **Testing Protocol**: When testing the alias file itself, run the native command first, followed by the alias command to compare behavior:
+
+                      ```powershell
+                      # Example: Test both native and alias versions
+                      pnpm run build --filter=ghost-writer
+                      gw b
+                      ```
+
+    5. **FAILURE RECOVERY**: If profile loading fails, immediately halt all operations and report the failure before proceeding with any other tasks
+
+#### PowerShell Alias Scripting Hygiene
+
+- Generate alias functions using single-quoted here-strings; substitute dynamic values via placeholder replacement
+- Avoid backtick-escaping `$` in here-strings; prefer placeholders and `.Replace()` before creating script blocks
+
+---
+
+### **Terminal Defaults (PowerShell)**
+
+- **CRITICAL – Preloaded Environment:** The integrated terminal runs PowerShell with the workspace profile automatically loaded. The `aka` CLI and all defined aliases are immediately available. Do not manually source the profile or activate aliases.
+- **Command Semantics:** This is a PowerShell environment. Avoid Unix-only patterns like piping to `cat`. Use native PowerShell constructs instead (e.g., no `| cat`).
+
+---
+
+## **Workflow Adherence Requirements**
+
+### **Nx MCP Priority**
+
+- **MANDATORY:** ALWAYS use Nx MCP tools for workspace assessment before any other approach
+- **Workflow Discovery:** Before executing commands, consult project-specific workflow documentation
+- **Pattern Consistency:** Follow the established command patterns and aliases for the current project
+
+### **Aka Alias Mandate**
+
+- **MANDATORY:** ALWAYS use aka package aliases for all project operations, never fall back to npm/nx directly
+- **Deviation Prevention:** Any deviation from established workflow patterns constitutes a critical failure
+- **Pre-Execution Check:** Before executing any command, verify that the appropriate aka alias exists and use it
+- **Fallback Prohibition:** Never use native nx/npm commands when aka aliases are available
+
+### **Universal Principles**
+
+- **Established Patterns:** Respect and follow the established command patterns and workflows for each project
+- **Workflow Documentation:** Always consult project-specific workflow documentation before executing commands
+- **Consistency Maintenance:** Maintain consistency with the established project workflow patterns
+
+---
+
+## **Documentation Consistency**
+
+### **MANDATORY PRE-IMPLEMENTATION CHECK**
+
+Before making ANY architectural decision (especially regarding imports, dependencies, or testing strategies), the AI MUST:
+
+1. Read the relevant sections of SOP.md and global-testing-strategy.md
+2. Verify the decision aligns with documented patterns
+3. If documentation is unclear, STOP and ask for clarification
+4. Never proceed on assumptions - only on documented evidence
+
+### **ARCHITECTURAL DECISION PROTOCOL**
+
+Any deviation from documented patterns constitutes a critical failure and must trigger the deviation remediation protocol.
+
+### **Global Strategy Deviation Protocol**
+
+If the AI believes a global strategy is not applicable, verification MUST be obtained from the user before deviating. The AI cannot unilaterally decide to deviate from established global patterns without explicit user approval.
+
+---
+
+## **Testing & Quality Assurance Protocols**
+
+### **Test Skipping Prohibition**
+
+- **FORBIDDEN:** Never skip tests without fixing root causes; this creates technical debt and masks real problems
+- **Root Cause Investigation:** When tests fail, investigate the integration layer first, not the test logic
+- **Edge Case Value:** Edge case tests are valuable as they often reveal integration issues affecting core functionality
+
+### **Mock Integration Investigation**
+
+- **Integration Layer Priority:** When mocks don't work, investigate the integration layer first, not the test logic
+- **Mock Service Validation:** Verify that mock services properly integrate with the systems they're mocking
+- **Cross-Layer Consistency:** Ensure path normalization and other critical behaviors are consistent across all layers (mocks, tests, and actual code)
+
+---
+
+## **AI Interaction & Operational Principles**
+
+### **General Operational Principles**
+
+- **Autonomous Operation:** Always proceed with the next logical troubleshooting or generation step unless the user explicitly requests confirmation
+- **Confirmation Handling:** Only ask for confirmation before running commands if the user has not opted out
+- **Proactive Action:** Never ask for confirmation or offer to apply a change for safe, non-destructive actions or debugging steps. Always proceed and apply the change automatically, then summarize the action after
+- **Language Standards:** Do not include language such as "Would you like me to..." or "If you want, I can..." for safe, non-destructive actions. Instead, take the action and inform the user
+- **Immediate Implementation:** When a root cause and solution are clear, proceed to implement the solution immediately and summarize the action taken after the change
+
+### **Explicit End-Goal Execution (No-Confirmation Mode)**
+
+- **Directive:** When the user states an explicit end goal (e.g., "add this feature and write tests that go green" or "achieve 100% across all 4 coverage columns"), proceed continuously toward that goal without further confirmation prompts.
+- **Scope:** This applies to features, refactors, tests, coverage targets, lint/type-check goals, and CI fixes.
+- **Pause Conditions:** Only pause to ask for input if a true blocking ambiguity remains after reasonable local research, or if an irreversible/destructive action is required.
+- **Completion:** Continue iterating (code, tests, config) and verifying (builds/tests) until the explicit end condition is satisfied.
+
+### **Communication Protocols**
+
+- **Direct Implementation:** Do not display "Example fix" or similar code blocks; instead, directly apply the fix when a root cause is found, unless explicitly asked for an example or preview
+- **Code Snippet Usage:** Only provide code snippets or manual instructions if the user requests to see them, or if the change is potentially destructive
+- **Question Management:** Avoid open-ended confirmation questions unless required for safety
+- **Action Summarization:** Summarize findings before taking destructive actions
+
+### **Safety Protocols**
+
+- **Data Protection:** Never run commands that delete user data without explicit confirmation
+- **Intent Clarification:** If unsure about a user's intent, ask for clarification
+
+---
+
+## **Guideline Deviation Remediation Protocol**
+
+### **General Protocol**
+
+- **Directive**: When a deviation from the guidelines is identified, the cause of the deviation MUST be corrected before continuing on to correct the code in question. The following process MUST be followed reflexively.
+    1.  **Assess Error Source:** The source of the error MUST be assessed.
+        - If the error was introduced by the AI in the current context, the subsequent steps in this protocol MUST be followed.
+        - If the error was pre-existing in the user's code, the error MUST be addressed using standard correction procedures, and this deviation protocol does not apply.
+
+    2.  **Acknowledge Error:** The deviation or AI-introduced error MUST be clearly acknowledged, and what was done incorrectly MUST be detailed.
+    3.  **Propose Guideline Improvement:** A guideline gap MUST be assumed. The ambiguity or omission that contributed to the error MUST be identified. Concrete changes to the relevant guideline document MUST be proposed. Strengthening positive rules MUST be prioritized over adding negative clarifications.
+    4.  **Present Guideline Change:** The proposed guideline improvement MUST be presented in a complete, formatted code block as per the breadcrumb rules.
+    5.  **MANDATORY DOCTRINE MODIFICATION:** The proposed guideline improvement MUST be immediately applied to the applicable doctrine document (SOP.md, FocusedUX-Operational-Doctrine.mdc, or Universal-Operational-Doctrine.mdc) before proceeding with any other actions. This step is NON-NEGOTIABLE.
+    6.  **Correct the Code:** The AI's next action depends on how the deviation was identified.
+    - **User-Initiated Deviation Keyword:** If the user's prompt that triggered this protocol began with the keyword `deviation:` (case-insensitive), the AI MUST ask for confirmation before presenting the corrected code.
+    - **All Other Cases:** In all other cases (e.g., self-correction, user pointing out an error without the keyword), the AI MUST immediately proceed to present the corrected code in the same response, following the guideline change.
+
+    - **Directive**: A failure to follow this process is itself a deviation that must be addressed in the next turn by proposing an improvement to this section.
+
+#### **Integrity of Acknowledgement**
+
+- **Directive**: All acknowledgements of error MUST be based exclusively on the facts of the interaction and the provided context. The AI MUST NEVER fabricate or hallucinate justifications for its errors, such as referencing files, rules, or context that was not provided. A violation of this rule constitutes a critical failure.
+
+### **Correction Persistence**
+
+- **Directive**: When a code correction is identified and fixed, the correction MUST be persistently reflected in the internal working model of that file for all subsequent operations.
+- **Directive**: If a previously fixed error is re-introduced, this lapse MUST be acknowledged as a deviation from this rule and the fix MUST be re-applied.
+
+### **Completeness of Correction**
+
+- **Directive**: When presenting a code correction, the AI MUST ensure that ALL related changes required to fix the identified issue are included in the response.
+- **Directive**: A partial or incomplete fix is a deviation. Before finalizing the response, the AI MUST perform a self-audit to confirm that the proposed changes constitute a complete solution to the problem described. This includes reverting all incorrect modifications made in previous turns if the root cause was misdiagnosed.
+
+### **Action Completeness Verification**
+
+- **Directive**: When an action requires operating on a set of files (e.g., reverting changes, applying a pattern), the AI MUST perform a final verification step before presenting the response.
+- **Directive**: This verification MUST involve explicitly listing all files that were intended to be part of the operation and comparing that list against the files actually included in the drafted response. Any discrepancy MUST be corrected. This is to prevent incomplete or partial application of a required action.
+
+### **Prohibition of Error Re-Introduction**
+
+- **Directive**: An error or anti-pattern that has been previously identified and for which a correction has been proposed MUST NEVER be re-introduced in a subsequent response within the same session.
+- **Directive**: Before proposing a solution, the AI MUST perform a self-correction check to ensure the proposed changes do not re-introduce a previously failed state. A re-introduction of a known error is a critical failure of the Core Operating Loop.
+
+### **Abstracted Error Pattern Recognition**
+
+- **Directive**: When a logical error is identified and corrected, the AI MUST attempt to abstract the anti-pattern and its solution. Before generating new code that involves a similar logical structure, the AI MUST perform a self-check to ensure it is not re-introducing the previously identified anti-pattern, even if the specific variable or function names are different. A failure to apply a known-correct pattern to a new but structurally identical problem is a deviation.
+
+### **Holistic Configuration Auditing**
+
+- **Directive**: When a persistent error is identified as originating from workspace configuration (e.g., build failures, sync errors, module resolution issues), the AI **MUST** perform a holistic audit of all relevant top-level configuration files in a single, unified response. This includes, but is not limited to, `nx.json`, the root `tsconfig.json`, and the package manager's workspace file (e.g., `pnpm-workspace.yaml`). The goal is to ensure that project discovery, dependencies, and build settings are consistent across all files and reflect the actual state of the workspace. Partial or sequential fixes to configuration files in this scenario are a deviation.
+
+### **Holistic Refactoring Verification**
+
+- **Directive**: When a refactoring action involves changing a fundamental pattern (e.g., switching from explicit to inferred build targets), the change **MUST** be applied consistently to **all** projects that follow that pattern.
+- **Rationale**: Applying a new architectural pattern to only one of several similar projects will lead to an inconsistent and broken workspace. A holistic audit **MUST** be performed to identify all affected projects and ensure they are all updated in a single, atomic operation. A partial refactoring is a deviation.
+
+---
+
+> **Note:** This document contains FocusedUX-specific operational guidelines that complement the Universal Operational Doctrine. Always refer to the Universal Operational Doctrine for universal AI behavior principles, and use this document for FocusedUX-specific workflows, conventions, and architectural rules.
+
+#### 4.1.11. Mock Setup Pattern Enforcement
+
+**CRITICAL: Mock Instance Management**
+
+When setting up mocks for testing, the following pattern MUST be followed to ensure mocks actually work:
+
+**CORRECT Pattern:**
+
+```typescript
+// 1. Create mock instances FIRST
+const mockExtensionContextAdapter = {
+    subscriptions: [],
+    push: vi.fn(),
+}
+
+// 2. THEN set up vi.mock to return those instances
+vi.mock('@fux/shared', () => ({
+    ExtensionContextAdapter: vi.fn().mockImplementation(() => mockExtensionContextAdapter),
+    ExtensionAPIAdapter: vi.fn().mockImplementation(() => mockExtensionAPIAdapter),
+}))
+```
+
+**INCORRECT Pattern (DO NOT USE):**
+
+```typescript
+// This will NOT work - mocks won't return the intended instances
+vi.mock('@fux/shared', () => ({
+    ExtensionContextAdapter: vi.fn(),
+    ExtensionAPIAdapter: vi.fn(),
+}))
+
+// Later trying to set implementations won't work properly
+vi.mocked(ExtensionContextAdapter).mockImplementation(() => mockInstance)
+```
+
+**Why This Matters:**
+
+- Mock instances must be created before `vi.mock` calls
+- `vi.mock` must return functions that immediately return the intended instances
+- Attempting to modify mocks after `vi.mock` calls often fails silently
+- This pattern is essential for the DI architecture we've established
+
+#### 4.1.12. Test Mocking Anti-Patterns
+
+**FORBIDDEN: Common Mock Setup Mistakes**
+
+1. **Post-Mock Modification**: Never try to modify mock implementations after `vi.mock` calls
+2. **Instance Disconnection**: Never create mock instances that aren't directly returned by `vi.mock`
+3. **Silent Mock Failures**: Always verify that mocks are actually working, not just not throwing errors
+4. **Complex Mock Chains**: Avoid deeply nested mock setups that are hard to debug
+
+**Required Verification Pattern:**
+
+```typescript
+// After setting up mocks, ALWAYS verify they work
+const { ExtensionContextAdapter } = await import('@fux/shared')
+const instance = new ExtensionContextAdapter()
+expect(instance).toBe(mockExtensionContextAdapter) // This should pass
+```
+
+**Failure Response:**
+If mock verification fails, the test setup MUST be corrected before proceeding.
+Mock failures indicate architectural problems that will cause test instability.
+
+#### 4.1.13. Mock Verification Protocol
+
+**MANDATORY: Mock Verification Before Test Execution**
+
+Before running any test that uses mocks, the following verification MUST be performed:
+
+1. **Instance Verification**: Verify that mocked classes return the expected instances
+2. **Method Verification**: Verify that mocked methods are actually callable
+3. **State Verification**: Verify that mock state is properly managed between tests
+4. **Integration Verification**: Verify that mocks integrate correctly with the system under test
+
+**Verification Pattern:**
+
+```typescript
+beforeEach(async () => {
+    // Set up mocks
+    setupMocks()
+
+    // VERIFY mocks are working
+    const { ExtensionContextAdapter } = await import('@fux/shared')
+    const instance = new ExtensionContextAdapter()
+    expect(instance).toBe(mockExtensionContextAdapter)
+    expect(typeof instance.push).toBe('function')
+})
+```
+
+**Failure Response:**
+If mock verification fails, the test setup MUST be corrected before proceeding.
+Mock failures indicate architectural problems that will cause test instability.
+
+> **Note:** This document contains FocusedUX-specific operational guidelines that complement the Universal Operational Doctrine. Always refer to the Universal Operational Doctrine for universal AI behavior principles, and use this document for FocusedUX-specific workflows, conventions, and architectural rules.

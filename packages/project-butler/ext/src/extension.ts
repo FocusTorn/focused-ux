@@ -33,10 +33,13 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
 			extensionAPI.registerCommand(constants.commands.hotswap, (uri?: Uri) => {
 				if (!uri) {
-					// We need to get the window adapter from the container to show error message
-					const windowAdapter = container.resolve('window')
-
-					windowAdapter.showErrorMessage('Hotswap command must be run from a VSIX file.')
+					// Use the container if available, otherwise fall back to console
+					if (container) {
+						const windowAdapter = container.resolve('window')
+						windowAdapter.showErrorMessage('Hotswap command must be run from a VSIX file.')
+					} else {
+						console.error('Hotswap command must be run from a VSIX file.')
+					}
 					return Promise.resolve()
 				}
 
@@ -52,11 +55,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
 	catch (error) {
 		console.error(`[${constants.extension.name}] Failed to activate:`, error)
 
-		// We need to get the window adapter from the container to show error message
+		// Try to show error message using container if available, otherwise fall back to console
 		if (container) {
-			const windowAdapter = container.resolve('window')
-
-			windowAdapter.showErrorMessage(`Failed to activate ${constants.extension.name}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+			try {
+				const windowAdapter = container.resolve('window')
+				windowAdapter.showErrorMessage(`Failed to activate ${constants.extension.name}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+			} catch (containerError) {
+				console.error(`[${constants.extension.name}] Failed to show error message:`, containerError)
+			}
+		} else {
+			console.error(`[${constants.extension.name}] Container creation failed, cannot show error message to user`)
 		}
 	}
 }

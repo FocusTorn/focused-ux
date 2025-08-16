@@ -126,6 +126,15 @@ export class Position implements vt.Position {
 		this.character = character
 	}
 
+	// Helper methods for min/max operations
+	static min(a: Position, b: Position): Position {
+		return a.isBefore(b) ? a : b
+	}
+
+	static max(a: Position, b: Position): Position {
+		return a.isAfter(b) ? a : b
+	}
+
 	isBefore(other: Position): boolean {
 		return this.line < other.line || (this.line === other.line && this.character < other.character)
 	}
@@ -237,15 +246,28 @@ export class Range implements vt.Range {
 	}
 
 	intersection(other: Range): Range | undefined {
-		const start = this.start.isAfter(other.start) ? this.start : other.start
-		const end = this.end.isBefore(other.end) ? this.end : other.end
+		// Find the later start position
+		const start = Position.max(this.start, other.start)
+		
+		// Find the earlier end position
+		let end: Position
+		if (this.end.line < other.end.line) {
+			end = this.end
+		} else if (this.end.line > other.end.line) {
+			end = other.end
+		} else {
+			// Same line, find the earlier character position
+			end = this.end.character <= other.end.character ? this.end : other.end
+		}
 
+		// Check if the ranges actually overlap
 		return start.isBeforeOrEqual(end) ? new Range(start, end) : undefined
 	}
 
 	union(other: Range): Range {
-		const start = this.start.isBefore(other.start) ? this.start : other.start
-		const end = this.end.isAfter(other.end) ? this.end : other.end
+		// Find the earlier start position and later end position
+		const start = Position.min(this.start, other.start)
+		const end = Position.max(this.end, other.end)
 
 		return new Range(start, end)
 	}

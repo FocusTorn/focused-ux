@@ -708,7 +708,76 @@ class LocalMockUriFactory implements IUriFactory {
 UriAdapter.setFactory(new LocalMockUriFactory())
 ```
 
-###### END: @fux/shared (END) <!-- Close Fold -->
+#### 4.1.10. Console Output Control
+
+**Standardized Console Output Management:**
+
+All packages in the FocusedUX workspace implement consistent console output control during tests to ensure stability and reduce noise.
+
+**Environment Variable Control:**
+
+The primary way to control console output is through the `ENABLE_TEST_CONSOLE` environment variable:
+
+```bash
+# PowerShell - Enable console output for debugging
+$env:ENABLE_TEST_CONSOLE="true"; nx test <project-name>
+
+# Or set globally for the session
+$env:ENABLE_TEST_CONSOLE="true"
+nx test <project-name>
+```
+
+**Setup File Pattern:**
+
+Each package's test setup file (`__tests__/_setup.ts`) implements this pattern:
+
+```typescript
+import { vi } from 'vitest'
+
+// Console output configuration for tests
+const ENABLE_CONSOLE_OUTPUT = process.env.ENABLE_TEST_CONSOLE === 'true'
+
+if (ENABLE_CONSOLE_OUTPUT) {
+	// Enable console output for debugging
+	console.log('🔍 Test console output enabled - use ENABLE_TEST_CONSOLE=true to enable')
+}
+else {
+	// Non-Mockly: Console is not a VSCode API and Mockly does not shim it.
+	// We silence console by default to reduce noise and make assertions stable.
+	// Use ENABLE_TEST_CONSOLE=true to opt-in when debugging.
+	console.log = vi.fn()
+	console.info = vi.fn()
+	console.warn = vi.fn()
+	console.error = vi.fn()
+}
+
+// Export function to enable console output programmatically
+export function enableTestConsoleOutput() {
+	if (!ENABLE_CONSOLE_OUTPUT) {
+		// Restore original console methods
+		console.log = console.log || (() => {})
+		console.info = console.info || (() => {})
+		console.warn = console.warn || (() => {})
+		console.error = console.error || (() => {})
+		console.log('🔍 Test console output enabled programmatically')
+	}
+}
+```
+
+**Why Console Output is Silenced by Default:**
+
+1. **Test Stability**: Console output can make tests noisy and brittle
+2. **Performance**: Reducing I/O during test runs
+3. **Clean Assertions**: Tests should focus on behavior, not side effects
+4. **CI/CD Friendly**: Silent tests are easier to parse in automated environments
+
+**Best Practices:**
+
+- Use `ENABLE_TEST_CONSOLE=true` only when debugging specific test failures
+- Console output is for diagnostics, not test assertions
+- Mockly does not consume or intercept console output - it's transparent
+- Each package's test setup controls its own console behavior
+- Follow the established pattern for consistency across all packages
 
 ### 4.2. :: @fux/mockly <!-- Start Fold -->
 
@@ -748,6 +817,84 @@ UriAdapter.setFactory(new LocalMockUriFactory())
 - Isolation: reset internal state between tests if applicable.
 
 ###### END: @fux/mockly (END) <!-- Close Fold -->
+
+#### 4.1.14. Extension Package Testing Strategy
+
+**Extension Package Testing Requirements:**
+
+Extension packages have distinct testing needs from core packages:
+
+1. **DI Container Testing**: Test that DI containers are created and wired correctly
+2. **Command Registration Testing**: Verify that VSCode commands are registered with correct handlers
+3. **Error Handling Testing**: Test graceful degradation when services fail to initialize
+4. **Integration Testing**: Test the interaction between extension and core services
+
+**Mock Setup for Extensions:**
+```typescript
+// Extensions need to mock both shared adapters AND their own DI containers
+vi.mock('@fux/shared', () => ({
+    ExtensionContextAdapter: vi.fn().mockImplementation(() => mockExtensionContextAdapter),
+    ExtensionAPIAdapter: vi.fn().mockImplementation(() => mockExtensionAPIAdapter),
+}))
+
+vi.mock('../src/injection.js', () => ({
+    createDIContainer: vi.fn().mockResolvedValue(mockContainer),
+}))
+```
+
+**Critical Test Scenarios:**
+- Container creation success/failure
+- Command registration with correct handlers
+- Disposable management (subscriptions.push)
+- Error handling during activation
+- Service resolution from container
+
+**Common Extension Test Failures:**
+1. **Mock Setup Issues**: Mocks not returning intended instances
+2. **DI Container Mocking**: Container creation mocks not properly configured
+3. **Command Handler Testing**: Command registration verification failing
+4. **Error Path Testing**: Error handling scenarios not properly mocked
+
+#### 4.1.15. Test Debugging Guidelines
+
+**When Tests Fail Due to Mock Issues:**
+
+1. **Enable Console Output**: Use `ENABLE_TEST_CONSOLE=true` to see what's actually happening
+2. **Verify Mock Setup**: Check that mocks are returning the intended instances
+3. **Check Mock Calls**: Verify that mocked methods are actually being called
+4. **Isolate the Problem**: Run individual tests to identify which mock is failing
+
+**Debug Pattern:**
+```typescript
+// Add debug logging to understand what's happening
+console.log('Mock calls:', vi.mocked(mockMethod).mock.calls)
+console.log('Mock instance:', mockInstance)
+console.log('Actual instance:', actualInstance)
+```
+
+**Common Debug Scenarios:**
+- Mocks not being called (setup issue)
+- Mocks returning wrong instances (implementation issue)
+- Mock state not being reset (isolation issue)
+- Mock methods not being callable (interface issue)
+
+**Debug Checklist:**
+1. **Mock Instance Creation**: Are mock instances created before `vi.mock` calls?
+2. **Mock Return Values**: Are `vi.mock` calls returning the intended instances?
+3. **Mock Method Verification**: Are mocked methods actually callable?
+4. **Test Isolation**: Are mocks properly reset between tests?
+5. **Import Verification**: Are the mocked modules being imported correctly?
+
+**Debug Commands:**
+```bash
+# Enable console output for debugging
+$env:ENABLE_TEST_CONSOLE="true"; nx test <project-name>
+
+# Run specific test with verbose output
+nx test <project-name> -- --run <test-file> --reporter=verbose --grep="<test-name>"
+```
+
+###### END: @fux/shared (END) <!-- Close Fold -->
 
 ###### END: Libs Packages Strategy (Shared + Mockly) (END) <!-- Close Fold -->
 
@@ -1242,9 +1389,134 @@ pnpm test:full              # Uses vitest.coverage.config.ts
 
 ###### END: Aka Aliases & Test Commands (END) <!-- Close Fold -->
 
-## 9. :: Package-Specific Testing Deviations <!-- Start Fold -->
+## 9. :: Test Scaffolding Generator <!-- Start Fold -->
 
-### 9.1. :: When Global Strategy Doesn't Fit
+### 9.1. :: Overview
+
+The FocusedUX workspace includes a custom Nx generator (`test-scaffold`) that automatically creates consistent test directory structures for all package types. This generator ensures that all packages follow the established testing patterns and reduces the chance of deviations.
+
+### 9.2. :: Usage
+
+**Generate test structure for an existing package:**
+
+```bash
+# Scaffold tests for a core package
+nx g test-scaffold --project=@fux/project-butler-core --packageType=core
+
+# Scaffold tests for an extension package
+nx g test-scaffold --project=@fux/project-butler-ext --packageType=ext
+
+# Scaffold tests for a shared library
+nx g test-scaffold --project=@fux/shared --packageType=shared
+
+# Scaffold tests for a library package
+nx g test-scaffold --project=@fux/mockly --packageType=lib
+```
+
+**Generator Options:**
+
+- `--project`: The name of the project to add tests to (required)
+- `--packageType`: Type of package (core, ext, shared, lib) - defaults to "core"
+- `--includeHelpers`: Whether to include helpers.ts file (defaults to true)
+- `--includeVitestConfigs`: Whether to include vitest configs (defaults to true)
+
+### 9.3. :: Generated Structure
+
+**Core Package Structure:**
+
+```
+__tests__/
+├── _setup.ts              # Global test setup with Mockly and console control
+├── helpers.ts              # Common test utilities and mock setup functions
+├── README.md               # Documentation and usage examples
+├── services/               # Tests for service classes
+├── adapters/               # Tests for adapter classes
+└── coverage/               # Coverage-only tests (if applicable)
+```
+
+**Extension Package Structure:**
+
+```
+__tests__/
+├── setup.ts                # Global test setup with console control
+├── helpers.ts              # Common test utilities
+├── README.md               # Documentation and usage examples
+├── injection.test.ts       # DI container tests
+├── extension.test.ts       # Extension activation tests
+└── adapters/               # Local adapter tests
+```
+
+**Additional Files:**
+
+- `vitest.functional.config.ts` - Fast lane configuration
+- `vitest.coverage.config.ts` - Coverage configuration
+- `vitest.config.ts` - Default configuration (copy of functional)
+
+### 9.4. :: Generated Content
+
+**Setup Files:**
+
+- **Console Output Control**: Standardized pattern using `ENABLE_TEST_CONSOLE` environment variable
+- **Mockly Integration**: Automatic setup for core packages
+- **VSCode Mocking**: Extension-specific VSCode API mocking
+- **Helper Functions**: Common test utilities and mock setup functions
+
+**Configuration Files:**
+
+- **Vitest Configs**: Pre-configured for functional and coverage testing
+- **Path Aliases**: Workspace-specific import resolution
+- **Test Patterns**: Consistent include/exclude patterns
+
+**Documentation:**
+
+- **README.md**: Comprehensive usage guide and best practices
+- **Code Comments**: Inline documentation for all generated functions
+- **Examples**: Sample test patterns and usage scenarios
+
+### 9.5. :: Customization
+
+**After Generation:**
+
+1. **Update `helpers.ts`**: Customize helper functions for your specific service requirements
+2. **Add Service-Specific Mocks**: Create additional mock setup functions as needed
+3. **Extend Test Patterns**: Add new test utilities based on your testing needs
+4. **Update Documentation**: Modify README.md to reflect your specific use cases
+
+**Best Practices:**
+
+- Use the generated structure as a starting point, not a final solution
+- Customize helper functions to match your service dependencies
+- Add package-specific mock setup functions as needed
+- Maintain consistency with the established patterns
+
+### 9.6. :: Benefits
+
+**Consistency:**
+
+- All packages follow the same test structure
+- Standardized console output control
+- Consistent Mockly integration patterns
+- Uniform vitest configuration
+
+**Productivity:**
+
+- Rapid test setup for new packages
+- Reduced chance of architectural deviations
+- Pre-configured testing environment
+- Built-in best practices
+
+**Maintenance:**
+
+- Centralized test pattern management
+- Easy updates to testing standards
+- Consistent troubleshooting approaches
+- Standardized documentation
+
+###### END: Test Scaffolding Generator (END) <!-- Close Fold -->
+
+## 11. :: Package-Specific Testing Deviations <!-- Start Fold -->
+
+### 11.1. :: When Global Strategy Doesn't Fit
 
 While this document provides strong defaults, some packages may require deviations due to:
 
@@ -1253,7 +1525,7 @@ While this document provides strong defaults, some packages may require deviatio
 - **External tooling requirements** (e.g., specific test runners, frameworks)
 - **Legacy code patterns** that cannot be immediately refactored
 
-### 9.2. :: Deviation Documentation Requirements
+### 11.2. :: Deviation Documentation Requirements
 
 **If your package MUST deviate from global testing strategy:**
 
@@ -1263,7 +1535,7 @@ While this document provides strong defaults, some packages may require deviatio
 4. **Reference this section** as the source of global strategy
 5. **Update when possible** to align with global strategy
 
-### 9.3. :: Deviation Examples
+### 11.3. :: Deviation Examples
 
 **Example 1: Legacy Integration Testing**
 
@@ -1285,7 +1557,7 @@ While this document provides strong defaults, some packages may require deviatio
 **Reference:** See Global Testing Strategy section 2 for standard determinism rules
 ```
 
-### 9.4. :: Deviation Review Process
+### 11.4. :: Deviation Review Process
 
 **Before implementing a deviation:**
 
@@ -1298,7 +1570,7 @@ While this document provides strong defaults, some packages may require deviatio
 
 ###### END: Package-Specific Testing Deviations (END) <!-- Close Fold -->
 
-## 10. :: Non-Authoritative Guidance Notice <!-- Start Fold -->
+## 12. :: Non-Authoritative Guidance Notice <!-- Start Fold -->
 
 These strategies encode what worked, what did not, and the best practices we have converged on. They are strong defaults—not mandates. Testing is fluid and dynamic; adapt as needed for each package while honoring architectural rules (e.g., adapter boundaries, DI, determinism).
 

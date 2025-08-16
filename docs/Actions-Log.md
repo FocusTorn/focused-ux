@@ -883,4 +883,53 @@ resolve: {
 
 ---
 
+## 2024-12-19 - Critical Doctrine Additions for Mock Setup Patterns
+
+### **Context**
+
+Following the retrospective analysis of the project-butler refactoring session, identified critical gaps in our testing doctrine that were causing test failures due to incorrect mock setup patterns.
+
+### **Changes Made**
+
+#### **FocusedUX-Operational-Doctrine.mdc**
+
+- **Added Section 4.1.11**: Mock Setup Pattern Enforcement - Critical guidelines for ensuring mocks actually work
+- **Added Section 4.1.12**: Test Mocking Anti-Patterns - Forbidden practices that cause silent mock failures
+- **Added Section 4.1.13**: Mock Verification Protocol - Mandatory verification steps before test execution
+
+#### **Global-Testing-Strategy.md**
+
+- **Added Section 4.1.14**: Extension Package Testing Strategy - Specific testing requirements for extension packages
+- **Added Section 4.1.15**: Test Debugging Guidelines - Systematic approach to debugging mock-related test failures
+
+### **Key Patterns Established**
+
+1. **Mock Instance Management**: Mock instances must be created BEFORE `vi.mock` calls
+2. **Direct Return Pattern**: `vi.mock` must return functions that immediately return intended instances
+3. **Verification Protocol**: Mandatory mock verification before test execution
+4. **Debug Guidelines**: Systematic approach to identifying and resolving mock setup issues
+
+### **Why This Matters**
+
+- **Prevents Silent Failures**: Current test failures in project-butler were caused by these anti-patterns
+- **Establishes Consistency**: Clear guidelines for all future testing efforts
+- **Architectural Integrity**: Essential for the DI architecture we've established
+- **Knowledge Transfer**: Codifies lessons learned for future package refactoring
+
+### **Impact**
+
+- **Immediate**: Provides clear guidance for fixing current test failures
+- **Long-term**: Establishes patterns that will prevent similar issues in future packages
+- **Architectural**: Ensures testing patterns align with our DI container swapping approach
+- **Documentation**: Completes the testing strategy documentation with critical missing pieces
+
+### **Lessons Learned**
+
+1. **Mock Setup Order**: The order of mock creation vs. `vi.mock` calls is critical
+2. **Verification Necessity**: Mocks must be verified to actually work, not just not throw errors
+3. **Pattern Documentation**: Anti-patterns must be documented as clearly as correct patterns
+4. **Debug Methodology**: Systematic debugging approach is essential for complex mock setups
+
+---
+
 _This log serves as a living document of successful implementation patterns and solutions. Each entry should include actionable insights that can be applied to future development work. New entries are to be added to the top,_

@@ -25,12 +25,8 @@
         "useDefineForClassFields": true,
         "baseUrl": ".",
         "paths": {
-            "@fux/shared": [
-                "libs/shared/src/index.ts"
-            ],
-            "@fux/shared/*": [
-                "libs/shared/src/*"
-            ]
+            "@fux/shared": ["libs/shared/src/index.ts"],
+            "@fux/shared/*": ["libs/shared/src/*"]
         }
     }
 }

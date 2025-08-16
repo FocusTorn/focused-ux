@@ -56,6 +56,60 @@ nx g ./generators:ext --name=ghost-writer --displayName="F-UX: Ghost Writer" --d
 - TypeScript configuration with core package reference
 - Packaging and publishing targets
 
+### 4. Library Package Generator (`lib`)
+
+Creates a library package in the `libs/` directory for internal utilities and tools.
+
+**Usage:**
+
+```bash
+nx g ./generators:lib --name=utilities --description="Internal utility functions" --directory=libs
+```
+
+**Creates:**
+
+- Library with `build:core` target
+- TypeScript configuration for declaration generation
+- Proper package.json with exports
+
+### 5. Test Scaffold Generator (`test-scaffold`)
+
+Creates a comprehensive test directory structure with Mockly integration, vitest configuration, and helper utilities for VSCode extension testing.
+
+**Usage:**
+
+```bash
+# For a core package
+nx g ./generators:test-scaffold --project=my-feature --packageType=core
+
+# For an extension package
+nx g ./generators:test-scaffold --project=my-feature-ext --packageType=ext
+
+# For a shared library
+nx g ./generators:test-scaffold --project=utilities --packageType=shared
+```
+
+**Creates:**
+
+- `__tests__/` directory with comprehensive test structure
+- `_setup.ts` with Mockly integration and console control
+- `helpers.ts` with mock setup functions and utilities
+- `vitest.functional.config.ts` for functional testing
+- `vitest.coverage.config.ts` for coverage testing
+- Sample test files demonstrating usage patterns
+- Directory structure for services and adapters
+- Comprehensive README documentation
+- Automatic project.json updates with test targets
+
+**Features:**
+
+- **Mockly Integration**: Full integration with the Mockly VSCode API mocking library
+- **Comprehensive Mocks**: Pre-configured mocks for window, workspace, terminal, file system, and path utilities
+- **Test Organization**: Structured directories for services, adapters, and coverage tests
+- **Vitest Configuration**: Separate configs for functional and coverage testing
+- **Helper Utilities**: Functions for creating mock objects and setting up test environments
+- **Documentation**: Extensive README files with examples and best practices
+
 ## Generator Features
 
 ### ✅ **Automatic Configuration**
