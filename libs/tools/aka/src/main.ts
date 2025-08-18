@@ -1,8 +1,11 @@
+#!/usr/bin/env node
+
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import stripJsonComments from 'strip-json-comments'
 
 const __filename = fileURLToPath(import.meta.url)
 const ROOT = path.resolve(path.dirname(__filename), '../../../..')
@@ -21,7 +24,7 @@ function loadAliasConfig(): AliasConfig {
 	const p = path.join(ROOT, '.vscode', 'shell', 'pnpm_aliases.json')
 	const raw = fs.readFileSync(p, 'utf-8')
 
-	return JSON.parse(raw)
+	return JSON.parse(stripJsonComments(raw))
 }
 
 function resolveProjectForAlias(value: AliasValue): { project: string, full: boolean } {
@@ -102,6 +105,53 @@ function normalizeFullSemantics(isFull: boolean, target: string): string {
 
 	return map[target] ?? target
 }
+
+function injectVitestConfig(project: string, target: string, args: string[]): string[] {
+	// Only inject config for test commands
+	if (!target.startsWith('test')) {
+		return args
+	}
+
+	// Check if coverage is requested
+	const hasCoverage = args.some(arg => 
+		arg === '--coverage' || 
+		arg.startsWith('--coverage=') ||
+		arg === '-c' ||
+		arg === '--cov'
+	)
+
+	// Determine which config file to use
+	const configFile = hasCoverage ? 'vitest.coverage.config.ts' : 'vitest.functional.config.ts'
+	
+	// Map project names to their directory paths
+	const projectPaths: Record<string, string> = {
+		'@fux/shared': 'libs/shared',
+		'@fux/mockly': 'libs/mockly',
+		'@fux/project-butler-core': 'packages/project-butler/core',
+		'@fux/project-butler-ext': 'packages/project-butler/ext',
+	}
+
+	const projectPath = projectPaths[project]
+	if (!projectPath) {
+		return args
+	}
+
+	const configPath = path.join(ROOT, projectPath, configFile)
+
+	// Verify the config file exists
+	if (!fs.existsSync(configPath)) {
+		console.warn(`Warning: Vitest config file not found: ${configPath}`)
+		return args
+	}
+
+	// Use relative path from workspace root for Nx
+	const relativeConfigPath = path.relative(ROOT, configPath)
+	
+	// Inject the config file argument
+	return ['--configFile', relativeConfigPath, ...args]
+}
+
+
 
 function runNx(argv: string[]): number {
 	if (process.env.AKA_ECHO === '1') {
@@ -188,6 +238,7 @@ function main() {
 				process.env.AKA_ECHO = previousEcho
 			}
 		}
+
 		process.exit(code)
 	}
 
@@ -213,6 +264,9 @@ function main() {
 
 	const target = args[0]
 
+	// Inject Vitest config if needed
+	const injectedArgs = injectVitestConfig(project, target, flagArgs)
+
 	// Default single invocation
 	const previousEcho = process.env.AKA_ECHO
 
@@ -220,7 +274,7 @@ function main() {
 		process.env.AKA_ECHO = '1'
 	}
 
-	const rc = runNx([target, project, ...flagArgs, ...restArgs])
+	const rc = runNx([target, project, ...injectedArgs, ...restArgs])
 
 	// Restore echo environment
 	if (akaEchoEnabled) {

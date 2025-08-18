@@ -83,24 +83,24 @@
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
 
-        "test": { //>
+        "test": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["^build"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "reporters": "default"
-            }
-        }, //<
-        "test:full": { //>
+            "dependsOn": ["^build"]
+
+        },
+        
+        "test:full": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["^test"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "reporters": "default"
-            }
-        } //<
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ]
+        }
 
     },
     "tags": ["ext"]

@@ -16,6 +16,11 @@ alwaysApply: true
 ### **Documentation Standards**
 
 - **Actions Log:** Update `docs/Actions-Log.md` for successful implementations
+- **Actions Log Entry Gating:** Only add an Actions Log entry when one of the following is true:
+    - The `retro` command has been issued for the session
+    - It has been explicitly stated that the issue is resolved
+    - There is an explicit request to add an Actions Log entry
+- **Actions Log Failure Documentation:** MANDATORY - Every Actions Log entry MUST include a "What Was Tried and Failed" section documenting all failed attempts, misdiagnoses, and incorrect approaches taken during problem-solving
 - **Testing Strategy:** Update `packages/note-hub/ext/__tests__/TESTING_STRATEGY.md` for test-related fixes
 - **Project Rules:** Keep project-specific rules in this file
 - **MANDATE – Post-Change Documentation:** After a correctly finalized implementation:
@@ -77,11 +82,11 @@ The following principles must ALWAYS be followed as they are part of the project
 
 - **CRITICAL**: At the beginning of each chat session, the AI assistant MUST follow these step-by-step instructions: 3. **Use Custom Aliases**: When a command has a custom alias configured in `.vscode/shell/pnpm_aliases.json`, use the custom alias instead of the native command, unless the native command is referenced in the posed question or request 4. **Testing Protocol**: When testing the alias file itself, run the native command first, followed by the alias command to compare behavior:
 
-                      ```powershell
-                      # Example: Test both native and alias versions
-                      pnpm run build --filter=ghost-writer
-                      gw b
-                      ```
+                              ```powershell
+                              # Example: Test both native and alias versions
+                              pnpm run build --filter=ghost-writer
+                              gw b
+                              ```
 
     5. **FAILURE RECOVERY**: If profile loading fails, immediately halt all operations and report the failure before proceeding with any other tasks
 
@@ -156,6 +161,14 @@ If the AI believes a global strategy is not applicable, verification MUST be obt
 - **Integration Layer Priority:** When mocks don't work, investigate the integration layer first, not the test logic
 - **Mock Service Validation:** Verify that mock services properly integrate with the systems they're mocking
 - **Cross-Layer Consistency:** Ensure path normalization and other critical behaviors are consistent across all layers (mocks, tests, and actual code)
+
+### **Vitest Output Visibility Protocol**
+
+- **Explicit Reporters**: Always set `reporters: ['default']` and `silent: false` in per‑package Vitest configs to ensure visible output locally and in CI.
+- **Correct Root**: When using relative `include` globs, set `root: __dirname` so test discovery resolves from the package directory.
+- **Cache‑Aware Verification**: To validate that tests actually execute, run aliases with cache disabled and verbose output (e.g., `t -s --verbose`, `tc -s --verbose`).
+- **Lane‑Aware Includes**: When using dynamic includes tied to coverage flags, verify functional vs coverage lanes collect the intended files.
+- **Config over CLI**: Prefer configuration for stable output across environments; use CLI passthrough for one‑off diagnostics only.
 
 ---
 

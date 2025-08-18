@@ -1,15 +1,15 @@
-import * as vscode from 'vscode'
+import { EventEmitter } from 'vscode'
 import type { IEventEmitter } from '../../_interfaces/IVSCode.js'
 
 export class EventEmitterAdapter<T = any> implements IEventEmitter<T> {
 
-	private emitter: vscode.EventEmitter<T>
+	private emitter: EventEmitter<T>
 
 	constructor() {
-		this.emitter = new vscode.EventEmitter<T>()
+		this.emitter = new EventEmitter<T>()
 	}
 
-	get event(): vscode.Event<T> {
+	get event(): any {
 		return this.emitter.event
 	}
 
@@ -21,4 +21,10 @@ export class EventEmitterAdapter<T = any> implements IEventEmitter<T> {
 		this.emitter.dispose()
 	}
 
+	// Factory method to create from VSCode EventEmitter
+	static fromVSCode<T>(vscodeEmitter: EventEmitter<T>): EventEmitterAdapter<T> {
+		const adapter = new EventEmitterAdapter<T>()
+		adapter.emitter = vscodeEmitter
+		return adapter
+	}
 }

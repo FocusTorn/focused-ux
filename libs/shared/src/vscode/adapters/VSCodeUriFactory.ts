@@ -1,4 +1,4 @@
-import * as vscode from 'vscode'
+import { Uri } from 'vscode'
 import type { IUri } from '../../_interfaces/IVSCode.js'
 import type { IUriFactory } from '../../_interfaces/IUriFactory.js'
 import { UriAdapter } from './Uri.adapter.js'
@@ -12,21 +12,12 @@ export class VSCodeUriFactory implements IUriFactory {
 		if (!path || typeof path !== 'string' || path.trim() === '') {
 			console.warn('[VSCodeUriFactory] Invalid path provided to file():', path)
 			// Return a fallback URI to prevent crashes
-			return new UriAdapter(vscode.Uri.file('/invalid-path'))
+			return new UriAdapter(Uri.file('/invalid-path'))
 		}
 		
-		try {
-			// (debug logs removed)
+		const vscodeUri = Uri.file(path)
 
-			const vscodeUri = vscode.Uri.file(path)
-
-			// (debug logs removed)
-			return new UriAdapter(vscodeUri)
-		}
-		catch (error) {
-			// (error logs kept as thrown error)
-			throw error
-		}
+		return new UriAdapter(vscodeUri)
 	}
 
 	create(uri: any): IUri {
@@ -43,7 +34,7 @@ export class VSCodeUriFactory implements IUriFactory {
 			// (warn removed)
 		}
 
-		return new UriAdapter(vscode.Uri.joinPath(vscodeBase, ...validPaths))
+		return new UriAdapter(Uri.joinPath(vscodeBase, ...validPaths))
 	}
 
 	dirname(uri: IUri): IUri {
@@ -53,10 +44,10 @@ export class VSCodeUriFactory implements IUriFactory {
 		if (!vscodeUri || !vscodeUri.path) {
 			// (warn removed)
 			// Return a fallback URI to prevent crashes
-			return new UriAdapter(vscode.Uri.file('/'))
+			return new UriAdapter(Uri.file('/'))
 		}
 
-		return new UriAdapter(vscode.Uri.joinPath(vscodeUri, '..'))
+		return new UriAdapter(Uri.joinPath(vscodeUri, '..'))
 	}
 
 }

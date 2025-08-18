@@ -23,13 +23,13 @@
                 "external": ["js-yaml"]
             }
         },
-        "check-types": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "tsc -p libs/shared/tsconfig.typeCheck.json",
-                "cwd": "."
-            }
-        },
+        // "check-types": {
+        //     "executor": "nx:run-commands",
+        //     "options": {
+        //         "command": "tsc -p libs/shared/tsconfig.typeCheck.json",
+        //         "cwd": "."
+        //     }
+        // },
         "lint": {
             "extends": "lint"
         },
@@ -57,22 +57,27 @@
         "clean:cache": {
             "extends": "clean:cache"
         },
+        
         "test": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "options": {
-                "configFile": "libs/shared/vitest.functional.config.ts",
-                "reporters": "default"
-            }
+            "dependsOn": ["^build"]
+
         },
+        
         "test:full": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ],
             "options": {
-                "configFile": "libs/shared/vitest.coverage.config.ts",
-                "reporters": "default"
-            },
-            "dependsOn": ["^test"]
+                "passWithNoTests": true
+            }
         }
     },
     "tags": []

@@ -1,10 +1,9 @@
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-	// Shared alias to VS Code shim for all projects
 	test: {
 		projects: [
-			{ root: 'libs/shared' },
+			{ root: 'libs/shared/vitest.config.ts' },
 			{ root: 'libs/mockly' },
 			{ root: 'packages/project-butler/core' },
 			{ root: 'packages/project-butler/ext' },

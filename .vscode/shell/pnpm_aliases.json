@@ -4,42 +4,55 @@
         "p": "package",
         "pd": "package:dev",
         "pub": "publish",
+
         "l": "lint",
         "lf": "lint:full",
+
         "tsc": "check-types",
+
         "v": "validate",
-        "t": "test",
-        "tw": "test --watch",
-        "tf": "test:full",
-        "tfw": "test:full --watch",
-        "tc": "test --coverage",
-        "tch": "test --coverage --reporter=html",
+
+        // Test aliases
+        "t": "test", // Run functional tests for target package only
+        "tw": "test --watch", // Run functional tests with watch mode
+        "tc": "test --coverage", // Run coverage tests for target package only
+        
+        // Test Full aliases (full dependency chain)
+        "tf": "test:full", // Run functional tests for target package AND all dependencies (full chain)
+        "tfw": "test:full --watch", // Run full chain tests with watch mode
+        "tfc": "test:full --coverage", // Run coverage tests for target package AND all dependencies (full chain with coverage)
+
+        // Clean aliases
         "c": "clean",
         "cc": "clean:cache",
         "cd": "clean:dist",
+        
+        // Audit aliases
         "a": "audit",
+        
         "s": "status",
         "o": "optimize",
         "m": "monitor"
     },
 
     "expandables": {
-        "f": "fix",
-        "s": "skip-nx-cache",
-        "v": "verbose",
-        "d": "debug",
+        "f": "fix", // Enable auto-fix for linting
+        "s": "skip-nx-cache", // Skip Nx cache (useful for troubleshooting)
+        "v": "verbose", // Enable verbose output
+        "d": "debug", // Enable debug output
         
-        "watch": "watch",
+        "watch": "watch", // Enable watch mode
         
-        "stream": "output-style=stream",
-        "echo": "aka-echo"
+        "stream": "output-style=stream", // Use streaming output style
+        "echo": "aka-echo" // Echo the resolved command without executing
     },
     
     "packages": {
+        // Context Cherry Picker package aliases
         "ccp": {
             "name": "context-cherry-picker",
             "suffix": "ext",
-            "full": true
+            "full": true // This package runs full dependency chain by default
         },
         "ccpc": {
             "name": "context-cherry-picker",
@@ -50,10 +63,11 @@
             "suffix": "ext"
         },
         
+        // Dynamicons package aliases
         "dc": {
             "name": "dynamicons",
             "suffix": "ext",
-            "full": true
+            "full": true // This package runs full dependency chain by default
         },
         "dcc": {
             "name": "dynamicons",
@@ -64,10 +78,11 @@
             "suffix": "ext"
         },
 
+        // Ghost Writer package aliases
         "gw": {
             "name": "ghost-writer",
             "suffix": "ext",
-            "full": true
+            "full": true // This package runs full dependency chain by default
         },
         "gwc": {
             "name": "ghost-writer",
@@ -78,10 +93,11 @@
             "suffix": "ext"
         },
         
+        // Project Butler package aliases
         "pb": {
             "name": "project-butler",
             "suffix": "ext",
-            "full": true
+            "full": true // This package runs full dependency chain by default
         },
         "pbc": {
             "name": "project-butler",
@@ -92,10 +108,11 @@
             "suffix": "ext"
         },
         
+        // Note Hub package aliases
         "nh": {
             "name": "note-hub",
             "suffix": "ext",
-            "full": true
+            "full": true // This package runs full dependency chain by default
         },
         "nhc": {
             "name": "note-hub",
@@ -106,10 +123,11 @@
             "suffix": "ext"
         },
         
+        // AI Agent Interactor package aliases
         "ai": {
             "name": "ai-agent-interactor",
             "suffix": "ext",
-            "full": true
+            "full": true // This package runs full dependency chain by default
         },
         "aic": {
             "name": "ai-agent-interactor",
@@ -120,9 +138,10 @@
             "suffix": "ext"
         },
         
-        "mockly": "@fux/mockly",
-        "shared": "@fux/shared",
-        "audit": "@fux/structure-auditor",
-        "cmo": "@fux/cursor-memory-optimizer"
+        // Library aliases
+        "mockly": "@fux/mockly", // Mockly library for VSCode API mocking
+        "shared": "@fux/shared", // Shared library with VSCode adapters
+        "audit": "@fux/structure-auditor", // Structure auditor tool
+        "cmo": "@fux/cursor-memory-optimizer" // Cursor memory optimizer tool
     }
 }

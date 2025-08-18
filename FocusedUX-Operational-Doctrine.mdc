@@ -1,0 +1,148 @@
+#### 4.1.14. Nx Executor Behavior Investigation Protocol
+
+**CRITICAL: Executor Limitations with Dynamic Configuration**
+
+When configuration changes don't produce expected results, the following investigation protocol MUST be followed:
+
+**INVESTIGATION SEQUENCE:**
+
+1. **Executor Behavior First:** Investigate the executor's behavior before assuming configuration syntax issues
+2. **Dynamic Logic Verification:** Verify that executors honor dynamic configuration logic (e.g., `process.argv` parsing in Vitest configs)
+3. **CLI Injection Pattern:** When executors ignore dynamic logic, use CLI-based injection patterns instead
+
+**Nx Vite Test Executor Limitations:**
+
+- The `@nx/vite:test` executor silently ignores dynamic `include` logic in Vitest configs
+- Dynamic `include` patterns based on `process.argv` parsing are not honored
+- Solution: Use dual-config approach with dynamic injection via CLI tools
+
+**VERIFICATION PATTERN:**
+
+```typescript
+// This will NOT work with @nx/vite:test executor
+include: process.argv.includes('--coverage') ?
+    ['coverage/**/*.test.ts']
+:   ['functional/**/*.test.ts']
+
+// Solution: Use separate configs with CLI injection
+// vitest.functional.config.ts
+include: ['__tests__/**/*.test.ts']
+
+// vitest.coverage.config.ts
+include: ['__tests__/**/*.test.ts', '__tests__/coverage/**/*.test-cov.ts']
+```
+
+**Failure Response:**
+If dynamic configuration logic is ignored, immediately switch to dual-config pattern with CLI-based injection.
+
+#### 4.1.15. Base Configuration Flexibility Requirements
+
+**MANDATORY: Accommodate Multiple Organizational Patterns**
+
+Base configurations MUST accommodate different package test organization patterns:
+
+**REQUIRED FLEXIBILITY:**
+
+- **Flat Structure:** `__tests__/*.test.ts` (e.g., mockly)
+- **Nested Structure:** `__tests__/functional/**/*.test.ts` (e.g., shared)
+- **Mixed Structure:** Both patterns in the same workspace
+
+**BASE CONFIG PATTERN:**
+
+```typescript
+// Use broad patterns that work for all structures
+include: ['__tests__/**/*.test.ts']
+exclude: ['**/*.d.ts', '**/*.config.*', '**/__tests__/_reports/**']
+```
+
+**VERIFICATION REQUIREMENTS:**
+
+- Test base configs with packages using different organizational patterns
+- Ensure no assumptions about subdirectory structure
+- Allow package-specific configs to override when needed
+
+**Failure Response:**
+If base config assumes single pattern, immediately broaden the include/exclude patterns to accommodate all organizational structures.
+
+#### 4.1.16. Mock Library Integration Verification Protocol
+
+**CRITICAL: Mock Library Behavior Validation**
+
+When using mock libraries, the following verification protocol MUST be followed:
+
+**VERIFICATION SEQUENCE:**
+
+1. **API Behavior Comparison:** Compare mock library behavior with actual API behavior
+2. **Test Adjustment Strategy:** Adjust tests to match mock behavior OR enhance mock library
+3. **Documentation Update:** Document any behavior differences in testing strategy
+
+**MOCKLY VSCode API DIFFERENCES:**
+
+- `fsPath` may return `D:/path` instead of `/path` on Windows
+- `toString()` may include extra characters (e.g., `??` instead of `?`)
+- Query parameters may be handled differently
+
+**VERIFICATION PATTERN:**
+
+```typescript
+// Always verify mock behavior matches expectations
+const uri = new UriAdapter('file:///test/path')
+console.log('fsPath:', uri.fsPath) // Check actual output
+console.log('toString:', uri.toString()) // Check actual output
+```
+
+**ENHANCEMENT PROTOCOL:**
+
+- If mock behavior differs significantly from actual API, enhance the mock library
+- If differences are minor, adjust tests to match mock behavior
+- Document all differences in testing strategy documentation
+
+**Failure Response:**
+If mock behavior causes test failures, immediately investigate and either fix the mock or adjust test expectations.
+
+#### 4.1.17. Project.json Minimalism Enforcement
+
+**MANDATORY: Minimal Project Configuration**
+
+Project.json files MUST be kept minimal and avoid explicit configuration options:
+
+**FORBIDDEN IN PROJECT.JSON:**
+
+- Explicit `configFile` options in test targets
+- Redundant configuration that can be handled by base configs
+- Package-specific overrides that duplicate base functionality
+
+**REQUIRED PATTERN:**
+
+```json
+{
+    "test": {
+        "extends": "vite:test",
+        "dependsOn": ["^build"]
+    },
+    "test:full": {
+        "extends": "vite:test",
+        "dependsOn": ["^test"]
+    }
+}
+```
+
+**CONFIGURATION INJECTION:**
+
+- Use CLI tools (e.g., `aka`) to dynamically inject configuration
+- Keep project.json focused on dependencies and basic structure
+- Delegate complex configuration to dedicated config files
+
+**VERIFICATION REQUIREMENTS:**
+
+- All packages must follow the minimal project.json pattern
+- No explicit configFile options in test targets
+- Configuration complexity handled by external tools or base configs
+
+**Failure Response:**
+If project.json contains explicit configuration options, immediately remove them and implement dynamic injection pattern.
+description:
+globs:
+alwaysApply: false
+
+---

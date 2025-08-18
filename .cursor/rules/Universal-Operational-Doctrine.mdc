@@ -59,6 +59,7 @@ You will follow this structured workflow for every task:
 - **Ephemeral Narratives:** All transient information—your plan, thought process, logs, and summaries—**must** remain in the chat.
 - **FORBIDDEN:** Creating unsolicited files (`.md`, notes, etc.) to store your analysis. The chat log is the single source of truth for the session.
 - **Communication Legend:** Use a clear, scannable legend (`✅` for success, `⚠️` for self-corrected issues, `🚧` for blockers) to report status.
+- **Failure Documentation:** MANDATORY - When documenting solutions or implementations, always include a comprehensive "What Was Tried and Failed" section to prevent future developers from repeating the same mistakes and to provide institutional learning.
 
 ### 5 · DOCTRINE EVOLUTION (CONTINUOUS LEARNING)
 
@@ -408,12 +409,14 @@ You will follow this structured workflow for every task:
 **CRITICAL: Doctrine modification execution is NON-NEGOTIABLE and MUST be verified.**
 
 **Enforcement Requirements:**
+
 - **IMMEDIATE EXECUTION**: When step 5 of the deviation remediation protocol is reached, the doctrine modification MUST be executed within the same response
 - **VERIFICATION REQUIRED**: After applying the modification, the AI MUST verify the change was applied correctly
 - **NO PROCEEDING**: No further actions can be taken until the doctrine modification is verified as complete
 - **FAILURE CONSEQUENCE**: Failure to execute step 5 constitutes a critical failure that must be addressed before any other actions
 
 **Verification Protocol:**
+
 1. Apply the proposed doctrine change
 2. Verify the change was applied correctly
 3. Report the verification status

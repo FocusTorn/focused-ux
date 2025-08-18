@@ -1,9 +1,9 @@
-import * as vscode from 'vscode'
+import { Range } from 'vscode'
 import type { IRange, IPosition } from '../../_interfaces/IVSCode.js'
 
 export class RangeAdapter implements IRange {
 
-	constructor(private range: vscode.Range) {}
+	constructor(private range: any) {}
 
 	get start(): IPosition {
 		return {
@@ -17,8 +17,20 @@ export class RangeAdapter implements IRange {
 		}
 	}
 
-	static create(start: vscode.Position, end: vscode.Position): IRange {
-		return new RangeAdapter(new vscode.Range(start, end))
+	static create(start: any, end: any): IRange {
+		// Extract line and character from the input objects
+		const startLine = start.line
+		const startCharacter = start.character
+		const endLine = end.line
+		const endCharacter = end.character
+		
+		// Create VSCode Range - during tests this will be Mockly via the test adapter
+		const vscodeRange = new Range(startLine, startCharacter, endLine, endCharacter)
+		return new RangeAdapter(vscodeRange)
 	}
 
+	// Factory method to create from VSCode Range
+	static fromVSCode(vscodeRange: any): RangeAdapter {
+		return new RangeAdapter(vscodeRange)
+	}
 }

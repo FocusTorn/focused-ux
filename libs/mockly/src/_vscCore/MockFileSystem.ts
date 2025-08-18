@@ -104,10 +104,16 @@ export class MockFileSystem {
 		const dirPath = this.normalizePath(uri.fsPath)
 		const results: [string, number][] = []
 
-		// Verify the directory exists
+		// Check if the path exists
 		const dirItem = this.fileSystem.get(dirPath)
 
-		if (!dirItem || dirItem.type !== 'directory') {
+		// If path doesn't exist, return empty array (matching VSCode API behavior)
+		if (!dirItem) {
+			return results
+		}
+
+		// If path exists but is not a directory, throw error
+		if (dirItem.type !== 'directory') {
 			throw new Error(`Directory not found: ${dirPath}`)
 		}
 

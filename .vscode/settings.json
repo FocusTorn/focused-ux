@@ -18,6 +18,30 @@
     "editor.formatOnSave": true,
     "nxConsole.generateAiAgentRules": true,
 
+    // Editor indentation settings
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+
+    // Disable inlay hints (dimmed hint text)
+    "editor.inlayHints.enabled": "off",
+    "editor.inlayHints.parameterNames.enabled": "none",
+    "editor.inlayHints.variableTypes.enabled": "none",
+    "editor.inlayHints.propertyDeclarationTypes.enabled": "none",
+    "editor.inlayHints.functionLikeReturnTypes.enabled": "none",
+    "editor.inlayHints.other.enabled": "none",
+
+    // Cursor-specific settings to disable AI hints
+    "cursor.inlayHints.enabled": false,
+    "cursor.showInlineCompletions": "off",
+    "cursor.showParameterHints": "off",
+
+    // Additional Cursor AI settings
+    "cursor.ai.enableInlineCompletions": false,
+    "cursor.ai.enableInlayHints": false,
+    "cursor.ai.enableParameterHints": false,
+    "cursor.ai.enableSuggestions": false,
+
     // Formatting configuration for JSON/JSONC files
     "[json]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint",
@@ -45,13 +69,12 @@
     ],
 
     // Ensure ESLint appears as a formatter option
+    // Register ESLint as a formatter
     "eslint.lintTask.enable": true,
     "eslint.run": "onType",
-    "eslint.autoFixOnSave": true,
-
-    // Register ESLint as a formatter
+    
     "eslint.codeActionsOnSave.mode": "all",
-
+    
     "files.exclude": {
         //>
         "**/node_modules/**": true
@@ -67,10 +90,7 @@
             "args": ["-NoExit", "-Command", ". .vscode/shell/profile.ps1"]
         }
     },
-    "terminal.integrated.defaultProfile.windows": "FUX PowerShell",
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
-    }
+    "terminal.integrated.defaultProfile.windows": "FUX PowerShell"
 
     //----------------------------------------------------<<
 }

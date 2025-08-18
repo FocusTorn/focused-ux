@@ -216,6 +216,16 @@ export class MockWindow {
 		return disposable
 	}
 
+	// Add missing registerUriHandler method
+	registerUriHandler(handler: any): any {
+		this._utils.debug(`Register URI handler: ${handler}`)
+		return {
+			dispose: () => {
+				this._utils.debug(`URI handler disposed`)
+			},
+		}
+	}
+
 	// Enhanced methods for testing
 	setActiveTextEditor(editor: TextEditor | undefined): void {
 		this._activeTextEditor = editor

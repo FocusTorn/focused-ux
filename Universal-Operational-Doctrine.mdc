@@ -1,0 +1,25 @@
+### **F · TESTING & QUALITY ASSURANCE PROTOCOLS**
+
+### **TEST SKIPPING PROHIBITION**
+
+- **FORBIDDEN:** Never skip tests without fixing root causes; this creates technical debt and masks real problems
+- **Root Cause Investigation:** When tests fail, investigate the integration layer first, not the test logic
+- **Edge Case Value:** Edge case tests are valuable as they often reveal integration issues affecting core functionality
+
+### **MOCK INTEGRATION INVESTIGATION**
+
+- **Integration Layer Priority:** When mocks don't work, investigate the integration layer first, not the test logic
+- **Mock Service Validation:** Verify that mock services properly integrate with the systems they're mocking
+- **Cross-Layer Consistency:** Ensure path normalization and other critical behaviors are consistent across all layers (mocks, tests, and actual code)
+
+### **EXECUTOR BEHAVIOR INVESTIGATION PROTOCOL**
+
+- **Executor Behavior First:** When configuration changes don't produce expected results, investigate the executor's behavior before assuming configuration syntax issues
+- **Dynamic Logic Verification:** Verify that executors honor dynamic configuration logic (e.g., `process.argv` parsing in config files)
+- **CLI Injection Pattern:** When executors ignore dynamic logic, use CLI-based injection patterns instead of trying to force dynamic behavior
+- **Silent Failure Detection:** Many executors silently ignore configuration options they don't understand; always verify behavior, not just absence of errors
+  description:
+  globs:
+  alwaysApply: false
+
+---
