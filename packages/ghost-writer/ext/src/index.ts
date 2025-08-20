@@ -4,32 +4,38 @@ import type {
 	IConsoleLoggerService,
 	IImportGeneratorService,
 } from '@fux/ghost-writer-core'
-import { createDIContainer } from './injection.js'
+import { ClipboardService, ConsoleLoggerService, ImportGeneratorService } from '@fux/ghost-writer-core'
 import { constants } from './_config/constants.js'
-import type { IWindow, IWorkspace, ICommands, IPosition } from '@fux/shared'
+import { StorageAdapter } from './adapters/Storage.adapter.js'
+import { WindowAdapter } from './adapters/Window.adapter.js'
+import { PathUtilsAdapter } from './adapters/PathUtils.adapter.js'
+import { WorkspaceAdapter } from './adapters/Workspace.adapter.js'
+import { CommandsAdapter } from './adapters/Commands.adapter.js'
+import { PositionAdapter } from './adapters/Position.adapter.js'
+import * as vscode from 'vscode'
 
 export function activate(context: ExtensionContext): void {
 	console.log(`[${constants.extension.name}] Activating...`)
 
-	const containerPromise = createDIContainer(context);
+	// Create adapters
+	const storageAdapter = new StorageAdapter(context)
+	const windowAdapter = new WindowAdapter(vscode.window)
+	const pathUtilsAdapter = new PathUtilsAdapter()
+	const workspaceAdapter = new WorkspaceAdapter(vscode.workspace)
+	const commandsAdapter = new CommandsAdapter(vscode.commands, context)
+	const positionAdapter = new PositionAdapter()
 
-	(async () => {
-		const container = await containerPromise
-		// Resolve services
-		const clipboardService = container.resolve<IClipboardService>('clipboardService')
-		const consoleLoggerService = container.resolve<IConsoleLoggerService>('consoleLoggerService')
-		const importGeneratorService = container.resolve<IImportGeneratorService>('importGeneratorService')
-		const window = container.resolve<IWindow>('window')
-		const workspace = container.resolve<IWorkspace>('workspace')
-		const commands = container.resolve<ICommands>('commands')
-		const position = container.resolve<IPosition>('position')
+	// Create core services
+	const clipboardService = new ClipboardService(storageAdapter)
+	const consoleLoggerService = new ConsoleLoggerService()
+	const importGeneratorService = new ImportGeneratorService(pathUtilsAdapter, windowAdapter)
 
 		// Command Handlers
 		const handleStoreCodeFragment = async (): Promise<void> => {
-			const editor = window.activeTextEditor
+			const editor = windowAdapter.activeTextEditor
 
 			if (!editor) {
-				window.showErrorMessage('No active text editor.')
+				windowAdapter.errMsg('No active text editor.')
 				return
 			}
 
@@ -41,25 +47,25 @@ export function activate(context: ExtensionContext): void {
 					text: selectedText,
 					sourceFilePath: editor.document.fileName,
 				})
-				await window.showTimedInformationMessage(`Stored fragment: ${selectedText}`)
+				await windowAdapter.showTimedInformationMessage(`Stored fragment: ${selectedText}`)
 			}
 			else {
-				window.showErrorMessage('No text selected to store.')
+				windowAdapter.errMsg('No text selected to store.')
 			}
 		}
 
 		const handleInsertImportStatement = async (): Promise<void> => {
-			const editor = window.activeTextEditor
+			const editor = windowAdapter.activeTextEditor
 
 			if (!editor) {
-				window.showErrorMessage('No active text editor.')
+				windowAdapter.errMsg('No active text editor.')
 				return
 			}
 
 			const fragment = await clipboardService.retrieve()
 
 			if (!fragment) {
-				window.showErrorMessage('No fragment stored in Ghost Writer clipboard.')
+				windowAdapter.errMsg('No fragment stored in Ghost Writer clipboard.')
 				return
 			}
 
@@ -77,14 +83,14 @@ export function activate(context: ExtensionContext): void {
 		}
 
 		const handleLogSelectedVariable = async (): Promise<void> => {
-			const editor = window.activeTextEditor
+			const editor = windowAdapter.activeTextEditor
 
 			if (!editor) {
-				window.showErrorMessage('No active text editor.')
+				windowAdapter.errMsg('No active text editor.')
 				return
 			}
 
-			const config: WorkspaceConfiguration = workspace.getConfiguration(constants.extension.configKey)
+			const config: WorkspaceConfiguration = workspaceAdapter.getConfiguration(constants.extension.configKey)
 			const includeClassName = config.get<boolean>(
 				constants.configKeys.loggerIncludeClassName,
 				true,
@@ -112,7 +118,7 @@ export function activate(context: ExtensionContext): void {
 
 				if (result) {
 					await editor.edit((editBuilder: TextEditorEdit) => {
-						const positionInstance = position.create(result.insertLine, 0)
+						const positionInstance = positionAdapter.create(result.insertLine, 0)
 
 						editBuilder.insert(positionInstance, result.logStatement)
 					})
@@ -121,15 +127,15 @@ export function activate(context: ExtensionContext): void {
 		}
 
 		const disposables: Disposable[] = [
-			commands.registerCommand(
+			commandsAdapter.registerCommand(
 				constants.commands.storeCodeFragment,
 				handleStoreCodeFragment,
 			),
-			commands.registerCommand(
+			commandsAdapter.registerCommand(
 				constants.commands.insertImportStatement,
 				handleInsertImportStatement,
 			),
-			commands.registerCommand(
+			commandsAdapter.registerCommand(
 				constants.commands.logSelectedVariable,
 				handleLogSelectedVariable,
 			),
@@ -137,13 +143,7 @@ export function activate(context: ExtensionContext): void {
 
 		context.subscriptions.push(...disposables)
 
-		// void window.showTimedInformationMessage('✅ Ghost Writer Loaded.')
-
 		console.log(`[${constants.extension.name}] Activated.`)
-	})()
 }
 
 export function deactivate(): void {}
-
-// Export the injection module
-export { createDIContainer } from './injection.js'

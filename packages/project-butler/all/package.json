@@ -1,0 +1,92 @@
+{
+    "name": "fux-project-maid-all",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "./dist/extension.cjs",
+    "module": "./dist/extension.cjs",
+    "types": "./dist/extension.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/extension.d.ts",
+            "import": "./dist/extension.cjs"
+        }
+    },
+    "sideEffects": false,
+    "engines": {
+        "vscode": "^1.85.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "command": "fux-project-maid-all.formatPackageJson",
+                "title": "Project Maid All: Format Package.json",
+                "category": "Project Maid All"
+            },
+            {
+                "command": "fux-project-maid-all.updateTerminalPath",
+                "title": "Project Maid All: CD to Here",
+                "category": "Project Maid All"
+            },
+            {
+                "command": "fux-project-maid-all.createBackup",
+                "title": "Project Maid All: Create Backup",
+                "category": "Project Maid All"
+            },
+            {
+                "command": "fux-project-maid-all.enterPoetryShell",
+                "title": "Project Maid All: Enter Poetry Shell",
+                "category": "Project Maid All"
+            }
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "submenu": "fux-project-maid-all.submenu",
+                    "when": "true",
+                    "group": "navigation"
+                }
+            ],
+            "fux-project-maid-all.submenu": [
+                {
+                    "command": "fux-project-maid-all.formatPackageJson",
+                    "when": "resourceExtname == .json && resourceFilename == package.json"
+                },
+                {
+                    "command": "fux-project-maid-all.updateTerminalPath",
+                    "when": "true"
+                },
+                {
+                    "command": "fux-project-maid-all.createBackup",
+                    "when": "true"
+                },
+                {
+                    "command": "fux-project-maid-all.enterPoetryShell",
+                    "when": "true"
+                }
+            ]
+        },
+        "submenus": [
+            {
+                "id": "fux-project-maid-all.submenu",
+                "label": "Project Maid All"
+            }
+        ]
+    },
+    "dependencies": {
+        "js-yaml": "^4.1.0"
+    },
+    "devDependencies": {
+        "@types/js-yaml": "^4.0.9",
+        "@types/node": "^20.0.0",
+        "@types/vscode": "^1.85.0",
+        "typescript": "^5.0.0",
+        "vitest": "^3.2.4"
+    }
+}

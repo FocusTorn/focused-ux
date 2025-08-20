@@ -329,13 +329,11 @@ export class MocklyService implements IMocklyService {
 		path: {
 			join: (...paths: string[]): string => {
 				const joinedPath = path.join(...paths)
-
 				// Normalize path to use forward slashes for consistency across platforms
 				return joinedPath.replace(/\\/g, '/')
 			},
 			normalize: (pathStr: string): string => {
 				const normalizedPath = path.normalize(pathStr)
-
 				// Normalize path to use forward slashes for consistency across platforms
 				return normalizedPath.replace(/\\/g, '/')
 			},
@@ -373,8 +371,10 @@ export class MocklyService implements IMocklyService {
 				// Route through Mockly's in-memory file system for deterministic tests
 				const from = this.Uri.file(oldPath)
 				const to = this.Uri.file(newPath)
-
 				await this.workspace.fs.rename(from as any, to as any, { overwrite: true })
+			},
+			copyFile: async (src: string, dest: string): Promise<void> => {
+				await fs.copyFile(src, dest)
 			},
 		},
 	}
@@ -391,6 +391,9 @@ export class MocklyService implements IMocklyService {
 		this.mockFileSystem.clear()
 		this.mockWindow.clear()
 		this.configurationStorage.clear()
+		
+		// Note: Node.js adapters are now real functions, not mocks
+		// They don't need to be reset as they delegate to actual Node.js modules
 		
 		// Restore default active editor after clearing
 		const defaultUri = MockUri.file('/test/default.txt')

@@ -1,0 +1,105 @@
+{
+    "name": "@fux/project-maid-all",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/project-maid/all/src",
+    "projectType": "application",
+    "targets": {
+        
+        "build": { //>
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
+            
+            "options": {
+                "main": "packages/project-maid/all/src/extension.ts",
+                "entryPoints": ["packages/project-maid/all/src/extension.ts"],
+                "outputPath": "packages/project-maid/all/dist",
+                
+                "tsConfig": "packages/project-maid/all/tsconfig.json",
+
+                "format": ["cjs"],
+                "platform": "node",
+
+                "metafile": true,
+                "bundle": true,
+                "sourcemap": true,
+                
+                "external": [
+                    "vscode",
+                    "js-yaml"
+                ],
+                
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/project-maid/all/assets/",
+                        "output": "./assets/"
+                    }
+                ]
+            }
+        }, //<
+        "package": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": [
+                "build"
+            ],
+            "options": {
+                "command": "node scripts/create-vsix.js packages/project-maid/all vsix_packages"
+            }
+        }, //<
+        "package:dev": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": [
+                "build"
+            ],
+            "options": {
+                "command": "node scripts/create-vsix.js packages/project-maid/all vsix_packages --dev",
+                "outputPath": "vsix_packages"
+            }
+        }, //<
+        "publish": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": [
+                "package"
+            ],
+            "options": {
+                "command": "vsce publish",
+                "cwd": "{projectRoot}"
+            }
+        }, //<
+        
+        "check-types": { "extends": "check-types" },
+        
+        "lint": { "extends": "lint" },
+        "lint:full": { "extends": "lint:full" },
+        
+        "validate": { "extends": "validate" },
+        "validate:full": { "extends": "validate:full" },
+        
+        "audit": { "extends": "audit" },
+        "audit:full": { "extends": "audit:full" },
+        
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+        
+        "test": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["^build"]
+        }, //<
+        "test:full": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ]
+        } //<
+        
+    },
+    "tags": ["extension"]
+}

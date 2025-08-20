@@ -1,102 +1,85 @@
 {
     "name": "fux-project-butler",
     "displayName": "F-UX: Project Butler",
-    "description": "A collection of project management utilities.",
+    "description": "A VSCode extension for project management utilities including package.json formatting, terminal management, backup creation, and Poetry shell integration.",
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
     "version": "0.1.0",
     "dependencies": {
-        "awilix": "^12.0.5",
-        "js-yaml": "^4.1.0",
-        "@fux/project-butler-core": "workspace:*"
+        "@fux/project-butler-core": "workspace:*",
+        "js-yaml": "^4.1.0"
     },
     "devDependencies": {
         "@types/node": "^24.0.10",
         "@types/vscode": "^1.99.3",
+        "@types/js-yaml": "^4.0.9",
         "typescript": "^5.8.3",
-        "@fux/mockly": "workspace:*"
+        "vitest": "^3.2.4",
+        "@vitest/coverage-v8": "^3.2.4"
     },
     "contributes": {
         "commands": [
             {
-                "command": "fux-project-butler-dc.updateTerminalPath",
-                "title": "Project Butler (DC): CD to Here",
-                "category": "Focused-UX"
+                "command": "fux-project-butler.formatPackageJson",
+                "title": "Project Butler: Format Package.json",
+                "category": "Project Butler"
             },
             {
-                "command": "fux-project-butler-dc.createBackup",
-                "title": "Project Butler (DC): Create Backup",
-                "category": "Focused-UX"
+                "command": "fux-project-butler.updateTerminalPath",
+                "title": "Project Butler: CD to Here",
+                "category": "Project Butler"
             },
             {
-                "command": "fux-project-butler-dc.enterPoetryShell",
-                "title": "Project Butler (DC): Open Poetry Shell",
-                "category": "Focused-UX"
+                "command": "fux-project-butler.createBackup",
+                "title": "Project Butler: Create Backup",
+                "category": "Project Butler"
             },
             {
-                "command": "fux-project-butler-dc.formatPackageJson",
-                "title": "Project Butler (DC): Format package.json",
-                "category": "Focused-UX"
-            },
-            {
-                "command": "fux-project-butler-dc.hotswap",
-                "title": "Project Butler (DC): Hotswap VSIX",
-                "category": "Focused-UX"
+                "command": "fux-project-butler.enterPoetryShell",
+                "title": "Project Butler: Enter Poetry Shell",
+                "category": "Project Butler"
             }
         ],
         "menus": {
             "explorer/context": [
                 {
-                    "command": "fux-project-butler-dc.updateTerminalPath",
-                    "group": "fux-terminal"
+                    "submenu": "fux-project-butler.submenu",
+                    "when": "true",
+                    "group": "navigation"
+                }
+            ],
+            "fux-project-butler.submenu": [
+                {
+                    "command": "fux-project-butler.formatPackageJson",
+                    "when": "resourceExtname == .json && resourceFilename == package.json"
                 },
                 {
-                    "command": "fux-project-butler-dc.enterPoetryShell",
-                    "group": "fux-terminal"
+                    "command": "fux-project-butler.updateTerminalPath",
+                    "when": "true"
                 },
                 {
-                    "when": "resourceExtname != .vsix",
-                    "command": "fux-project-butler-dc.createBackup",
-                    "group": "fux-file"
+                    "command": "fux-project-butler.createBackup",
+                    "when": "true"
                 },
                 {
-                    "when": "resourceFilename == package.json",
-                    "command": "fux-project-butler-dc.formatPackageJson",
-                    "group": "fux-format"
-                },
-                {
-                    "when": "resourceExtname == .vsix",
-                    "command": "fux-project-butler-dc.hotswap",
-                    "group": "fux-package"
+                    "command": "fux-project-butler.enterPoetryShell",
+                    "when": "true"
                 }
             ]
-        }
+        },
+        "submenus": [
+            {
+                "id": "fux-project-butler.submenu",
+                "label": "Project Butler"
+            }
+        ]
     },
     "activationEvents": [
-        "onStartupFinished"
-    ],
-    "license": "SEE LICENSE IN ../../../LICENSE.txt",
-    "icon": "./assets/pb-logo.png",
-    "categories": [
-        "Other"
-    ],
-    "keywords": [
-        "automation",
-        "backup",
-        "poetry",
-        "project",
-        "terminal",
-        "workflow"
+        "*"
     ],
     "engines": {
         "vscode": "^1.99.3"
     },
     "private": true,
-    "main": "./dist/extension.cjs",
-    "scripts": {
-        "test": "nx vite:test",
-        "test:run": "nx vite:test run",
-        "test:coverage": "nx vite:test run --coverage",
-        "test:ui": "nx vite:test --ui"
-    }
+    "main": "./dist/extension.cjs"
 }

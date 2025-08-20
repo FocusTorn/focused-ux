@@ -1,10 +1,33 @@
-import { beforeEach, vi } from 'vitest'
+import { vi, beforeAll, afterAll, afterEach } from 'vitest'
 import { mockly, mocklyService } from '@fux/mockly'
 import process from 'node:process'
 
-// Reset Mockly state between tests
-beforeEach(() => {
-	mocklyService.reset()
+// 1) Mock fs/promises globally (no real disk I/O)
+// This is needed for the Node.js adapters to work properly in tests
+vi.mock('node:fs/promises', () => ({
+  stat: vi.fn(),
+  access: vi.fn(),
+  copyFile: vi.fn(),
+  readFile: vi.fn(),
+  writeFile: vi.fn(),
+  readdir: vi.fn(),
+  mkdir: vi.fn(),
+  rmdir: vi.fn(),
+  unlink: vi.fn(),
+}))
+
+// 2) Use fake timers globally (no real waits)
+beforeAll(() => {
+  vi.useFakeTimers()
+})
+
+afterAll(() => {
+  vi.useRealTimers()
+})
+
+// 3) Keep mocks clean between tests
+afterEach(() => {
+  vi.clearAllMocks()
 })
 
 // Console output configuration for tests
@@ -16,8 +39,7 @@ if (ENABLE_CONSOLE_OUTPUT) {
 	console.log('🔍 Test console output enabled - use ENABLE_TEST_CONSOLE=true to enable')
 }
 else {
-	// Non-Mockly: Console is not a VSCode API and Mockly does not shim it.
-	// We silence console by default to reduce noise and make assertions stable.
+	// Silence console by default to reduce noise and make assertions stable.
 	// Use ENABLE_TEST_CONSOLE=true to opt-in when debugging.
 	console.log = vi.fn()
 	console.info = vi.fn()

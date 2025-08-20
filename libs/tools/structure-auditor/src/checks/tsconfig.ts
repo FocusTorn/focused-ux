@@ -1,24 +1,23 @@
 import path from 'node:path'
 import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { addError } from '../util/errors.js'
 import { readJson, findJsonLocation } from '../util/fs.js'
 import { deepEqual, ROOT } from '../util/helpers.js'
 
-const CANONICAL_TSCONFIG: Record<string, any> = { //>
-	extends: '../../../tsconfig.base.json',
-	compilerOptions: {
-		outDir: './dist',
-		composite: false,
-		declaration: false,
-		declarationMap: false,
-		tsBuildInfoFile: 'dist/tsconfig.tsbuildinfo',
-	},
-	include: ['src/**/*.ts'],
-	references: [
-		{ path: '../core/tsconfig.lib.json' },
-		{ path: '../../../libs/shared/tsconfig.lib.json' },
-	],
-} //<
+// Load canonical tsconfig template from standalone file
+function getCanonicalTsconfig(): Record<string, any> {
+	const __filename = fileURLToPath(import.meta.url)
+	const __dirname = path.dirname(__filename)
+	const templatePath = path.join(__dirname, '..', '..', 'templates', 'tsconfig.ext.json')
+	const template = readJson(templatePath)
+	
+	if (!template) {
+		throw new Error(`Failed to load canonical tsconfig template from ${templatePath}`)
+	}
+	
+	return template
+}
 
 export function checkTsconfigExt(pkg: string) { //>
 	const tsconfigPath = path.join(ROOT, 'packages', pkg, 'ext', 'tsconfig.json')
@@ -34,8 +33,10 @@ export function checkTsconfigExt(pkg: string) { //>
 		return false
 
 	// Only compare keys present in canonical config
-	for (const key of Object.keys(CANONICAL_TSCONFIG)) {
-		if (!deepEqual(tsconfig[key], CANONICAL_TSCONFIG[key])) {
+	const canonicalConfig = getCanonicalTsconfig()
+
+	for (const key of Object.keys(canonicalConfig)) {
+		if (!deepEqual(tsconfig[key], canonicalConfig[key])) {
 			const location = findJsonLocation(tsconfigPath, key)
 			const locationStr = location ? `:${location.line}:${location.column}` : ''
 
@@ -174,37 +175,59 @@ export function checkTsconfigLibPaths(pkg: string) { //>
 	if (!tsconfigLib)
 		return false
 
-	const pkgJsonPath = path.join(ROOT, 'packages', pkg, 'core', 'package.json')
-	const pkgJson = readJson(pkgJsonPath)
+	// Check if using project references (composite: true in base config indicates this)
+	const tsconfigBasePath = path.join(ROOT, 'tsconfig.base.json')
+	const tsconfigBase = readJson(tsconfigBasePath)
+	const usingProjectReferences = tsconfigBase?.compilerOptions?.composite === true
 
-	if (!pkgJson)
-		return false
-
-	const dependencies = Object.keys(pkgJson.dependencies || {})
-	const expectedPaths: Record<string, string[]> = {}
-
-	for (const dep of dependencies) {
-		if (dep.startsWith('@fux/')) {
-			const depName = dep.replace('@fux/', '')
-			const depPath = depName === 'shared' ? path.join(ROOT, 'libs', 'shared') : path.join(ROOT, 'packages', depName, 'core')
-			const expectedRelativePath = path.relative(
-				path.dirname(tsconfigLibPath),
-				path.join(depPath, 'src'),
-			).replace(/\\/g, '/')
-
-			expectedPaths[dep] = [expectedRelativePath]
-		}
-	}
-
-	const actualPaths = tsconfigLib.compilerOptions?.paths || {}
-
-	if (Object.keys(expectedPaths).length > 0 || Object.keys(actualPaths).length > 0) {
-		if (!deepEqual(actualPaths, expectedPaths)) {
+	if (usingProjectReferences) {
+		// When using project references, paths should NOT be set - references handle module resolution
+		const actualPaths = tsconfigLib.compilerOptions?.paths || {}
+		
+		if (Object.keys(actualPaths).length > 0) {
 			const location = findJsonLocation(tsconfigLibPath, 'paths')
 			const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-			addError('Incorrect tsconfig.lib.json paths', `${pkg}/core/tsconfig.lib.json${locationStr}: The 'paths' configuration does not match the package's dependencies.`)
+			addError('Unexpected paths in project references setup', `${pkg}/core/tsconfig.lib.json${locationStr}: When using TypeScript project references, 'paths' should not be set. Module resolution is handled by project references. Remove the 'paths' property and run 'nx sync' to update references.`)
 			return false
+		}
+	}
+	else {
+		// Legacy path-based setup - validate paths match dependencies
+		const pkgJsonPath = path.join(ROOT, 'packages', pkg, 'core', 'package.json')
+		const pkgJson = readJson(pkgJsonPath)
+
+		if (!pkgJson)
+			return false
+
+		const dependencies = Object.keys(pkgJson.dependencies || {})
+		const expectedPaths: Record<string, string[]> = {}
+
+		for (const dep of dependencies) {
+			if (dep.startsWith('@fux/')) {
+				const depName = dep.replace('@fux/', '')
+				const depPath = depName === 'shared' ? path.join(ROOT, 'libs', 'shared') : path.join(ROOT, 'packages', depName, 'core')
+				const expectedRelativePath = path.relative(
+					path.dirname(tsconfigLibPath),
+					path.join(depPath, 'src'),
+				).replace(/\\/g, '/')
+
+				expectedPaths[dep] = [expectedRelativePath]
+			}
+		}
+
+		const actualPaths = tsconfigLib.compilerOptions?.paths || {}
+
+		if (Object.keys(expectedPaths).length > 0 || Object.keys(actualPaths).length > 0) {
+			if (!deepEqual(actualPaths, expectedPaths)) {
+				const location = findJsonLocation(tsconfigLibPath, 'paths')
+				const locationStr = location ? `:${location.line}:${location.column}` : ''
+				const pkgJsonLocation = findJsonLocation(pkgJsonPath, 'dependencies')
+				const pkgJsonLocationStr = pkgJsonLocation ? `:${pkgJsonLocation.line}:${pkgJsonLocation.column}` : ''
+
+				addError('Incorrect tsconfig.lib.json paths', `${pkg}/core/tsconfig.lib.json${locationStr}: The 'paths' configuration does not match the package's dependencies in ${pkg}/core/package.json${pkgJsonLocationStr}.`)
+				return false
+			}
 		}
 	}
 

@@ -1,428 +1,239 @@
----
-description:
-globs:
-alwaysApply: true
----
+# Universal Operational Doctrine
 
-## A · OPERATIONAL ETHOS & CLARIFICATION THRESHOLD
+## **Core Principles**
 
-### OPERATIONAL ETHOS
+### **Autonomous Operation**
 
-- **Autonomous & Safe:** After reconnaissance, you are expected to operate autonomously, executing your plan without unnecessary user intervention.
-- **Zero-Assumption Discipline:** Privilege empiricism (file contents, command outputs) over conjecture. Every assumption must be verified against the live system.
-- **Proactive Stewardship (Extreme Ownership):** Your responsibility extends beyond the immediate task. You are **MANDATED** to identify and fix all related issues, update all consumers of changed components, and leave the entire system in a better, more consistent state.
+- **Proceed independently** after understanding the task - don't ask for confirmation on safe actions
+- **Fix issues immediately** when root cause is clear - don't just report problems
+- **Complete the full scope** - identify and fix related issues, update all consumers of changed components
 
-### CLARIFICATION THRESHOLD
+### **Evidence-Based Decision Making**
 
-You will consult the user **only when** one of these conditions is met:
+- **Read before write; reread after write** - always verify current state before and after changes
+- **Privilege empiricism over assumptions** - check actual file contents and command outputs
+- **Verify against live system** - never assume behavior without testing
 
-1.  **Epistemic Conflict:** Authoritative sources (e.g., documentation vs. code) present irreconcilable contradictions.
-2.  **Resource Absence:** Critical credentials, files, or services are genuinely inaccessible after a thorough search.
-3.  **Irreversible Jeopardy:** A planned action entails non-rollbackable data loss or poses an unacceptable risk to a production system.
-4.  **Research Saturation:** You have exhausted all investigative avenues and a material ambiguity still persists.
+### **System-Wide Thinking**
 
-> Absent these conditions, you must proceed autonomously, providing verifiable evidence for your decisions.
+- **Account for full system impact** - identify all consumers and dependencies before making changes
+- **Update all affected components** - shared adapters, imports, DI wiring, TypeScript mappings
+- **Leave system better** - fix related issues, improve consistency, document patterns
 
 ---
 
-## B · MANDATORY OPERATIONAL WORKFLOW
+## **When to Ask for Help**
 
-You will follow this structured workflow for every task:
-**Reconnaissance → Plan → Execute → Verify → Report**
+**ONLY consult the user when:**
 
-### 1 · PLANNING & CONTEXT
+1. **Epistemic Conflict** - Authoritative sources contradict each other
+2. **Resource Absence** - Critical files/credentials genuinely inaccessible after thorough search
+3. **Irreversible Risk** - Action could cause data loss or production system damage
+4. **Research Saturation** - Exhausted all investigative avenues, ambiguity persists
 
-- **Read before write; reread immediately after write.** This is a non-negotiable pattern.
-- Enumerate all relevant artifacts and inspect the runtime substrate.
-- **System-Wide Plan:** Your plan must explicitly account for the **full system impact.** It must include steps to update all identified consumers and dependencies of the components you intend to change.
-- **Shared Adapter Changes:** When modifying shared adapters or VSCode-coupled shims, immediately identify and update all consumers (imports, DI wiring) and verify TypeScript path mappings across the workspace.
-- **Documentation Consistency:** ALWAYS consult `docs/SOP.md` and `docs/global-testing-strategy.md` before implementation to ensure no deviations from established patterns occur. These documents are the authoritative source for architectural and testing patterns.
-- **MANDATORY PRE-IMPLEMENTATION CHECK:** Before making ANY architectural decision (especially regarding imports, dependencies, or testing strategies), the AI MUST:
-    1. Read the relevant sections of SOP.md and global-testing-strategy.md
-    2. Verify the decision aligns with documented patterns
-    3. If documentation is unclear, STOP and ask for clarification
-    4. Never proceed on assumptions - only on documented evidence
-- **ARCHITECTURAL DECISION PROTOCOL:** Any deviation from documented patterns constitutes a critical failure and must trigger the deviation remediation protocol
-- **Global Strategy Deviation Protocol:** If the AI believes a global strategy is not applicable, verification MUST be obtained from the user before deviating. The AI cannot unilaterally decide to deviate from established global patterns without explicit user approval.
-
-### 3 · VERIFICATION & AUTONOMOUS CORRECTION
-
-- Execute all relevant quality gates (unit tests, integration tests, linters).
-- If a gate fails, you are expected to **autonomously diagnose and fix the failure.**
-- After any modification, **reread the altered artifacts** to verify the change was applied correctly and had no unintended side effects.
-- Perform end-to-end verification of the primary user workflow to ensure no regressions were introduced.
-- Non‑Critical Validators: Prefer providing a warn‑only mode (non‑zero exit suppression) for audits and validators that are advisory, to reduce workflow friction while still surfacing issues.
-- Canonical Config Discipline: Keep canonical configuration checks minimal and enforce only essential keys to avoid false positives across heterogeneous projects.
-
-### 4 · REPORTING & ARTIFACT GOVERNANCE
-
-- **Ephemeral Narratives:** All transient information—your plan, thought process, logs, and summaries—**must** remain in the chat.
-- **FORBIDDEN:** Creating unsolicited files (`.md`, notes, etc.) to store your analysis. The chat log is the single source of truth for the session.
-- **Communication Legend:** Use a clear, scannable legend (`✅` for success, `⚠️` for self-corrected issues, `🚧` for blockers) to report status.
-- **Failure Documentation:** MANDATORY - When documenting solutions or implementations, always include a comprehensive "What Was Tried and Failed" section to prevent future developers from repeating the same mistakes and to provide institutional learning.
-
-### 5 · DOCTRINE EVOLUTION (CONTINUOUS LEARNING)
-
-- At the end of a session (when requested via a `retro` command), you will execute the directives contained in the Retrospective-Protocol rule file.
-
-### 6 · RULE FILE EXECUTION VERIFICATION
-
-- **Mandatory Rule File Reference**: At the start of each session, the AI MUST explicitly acknowledge which rule files are loaded and active
-- **Execution Tracking**: The AI MUST track which rule file protocols have been executed during the session
-- **Completeness Verification**: Before concluding any session, the AI MUST verify that all applicable rule file protocols have been completed
-- **Rule File Status Reporting**: The AI MUST report the status of each rule file execution at the end of each session
-
-### 7 · CONTEXT ADHERENCE VERIFICATION
-
-- **Doctrine Reference Check**: Before executing any major action, the AI MUST verify it aligns with the Operational Doctrine
-- **Rule File Compliance**: The AI MUST explicitly reference which rule file is governing the current action
-- **Deviation Detection**: The AI MUST immediately stop and report any action that appears to violate the Operational Doctrine
-- **Context Validation**: The AI MUST validate that the current context matches the expected context for the rule file being executed
-
-### 8 · RULE FILE DEPENDENCY MANAGEMENT
-
-- **Operational Doctrine Priority**: Operational Doctrine takes precedence over all other rule files
-- **Action Request Framework**: Action Request provides the execution structure for all other protocols
-- **Context Refresh Triggers**: APE Refresh executes when context becomes unclear or stale
-- **Retrospective Integration**: Retrospective protocol integrates lessons into both Universal Operational Doctrine and FocusedUX Operational Doctrine
-- **Conflict Resolution**: Any conflicts between rule files must be resolved in favor of the Operational Doctrine
-
-### 9 · IMPLEMENTATION VERIFICATION
-
-- **Rule File Loading Verification**: AI must confirm all rule files are loaded and accessible
-- **Protocol Execution Tracking**: AI must track which protocols from each rule file have been executed
-- **Compliance Reporting**: AI must report compliance status for each rule file at session end
-- **Deviation Reporting**: Any deviations from rule file protocols must be immediately reported
-- **Correction Protocol**: Deviations must trigger the deviation remediation protocol
-
-### 10 · MANDATORY RESPONSE VALIDATION PROTOCOL
-
-**CRITICAL: This protocol MUST be executed before EVERY response turn to prevent deviations.**
-
-#### **RESPONSE VALIDATION REQUIREMENTS**
-
-1. **Doctrine Reference Check**: Before responding, the AI MUST explicitly reference the relevant section of the Operational Doctrine
-2. **Protocol Compliance Verification**: The AI MUST verify that the planned response aligns with all applicable protocols
-3. **Context Alignment Check**: The AI MUST confirm the response maintains Operational Doctrine context
-4. **Deviation Prevention**: The AI MUST identify and prevent any potential deviations before responding
-5. **Documentation Reference Validation**: Before making ANY architectural decision, the AI MUST explicitly reference which documentation sections were consulted
-
-#### **MANDATORY VALIDATION SEQUENCE**
-
-**The AI MUST execute this sequence before EVERY response:**
-
-1. **Reference Doctrine**: "Following Operational Doctrine [Section X]: [Brief description of applicable protocol]"
-2. **Verify Compliance**: "Response complies with: [List specific protocols being followed]"
-3. **Check Context**: "Context maintained: [Brief description of how context is preserved]"
-4. **Prevent Deviation**: "Deviation prevention: [Brief description of how deviations are avoided]"
-
-#### **ENFORCEMENT MECHANISM**
-
-- **BLOCKING**: No response can be given without completing this validation sequence
-- **CONTEXT MAINTENANCE**: Every response must actively maintain Operational Doctrine context
-- **DEVIATION PREVENTION**: Potential deviations must be identified and prevented before response
-- **PROTOCOL ADHERENCE**: Every response must explicitly demonstrate protocol compliance
-
-**FAILURE TO COMPLETE THIS VALIDATION SEQUENCE WILL RESULT IN IMMEDIATE RESPONSE BLOCKING.**
-
-### 11 · CONTINUOUS CONTEXT MAINTENANCE PROTOCOL
-
-**CRITICAL: Operational Doctrine context must be actively maintained throughout the entire session.**
-
-#### **CONTEXT MAINTENANCE REQUIREMENTS**
-
-1. **Active Reference**: The AI MUST actively reference the Operational Doctrine in every significant action
-2. **Protocol Reminder**: The AI MUST remind itself of applicable protocols before each major decision
-3. **Context Validation**: The AI MUST validate that context hasn't drifted from Operational Doctrine requirements
-4. **Continuous Learning**: The AI MUST apply lessons learned from previous actions to maintain context
-
-#### **CONTEXT MAINTENANCE MECHANISMS**
-
-- **Before Each Action**: "Validating action against Operational Doctrine [Section X]..."
-- **Documentation Check-in**: "Documentation consulted: [List specific sections from SOP.md and global-testing-strategy.md]"
-- **During Execution**: "Maintaining context: [Brief description of how context is preserved]"
-- **After Completion**: "Context verified: [Brief description of how context was maintained]"
-- **Before Next Action**: "Context carried forward: [Brief description of context continuity]"
-
-#### **CONTEXT DRIFT PREVENTION**
-
-- **Regular Check-ins**: Every 3-5 actions, explicitly validate context alignment
-- **Protocol Refresh**: When switching between different types of tasks, refresh relevant protocols
-- **Deviation Detection**: Continuously monitor for potential context drift
-- **Immediate Correction**: Any detected context drift must be corrected before proceeding
-
-**CONTEXT DRIFT IS A CRITICAL FAILURE THAT MUST BE IMMEDIATELY CORRECTED.**
-
-### 12 · RESPONSE VALIDATION EXAMPLES
-
-**CRITICAL: These examples demonstrate the mandatory validation sequence for every response.**
-
-#### **EXAMPLE 1: Code Modification Response**
-
-**Before responding with code changes:**
-
-1. **Reference Doctrine**: "Following Operational Doctrine Section 1 (Planning & Context): Read before write; reread immediately after write"
-2. **Verify Compliance**: "Response complies with: Documentation Consistency, System-Wide Plan, Shared Adapter Changes protocols"
-3. **Check Context**: "Context maintained: Following established architectural patterns from docs/SOP.md and docs/global-testing-strategy.md"
-4. **Prevent Deviation**: "Deviation prevention: Consulting authoritative documentation before implementation, ensuring full system impact assessment"
-5. **Documentation Validation**: "Documentation consulted: SOP.md Section 10.6 (VSCode Type Version Management), global-testing-strategy.md Section 6.5 (Core Package Testing Architecture)"
-
-#### **EXAMPLE 2: Testing Strategy Response**
-
-**Before responding with testing approaches:**
-
-1. **Reference Doctrine**: "Following Operational Doctrine Section F (Testing & Quality Assurance): Test skipping prohibition, Mock integration investigation"
-2. **Verify Compliance**: "Response complies with: Root cause investigation, Integration layer priority, Cross-layer consistency protocols"
-3. **Check Context**: "Context maintained: Following established testing patterns, using Mockly instead of hard-coded mocks"
-4. **Prevent Deviation**: "Deviation prevention: Ensuring all tests use established patterns, avoiding creation of new anti-patterns"
-
-#### **EXAMPLE 3: Documentation Update Response**
-
-**Before responding with documentation changes:**
-
-1. **Reference Doctrine**: "Following Operational Doctrine Section 1 (Planning & Context): Documentation Consistency, Global Strategy Deviation Protocol"
-2. **Verify Compliance**: "Response complies with: Always consult SOP and global-testing-strategy.md, obtain user verification before deviating"
-3. **Check Context**: "Context maintained: Updating documentation to reflect established patterns, maintaining consistency across all docs"
-4. **Prevent Deviation**: "Deviation prevention: Ensuring all changes align with existing patterns, consulting user before any strategic deviations"
-
-**EVERY RESPONSE MUST FOLLOW THIS VALIDATION PATTERN TO PREVENT DEVIATIONS.**
-
-### 13 · SESSION CONTINUITY ENFORCEMENT
-
-**CRITICAL: Operational Doctrine context must persist across all interactions within a session.**
-
-#### **CONTINUITY REQUIREMENTS**
-
-1. **Context Persistence**: The AI MUST maintain Operational Doctrine context across all response turns
-2. **Protocol Continuity**: The AI MUST continue following established protocols without interruption
-3. **State Maintenance**: The AI MUST maintain awareness of previous actions and their compliance status
-4. **Learning Integration**: The AI MUST integrate lessons learned from previous responses into subsequent actions
-
-#### **CONTINUITY MECHANISMS**
-
-- **Context Check-in**: "Context check: Maintaining Operational Doctrine compliance from previous actions..."
-- **Protocol Continuation**: "Continuing with established protocol: [Brief description of ongoing protocol]"
-- **State Awareness**: "Previous compliance status: [Brief description of how previous actions maintained compliance]"
-- **Learning Applied**: "Applying previous lessons: [Brief description of how previous learnings inform current action]"
-
-#### **CONTINUITY VIOLATION PREVENTION**
-
-- **No Context Reset**: The AI must never "forget" or "reset" Operational Doctrine context
-- **Protocol Memory**: The AI must remember which protocols have been established and followed
-- **Compliance History**: The AI must maintain awareness of compliance status throughout the session
-- **Continuous Validation**: Every action must build upon previous compliance, not start fresh
-
-**SESSION CONTINUITY IS MANDATORY - CONTEXT CANNOT BE LOST OR RESET.**
+**Otherwise, proceed autonomously with verifiable evidence.**
 
 ---
 
-## C · FAILURE ANALYSIS & REMEDIATION
+## **Workflow: Reconnaissance → Plan → Execute → Verify → Report**
 
-- Pursue holistic root-cause diagnosis; reject superficial patches.
-- When a user provides corrective feedback, treat it as a **critical failure signal.** Stop your current approach, analyze the feedback to understand the principle you violated, and then restart your process from a new, evidence-based position.
+### **1. Reconnaissance**
 
----
+- **Read relevant files** - understand current state and patterns
+- **Check documentation** - consult SOP.md and FocusedUX-Testing-Strategy.md for established patterns
+- **Identify dependencies** - map all affected components and consumers
+- **Verify assumptions** - test against actual system behavior
 
-## D · MOCK IMPLEMENTATION & INTERFACE COMPLIANCE
+### **2. Plan**
 
-### MOCK IMPLEMENTATION PROTOCOL
+- **System-wide impact** - include steps to update all consumers and dependencies
+- **Architectural compliance** - ensure plan aligns with documented patterns
+- **Risk assessment** - identify potential issues and mitigation strategies
+- **Success criteria** - define clear outcomes and verification steps
 
-- **Interface-First Approach:** ALWAYS read and understand the actual interface definition before implementing mock classes, especially for complex APIs like VSCode
-- **Exact Implementation:** Mock classes MUST implement interfaces exactly as defined, including readonly properties, proper method signatures, and all required methods
-- **Type Safety in Mocks:** Never use `any` types in mock implementations unless absolutely necessary; maintain strict type compliance with the original interface
+### **3. Execute**
 
-### MOCK SERVICE INITIALIZATION
+- **Follow established patterns** - use documented architectural and testing approaches
+- **Update all consumers** - shared adapters, imports, DI wiring, TypeScript mappings
+- **Maintain consistency** - apply changes uniformly across affected components
+- **Document as you go** - update Actions Log and relevant documentation
 
-- **Initialization Order:** When creating mock services with dependencies, ensure proper initialization order to avoid "used before initialization" errors
-- **State Management:** Mock services must properly manage their internal state and provide reset mechanisms for testing isolation
-- **Dependency Injection:** Follow the same dependency injection patterns used in the actual implementation when creating mock services
+### **4. Verify**
 
-### INCREMENTAL ERROR RESOLUTION
+- **Reread changed files** - verify modifications were applied correctly
+- **Run quality gates** - tests, builds, linters, type checks
+- **End-to-end validation** - ensure primary workflows still function
+- **Check for regressions** - verify no unintended side effects
 
-- **One Error at a Time:** Fix one compilation error at a time to maintain progress and prevent overwhelming complexity
-- **Build-Verify Cycle:** After each fix, build the project to verify the error is resolved before moving to the next issue
-- **Regression Prevention:** Each fix must be verified to not introduce new errors or break existing functionality
+### **5. Report**
 
-### COMPLETE INTERFACE COMPLIANCE
-
-- **Full Property Implementation:** Mock objects MUST implement ALL required properties of their interfaces, not just the ones currently needed in tests
-- **Interface Validation:** Before finalizing mock objects, verify they satisfy every property and method signature defined in the target interface
-- **Future-Proof Mocks:** Design mocks to handle all interface requirements, not just current use cases, to prevent future compilation failures
-
----
-
-## E · USER REQUEST INTEGRATION & BALANCED EXECUTION
-
-### USER REQUEST PRIORITIZATION
-
-- **Balanced Execution:** When users make specific requests (like documentation creation), prioritize them alongside technical fixes to maintain user satisfaction
-- **Request Validation:** Always acknowledge and integrate user requests into the execution plan, even when they appear secondary to technical objectives
-- **Documentation Synergy:** Use user-requested documentation as an opportunity to codify lessons learned and create reusable knowledge assets
-
-### USER CAPABILITY QUESTION PROTOCOL
-
-- **Directive:** When users ask "Can you fix this?" or similar capability questions, treat them as **requests for action**, not philosophical inquiries
-- **Response Protocol:** Immediately acknowledge the capability and proceed with the fix, rather than debating whether it's possible
-- **Proactive Resolution:** Use capability questions as signals to investigate and resolve root causes rather than workarounds
+- **Clear status indicators** - ✅ success, ⚠️ self-corrected, 🚧 blockers
+- **Evidence-based reporting** - include command outputs and file contents
+- **Lessons learned** - document what worked and what failed
+- **Next steps** - identify any remaining work or follow-up actions
 
 ---
 
-## F · TESTING & QUALITY ASSURANCE PROTOCOLS
+## **Critical Anti-Patterns**
 
-### TEST SKIPPING PROHIBITION
+### **❌ FORBIDDEN: Making Assumptions**
 
-- **FORBIDDEN:** Never skip tests without fixing root causes; this creates technical debt and masks real problems
-- **Root Cause Investigation:** When tests fail, investigate the integration layer first, not the test logic
-- **Edge Case Value:** Edge case tests are valuable as they often reveal integration issues affecting core functionality
+- Don't assume framework behavior without checking documentation
+- Don't assume file contents without reading them
+- Don't assume command behavior without testing
+- Don't assume architectural patterns without consulting documentation
 
-### MOCK INTEGRATION INVESTIGATION
+### **❌ FORBIDDEN: Incomplete Solutions**
 
-- **Integration Layer Priority:** When mocks don't work, investigate the integration layer first, not the test logic
-- **Mock Service Validation:** Verify that mock services properly integrate with the systems they're mocking
-- **Cross-Layer Consistency:** Ensure path normalization and other critical behaviors are consistent across all layers (mocks, tests, and actual code)
+- Don't fix symptoms without addressing root causes
+- Don't update one component without updating all consumers
+- Don't implement partial solutions that create inconsistencies
+- Don't skip verification steps
 
----
+### **❌ FORBIDDEN: Defending Mistakes**
 
-## G · PROJECT WORKFLOW COMPLIANCE
+- Don't defend misdiagnoses when user provides corrections
+- Don't ignore explicit user feedback about performance or behavior
+- Don't continue with failed approaches without pivoting
+- Don't blame external factors for internal errors
 
-### WORKFLOW ADHERENCE REQUIREMENTS
+### **❌ FORBIDDEN: Creating Technical Debt**
 
-- **MANDATORY:** Always use established project workflows and command patterns as defined in project documentation
-- **Workflow Discovery:** Before executing commands, consult project-specific workflow documentation
-- **Pattern Consistency:** Follow the established command patterns and aliases for the current project
-- **Documentation Reference:** When unsure about project-specific commands, refer to project workflow documentation
-- **Nx MCP Priority:** ALWAYS use Nx MCP tools for workspace assessment before any other approach
-- **Aka Alias Mandate:** ALWAYS use aka package aliases for all project operations, never fall back to npm/nx directly
-- **Deviation Prevention:** Any deviation from established workflow patterns constitutes a critical failure
+- Don't skip tests to meet deadlines
+- Don't use workarounds that violate architectural principles
+- Don't leave incomplete implementations
+- Don't ignore linter errors or type issues
 
-### UNIVERSAL PRINCIPLES
+### **❌ FORBIDDEN: Testing Anti-Patterns**
 
-- **Established Patterns:** Respect and follow the established command patterns and workflows for each project
-- **Workflow Documentation:** Always consult project-specific workflow documentation before executing commands
-- **Consistency Maintenance:** Maintain consistency with the established project workflow patterns
+- Don't bypass real runtime behavior with complex mocks
+- Don't ignore user feedback about testing flaws - investigate architectural implications
+- Don't create elaborate mock hierarchies that compete with production patterns
+- Don't treat test failures as isolated issues without considering systemic problems
 
-### POWERSHELL SCRIPTING HYGIENE
+### **❌ FORBIDDEN: Poor Template Management**
 
-- Here‑Strings: Use single‑quoted here‑strings to prevent unintended interpolation. Insert dynamic values via placeholder replacement rather than escaping `$`.
-- Variable Expansion: Avoid relying on backtick‑escaping for `$` in here‑strings; prefer placeholders and `.Replace()` before script block creation.
+- Don't hardcode configuration templates in validation logic
+- Don't place templates outside the tool package that uses them
+- Don't use CommonJS path resolution patterns in ES modules
+- Don't skip incremental validation of file loading implementations
 
----
+### **❌ FORBIDDEN: Documentation Violations**
 
-## H · AI INTERACTION & OPERATIONAL PRINCIPLES
-
-### GENERAL OPERATIONAL PRINCIPLES
-
-- **Autonomous Operation:** Always proceed with the next logical troubleshooting or generation step unless the user explicitly requests confirmation
-- **Confirmation Handling:** Only ask for confirmation before running commands if the user has not opted out
-- **Proactive Action:** Never ask for confirmation or offer to apply a change for safe, non-destructive actions or debugging steps. Always proceed and apply the change automatically, then summarize the action after
-- **Language Standards:** Do not include language such as "Would you like me to..." or "If you want, I can..." for safe, non-destructive actions. Instead, take the action and inform the user
-- **Immediate Implementation:** When a root cause and solution are clear, proceed to implement the solution immediately and summarize the action taken after the change
-
-### EXPLICIT END-GOAL EXECUTION (NO-CONFIRMATION MODE)
-
-- **Directive:** When the user states an explicit end goal (e.g., "add this feature and write tests that go green" or "achieve 100% across all 4 coverage columns"), proceed continuously toward that goal without further confirmation prompts.
-- **Scope:** This applies to features, refactors, tests, coverage targets, lint/type-check goals, and CI fixes.
-- **Pause Conditions:** Only pause to ask for input if a true blocking ambiguity remains after reasonable local research, or if an irreversible/destructive action is required.
-- **Completion:** Continue iterating (code, tests, config) and verifying (builds/tests) until the explicit end condition is satisfied.
-
-### COMMUNICATION PROTOCOLS
-
-- **Direct Implementation:** Do not display "Example fix" or similar code blocks; instead, directly apply the fix when a root cause is found, unless explicitly asked for an example or preview
-- **Code Snippet Usage:** Only provide code snippets or manual instructions if the user requests to see them, or if the change is potentially destructive
-- **Question Management:** Avoid open-ended confirmation questions unless required for safety
-- **Action Summarization:** Summarize findings before taking destructive actions
-
-### SAFETY PROTOCOLS
-
-- **Data Protection:** Never run commands that delete user data without explicit confirmation
-- **Intent Clarification:** If unsure about a user's intent, ask for clarification
+- **Skipping Date Verification**: NEVER write Actions Log entries without verifying actual file modification timestamps
+- **Making Up Dates**: NEVER use estimated or guessed dates - always use verified file timestamps
+- **Skipping Verification Commands**: NEVER skip the `Get-ChildItem` verification step
+- **Ignoring Date Guidelines**: NEVER ignore explicit date handling requirements in documentation protocols
+- **Failing to Correct**: If you violate date verification, you MUST correct the entry immediately
 
 ---
 
-## I · GUIDELINE DEVIATION REMEDIATION PROTOCOL
+## **Quality Assurance Protocols**
 
-### 6.1. :: GENERAL PROTOCOL
+### **Build Verification**
 
-- **Directive**: When a deviation from the guidelines is identified, the cause of the deviation MUST be corrected before continuing on to correct the code in question. The following process MUST be followed reflexively.
-    1.  **Assess Error Source:** The source of the error MUST be assessed.
-        - If the error was introduced by the AI in the current context, the subsequent steps in this protocol MUST be followed.
-        - If the error was pre-existing in the user's code, the error MUST be addressed using standard correction procedures, and this deviation protocol does not apply.
+- **Always run builds first** - ensure clean state before testing
+- **Fix build errors immediately** - don't proceed with broken builds
+- **Use cache bypass when troubleshooting** - `--skip-nx-cache` for diagnosis
 
-    2.  **Acknowledge Error:** The deviation or AI-introduced error MUST be clearly acknowledged, and what was done incorrectly MUST be detailed.
-    3.  **Propose Guideline Improvement:** A guideline gap MUST be assumed. The ambiguity or omission that contributed to the error MUST be identified. Concrete changes to the relevant guideline document MUST be proposed. Strengthening positive rules MUST be prioritized over adding negative clarifications.
-    4.  **Present Guideline Change:** The proposed guideline improvement MUST be presented in a complete, formatted code block as per the breadcrumb rules.
-    5.  **MANDATORY DOCTRINE MODIFICATION:** The proposed guideline improvement MUST be immediately applied to the applicable doctrine document before proceeding with any other actions. This step is NON-NEGOTIABLE.
+### **Test Execution**
 
-        **Application Location Rules:**
-        - **Universal AI Behavior**: If the improvement affects core AI behavior principles that apply to ALL AI agents in ANY workspace → Apply to `Universal-Operational-Doctrine.mdc`
-        - **Project-Specific Workflows**: If the improvement affects FocusedUX-specific workflows, conventions, or architectural rules → Apply to `FocusedUX-Operational-Doctrine.mdc`
-        - **Project Architecture**: If the improvement affects project structure, build system, or development practices → Apply to `docs/SOP.md`
-        - **Testing Strategies**: If the improvement affects testing patterns or quality assurance protocols → Apply to `docs/Global-Testing-Strategy.md`
+- **Run full test suites** - ensure no regressions
+- **Verify test isolation** - tests shouldn't interfere with each other
+- **Validate mocks** - ensure they properly simulate real behavior
+- **Measure performance** - before/after metrics for optimizations
+- **Test real runtime behavior** - validate actual production patterns, not just mock replacements
+- **Create integration tests first** - validate core architectural patterns before fixing individual test failures
+- **Investigate user testing insights** - treat feedback about testing flaws as potential architectural revelations
 
-        **Verification Required**: After applying the modification, verify the change was applied correctly and is in the appropriate document.
+### **Documentation Updates**
 
-    6.  **Correct the Code:** The AI's next action depends on how the deviation was identified.
-    - **User-Initiated Deviation Keyword:** If the user's prompt that triggered this protocol began with the keyword `deviation:` (case-insensitive), the AI MUST ask for confirmation before presenting the corrected code.
-    - **All Other Cases:** In all other cases (e.g., self-correction, user pointing out an error without the keyword), the AI MUST immediately proceed to present the corrected code in the same response, following the guideline change.
+- **Update Actions Log** - document successful implementations and lessons learned
+- **Include failure documentation** - what was tried and failed (MANDATORY)
+- **Update relevant strategies** - testing strategies, architectural patterns
+- **Document anti-patterns** - prevent future mistakes
+- **MANDATORY DATE VERIFICATION**: Before writing any Actions Log entry, you MUST:
+  1. Identify the relevant project directory
+  2. Run `Get-ChildItem "path/to/project" -Recurse | Measure-Object -Property LastWriteTime -Maximum`
+  3. Use the exact timestamp returned
+  4. If you fail to do this, you must correct the entry immediately
 
-    - **Directive**: A failure to follow this process is itself a deviation that must be addressed in the next turn by proposing an improvement to this section.
+---
 
-#### 6.1.1. :: INTEGRITY OF ACKNOWLEDGEMENT
+## **Diagnostic Protocols**
 
-- **Directive**: All acknowledgements of error MUST be based exclusively on the facts of the interaction and the provided context. The AI MUST NEVER fabricate or hallucinate justifications for its errors, such as referencing files, rules, or context that was not provided. A violation of this rule constitutes a critical failure.
+### **Test Execution Issues**
 
-### 6.2. :: CORRECTION PERSISTENCE
+- **Use cache bypass flags** - `--skip-nx-cache`, `--verbose` to see raw output
+- **Distinguish execution vs output** - tests not running vs output suppressed
+- **Check framework behavior** - verify against actual documentation
+- **Measure system impact** - overall performance, not just individual components
 
-- **Directive**: When a code correction is identified and fixed, the correction MUST be persistently reflected in the internal working model of that file for all subsequent operations.
-- **Directive**: If a previously fixed error is re-introduced, this lapse MUST be acknowledged as a deviation from this rule and the fix MUST be re-applied.
+### **Performance Issues**
 
-### 6.3. :: COMPLETENESS OF CORRECTION
+- **Measure before/after** - both individual components and overall system
+- **Target specific problems** - avoid global optimizations that can backfire
+- **Validate improvements** - ensure changes actually help
+- **Consider user feedback** - prioritize reported issues over internal metrics
 
-- **Directive**: When presenting a code correction, the AI MUST ensure that ALL related changes required to fix the identified issue are included in the response.
-- **Directive**: A partial or incomplete fix is a deviation. Before finalizing the response, the AI MUST perform a self-audit to confirm that the proposed changes constitute a complete solution to the problem described. This includes reverting all incorrect modifications made in previous turns if the root cause was misdiagnosed.
+### **Architectural Issues**
 
-### 6.4. :: ACTION COMPLETENESS VERIFICATION
+- **Consult documentation first** - SOP.md and FocusedUX-Testing-Strategy.md
+- **Verify against patterns** - ensure alignment with established approaches
+- **Check all consumers** - update imports, DI wiring, TypeScript mappings
+- **Maintain consistency** - apply patterns uniformly
 
-- **Directive**: When an action requires operating on a set of files (e.g., reverting changes, applying a pattern), the AI MUST perform a final verification step before presenting the response.
-- **Directive**: This verification MUST involve explicitly listing all files that were intended to be part of the operation and comparing that list against the files actually included in the drafted response. Any discrepancy MUST be corrected. This is to prevent incomplete or partial application of a required action.
+### **Template and Configuration Management**
 
-### 6.5. :: PROHIBITION OF ERROR RE-INTRODUCTION
+- **Co-locate templates with tools** - place configuration templates within the package that validates them
+- **Use ES module path patterns** - always use `fileURLToPath(import.meta.url)` for file path resolution
+- **Validate incrementally** - test each step of file loading implementations immediately
+- **Distinguish error types** - separate configuration issues from actual code problems
 
-- **Directive**: An error or anti-pattern that has been previously identified and for which a correction has been proposed MUST NEVER be re-introduced in a subsequent response within the same session.
-- **Directive**: Before proposing a solution, the AI MUST perform a self-correction check to ensure the proposed changes do not re-introduce a previously failed state. A re-introduction of a known error is a critical failure of the Core Operating Loop.
+---
 
-### 6.6. :: ABSTRACTED ERROR PATTERN RECOGNITION
+## **Communication Standards**
 
-- **Directive**: When a logical error is identified and corrected, the AI MUST attempt to abstract the anti-pattern and its solution. Before generating new code that involves a similar logical structure, the AI MUST perform a self-check to ensure it is not re-introducing the previously identified anti-pattern, even if the specific variable or function names are different. A failure to apply a known-correct pattern to a new but structurally identical problem is a deviation.
+### **Status Reporting**
 
-### 6.7. :: HOLISTIC CONFIGURATION AUDITING
+- **Use clear indicators** - ✅ success, ⚠️ self-corrected, 🚧 blockers
+- **Provide evidence** - command outputs, file contents, error messages
+- **Include context** - what was attempted, what worked, what failed
+- **Suggest next steps** - clear action items or recommendations
 
-- **Directive**: When a persistent error is identified as originating from workspace configuration (e.g., build failures, sync errors, module resolution issues), the AI **MUST** perform a holistic audit of all relevant top-level configuration files in a single, unified response. This includes, but is not limited to, `nx.json`, the root `tsconfig.json`, and the package manager's workspace file (e.g., `pnpm-workspace.yaml`). The goal is to ensure that project discovery, dependencies, and build settings are consistent across all files and reflect the actual state of the workspace. Partial or sequential fixes to configuration files in this scenario are a deviation.
+### **Error Handling**
 
-### 6.8. :: HOLISTIC REFACTORING VERIFICATION
+- **Acknowledge mistakes** - don't defend or deflect
+- **Provide solutions** - don't just report problems
+- **Learn from failures** - document what went wrong and how to prevent it
+- **Maintain transparency** - be honest about limitations and uncertainties
 
-- **Directive**: When a refactoring action involves changing a fundamental pattern (e.g., switching from explicit to inferred build targets), the change **MUST** be applied consistently to **all** projects that follow that pattern.
-- **Rationale**: Applying a new architectural pattern to only one of several similar projects will lead to an inconsistent and broken workspace. A holistic audit **MUST** be performed to identify all affected projects and ensure they are all updated in a single, atomic operation. A partial refactoring is a deviation.
+---
 
-### 6.9. :: DOCTRINE MODIFICATION ENFORCEMENT
+## **Continuous Improvement**
 
-**CRITICAL: Doctrine modification execution is NON-NEGOTIABLE and MUST be verified.**
+### **Session End Protocol**
 
-**Enforcement Requirements:**
+- **Verify completeness** - ensure all planned work is complete
+- **Document lessons** - update Actions Log with new patterns and anti-patterns
+- **Identify improvements** - note areas where processes could be better
+- **Plan next steps** - outline any remaining work or follow-up actions
+- **MANDATORY VERIFICATION CHECKLIST**:
+  - [ ] Date verification command executed for any Actions Log entries
+  - [ ] Actual file modification timestamps used (no estimated dates)
+  - [ ] All timestamps match file system reality
+  - [ ] No violations of date handling protocols
 
-- **IMMEDIATE EXECUTION**: When step 5 of the deviation remediation protocol is reached, the doctrine modification MUST be executed within the same response
-- **VERIFICATION REQUIRED**: After applying the modification, the AI MUST verify the change was applied correctly
-- **NO PROCEEDING**: No further actions can be taken until the doctrine modification is verified as complete
-- **FAILURE CONSEQUENCE**: Failure to execute step 5 constitutes a critical failure that must be addressed before any other actions
+### **Pattern Recognition**
 
-**Verification Protocol:**
+- **Identify recurring issues** - document common problems and solutions
+- **Update documentation** - improve guidance based on experience
+- **Share learnings** - ensure institutional knowledge is preserved
+- **Refine processes** - continuously improve workflows and procedures
 
-1. Apply the proposed doctrine change
-2. Verify the change was applied correctly
-3. Report the verification status
-4. Only then proceed with subsequent actions
+---
 
-**CRITICAL: This step is NON-NEGOTIABLE and cannot be deferred or skipped.**
+> **Note:** This document contains universal AI behavior protocols that apply to ALL AI agents in ANY workspace. For project-specific guidelines, refer to the FocusedUX-Operational-Doctrine.mdc file.
 
 ---
 

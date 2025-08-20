@@ -2,23 +2,22 @@
     "name": "@fux/project-butler-core",
     "version": "0.1.0",
     "private": true,
-    "type": "module",
     "main": "./dist/index.js",
-    "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
-            "import": "./dist/index.js"
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
         }
     },
-    "sideEffects": false,
     "dependencies": {
-        "awilix": "^9.0.0",
         "js-yaml": "^4.1.0"
     },
     "devDependencies": {
         "@types/js-yaml": "^4.0.9",
-        "@fux/mockly": "workspace:*"
+        "@types/node": "^20.0.0",
+        "typescript": "^5.0.0",
+        "vitest": "^3.2.4"
     }
 }

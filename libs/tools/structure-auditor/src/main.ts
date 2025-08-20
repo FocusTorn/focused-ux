@@ -3,10 +3,13 @@ import fs from 'node:fs'
 import process from 'node:process'
 import { color, ROOT } from './util/helpers.js'
 import { errors, printGroupedErrors, printExpandedErrors } from './util/errors.js'
+import { readJson } from './util/fs.js'
 import { checkPackageJsonExtDependencies, checkNoUnusedDeps, checkVSCodeEngineVersion, checkPackageVersionFormat, checkCorePackageDependencies } from './checks/package-json.js'
 import { checkProjectJsonExt, checkProjectJsonPackaging, checkProjectJsonExternalsConsistency, checkProjectJsonExtExternals, checkProjectJsonLintAndTestTargets, checkProjectJsonLintAndTestTargetsLibs, checkProjectJsonTargetConsistency, checkUniversalTargets } from './checks/project-json.js'
 import { checkTsconfigExt, checkTsconfigCore, checkTsconfigShared, checkTsconfigLibPaths } from './checks/tsconfig.js'
 import { checkRequiredExtFiles, checkNoDynamicImports, checkNoVSCodeValueImports, checkVSCodeAdaptersInSharedOnly, checkNoDynamicImportsInShared } from './checks/misc.js'
+import { checkNoSharedImportsInCoreTests, checkExtensionThinWrapperPrinciple, checkMocklyIntegrationPatterns, checkTestSetupPatterns } from './checks/testing-strategy.js'
+import { checkExtensionThinWrapperPrinciple as checkExtThinWrapper, checkCoreDIContainerPatterns, checkAdapterArchitecture, checkNoNodeJsImports, checkBuildDependenciesInDevDeps } from './checks/architecture.js'
 
 // Load aliases from pnpm_aliases.json
 function loadAliases() {
@@ -16,15 +19,14 @@ function loadAliases() {
 		return { packages: {} }
 	}
 	
-	try {
-		const aliasesContent = fs.readFileSync(aliasesPath, 'utf-8')
-
-		return JSON.parse(aliasesContent)
-	}
-	catch (error) {
-		console.warn(`Warning: Could not load aliases from ${aliasesPath}: ${error}`)
+	const aliases = readJson(aliasesPath)
+	
+	if (aliases === null) {
+		console.warn(`Warning: Could not load aliases from ${aliasesPath}`)
 		return { packages: {} }
 	}
+	
+	return aliases
 }
 
 // Resolve alias or project name to package name
@@ -134,6 +136,18 @@ function showHelp() {
 	console.log('  • Type imports from VSCode are allowed (only value imports are flagged)')
 	console.log('  • Comments and string literals containing "vscode." are excluded from VSCode checks')
 	console.log('  • Shared package is allowed to have VSCode adapters (other packages must use shared adapters)')
+	console.log('')
+	console.log('Testing Strategy Compliance:')
+	console.log('  • Core packages should NEVER import from @fux/shared during tests')
+	console.log('  • Extension packages should only test VSCode integration, not business logic')
+	console.log('  • Use Mockly shims instead of hard-coded mocks')
+	console.log('  • Test setup files should clear mocks in beforeEach')
+	console.log('')
+	console.log('Architectural Patterns:')
+	console.log('  • Extension packages must be thin wrappers (no business logic)')
+	console.log('  • All adapters must be in the shared package')
+	console.log('  • No direct Node.js module imports in extension code')
+	console.log('  • Build-only dependencies must be in devDependencies')
 	console.log('')
 	console.log('Test Files:')
 	console.log('  • Test files (*.test.*, *.spec.*, setup.*) are excluded from VSCode adapter checks')
@@ -260,6 +274,17 @@ function main() { //>
 			ok = checkPackageVersionFormat(item) && ok
 			ok = checkRequiredExtFiles(item) && ok
 			ok = checkCorePackageDependencies(item) && ok
+			
+			// New architectural and testing strategy checks
+			ok = checkNoSharedImportsInCoreTests(item) && ok
+			ok = checkExtensionThinWrapperPrinciple(item) && ok
+			ok = checkMocklyIntegrationPatterns(item) && ok
+			ok = checkTestSetupPatterns(item) && ok
+			ok = checkExtThinWrapper(item) && ok
+			ok = checkCoreDIContainerPatterns(item) && ok
+			ok = checkAdapterArchitecture(item) && ok
+			ok = checkNoNodeJsImports(item) && ok
+			ok = checkBuildDependenciesInDevDeps(item) && ok
 			
 			// Check universal targets for core and ext
 			const coreProjectPath = path.join(ROOT, 'packages', item, 'core', 'project.json')

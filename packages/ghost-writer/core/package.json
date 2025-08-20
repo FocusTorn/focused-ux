@@ -17,9 +17,8 @@
         "dist",
         "!**/*.tsbuildinfo"
     ],
-    "dependencies": {
-        "typescript": "^5.8.3",
-        "@fux/shared": "workspace:*"
-    },
-    "devDependencies": {}
+    "dependencies": {},
+    "devDependencies": {
+        "typescript": "^5.8.3"
+    }
 }

@@ -17,5 +17,9 @@
     },
     "include": ["src/**/*.ts"],
     "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts", "src/__tests__/**"],
-    "references": []
+    "references": [
+        {
+            "path": "../mockly/tsconfig.lib.json"
+        }
+    ]
 }

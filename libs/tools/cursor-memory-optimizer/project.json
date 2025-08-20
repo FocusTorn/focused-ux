@@ -1,5 +1,5 @@
 {
-    "name": "cursor-memory-optimizer",
+    "name": "@fux/cursor-memory-optimizer",
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/tools/cursor-memory-optimizer/src",
     "projectType": "library",

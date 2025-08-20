@@ -29,6 +29,7 @@ export interface IMocklyService {
 		createTerminal: (name: string) => any
 		showErrorMessage: (message: string) => void
 		showInformationMessage: (message: string, ...items: string[]) => Promise<string | undefined>
+
 		showWarningMessage: (message: string, options?: { modal?: boolean }, ...items: any[]) => Promise<any>
 
 		showInputBox: (options: any) => Promise<string | undefined>

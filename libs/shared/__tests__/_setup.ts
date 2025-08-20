@@ -1,5 +1,10 @@
-import { vi } from 'vitest'
+import { vi, afterEach } from 'vitest'
 import { mockly, mocklyService } from '@fux/mockly'
+
+// Keep mocks clean between tests
+afterEach(() => {
+  vi.clearAllMocks()
+})
 
 // Console output configuration for tests
 // Set this to true to enable console output for debugging

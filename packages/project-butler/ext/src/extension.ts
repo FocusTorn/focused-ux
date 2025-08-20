@@ -1,72 +1,193 @@
-import type { ExtensionContext, Disposable, Uri } from 'vscode'
-import { ExtensionContextAdapter, ExtensionAPIAdapter } from '@fux/shared'
-import type { IProjectButlerService } from '@fux/project-butler-core'
-import { createDIContainer } from './injection.js'
-import { constants } from './_config/constants.js'
-import { hotswap } from './hotswap.js'
+import * as vscode from 'vscode'
+import { 
+	PackageJsonFormattingService,
+	TerminalManagementService,
+	BackupManagementService,
+	PoetryShellService,
+	ProjectMaidManagerService
+} from '@fux/project-butler-core'
+import { FileSystemAdapter } from './adapters/FileSystem.adapter'
+import { PathAdapter } from './adapters/Path.adapter'
+import { YamlAdapter } from './adapters/Yaml.adapter'
+import { WindowAdapter } from './adapters/Window.adapter'
+import { WorkspaceAdapter } from './adapters/Workspace.adapter'
 
-export async function activate(context: ExtensionContext): Promise<void> {
-	console.log(`[${constants.extension.name}] Activating...`)
-
-	let container: any = null
+/**
+ * Called when the extension is activated
+ */
+export function activate(context: vscode.ExtensionContext) {
+	console.log('F-UX: Project Maid is now active!')
 
 	try {
-		const extensionContext = new ExtensionContextAdapter(context)
-		const extensionAPI = new ExtensionAPIAdapter()
+		// Create adapters
+		const fileSystem = new FileSystemAdapter()
+		const path = new PathAdapter()
+		const yaml = new YamlAdapter()
+		const window = new WindowAdapter()
+		const workspace = new WorkspaceAdapter()
 
-		container = await createDIContainer(context)
+		// Create core services with their dependencies
+		const packageJsonFormattingService = new PackageJsonFormattingService(fileSystem, yaml)
+		const terminalManagementService = new TerminalManagementService(fileSystem, path)
+		const backupManagementService = new BackupManagementService(fileSystem, path)
+		const poetryShellService = new PoetryShellService(fileSystem, path)
+		const projectMaidManager = new ProjectMaidManagerService({
+			packageJsonFormatting: packageJsonFormattingService,
+			terminalManagement: terminalManagementService,
+			backupManagement: backupManagementService,
+			poetryShell: poetryShellService
+		})
 
-		const projectButlerService = container.resolve('projectButlerService') as IProjectButlerService
-
-		const disposables: Disposable[] = [
-			extensionAPI.registerCommand(constants.commands.updateTerminalPath, (uri?: Uri) =>
-				projectButlerService.updateTerminalPath(uri?.fsPath)),
-
-			extensionAPI.registerCommand(constants.commands.createBackup, (uri?: Uri) =>
-				projectButlerService.createBackup(uri?.fsPath)),
-
-			extensionAPI.registerCommand(constants.commands.enterPoetryShell, (uri?: Uri) =>
-				projectButlerService.enterPoetryShell(uri?.fsPath)),
-
-			extensionAPI.registerCommand(constants.commands.formatPackageJson, (uri?: Uri) =>
-				projectButlerService.formatPackageJson(uri?.fsPath)),
-
-			extensionAPI.registerCommand(constants.commands.hotswap, (uri?: Uri) => {
-				if (!uri) {
-					// Use the container if available, otherwise fall back to console
-					if (container) {
-						const windowAdapter = container.resolve('window')
-						windowAdapter.showErrorMessage('Hotswap command must be run from a VSIX file.')
-					} else {
-						console.error('Hotswap command must be run from a VSIX file.')
-					}
-					return Promise.resolve()
-				}
-
-				const windowAdapter = container.resolve('window')
-
-				return hotswap(uri, windowAdapter)
+		// Register all commands
+		const disposables = [
+			vscode.commands.registerCommand('fux-project-butler.formatPackageJson', async (uri?: vscode.Uri) => {
+				await formatPackageJson(uri, projectMaidManager, window, workspace)
 			}),
+			vscode.commands.registerCommand('fux-project-butler.updateTerminalPath', async (uri?: vscode.Uri) => {
+				await updateTerminalPath(uri, terminalManagementService, window)
+			}),
+			vscode.commands.registerCommand('fux-project-butler.createBackup', async (uri?: vscode.Uri) => {
+				await createBackup(uri, backupManagementService, window)
+			}),
+			vscode.commands.registerCommand('fux-project-butler.enterPoetryShell', async (uri?: vscode.Uri) => {
+				await enterPoetryShell(uri, poetryShellService, window)
+			})
 		]
 
-		extensionContext.subscriptions.push(...disposables)
-		console.log(`[${constants.extension.name}] Activated successfully.`)
-	}
-	catch (error) {
-		console.error(`[${constants.extension.name}] Failed to activate:`, error)
+		context.subscriptions.push(...disposables)
 
-		// Try to show error message using container if available, otherwise fall back to console
-		if (container) {
-			try {
-				const windowAdapter = container.resolve('window')
-				windowAdapter.showErrorMessage(`Failed to activate ${constants.extension.name}: ${error instanceof Error ? error.message : 'Unknown error'}`)
-			} catch (containerError) {
-				console.error(`[${constants.extension.name}] Failed to show error message:`, containerError)
-			}
-		} else {
-			console.error(`[${constants.extension.name}] Container creation failed, cannot show error message to user`)
-		}
+		console.log('F-UX: Project Maid commands registered successfully')
+	}
+	catch (error: any) {
+		console.error('F-UX: Project Maid failed to activate:', error.message)
+		vscode.window.showErrorMessage(`Failed to activate Project Maid: ${error.message}`)
 	}
 }
 
-export function deactivate(): void {}
+/**
+ * Called when the extension is deactivated
+ */
+export function deactivate() {
+	console.log('F-UX: Project Maid is now deactivated!')
+}
+
+/**
+ * Format package.json using .FocusedUX configuration
+ */
+async function formatPackageJson(
+	uri: vscode.Uri | undefined,
+	projectMaidManager: ProjectMaidManagerService,
+	window: WindowAdapter,
+	workspace: WorkspaceAdapter
+): Promise<void> {
+	try {
+		// Get the URI from context menu or active editor
+		let finalUri: string | undefined
+		
+		if (uri) {
+			// Called from context menu
+			finalUri = uri.fsPath
+		}
+		else {
+			// Called from command palette
+			finalUri = window.getActiveTextEditor()?.document.uri.fsPath
+		}
+
+		if (!finalUri) {
+			await window.showErrorMessage('No package.json file selected or active.')
+			return
+		}
+		if (!finalUri.endsWith('package.json')) {
+			await window.showErrorMessage('This command can only be run on a package.json file.')
+			return
+		}
+
+		const workspaceRoot = workspace.getWorkspaceRoot()
+
+		if (!workspaceRoot) {
+			await window.showErrorMessage('Could not find workspace root. Cannot format package.json.')
+			return
+		}
+
+		await projectMaidManager.formatPackageJson(finalUri, workspaceRoot)
+		await window.showInformationMessage('Successfully formatted package.json')
+	}
+	catch (error: any) {
+		await window.showErrorMessage(`Failed to format package.json: ${error.message}`)
+	}
+}
+
+/**
+ * Update terminal path to the current file or folder location
+ */
+async function updateTerminalPath(
+	uri: vscode.Uri | undefined,
+	terminalManagementService: TerminalManagementService,
+	window: WindowAdapter
+): Promise<void> {
+	try {
+		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
+
+		if (!finalUri) {
+			await window.showErrorMessage('No file or folder context to update terminal path.')
+			return
+		}
+
+		const terminalCommand = await terminalManagementService.updateTerminalPath(finalUri)
+		
+		const terminal = window.getActiveTerminal() || window.createTerminal('F-UX Terminal')
+		terminal.sendText(terminalCommand.command)
+		terminal.show()
+	}
+	catch (error: any) {
+		await window.showErrorMessage(`Error updating terminal path: ${error.message}`)
+	}
+}
+
+/**
+ * Create a backup of the selected file
+ */
+async function createBackup(
+	uri: vscode.Uri | undefined,
+	backupManagementService: BackupManagementService,
+	window: WindowAdapter
+): Promise<void> {
+	try {
+		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
+
+		if (!finalUri) {
+			await window.showErrorMessage('No file selected or open to back up.')
+			return
+		}
+
+		const backupPath = await backupManagementService.createBackup(finalUri)
+		const backupFileName = backupPath.split('/').pop() || backupPath.split('\\').pop()
+		
+		await window.showInformationMessage(`Backup created: ${backupFileName}`)
+	}
+	catch (error: any) {
+		await window.showErrorMessage(`Error creating backup: ${error.message}`)
+	}
+}
+
+/**
+ * Enter Poetry shell in the current directory
+ */
+async function enterPoetryShell(
+	uri: vscode.Uri | undefined,
+	poetryShellService: PoetryShellService,
+	window: WindowAdapter
+): Promise<void> {
+	try {
+		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
+
+		const terminalCommand = await poetryShellService.enterPoetryShell(finalUri)
+		
+		const terminal = window.createTerminal('Poetry Shell')
+		terminal.sendText(terminalCommand.command)
+		terminal.show()
+	}
+	catch (error: any) {
+		await window.showErrorMessage(`Error entering poetry shell: ${error.message}`)
+	}
+} 

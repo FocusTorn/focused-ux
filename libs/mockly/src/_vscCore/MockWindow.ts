@@ -144,6 +144,8 @@ export class MockWindow {
 		return items[0]
 	}
 
+
+
 	async showInputBox(options?: InputBoxOptions): Promise<string | undefined> {
 		this._utils.info(`Input Box: ${options?.prompt || 'Enter value'}`)
 		return options?.value || ''

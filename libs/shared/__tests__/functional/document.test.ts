@@ -1,4 +1,27 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+
+// Mock vscode module to avoid slow real API calls
+vi.mock('vscode', () => ({
+	DocumentSymbol: vi.fn().mockImplementation((name, detail, kind, range, selectionRange, children) => ({
+		name,
+		detail,
+		kind,
+		range,
+		selectionRange,
+		children
+	})),
+	RelativePattern: vi.fn().mockImplementation((base, pattern) => ({
+		base,
+		pattern
+	})),
+	Position: vi.fn().mockImplementation((line, character) => ({
+		line,
+		character
+	})),
+	SymbolKind: {
+		Function: 12
+	}
+}))
 
 describe('Document Tests', () => {
 	describe('DocumentSymbolAdapter', () => {

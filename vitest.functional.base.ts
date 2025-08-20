@@ -4,11 +4,16 @@ import process from 'node:process'
 
 export default defineConfig({
 	test: {
-		globals: true,
-		environment: 'node',
+		
 		reporters: ['default'],
 		include: ['__tests__/**/*.test.ts'],
 		exclude: ['**/*.d.ts', '**/*.config.*', '**/__tests__/_reports/**'],
+        
+        globals: true,
+		environment: 'node',
+        
+        // VS Code extension specific settings
+        deps: { optimizer: { ssr: { include: ['vscode'] } } }, 
 	},
 
 	resolve: {
@@ -18,8 +23,7 @@ export default defineConfig({
 			'vscode': path.resolve(process.cwd(), 'libs/shared/vscode-test-adapter.ts'),
 		},
 	},
-
-	optimizeDeps: {
-		exclude: ['vscode'],
-	},
+    
+    // VS Code extension specific settings
+	// optimizeDeps: { exclude: ['vscode'], },
 })

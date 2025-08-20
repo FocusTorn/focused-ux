@@ -1,7 +1,16 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 
 describe('Utilities Tests', () => {
 	describe('showTimedInformationMessage', () => {
+		// Use fake timers only for this specific test suite that uses timers
+		beforeAll(() => {
+			vi.useFakeTimers()
+		})
+
+		afterAll(() => {
+			vi.useRealTimers()
+		})
+
 		it('should show timed information message', async () => {
 			const { showTimedInformationMessage } = await import('../../src/utils/showTimedInformationMessage.js')
 			
@@ -11,7 +20,12 @@ describe('Utilities Tests', () => {
 				}),
 			}
 
-			await showTimedInformationMessage(mockWindow, 'test message', 1000)
+			const promise = showTimedInformationMessage(mockWindow, 'test message', 1000)
+			
+			// Fast-forward timers to complete the async operation
+			vi.runAllTimers()
+			
+			await promise
 
 			expect(mockWindow.withProgress).toHaveBeenCalledWith(
 				{ title: 'test message', cancellable: false },

@@ -8,6 +8,5 @@ export default mergeConfig(
 		test: {
 			setupFiles: ['./__tests__/_setup.ts'],
 		},
-		optimizeDeps: { exclude: ['vscode'] },
 	}),
-)
+) 

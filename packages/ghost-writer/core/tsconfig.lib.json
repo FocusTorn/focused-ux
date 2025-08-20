@@ -8,11 +8,7 @@
         "types": ["node"],
         "declaration": true,
         "declarationMap": true,
-        "composite": true,
-        "paths": {
-            "@fux/shared": ["../../../libs/shared"]
-        }
+        "composite": true
     },
-    "include": ["src/**/*.ts"],
-    "references": [{ "path": "../../../libs/shared/tsconfig.lib.json" }]
+    "include": ["src/**/*.ts"]
 }

@@ -1,5 +1,35 @@
 import { describe, it, expect, vi } from 'vitest'
 
+// Mock vscode module to avoid slow real API calls
+vi.mock('vscode', () => ({
+	TreeItem: vi.fn().mockImplementation((label, collapsibleState) => ({
+		label,
+		collapsibleState,
+		description: undefined,
+		tooltip: undefined,
+		contextValue: undefined,
+		iconPath: undefined,
+		command: undefined
+	})),
+	ThemeIcon: vi.fn().mockImplementation((id, color) => ({
+		id,
+		color
+	})),
+	EventEmitter: vi.fn().mockImplementation(() => ({
+		event: vi.fn(),
+		fire: vi.fn(),
+		dispose: vi.fn()
+	})),
+	TreeItemCollapsibleState: {
+		None: 0,
+		Collapsed: 1,
+		Expanded: 2
+	},
+	SymbolKind: {
+		Function: 12
+	}
+}))
+
 describe('Tree Comprehensive Tests', () => {
 	describe('TreeItem-related adapters', () => {
 		it('TreeItemAdapter get/set and toVsCode', async () => {

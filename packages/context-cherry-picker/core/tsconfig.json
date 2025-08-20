@@ -6,11 +6,13 @@
         "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
         "composite": true
     },
-    "include": [
-        "src/**/*.ts"
-    ],
+    "include": ["src/**/*.ts"],
     "references": [
-        { "path": "../../../libs/shared/tsconfig.lib.json" },
-        { "path": "./tsconfig.lib.json" }
+        {
+            "path": "../../../libs/shared"
+        },
+        {
+            "path": "./tsconfig.lib.json"
+        }
     ]
 }

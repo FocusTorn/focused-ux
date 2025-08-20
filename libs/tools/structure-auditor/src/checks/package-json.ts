@@ -4,33 +4,55 @@ import { addError } from '../util/errors.js'
 import { readJson, findJsonLocation } from '../util/fs.js'
 import { ROOT } from '../util/helpers.js'
 
-function checkDependencyImports(pkg: string, depName: string): boolean { //>
+function checkDependencyImports(pkg: string, depName: string): { found: boolean, location?: { file: string, line: number, column: number } } { //>
 	const extSrcPath = path.join(ROOT, 'packages', pkg, 'ext', 'src')
 
 	if (!fs.existsSync(extSrcPath)) {
-		return false
+		return { found: false }
 	}
 
 	// Recursively search for TypeScript files and check imports
-	function searchForImports(dir: string): boolean {
+	function searchForImports(dir: string): { found: boolean, location?: { file: string, line: number, column: number } } {
 		const entries = fs.readdirSync(dir, { withFileTypes: true })
 		
 		for (const entry of entries) {
 			const fullPath = path.join(dir, entry.name)
 			
 			if (entry.isDirectory()) {
-				if (searchForImports(fullPath)) {
-					return true
+				const result = searchForImports(fullPath)
+
+				if (result.found) {
+					return result
 				}
 			}
 			else if (entry.name.endsWith('.ts') || entry.name.endsWith('.js')) {
 				try {
 					const content = fs.readFileSync(fullPath, 'utf-8')
+					const lines = content.split('\n')
+					
 					// Check for import statements that reference the dependency
 					const importPattern = new RegExp(`from\\s+['"]${depName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`, 'g')
 
-					if (importPattern.test(content)) {
-						return true
+					for (let i = 0; i < lines.length; i++) {
+						const line = lines[i]
+
+						if (importPattern.test(line)) {
+							// Allow @fux/shared imports in injection.ts files (DI boundary layer)
+							if (depName === '@fux/shared' && entry.name === 'injection.ts') {
+								continue
+							}
+							
+							const relPath = path.relative(ROOT, fullPath)
+
+							return {
+								found: true,
+								location: {
+									file: relPath,
+									line: i + 1,
+									column: line.indexOf('from') + 1,
+								},
+							}
+						}
 					}
 				}
 				catch (_e) {
@@ -39,7 +61,7 @@ function checkDependencyImports(pkg: string, depName: string): boolean { //>
 			}
 		}
 		
-		return false
+		return { found: false }
 	}
 	
 	return searchForImports(extSrcPath)
@@ -65,7 +87,8 @@ export function checkPackageJsonExtDependencies(pkg: string) { //>
 	// Check core dependency
 	const coreInDeps = !!deps[coreDepName]
 	const coreInDevDeps = !!devDeps[coreDepName]
-	const coreIsImported = checkDependencyImports(pkg, coreDepName)
+	const coreImportResult = checkDependencyImports(pkg, coreDepName)
+	const coreIsImported = coreImportResult.found
 
 	// First check if dependency is unused (takes precedence over placement)
 	if ((coreInDeps || coreInDevDeps) && !coreIsImported) {
@@ -95,37 +118,28 @@ export function checkPackageJsonExtDependencies(pkg: string) { //>
 		}
 	}
 
-	// Check shared dependency
+	// Check shared dependency - Extension packages should NEVER import or depend on @fux/shared
 	const sharedInDeps = !!deps[sharedDepName]
 	const sharedInDevDeps = !!devDeps[sharedDepName]
-	const sharedIsImported = checkDependencyImports(pkg, sharedDepName)
+	const sharedImportResult = checkDependencyImports(pkg, sharedDepName)
+	const sharedIsImported = sharedImportResult.found
 
-	// First check if dependency is unused (takes precedence over placement)
-	if ((sharedInDeps || sharedInDevDeps) && !sharedIsImported) {
-		// Dependency is not used but declared
-		const location = sharedInDeps ? 'dependencies' : 'devDependencies'
+	// Extension packages should NEVER have @fux/shared as a dependency
+	if (sharedInDeps || sharedInDevDeps) {
+		const _location = sharedInDeps ? 'dependencies' : 'devDependencies'
 		const jsonLocation = findJsonLocation(pkgJsonPath, sharedDepName)
 		const locationStr = jsonLocation ? `:${jsonLocation.line}:${jsonLocation.column}` : ''
 
-		addError('Unused Dependency', `${pkg}/ext/package.json${locationStr}: '${sharedDepName}' in '${location}' is not imported in the code.`)
+		addError('Forbidden Shared Dependency', `${pkg}/ext/package.json${locationStr}: Extension packages must NOT depend on '${sharedDepName}'. Use dependency injection instead.`)
 		ok = false
 	}
-	else if (sharedIsImported) {
-		// Dependency is used, check placement
-		if (!sharedInDeps && sharedInDevDeps) {
-			const location = findJsonLocation(pkgJsonPath, sharedDepName)
-			const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-			addError('Incorrect Dependency Placement', `${pkg}/ext/package.json${locationStr}: '${sharedDepName}' should be in 'dependencies', not 'devDependencies'.`)
-			ok = false
-		}
-		else if (!sharedInDeps && !sharedInDevDeps) {
-			const location = findJsonLocation(pkgJsonPath, 'dependencies')
-			const locationStr = location ? `:${location.line}:${location.column}` : ''
+	// Extension packages should NEVER import @fux/shared directly
+	if (sharedIsImported) {
+		const locationStr = sharedImportResult.location ? `:${sharedImportResult.location.line}:${sharedImportResult.location.column}` : ''
 
-			addError('Missing Dependency', `${pkg}/ext/package.json${locationStr}: Missing '${sharedDepName}' in 'dependencies'.`)
-			ok = false
-		}
+		addError('Forbidden Shared Import', `${sharedImportResult.location?.file}${locationStr}: Extension packages must NOT import from '${sharedDepName}' directly. Use dependency injection instead.`)
+		ok = false
 	}
 
 	return ok

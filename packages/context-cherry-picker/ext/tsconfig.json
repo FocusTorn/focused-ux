@@ -8,15 +8,16 @@
         "declarationMap": false,
         "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
     },
-    "include": [
-        "src/**/*.ts"
-    ],
+    "include": ["src/**/*.ts"],
     "references": [
         {
-            "path": "../core/tsconfig.lib.json"
+            "path": "../../../libs/shared"
         },
         {
-            "path": "../../../libs/shared/tsconfig.lib.json"
+            "path": "../core"
+        },
+        {
+            "path": "../../../libs/mockly"
         }
     ]
 }

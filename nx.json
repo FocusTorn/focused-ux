@@ -1,11 +1,6 @@
 {
     "targetDefaults": {
         
-        "@nx/vite:test": { //>
-            "dependsOn": [
-                "^build"
-            ]
-        }, //<
         "@nx/esbuild:esbuild": { //>
             "cache": true,
             "inputs": [
@@ -23,7 +18,9 @@
                 "thirdParty": true
             }
         }, //<
-
+        "@nx/vite:test": { "dependsOn": [ "^build" ] },
+        
+        
         "build": { //>
             "dependsOn": [
                 "^build"
@@ -38,7 +35,7 @@
             "cache": true
         }, //<
         "package:dev": { //>
-            "cache": true,
+            "cache": false,
             "dependsOn": [
                 "build"
             ],
@@ -119,22 +116,31 @@
                 "quiet": false
             }
         }, //<
-
+        
+        // "test": {
+        //     "executor": "@nx/vite:test",
+        //     "outputs": ["{options.reportsDirectory}"],
+        //     "options": {
+        //         "configFile": "{projectRoot}/vitest.config.ts",
+        //         "reporters": "default"
+        //     }
+        
         "test": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["^build"],
             "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
+                "passWithNoTests": true,
                 "reporters": "default"
             }
-            
         },
         
         "test:full": {
-            "executor": "nx:run-commands",
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
             "dependsOn": ["^test"],
             "options": {
-                "commands": []
+                "reporters": "default"
             }
         },
         
@@ -218,6 +224,29 @@
             }
         }, //<
 
+        "analyze-bundle": { //>
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsx scripts/analyze-bundle.ts --project {options.projectName}",
+                "cwd": "{workspaceRoot}"
+            }
+        }, //<
+        "analyze-bundle:open": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "tsx scripts/analyze-bundle.ts --project {projectName} --open",
+                "cwd": "{workspaceRoot}"
+            }
+        }, //<
+        "analyze-bundle:custom": { //>
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsx scripts/analyze-bundle.ts --project {options.projectName} --output {options.outputDir}",
+                "cwd": "{workspaceRoot}"
+            }
+        }, //<
+
         "clean": { //>
             "executor": "nx:run-commands",
             "options": {
@@ -255,6 +284,9 @@
                 "packages/ghost-writer/ext/**/*",
                 "packages/project-butler/core/**/*",
                 "packages/project-butler/ext/**/*",
+                "packages/project-butler/core/**/*",
+                "packages/project-butler/ext/**/*",
+                "packages/project-butler/all/**/*",
                 "packages/context-cherry-picker/core/**/*",
                 "packages/context-cherry-picker/ext/**/*",
                 "packages/ai-agent-interactor/core/**/*",
@@ -341,6 +373,9 @@
             "@fux/note-hub-ext",
             "@fux/project-butler-core",
             "@fux/project-butler-ext",
+            "@fux/project-butler-core",
+            "@fux/project-butler-ext",
+            "@fux/project-butler-all",
             "@fux/context-cherry-picker-core",
             "@fux/context-cherry-picker-ext",
             "@fux/ai-agent-interactor-core",

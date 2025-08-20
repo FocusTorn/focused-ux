@@ -24,29 +24,95 @@ function Invoke-AkaCLI {
 }
 
 function Show-PnpmAliases {
-    $aliases=Get-PackageAliases
+    $config = Get-AliasConfiguration
+    $aliases = $config.packages
+    $targets = $config.targets
+    
     Write-Host "`nAvailable PNPM/Nx Aliases:" -ForegroundColor Cyan
-    Write-Host "`n  Meta Aliases (run-many):" -ForegroundColor Yellow
-    Write-Host ("  "+"ext".PadRight(8)+"→ all '-ext' packages")
-    Write-Host ("  "+"core".PadRight(8)+"→ all '-core' packages")
-    Write-Host ("  "+"all".PadRight(8)+"→ all aliased packages")
-    Write-Host ""
-    Write-Host "  Package Aliases:" -ForegroundColor Yellow
-    foreach ($a in $aliases.PSObject.Properties.Name) {
-        $v = $aliases.$a
-        if ($v -is [PSCustomObject] -and $v.PSObject.Properties['name']) { $pkg = $v.name; $s = $v.suffix; if ($s) { $proj = "@fux/$pkg-$s" } else { $proj = "@fux/$pkg" } $full = $v.full -eq $true }
-        else { $pkg = $v; if ($pkg.StartsWith('@fux/')) { $proj = $pkg } else { $proj = "@fux/$pkg" } $full = $false }
-        $fi = if ($full) { ' (full)' } else { '' }
-        Write-Host ("  " + $a.PadRight(8) + "→ " + $pkg + $fi + "  (Nx: " + $proj + ")")
+    
+    # Show targets
+    Write-Host "`n  Targets:" -ForegroundColor Yellow
+    foreach ($target in $targets.PSObject.Properties) {
+        $name = $target.Name
+        $value = $target.Value
+        $comment = if ($value -match '//\s*(.+)') { $matches[1] } else { "" }
+        $display = if ($comment) { "$name → $value  # $comment" } else { "$name → $value" }
+        Write-Host ("  " + $display)
     }
+    
+    # Show expandables
+    if ($config.expandables) {
+        Write-Host "`n  Expandables:" -ForegroundColor Yellow
+        foreach ($expandable in $config.expandables.PSObject.Properties) {
+            $name = $expandable.Name
+            $value = $expandable.Value
+            $comment = if ($value -match '//\s*(.+)') { $matches[1] } else { "" }
+            $display = if ($comment) { "$name → $value  # $comment" } else { "$name → $value" }
+            Write-Host ("  " + $display)
+        }
+    }
+    
+    # Show not-nx-targets
+    if ($config.'not-nx-targets') {
+        Write-Host "`n  Not-Nx Targets:" -ForegroundColor Yellow
+        foreach ($notNxTarget in $config.'not-nx-targets'.PSObject.Properties) {
+            $name = $notNxTarget.Name
+            $value = $notNxTarget.Value
+            $comment = if ($value -match '//\s*(.+)') { $matches[1] } else { "" }
+            $display = if ($comment) { "$name → $value  # $comment" } else { "$name → $value" }
+            Write-Host ("  " + $display)
+        }
+    }
+    
+    # Show package aliases
+    Write-Host "`n  Package Aliases:" -ForegroundColor Yellow
+    foreach ($alias in $aliases.PSObject.Properties) {
+        $name = $alias.Name
+        $value = $alias.Value
+        
+        if ($value -is [PSCustomObject] -and $value.PSObject.Properties['name']) {
+            $pkg = $value.name
+            $suffix = $value.suffix
+            $full = $value.full -eq $true
+            
+            if ($suffix) { 
+                $proj = "@fux/$pkg-$suffix" 
+            } else { 
+                $proj = "@fux/$pkg" 
+            }
+            
+            $fullFlag = if ($full) { ' (full)' } else { '' }
+            Write-Host ("  " + $name.PadRight(8) + "→ " + $pkg + $fullFlag + "  (Nx: " + $proj + ")")
+        } else {
+            $pkg = $value
+            if ($pkg.StartsWith('@fux/')) { 
+                $proj = $pkg 
+            } else { 
+                $proj = "@fux/$pkg" 
+            }
+            Write-Host ("  " + $name.PadRight(8) + "→ " + $pkg + "  (Nx: " + $proj + ")")
+        }
+    }
+    
     Write-Host "`nUsage: <alias> <target> [flags]"
     Write-Host "Examples:"
     Write-Host "  gw b --prod                    # Build ghost-writer extension"
     Write-Host "  ext b --prod                   # Build all extension packages"
+    Write-Host "  mockly t                       # Test mockly library"
+    Write-Host "  shared tc                      # Test shared library with coverage"
 }
 
 Set-Alias pnpm-aliases-help Show-PnpmAliases
 $aliases = Get-PackageAliases
+
+# Add aka help function for better discoverability
+function Show-AkaHelp {
+    Show-PnpmAliases
+}
+
+Set-Alias aka Show-AkaHelp
+Set-Alias "aka help" Show-AkaHelp
+Set-Alias "aka list" Show-PnpmAliases
 function New-PnpmAliasFunction {
     param([string]$alias)
     # Build the function body without variable expansion using a single-quoted here-string

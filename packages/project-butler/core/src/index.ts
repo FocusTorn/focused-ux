@@ -1,9 +1,15 @@
-export { ProjectButlerService } from './services/ProjectButler.service.js'
-export type { IProjectButlerService } from './_interfaces/IProjectButlerService.js'
-export type { ITerminal, ITerminalProvider } from './_interfaces/ITerminal.js'
-export type { IWindow } from './_interfaces/IWindow.js'
-export type { FileStat } from 'vscode'
+// Interfaces
+export * from './_interfaces/IPackageJsonFormattingService'
+export * from './_interfaces/ITerminalManagementService'
+export * from './_interfaces/IBackupManagementService'
+export * from './_interfaces/IPoetryShellService'
+export * from './_interfaces/IProjectMaidManagerService'
 
-// DI Container exports
-export { createCoreContainer } from './container.js'
-export type { ICoreContainer, CoreContainer } from './container.js'
+// Services
+export * from './services/PackageJsonFormatting.service'
+export * from './services/TerminalManagement.service'
+export * from './services/BackupManagement.service'
+export * from './services/PoetryShell.service'
+export * from './services/ProjectMaidManager.service'
+
+// Core package exports all services and interfaces for use by the extension 

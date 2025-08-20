@@ -1,135 +1,173 @@
----
-description: When the command `retro` is issued.
-globs: 
-alwaysApply: false
----
+# Retrospective Protocol
 
-## **Phase 0: Session Analysis (Chat-Only Reflection)**
+## **Purpose**
 
-- **Directive:** Review every turn of the conversation from the initial user request up to this point. Synthesize your findings into a concise, self-critical analysis.
-- **Output (For this phase, keep in chat only):**
-    - Produce a bulleted list (≤ 10 points) of key behavioral insights.
-    - Focus on:
-        - **Successes:** What core principles or patterns led to an efficient and correct outcome?
-        - **Failures & Corrections:** Where did your approach fail? What was the root cause? How did the user's feedback correct your behavior?
-        - **Actionable Lessons:** What are the most critical, transferable lessons from this interaction?
+This protocol enables systematic learning and continuous improvement by analyzing session outcomes and integrating lessons into operational doctrine.
 
----
+## **Quick Reference**
 
-## **Phase 1: Lesson Distillation**
+### **Execution Flow**
 
-- **Directive:** From your analysis in Phase 0, you will now filter and abstract only the most valuable insights into **durable, universal principles.**
-- **Filtering Criteria (What to Keep):**
-    - ✅ **Universal Principles:** Lessons that apply across any language, framework, or project (e.g., "Always verify an environment variable exists before using it").
-    - ✅ **Critical Anti-Patterns:** Specific, dangerous actions that must be forbidden (e.g., "Never use streaming commands like `tail -f` which hang the terminal").
-    - ✅ **Effective Protocols:** High-level workflows that proved successful (e.g., The "KILL FIRST, THEN RUN" pattern for restarting services).
-    - ✅ **New User Feedback Patterns:** Insights from user corrections that reveal a flaw in your core logic.
-- **Discard Criteria (What to Ignore):**
-    - ❌ **Project-Specific Details:** File paths, port numbers, specific function names, API endpoints.
-    - ❌ **One-Off Trivia:** Information that is not a reusable pattern.
-    - ❌ **Session Narrative:** The story of what you did. Focus only on the _learning_.
+```
+retro command issued
+├─ Phase 1: Session Analysis (chat only)
+├─ Phase 2: Lesson Distillation
+├─ Phase 3: Doctrine Integration
+├─ Phase 4: Documentation Updates
+└─ Phase 5: Final Report
+```
+
+### **Key Outputs**
+
+- **Session Analysis**: ≤10 key behavioral insights (chat only)
+- **Doctrine Updates**: Universal and/or FocusedUX doctrine improvements
+- **Actions Log Entry**: Document successful implementations and lessons
+- **Testing Strategy Updates**: If test-related lessons learned
 
 ---
 
-## **Phase 2: Doctrine Integration**
+## **Phase 1: Session Analysis (Chat-Only Reflection)**
 
-- **Directive:** Route lessons to the correct rule file based on scope and update accordingly.
-- **Rule File Discovery Protocol:**
-    1.  **Universal Target (Universal-Operational-Doctrine.mdc):** If the lesson pertains to universal AI behavior, operational workflows, or cross-project principles, update this file.
-    2.  **Project-Specific Target (FocusedUX-Operational-Doctrine.mdc):** If the lesson pertains to this repo's workflows, testing patterns, architectural rules, or project conventions, update this file.
-    3.  **Non-Duplication:** If both could apply, prefer project-specific; update universal only if it adds non-duplicative value.
-- **Integration Protocol:**
-    1.  **Read** the target rule file to understand its current structure.
-    2.  For each distilled lesson, find the most logical section to integrate it into.
-    3.  **Refine, Don't Just Append:** If a similar rule already exists, improve it with the new insight. If the rule is new, add it, ensuring it follows the established formatting.
-    4.  **Write-Location Checklist:** In your final report, explicitly list the files and sections updated.
-    5.  **Read-Write-Reread:** Reopen updated files and confirm changes before reporting completion.
-- **Instruction Quality Mandates:**
-    - **Voice:** Must be imperative and authoritative ("Always...", "Never...", "FORBIDDEN:...").
-    - **Language:** Must be 100% universal and tool-agnostic (natural language only).
-    - **Conciseness:** Rules must be clear, concise, and non-redundant.
+### **Directive**
 
----
+Review every turn of the conversation from the initial user request to this point. Synthesize findings into a concise, self-critical analysis.
 
-## **Phase 3: Actions-Log Documentation**
+### **Output (Keep in chat only)**
 
-- **Directive:** Create or update the Actions-Log.md file in the `./docs` directory to catalog successful implementations and outcomes.
-- **Documentation Requirements:**
-    - **File Location:** Must be created in `./docs/Actions-Log.md`
-    - **Entry Format:** Each entry must include:
-        - Date and descriptive title (e.g., "2024-12-19 - Mockly Library Enhancement")
-        - High-level summary of goals and outcomes
-        - Key implementations and critical fixes applied
-        - Lessons learned and actionable insights
-    - **Entry Placement:** New entries MUST be added to the TOP of the document
-    - **Purpose:** Serve as a living reference for successful patterns and solutions
-    - **Maintenance:** Update this log whenever significant successful implementations are completed
+Produce a bulleted list (≤10 points) of key behavioral insights focusing on:
+
+#### **Successes**
+
+- What core principles or patterns led to efficient and correct outcomes?
+- Which established workflows proved effective?
+
+#### **Failures & Corrections**
+
+- Where did your approach fail? What was the root cause?
+- How did the user's feedback correct your behavior?
+- What misdiagnoses occurred and why?
+
+#### **Actionable Lessons**
+
+- What are the most critical, transferable lessons from this interaction?
+- What patterns should be repeated or avoided in the future?
 
 ---
 
-## **Phase 4: Testing Strategy Documentation**
+## **Phase 2: Lesson Distillation**
 
-- **Directive:** For any test-related fixes that result in correct implementation, the Testing Strategy document MUST be updated to reflect the lessons learned and solutions applied.
+### **Directive**
+
+Filter and abstract only the most valuable insights into **durable, universal principles.**
+
+### **Keep (Universal Principles)**
+
+- ✅ **Universal Principles**: Lessons that apply across any language, framework, or project
+- ✅ **Critical Anti-Patterns**: Specific, dangerous actions that must be forbidden
+- ✅ **Effective Protocols**: High-level workflows that proved successful
+- ✅ **New User Feedback Patterns**: Insights from user corrections that reveal core logic flaws
+
+### **Discard (Project-Specific Details)**
+
+- ❌ **Project-Specific Details**: File paths, port numbers, specific function names
+- ❌ **One-Off Trivia**: Information that is not a reusable pattern
+- ❌ **Session Narrative**: The story of what you did (focus only on learning)
 
 ---
 
-## **Phase 4.1: Documentation Consistency Verification**
+## **Phase 3: Doctrine Integration**
 
-- **Directive:** Ensure that SOP and Global Testing Strategy documents are ALWAYS actively referenced to prevent deviations from established patterns.
-- **Verification Requirements:**
-    - **Before Implementation:** Always consult `docs/SOP.md` and `docs/global-testing-strategy.md` for established patterns
-    - **During Implementation:** Reference these documents to ensure no deviations occur
-    - **After Implementation:** Verify that the implementation aligns with documented patterns
-    - **Documentation Updates:** If patterns change, update both documents to maintain consistency
-- **Critical Rules:**
-    - **SOP Compliance:** All architectural decisions must align with `docs/SOP.md` patterns
-    - **Testing Strategy Alignment:** All testing approaches must follow `docs/global-testing-strategy.md` guidelines
-    - **Deviation Documentation:** Any required deviations must be documented with clear rationale
-    - **Pattern Evolution:** Successful new patterns should be integrated into global documentation
-    - **Deviation Verification:** The AI MUST obtain explicit user verification before deviating from global strategies, even if the AI believes the strategy is not applicable
-- **Documentation Requirements:**
-    - **Primary Location:** Must update `docs/global-testing-strategy.md` for global testing patterns and lessons learned
-    - **Package-Specific Location:** Update `packages/{package}/__tests__/TESTING_STRATEGY.md` for package-specific deviations or unique testing requirements
-    - **Update Triggers:** Any of the following scenarios require Testing Strategy updates:
-        - Test failures that reveal mock setup issues
-        - Mock library limitations discovered during testing
-        - Console output or debugging challenges resolved
-        - Test isolation problems solved
-        - Mock configuration patterns that proved successful
-        - New testing anti-patterns identified
-        - Successful testing approaches that should be standardized
-    - **Update Format:** Each update must include:
-        - **Problem Description:** Clear explanation of what went wrong
-        - **Root Cause Analysis:** Why the problem occurred
-        - **Solution Applied:** Specific steps taken to fix the issue
-        - **Best Practices:** Generalizable patterns for future use
-        - **Mock Library Coverage:** What can/cannot be handled by mock libraries
-    - **Section Organization:** Updates should be organized into logical sections:
-        - Mock Setup & Configuration
-        - Debugging & Troubleshooting
-        - Library Limitations & Workarounds
-        - Test Isolation & State Management
-    - **Maintenance:** These documents serve as the authoritative reference for testing patterns and should be updated whenever new insights are gained
+### **Directive**
+
+Route lessons to the correct rule file based on scope and update accordingly.
+
+### **Rule File Selection**
+
+1. **Universal Target** (`.cursor/rules/Universal-Operational-Doctrine.mdc`): Universal AI behavior, operational workflows, cross-project principles
+2. **Project-Specific Target** (`.cursor/rules/FocusedUX-Operational-Doctrine.mdc`): Repo workflows, testing patterns, architectural rules, project conventions
+3. **Non-Duplication**: If both could apply, prefer project-specific; update universal only if it adds non-duplicative value
+
+### **Integration Protocol**
+
+1. **Read** the target rule file to understand current structure
+2. **Find logical sections** for each distilled lesson
+3. **Refine, Don't Just Append**: Improve existing rules with new insights; add new rules following established formatting
+4. **Write-Location Checklist**: Explicitly list files and sections updated in final report
+5. **Read-Write-Reread**: Confirm changes before reporting completion
+
+### **Instruction Quality Requirements**
+
+- **Voice**: Imperative and authoritative ("Always...", "Never...", "FORBIDDEN:...")
+- **Language**: 100% universal and tool-agnostic (natural language only)
+- **Conciseness**: Clear, concise, and non-redundant
+
+---
+
+## **Phase 4: Documentation Updates**
+
+### **Actions Log Documentation**
+
+- **Location**: `./docs/Actions-Log.md`
+- **Format**: Date and descriptive title, high-level summary, key implementations, lessons learned
+- **Placement**: Add to TOP of document
+- **Purpose**: Living reference for successful patterns and solutions
+
+### **Testing Strategy Documentation**
+
+- **Location**: `docs/FocusedUX-Testing-Strategy.md` for project-specific patterns
+- **Package-Specific**: `packages/{package}/__tests__/TESTING_STRATEGY.md` for unique requirements
+- **Triggers**: Test failures, mock issues, debugging challenges, new anti-patterns
+- **Format**: Problem description, root cause, solution, best practices, library coverage
+
+### **SOP Documentation**
+
+- **Location**: `docs/SOP.md` for comprehensive build system and architectural reference
+- **Triggers**: Architectural changes, build system modifications, new package patterns, troubleshooting discoveries
+- **Format**: Detailed technical documentation with examples, configurations, and step-by-step procedures
+- **Cross-Reference**: Ensure consistency with doctrine files and testing strategy
+
+### **Documentation Consistency Verification**
+
+- **Before Implementation**: Consult `docs/SOP.md` and `docs/FocusedUX-Testing-Strategy.md`
+- **During Implementation**: Reference documents to prevent deviations
+- **After Implementation**: Verify alignment with documented patterns
+- **Critical Rule**: Obtain explicit user verification before deviating from global strategies
 
 ---
 
 ## **Phase 5: Final Report**
 
-- **Directive:** Conclude the session by presenting a clear, structured report.
-- **Report Structure:**
-    1.  **Status of Doctrine:** A single line: `✅ Universal Operational Doctrine updated.` OR `✅ FocusedUX Operational Doctrine updated.` OR `ℹ️ No universal lessons were distilled; no updates required.`
-    2.  **Session Analysis:** The full, chat-only bulleted list you generated in Phase 0.
+### **Directive**
+
+Present a clear, structured report concluding the retrospective.
+
+### **Report Structure**
+
+1. **Status of Doctrine**:
+    - `✅ Universal Operational Doctrine updated.` OR
+    - `✅ FocusedUX Operational Doctrine updated.` OR
+    - `ℹ️ No universal lessons were distilled; no updates required.`
+
+2. **Session Analysis**: The full bulleted list from Phase 1
+
+3. **Files Updated**: Explicit list of files and sections modified
+
+4. **Key Learnings**: Most important insights for future sessions
 
 ---
 
 ## **Execution Trigger**
 
-- **Command:** `retro` - Triggers full retrospective analysis
-- **Scope:** Entire session review and learning integration
-- **Output:** Structured learning report with doctrine updates
-- **Integration:** Updates both Universal and FocusedUX doctrine files as appropriate
+- **Command**: `retro` - Triggers full retrospective analysis
+- **Scope**: Entire session review and learning integration
+- **Output**: Structured learning report with doctrine updates
+- **Integration**: Updates both Universal and FocusedUX doctrine files as appropriate
 
 ---
+
+> **REMINDER**: This protocol is how you evolve. Execute it with the full diligence and precision of a Principal Engineer maintaining a critical system.
+
+**Begin your retrospective now.**
 
 > **REMINDER:** This protocol is the most critical part of your lifecycle. It is how you evolve. Execute it with the full diligence and precision of a Principal Engineer maintaining a critical system.
 

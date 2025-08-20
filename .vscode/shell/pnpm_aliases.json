@@ -27,12 +27,14 @@
         "cc": "clean:cache",
         "cd": "clean:dist",
         
-        // Audit aliases
-        "a": "audit",
-        
         "s": "status",
         "o": "optimize",
         "m": "monitor"
+    },
+
+    "not-nx-targets": {
+        "a": "tsx libs/tools/structure-auditor/src/main.ts",
+        "esv": "npx esbuild-visualizer --metadata"
     },
 
     "expandables": {

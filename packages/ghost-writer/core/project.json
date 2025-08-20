@@ -54,12 +54,10 @@
             "extends": "clean:cache"
         },
         "test": {
-            "extends": "vite:test",
-            "dependsOn": ["^build"]
+            "extends": "test"
         },
         "test:full": {
-            "extends": "vite:test",
-            "dependsOn": ["^test"]
+            "extends": "test:full"
         }
     },
     "tags": ["core"]

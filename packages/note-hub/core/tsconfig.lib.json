@@ -16,5 +16,12 @@
     },
     "include": ["src/**/*.ts", "src/**/*.tsx"],
     "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts"],
-    "references": [{ "path": "../../../libs/shared/tsconfig.lib.json" }]
+    "references": [
+        {
+            "path": "../../../libs/shared/tsconfig.lib.json"
+        },
+        {
+            "path": "../../../libs/mockly/tsconfig.lib.json"
+        }
+    ]
 }

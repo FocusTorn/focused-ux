@@ -85,10 +85,21 @@ describe('WindowAdapter', () => {
 	}) //<
 
 	it('should handle showTimedInformationMessage with default duration', async () => { //>
+		// Mock the withProgress method to avoid real timers
+		const originalWithProgress = windowAdapter.withProgress
+		windowAdapter.withProgress = vi.fn().mockImplementation(async (options, task) => {
+			// Don't actually run the task to avoid real timers
+			return undefined as any
+		})
+		
 		// Test without duration (should use default from config)
 		await windowAdapter.showTimedInformationMessage('test message')
 		
 		expect(mockConfigurationService.get).toHaveBeenCalledWith('FocusedUX.info_message_show_seconds', 1.5)
+		expect(windowAdapter.withProgress).toHaveBeenCalled()
+		
+		// Restore original method
+		windowAdapter.withProgress = originalWithProgress
 	}) //<
 
 	it('should handle timers for dropdown and description messages', async () => { //>
@@ -98,17 +109,25 @@ describe('WindowAdapter', () => {
 			description: undefined,
 		}
 
-		// Test dropdown message with timer
-		await windowAdapter.showDropdownMessage('test dropdown', 1000)
+		// Test dropdown message timer clearing (without using fake timers to avoid complications)
+		const dropdownPromise = windowAdapter.showDropdownMessage('test dropdown', 10) // Use very short timer
+		await dropdownPromise
+		// Check message is set after async operation
 		expect((windowAdapter as any)._explorerView.message).toBe('test dropdown')
+		
+		// Wait for timer to clear (short timeout)
+		await new Promise(resolve => setTimeout(resolve, 20))
+		expect((windowAdapter as any)._explorerView.message).toBeUndefined()
 
-		// Test description message with timer
-		await windowAdapter.showDescriptionMessage('test description', 1000)
+		// Test description message timer clearing
+		const descriptionPromise = windowAdapter.showDescriptionMessage('test description', 10) // Use very short timer
+		await descriptionPromise
+		// Check description is set after async operation
 		expect((windowAdapter as any)._explorerView.description).toBe('test description')
-
-		// Verify the messages were set (we can't easily test the timeout clearing without fake timers)
-		expect((windowAdapter as any)._explorerView.message).toBe('test dropdown')
-		expect((windowAdapter as any)._explorerView.description).toBe('test description')
+		
+		// Wait for timer to clear (short timeout)
+		await new Promise(resolve => setTimeout(resolve, 20))
+		expect((windowAdapter as any)._explorerView.description).toBe('')
 	}) //<
 
 	it('should handle setClipboard', async () => { //>
