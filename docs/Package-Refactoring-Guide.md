@@ -486,6 +486,67 @@ Rate the package complexity to plan effort:
 - **Focus on Functional Validation**: Instead of relying on static analysis, validate that the architecture works functionally
 - **Test Real Behavior**: Ensure that the refactored package actually works correctly rather than just passing static checks
 
+## **Test Configuration Migration Patterns**
+
+### **Double Execution Elimination**
+
+**Problem**: Test commands were running twice due to conflicting configurations between global `targetDefaults` and AKA script injection.
+
+**Solution**:
+
+- **Pattern Replication Protocol**: When a working solution exists (Project Butler), replicate it exactly rather than trying to improve it
+- **Remove Global Conflicts**: Remove `configFile` options from `nx.json` `targetDefaults` to allow AKA script to handle config injection
+- **Use Proven Executor**: Use `@nx/vite:test` executor with proper configuration instead of complex `nx:run-commands`
+- **Single Execution Verification**: Always use `-s -stream` flags to verify no duplicate test runs before considering a solution complete
+
+### **Test Configuration Migration Steps**
+
+1. **Copy Working Pattern**: Use the exact `project.json` test target configuration from Project Butler:
+
+    ```json
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "dependsOn": ["^build"]
+    },
+    "test:full": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "dependsOn": [
+        {
+          "dependencies": true,
+          "target": "test",
+          "params": "forward"
+        }
+      ]
+    }
+    ```
+
+2. **Remove Extends**: Replace `extends: "test"` and `extends: "test:full"` with explicit executor configuration
+
+3. **Verify Single Execution**: Test all commands with `-s -stream` flags:
+    - `{alias} t -s -stream` - Should show single execution
+    - `{alias} tf -s -stream` - Should show single execution for each package in dependency chain
+
+4. **AKA Script Integration**: Ensure no conflicting `configFile` options in local packages to allow AKA script to handle config injection
+
+### **Configuration Hierarchy Understanding**
+
+**Key Principle**: Global configurations can conflict with local overrides. The hierarchy is:
+
+1. Global `targetDefaults` in `nx.json`
+2. Local package `project.json` targets
+3. AKA script dynamic injection
+
+**Best Practice**: Remove global `targetDefaults` for test targets and let local packages handle their own configuration with AKA script support.
+
+### **Anti-Patterns for Test Configuration**
+
+- **🚫 Over-Engineering**: Don't use complex executors when simpler ones achieve the same result
+- **🚫 Ignoring Working Patterns**: Don't attempt to improve working test configurations without first understanding why they work
+- **🚫 Incomplete Verification**: Don't assume test configuration is complete without explicit single-execution verification
+- **🚫 Global Configuration Conflicts**: Don't have conflicting `configFile` options in both global `targetDefaults` and local package configurations
+
 ## **Post-Refactoring Maintenance**
 
 ### **Ongoing Compliance**

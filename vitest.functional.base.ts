@@ -6,7 +6,6 @@ export default defineConfig({
 	test: {
 		
 		reporters: ['default'],
-		include: ['__tests__/**/*.test.ts'],
 		exclude: ['**/*.d.ts', '**/*.config.*', '**/__tests__/_reports/**'],
         
         globals: true,
@@ -24,6 +23,4 @@ export default defineConfig({
 		},
 	},
     
-    // VS Code extension specific settings
-	// optimizeDeps: { exclude: ['vscode'], },
 })

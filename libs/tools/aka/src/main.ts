@@ -108,21 +108,21 @@ function normalizeFullSemantics(isFull: boolean, target: string): string {
 }
 
 function injectVitestConfig(project: string, target: string, args: string[]): string[] {
-	// Only inject config for test commands
-	if (!target.startsWith('test')) {
-		return args
-	}
-
-	// Check if coverage is requested
-	const hasCoverage = args.some(arg =>
+	// Check if this is a coverage test command
+	const hasCoverageFlag = args.some(arg =>
 		arg === '--coverage'
 		|| arg.startsWith('--coverage=')
 		|| arg === '-c'
 		|| arg === '--cov',
 	)
 
-	// Determine which config file to use
-	const configFile = hasCoverage ? 'vitest.coverage.config.ts' : 'vitest.functional.config.ts'
+	// Only inject config for coverage test commands
+	if (!target.startsWith('test') || !hasCoverageFlag) {
+		return args
+	}
+
+	// Determine which config file to use for coverage
+	const configFile = 'vitest.coverage.config.ts'
 	
 	// Dynamically determine project path based on project name pattern
 	let projectPath: string | null = null
@@ -138,6 +138,7 @@ function injectVitestConfig(project: string, target: string, args: string[]): st
 		else if (projectName.endsWith('-core') || projectName.endsWith('-ext')) {
 			const baseName = projectName.replace(/-core$/, '').replace(/-ext$/, '')
 			const suffix = projectName.endsWith('-core') ? 'core' : 'ext'
+
 			projectPath = `packages/${baseName}/${suffix}`
 		}
 		// Handle other packages (like project-maid-all)
@@ -158,11 +159,11 @@ function injectVitestConfig(project: string, target: string, args: string[]): st
 		return args
 	}
 
-	// Use relative path from workspace root for Nx
+	// Use relative path from workspace root for config injection
 	const relativeConfigPath = path.relative(ROOT, configPath)
 	
 	// Inject the config file argument
-	return ['--configFile', relativeConfigPath, ...args]
+	return ['--config', relativeConfigPath, ...args]
 }
 
 function runNx(argv: string[]): number {
@@ -377,13 +378,15 @@ function main() {
 	// For regular Nx targets, continue with normal processing
 	args[0] = normalizeFullSemantics(full, args[0])
 
+	const normalizedTarget = args[0]
+
 	// Ensure visible logs by default
 	const _hasFix = args.includes('--fix')
 	const flagArgs = args.filter(a => a.startsWith('--'))
 	const restArgs = args.slice(1).filter(a => !a.startsWith('--'))
 
 	// Inject Vitest config if needed
-	const injectedArgs = injectVitestConfig(project, target, flagArgs)
+	const injectedArgs = injectVitestConfig(project, normalizedTarget, flagArgs)
 
 	// Default single invocation
 	const previousEcho = process.env.AKA_ECHO
@@ -392,7 +395,7 @@ function main() {
 		process.env.AKA_ECHO = '1'
 	}
 
-	const rc = runNx([target, project, ...injectedArgs, ...restArgs])
+	const rc = runNx([normalizedTarget, project, ...injectedArgs, ...restArgs])
 
 	// Restore echo environment
 	if (akaEchoEnabled) {

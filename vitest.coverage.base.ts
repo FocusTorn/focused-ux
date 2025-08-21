@@ -2,8 +2,6 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
 	test: {
-		// Include all tests for coverage runs
-		include: ['__tests__/**/*.test.ts', '__tests__/**/*.test-cov.ts'],
 		coverage: {
 			enabled: true,
 			provider: 'v8',

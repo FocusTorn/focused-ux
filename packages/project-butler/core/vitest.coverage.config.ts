@@ -1,5 +1,5 @@
 import { defineConfig, mergeConfig } from 'vitest/config'
-import functionalConfig from './vitest.functional.config'
+import functionalConfig from './vitest.config'
 import baseCoverageConfig from '../../../vitest.coverage.base'
 
 export default mergeConfig(
