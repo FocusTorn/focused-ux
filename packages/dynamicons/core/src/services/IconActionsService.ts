@@ -1,54 +1,36 @@
 // ESLint & Imports -->>
 
-import type { IWindow, ICommands, IWorkspace, IQuickPick, IContext, ICoreQuickPickItem, IUri } from '@fux/shared'
-import { UriAdapter } from '@fux/shared'
-import { dynamiconsConstants } from '../_config/dynamicons.constants.js'
-import type { IIconActionsService } from '../_interfaces/IIconActionsService.js'
+import type { IWindow } from '../_interfaces/IWindow.js'
+import type { ICommands } from '../_interfaces/ICommands.js'
+import type { IContext } from '../_interfaces/IContext.js'
 import type { IPath } from '../_interfaces/IPath.js'
 import type { ICommonUtils } from '../_interfaces/ICommonUtils.js'
 import type { IFileSystem } from '../_interfaces/IFileSystem.js'
 import type { IIconThemeGeneratorService } from '../_interfaces/IIconThemeGeneratorService.js'
+import type { IConfigurationService } from './ConfigurationService.js'
+import type { IIconPickerService } from './IconPickerService.js'
+import { Uri } from 'vscode'
+import { dynamiconsConstants } from '../_config/dynamicons.constants.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
 type IconAssociationType = 'file' | 'folder' | 'language'
 
-// QuickPickItemKind values - these should match VSCode's QuickPickItemKind enum
-const QuickPickItemKind = {
-	Separator: -1,
-	Default: 0,
-} as const
-
-type DataOrSeparator<T extends ICoreQuickPickItem> = T | {
-	label: string
-	kind: typeof QuickPickItemKind.Separator
-}
-
-export class IconActionsService implements IIconActionsService {
-
-	private readonly EXTENSION_CONFIG_PREFIX = dynamiconsConstants.configPrefix
-	private readonly CUSTOM_MAPPINGS_KEY = dynamiconsConstants.configKeys.customIconMappings
-	private readonly HIDE_ARROWS_KEY = dynamiconsConstants.configKeys.hideExplorerArrows
-	private readonly USER_ICONS_DIR_KEY = dynamiconsConstants.configKeys.userIconsDirectory
-	private readonly BUILT_IN_FILE_ICONS_REL_PATH = 'assets/icons/file_icons'
-	private readonly BUILT_IN_FOLDER_ICONS_REL_PATH = 'assets/icons/folder_icons'
+export class IconActionsService {
 
 	constructor(
 		private readonly context: IContext,
 		private readonly window: IWindow,
 		private readonly commands: ICommands,
-		private readonly workspace: IWorkspace,
 		private readonly path: IPath,
-		private readonly quickPick: IQuickPick,
 		private readonly commonUtils: ICommonUtils,
 		private readonly fileSystem: IFileSystem,
 		private readonly iconThemeGenerator: IIconThemeGeneratorService,
-		private readonly uriAdapter: typeof UriAdapter,
+		private readonly configService: IConfigurationService,
+		private readonly iconPicker: IIconPickerService,
 	) {}
 
-	private async getResourceName(
-		resourceUri: IUri,
-	): Promise<string | undefined> {
+	private async getResourceName(resourceUri: Uri): Promise<string | undefined> {
 		try {
 			const stat = await this.fileSystem.stat(resourceUri)
 
@@ -65,13 +47,31 @@ export class IconActionsService implements IIconActionsService {
 		return undefined
 	}
 
-	private async getAssociationKey(
-		name: string,
-		type: IconAssociationType,
-	): Promise<string> {
+	private async getAssociationKey(name: string, type: IconAssociationType): Promise<string> {
 		const prefix = dynamiconsConstants.associationKeyPrefixes[type]
 
 		return `${prefix}${name}`
+	}
+
+	private async detectResourceType(resourceUris: Uri[]): Promise<IconAssociationType> {
+		try {
+			// Check the first resource to determine the type
+			const firstResource = resourceUris[0]
+			const stat = await this.fileSystem.stat(firstResource)
+
+			if (stat.isDirectory()) {
+				return 'folder'
+			}
+			else if (stat.isFile()) {
+				return 'file'
+			}
+		}
+		catch (error) {
+			this.commonUtils.errMsg(`Error detecting resource type for ${resourceUris[0]?.fsPath}`, error)
+		}
+
+		// Default to file if detection fails
+		return 'file'
 	}
 
 	private async getBaseThemePath(): Promise<string> {
@@ -82,383 +82,177 @@ export class IconActionsService implements IIconActionsService {
 		return this.path.join(this.context.extensionPath, 'assets', 'themes')
 	}
 
-	private async getUserIconsDir(): Promise<string | undefined> {
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { get: <T>(key: string) => T | undefined }
-
-		return config.get<string>(this.USER_ICONS_DIR_KEY) || undefined
-	}
-
-	private async getCustomMappings(): Promise<Record<string, string> | undefined> {
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { get: <T>(key: string) => T | undefined }
-		const mappings = config.get<Record<string, string>>(this.CUSTOM_MAPPINGS_KEY) || undefined
-		
-		return mappings
-	}
-
-	private async getHideArrowsSetting(): Promise<boolean | null | undefined> {
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { get: <T>(key: string) => T | undefined }
-
-		return config.get<boolean | null>(this.HIDE_ARROWS_KEY)
-	}
-
-	private async updateCustomIconMappings(
-		updateFn: (
-			mappings: Record<string, string>
-		) => Promise<boolean | Record<string, string>>,
-	): Promise<void> {
-		console.log(`[IconActionsService] updateCustomIconMappings - Starting`)
-
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as {
-			get: <T>(key: string) => T | undefined
-			update: (key: string, value: any, isGlobal?: boolean) => Promise<void>
-		}
-		const originalMappingsFromConfig = config.get<Record<string, string>>(this.CUSTOM_MAPPINGS_KEY) || {}
-
-		console.log(`[IconActionsService] updateCustomIconMappings - Original mappings:`, JSON.stringify(originalMappingsFromConfig, null, 2))
-		
-		const mutableMappingsCopy = { ...originalMappingsFromConfig }
-
-		const newMappingsResult = await updateFn(mutableMappingsCopy)
-
-		if (typeof newMappingsResult === 'boolean' && !newMappingsResult) {
-			console.log(`[IconActionsService] updateCustomIconMappings - Update function returned false, aborting`)
-			return
-		}
-
-		const finalMappings = typeof newMappingsResult === 'boolean' ? mutableMappingsCopy : newMappingsResult
-
-		console.log(`[IconActionsService] updateCustomIconMappings - Final mappings:`, JSON.stringify(finalMappings, null, 2))
-
-		if (JSON.stringify(originalMappingsFromConfig) !== JSON.stringify(finalMappings)) {
-			console.log(`[IconActionsService] updateCustomIconMappings - Mappings changed, updating config...`)
-			try {
-				await config.update(this.CUSTOM_MAPPINGS_KEY, finalMappings, true) // true for global
-				console.log(`[IconActionsService] updateCustomIconMappings - Config updated successfully`)
-			}
-			catch (error: any) {
-				console.log(`[IconActionsService] updateCustomIconMappings - Config update failed:`, error)
-				await this.window.showTimedInformationMessage(`Failed to update icon mappings: ${error.message || 'Unknown error'}`)
-			}
-		}
-		else {
-			console.log(`[IconActionsService] updateCustomIconMappings - No changes detected, skipping config update`)
-		}
-		console.log(`[IconActionsService] updateCustomIconMappings - Completed`)
-	}
-
-	private async getIconOptionsFromDirectory(
-		directoryPath: string,
-		iconKind: 'file' | 'folder' | 'user',
-		filter?: (filename: string) => boolean,
-	): Promise<ICoreQuickPickItem[]> {
-		const iconOptions: ICoreQuickPickItem[] = []
-
-		try {
-			const directoryUri = this.uriAdapter.file(directoryPath)
-			const entries = await this.fileSystem.readdir(directoryUri, { withFileTypes: true }) as import('fs').Dirent[]
-
-			for (const entry of entries) {
-				if (entry.isFile() && entry.name.endsWith('.svg') && (!filter || filter(entry.name))) {
-					const iconNameWithoutExt = this.path.parse(entry.name).name
-					let iconDefinitionKey: string
-
-					if (iconKind === 'user') {
-						iconDefinitionKey = `${dynamiconsConstants.defaults.userIconDefinitionPrefix}${iconNameWithoutExt}`
-					}
-					else {
-						iconDefinitionKey = `_${iconNameWithoutExt}`
-					}
-
-					iconOptions.push({
-						label: iconNameWithoutExt.replace(/^folder-/, '').replace(new RegExp(`${dynamiconsConstants.defaults.openFolderIconSuffix}$`), ''),
-						description: `(${iconKind}) ${entry.name}`,
-						iconPath: this.path.join(directoryPath, entry.name),
-						iconNameInDefinitions: iconDefinitionKey,
-					})
-				}
-			}
-		}
-		catch (error: any) {
-			if (error.code !== 'ENOENT') {
-				this.commonUtils.errMsg(`Error reading icon directory ${directoryPath}`, error)
-			}
-		}
-		return iconOptions.sort((a, b) => a.label.localeCompare(b.label))
-	}
-
 	public async showAvailableIconsQuickPick(
 		assignableToType?: 'file' | 'folder',
 		currentFilter?: (iconName: string) => boolean,
 	): Promise<string | undefined> {
-		console.log(`[IconActionsService] showAvailableIconsQuickPick - Starting`)
-		console.log(`[IconActionsService] showAvailableIconsQuickPick - assignableToType:`, assignableToType)
-		
-		const builtInFileIconsDir = this.path.join(
-			this.context.extensionPath,
-			this.BUILT_IN_FILE_ICONS_REL_PATH,
-		)
-		const builtInFolderIconsDir = this.path.join(
-			this.context.extensionPath,
-			this.BUILT_IN_FOLDER_ICONS_REL_PATH,
-		)
-
-		console.log(`[IconActionsService] showAvailableIconsQuickPick - Icon directories:`, { builtInFileIconsDir, builtInFolderIconsDir })
-
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { get: <T>(key: string) => T | undefined }
-		const userIconsDirSetting = config.get<string>(this.USER_ICONS_DIR_KEY)
-
-		console.log(`[IconActionsService] showAvailableIconsQuickPick - User icons dir setting:`, userIconsDirSetting)
-
-		let fileIconOptions: ICoreQuickPickItem[] = []
-		let folderIconOptions: ICoreQuickPickItem[] = []
-		let userIconOptions: ICoreQuickPickItem[] = []
-
-		if (assignableToType === 'file' || !assignableToType) {
-			console.log(`[IconActionsService] showAvailableIconsQuickPick - Loading file icons...`)
-			fileIconOptions = await this.getIconOptionsFromDirectory(builtInFileIconsDir, 'file')
-			console.log(`[IconActionsService] showAvailableIconsQuickPick - File icons loaded:`, fileIconOptions.length)
-		}
-		if (assignableToType === 'folder' || !assignableToType) {
-			console.log(`[IconActionsService] showAvailableIconsQuickPick - Loading folder icons...`)
-
-			const folderFilter = (name: string) => !name.endsWith(`${dynamiconsConstants.defaults.openFolderIconSuffix}.svg`)
-
-			folderIconOptions = await this.getIconOptionsFromDirectory(builtInFolderIconsDir, 'folder', folderFilter)
-			console.log(`[IconActionsService] showAvailableIconsQuickPick - Folder icons loaded:`, folderIconOptions.length)
-		}
-
-		if (userIconsDirSetting) {
-			try {
-				await this.fileSystem.access(userIconsDirSetting)
-				console.log(`[IconActionsService] showAvailableIconsQuickPick - Loading user icons...`)
-				userIconOptions = await this.getIconOptionsFromDirectory(userIconsDirSetting, 'user')
-				console.log(`[IconActionsService] showAvailableIconsQuickPick - User icons loaded:`, userIconOptions.length)
-			}
-			catch (error: any) {
-				if (error.code === 'ENOENT') {
-					this.window.showWarningMessage(`User icons directory not found: ${userIconsDirSetting}. Please check the '${this.EXTENSION_CONFIG_PREFIX}.${this.USER_ICONS_DIR_KEY}' setting.`)
-				}
-				else {
-					this.commonUtils.errMsg(`Error accessing user icons directory: ${userIconsDirSetting}`, error)
-				}
-			}
-		}
-
-		const filterFn = currentFilter || (() => true)
-
-		fileIconOptions = fileIconOptions.filter(item => filterFn(item.iconNameInDefinitions))
-		folderIconOptions = folderIconOptions.filter(item => filterFn(item.iconNameInDefinitions))
-		userIconOptions = userIconOptions.filter(item => filterFn(item.iconNameInDefinitions))
-
-		console.log(`[IconActionsService] showAvailableIconsQuickPick - After filtering:`, { fileIconOptions: fileIconOptions.length, folderIconOptions: folderIconOptions.length, userIconOptions: userIconOptions.length })
-
-		const combinedIconOptions: DataOrSeparator<ICoreQuickPickItem>[] = []
-
-		if (userIconOptions.length > 0) {
-			combinedIconOptions.push({ label: 'User Icons', kind: QuickPickItemKind.Separator })
-			combinedIconOptions.push(...userIconOptions)
-		}
-		if (fileIconOptions.length > 0) {
-			combinedIconOptions.push({ label: 'File Icons (Built-in)', kind: QuickPickItemKind.Separator })
-			combinedIconOptions.push(...fileIconOptions)
-		}
-		if (folderIconOptions.length > 0) {
-			combinedIconOptions.push({ label: 'Folder Icons (Built-in)', kind: QuickPickItemKind.Separator })
-			combinedIconOptions.push(...folderIconOptions)
-		}
-
-		console.log(`[IconActionsService] showAvailableIconsQuickPick - Combined options:`, combinedIconOptions.length)
-
-		const dataItems = combinedIconOptions.filter(item => 'iconNameInDefinitions' in item) as ICoreQuickPickItem[]
-
-		console.log(`[IconActionsService] showAvailableIconsQuickPick - Data items:`, dataItems.length)
-
-		if (dataItems.length === 0) {
-			console.log(`[IconActionsService] showAvailableIconsQuickPick - No items found, showing message`)
-			this.window.showInformationMessage('No available icons match the criteria.')
-			return undefined
-		}
-
-		console.log(`[IconActionsService] showAvailableIconsQuickPick - Showing quick pick with`, dataItems.length, `items`)
-		return this.quickPick.showQuickPickSingle<ICoreQuickPickItem, 'iconNameInDefinitions'>(
-			dataItems,
-			{
-				placeHolder: 'Select an icon definition',
-				matchOnDescription: true,
-				matchOnDetail: true,
-			},
-			'iconNameInDefinitions',
-		)
+		return this.iconPicker.showAvailableIconsQuickPick(assignableToType, currentFilter)
 	}
 
 	public async assignIconToResource(
-		resourceUris: IUri[],
+		resourceUris: Uri[],
+		workspaceAdapter?: any,
 		iconTypeScope?: IconAssociationType,
 	): Promise<void> {
 		if (!resourceUris || resourceUris.length === 0) {
-			this.window.showWarningMessage('No file or folder selected.')
+			this.window.showWarningMessage('No resources selected for icon assignment.')
 			return
 		}
 
-		let isFileMode = false
-		let isFolderMode = false
-		const resourceStats = await Promise.all(resourceUris.map(async (uri) => {
-			try {
-				return { uri, stat: await this.fileSystem.stat(uri) }
-			}
-			catch (error) {
-				this.commonUtils.errMsg(`Could not get stats for ${uri.fsPath}`, error)
-				return { uri, stat: null }
-			}
-		}))
+		// Auto-detect resource type if not specified
+		let finalIconTypeScope = iconTypeScope
 
-		for (const { stat } of resourceStats) {
-			if (!stat)
-				continue
-			if (stat.isFile())
-				isFileMode = true
-			if (stat.isDirectory())
-				isFolderMode = true
+		if (!finalIconTypeScope) {
+			finalIconTypeScope = await this.detectResourceType(resourceUris)
 		}
 
-		if (isFileMode && isFolderMode) {
-			this.window.showErrorMessage('Cannot assign icons to a mix of files and folders.')
-			return
-		}
-		if (!isFileMode && !isFolderMode) {
-			this.window.showErrorMessage('Could not determine the type of the selected resources.')
+		// Convert language type to file type for icon picker (language icons are typically file icons)
+		const pickerType = finalIconTypeScope === 'language' ? 'file' : finalIconTypeScope
+		const selectedIcon = await this.showAvailableIconsQuickPick(pickerType)
+
+		if (!selectedIcon) {
 			return
 		}
 
-		const typeToAssign = isFileMode ? 'file' : 'folder'
+		await this.configService.updateCustomMappings(async (mappings) => {
+			for (const resourceUri of resourceUris) {
+				const resourceName = await this.getResourceName(resourceUri)
 
-		if (iconTypeScope && iconTypeScope !== typeToAssign) {
-			this.window.showWarningMessage(`Selection type (${typeToAssign}) does not match the required scope (${iconTypeScope}).`)
-			return
-		}
+				if (!resourceName)
+					continue
 
-		const iconNameKey = await this.showAvailableIconsQuickPick(typeToAssign)
+				const associationKey = await this.getAssociationKey(resourceName, finalIconTypeScope || 'file')
 
-		if (!iconNameKey)
-			return
-
-		const resourceNames = resourceStats.filter(rs => rs.stat !== null).map(rs => this.path.basename(rs.uri.fsPath))
-
-		if (resourceNames.length === 0) {
-			this.window.showErrorMessage('Could not determine the names of the selected resources.')
-			return
-		}
-
-		console.log(`[IconActionsService] Assigning ${iconNameKey} to ${resourceNames.length} ${typeToAssign}${resourceNames.length > 1 ? 's' : ''}: ${resourceNames.join(', ')}`)
-
-		// Get current settings for comparison
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { get: <T>(key: string) => T | undefined }
-		const beforeMappings = config.get<Record<string, string>>(this.CUSTOM_MAPPINGS_KEY) || {}
-
-		await this.updateCustomIconMappings(async (mappings) => {
-			for (const resourceName of resourceNames) {
-				const associationKey = await this.getAssociationKey(resourceName, typeToAssign)
-
-				mappings[associationKey] = iconNameKey
+				mappings[associationKey] = selectedIcon
 			}
 			return mappings
 		})
 
-		// Get updated settings for comparison
-		const afterMappings = config.get<Record<string, string>>(this.CUSTOM_MAPPINGS_KEY) || {}
-
-		// Show only the specific items that were changed
-		console.log(`[IconActionsService] === ASSIGNMENT SUMMARY ===`)
-		for (const resourceName of resourceNames) {
-			const associationKey = await this.getAssociationKey(resourceName, typeToAssign)
-			const beforeValue = beforeMappings[associationKey] || 'NO ASSIGNMENT'
-			const afterValue = afterMappings[associationKey] || 'NO ASSIGNMENT'
-			
-			console.log(`[IconActionsService] ${resourceName}: ${beforeValue} → ${afterValue}`)
-		}
-		console.log(`[IconActionsService] === END ASSIGNMENT ===`)
-		
-		await this.window.showTimedInformationMessage(`Icon assigned successfully. Theme will update automatically.`)
+		await this.regenerateAndApplyTheme(workspaceAdapter)
+		this.window.showInformationMessage(`Icon assigned to ${resourceUris.length} resource(s).`)
 	}
 
-	public async revertIconAssignment(resourceUris: IUri[]): Promise<void> {
+	public async revertIconAssignment(resourceUris: Uri[], workspaceAdapter?: any): Promise<void> {
 		if (!resourceUris || resourceUris.length === 0) {
-			this.window.showWarningMessage('No file or folder selected.')
+			this.window.showWarningMessage('No resources selected for icon reversion.')
 			return
 		}
 
-		let isFileMode = false
-		let isFolderMode = false
-		const resourceStats = await Promise.all(resourceUris.map(async (uri) => {
-			try {
-				return { uri, stat: await this.fileSystem.stat(uri) }
-			}
-			catch (error) {
-				this.commonUtils.errMsg(`Could not get stats for ${uri.fsPath}`, error)
-				return { uri, stat: null }
-			}
-		}))
+		await this.configService.updateCustomMappings(async (mappings) => {
+			for (const resourceUri of resourceUris) {
+				const resourceName = await this.getResourceName(resourceUri)
 
-		for (const { stat } of resourceStats) {
-			if (!stat)
-				continue
-			if (stat.isFile())
-				isFileMode = true
-			if (stat.isDirectory())
-				isFolderMode = true
-		}
+				if (!resourceName)
+					continue
 
-		if (isFileMode && isFolderMode) {
-			this.window.showErrorMessage('Cannot revert icons for a mix of files and folders.')
-			return
-		}
+				// Remove mappings for all types
+				for (const type of ['file', 'folder', 'language'] as const) {
+					const associationKey = await this.getAssociationKey(resourceName, type)
 
-		const resourceNames = resourceStats.filter(rs => rs.stat !== null).map(rs => this.path.basename(rs.uri.fsPath))
-
-		if (resourceNames.length === 0) {
-			this.window.showErrorMessage('Could not determine the names of the selected resources.')
-			return
-		}
-
-		await this.updateCustomIconMappings(async (mappings) => {
-			let anyFound = false
-			const typeToRevert: IconAssociationType = isFileMode ? 'file' : 'folder'
-
-			for (const resourceName of resourceNames) {
-				const associationKey = await this.getAssociationKey(resourceName, typeToRevert)
-
-				if (Object.prototype.hasOwnProperty.call(mappings, associationKey)) {
 					delete mappings[associationKey]
-					anyFound = true
 				}
 			}
-			if (anyFound) {
-				return mappings
+			return mappings
+		})
+
+		await this.regenerateAndApplyTheme(workspaceAdapter)
+		this.window.showInformationMessage(`Icon assignments reverted for ${resourceUris.length} resource(s).`)
+	}
+
+	public async showUserIconAssignments(type: 'file' | 'folder' | 'language'): Promise<void> {
+		const mappings = await this.configService.getCustomMappings()
+
+		if (!mappings) {
+			this.window.showInformationMessage('No custom icon assignments found.')
+			return
+		}
+
+		const prefix = dynamiconsConstants.associationKeyPrefixes[type]
+		const relevantMappings = Object.entries(mappings)
+			.filter(([key]) => key.startsWith(prefix))
+			.map(([key, value]) => ({
+				resource: key.substring(prefix.length),
+				icon: value,
+			}))
+
+		if (relevantMappings.length === 0) {
+			this.window.showInformationMessage(`No ${type} icon assignments found.`)
+			return
+		}
+
+		const message = relevantMappings
+			.map(m => `${m.resource} → ${m.icon}`)
+			.join('\n')
+
+		this.window.showInformationMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} Icon Assignments:\n${message}`)
+	}
+
+	public async toggleExplorerArrows(workspaceAdapter?: any): Promise<void> {
+		const currentSetting = await this.configService.getHideArrowsSetting()
+		const newSetting = !currentSetting
+		
+		await this.configService.updateHideArrowsSetting(newSetting)
+		await this.regenerateAndApplyTheme(workspaceAdapter)
+		
+		const status = newSetting ? 'hidden' : 'visible'
+
+		this.window.showInformationMessage(`Explorer arrows are now ${status}.`)
+	}
+
+	public async refreshIconTheme(workspaceAdapter?: any): Promise<void> {
+		await this.regenerateAndApplyTheme(workspaceAdapter)
+		this.window.showInformationMessage('Icon theme refreshed successfully.')
+	}
+
+	private async regenerateAndApplyTheme(workspaceAdapter?: any): Promise<void> {
+		try {
+			const baseThemePath = await this.getBaseThemePath()
+			const generatedThemeDir = await this.getGeneratedThemeDir()
+			const userIconsDir = await this.configService.getUserIconsDirectory()
+			const customMappings = await this.configService.getCustomMappings()
+			const hideArrows = await this.configService.getHideArrowsSetting()
+
+			const baseThemeUri = Uri.file(baseThemePath)
+			const generatedThemeDirUri = Uri.file(generatedThemeDir)
+
+			const manifest = await this.iconThemeGenerator.generateIconThemeManifest(
+				baseThemeUri,
+				generatedThemeDirUri,
+				userIconsDir,
+				customMappings,
+				hideArrows,
+			)
+
+			if (!manifest) {
+				throw new Error('Failed to generate icon theme manifest')
+			}
+
+			const outputPath = Uri.file(this.path.join(generatedThemeDir, 'dynamicons.theme.json'))
+
+			await this.iconThemeGenerator.writeIconThemeFile(manifest, outputPath)
+
+			// Use workspace adapter if available (same as working implementation)
+			if (workspaceAdapter) {
+				const workbenchConfig = workspaceAdapter.getConfiguration('workbench')
+				const currentTheme = workbenchConfig.get('iconTheme')
+
+				if (currentTheme === 'dynamicons-theme') {
+					await workbenchConfig.update('iconTheme', 'vs-seti-file-icons', true)
+					await new Promise(resolve => setTimeout(resolve, 25))
+					await workbenchConfig.update('iconTheme', 'dynamicons-theme', true)
+				}
 			}
 			else {
-				this.window.showInformationMessage('No custom icon assignments found for the selected items.')
-				return false
+			// Fallback to command execution if workspace adapter not available
+				await this.commands.executeCommand('workbench.action.selectIconTheme', 'vs-seti-file-icons')
+				await new Promise(resolve => setTimeout(resolve, 25))
+				await this.commands.executeCommand('workbench.action.selectIconTheme', 'dynamicons-theme')
 			}
-		})
-	}
-
-	public async toggleExplorerArrows(): Promise<void> {
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as {
-			get: <T>(key: string) => T | undefined
-			update: (key: string, value: any, isGlobal?: boolean) => Promise<void>
 		}
-		const currentSetting = config.get<boolean | null>(this.HIDE_ARROWS_KEY)
-		const newSetting = (currentSetting === null || currentSetting === undefined) ? true : !currentSetting
-
-		await config.update(this.HIDE_ARROWS_KEY, newSetting, true) // true for global
-	}
-
-	public async showUserIconAssignments(_type: 'file' | 'folder' | 'language'): Promise<void> {
-		await this.commands.executeCommand('workbench.action.openSettings', 'dynamicons.customIconMappings')
-	}
-
-	public async refreshIconTheme(): Promise<void> {
-		console.log('[IconActionsService] refreshIconTheme() called. Actual refresh handled by extension command/event.')
+		catch (error) {
+			this.commonUtils.errMsg('Failed to regenerate icon theme', error)
+			this.window.showErrorMessage('Failed to regenerate icon theme. Check the console for details.')
+		}
 	}
 
 }

@@ -1,21 +1,17 @@
 {
     "extends": "../../../tsconfig.base.json",
+
+    "include": ["src/**/*.ts"],
+    "exclude": [ "**/*.test.ts", "__tests__/**/*", "dist/**/*" ],
+
+    "references": [ { "path": "./tsconfig.lib.json" } ],
+    
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
         "composite": true,
-        "declaration": true,
-        "declarationMap": true,
-        "emitDeclarationOnly": false
-    },
-    "include": [
-        "src/**/*"
-    ],
-    "exclude": [
-        "**/*.test.ts",
-        "**/*.spec.ts",
-        "__tests__/**/*",
-        "dist/**/*"
-    ],
-    "references": []
+        "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+    }
+
+    
 }

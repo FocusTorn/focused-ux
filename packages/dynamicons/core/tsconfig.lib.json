@@ -1,25 +1,19 @@
 {
-    "extends": "../../../tsconfig.base.json",
+    "extends": "./tsconfig.json",
     "compilerOptions": {
-        "baseUrl": ".",
-        "rootDir": "src",
-        "outDir": "dist",
-        "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
-        "emitDeclarationOnly": true,
+        "outDir": "./dist",
         "declaration": true,
         "declarationMap": true,
-        "composite": true,
-        "types": ["node"],
-        "paths": {
-            "@fux/shared": ["../../../libs/shared"]
-        }
+        "emitDeclarationOnly": false,
+        "composite": true
     },
     "include": [
-        "src/**/*.ts",
-        "src/_interfaces/**/*.ts",
-        "src/_config/**/*.ts",
-        "src/services/**/*.ts"
+        "src/**/*"
     ],
-    "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts", "src/scripts/**/*.ts"],
-    "references": [{ "path": "../../../libs/shared/tsconfig.lib.json" }]
+    "exclude": [
+        "**/*.test.ts",
+        "**/*.spec.ts",
+        "__tests__/**/*",
+        "src/models/**/*"
+    ]
 }

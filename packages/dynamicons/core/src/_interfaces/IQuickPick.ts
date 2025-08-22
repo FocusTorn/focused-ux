@@ -1,10 +1,22 @@
 import type { QuickPickOptions } from 'vscode'
-import type { ICoreQuickPickItem } from './ICoreQuickPickItem.js'
 
 export interface IQuickPick {
-	showQuickPickSingle: <T extends ICoreQuickPickItem, K extends keyof T>(
+	showQuickPickSingle<T, K extends keyof T>(
 		items: T[],
-		options: Pick<QuickPickOptions, 'placeHolder' | 'ignoreFocusOut' | 'matchOnDescription' | 'matchOnDetail'>,
-		returnKey: K,
-	) => Promise<T[K] | undefined>
+		options: IQuickPickOptions,
+		key: K
+	): Promise<T[K] | undefined>
+}
+
+export interface IQuickPickOptions {
+	placeHolder?: string
+	matchOnDescription?: boolean
+	matchOnDetail?: boolean
+}
+
+export interface ICoreQuickPickItem {
+	label: string
+	description?: string
+	iconPath?: string
+	iconNameInDefinitions: string
 }

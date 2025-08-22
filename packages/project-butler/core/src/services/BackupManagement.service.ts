@@ -1,16 +1,17 @@
-import { IBackupManagementService, IBackupOptions } from '../_interfaces/IBackupManagementService'
-import { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter'
-import { IPathAdapter } from '../_interfaces/IPathAdapter'
+import type { IBackupManagementService, IBackupOptions } from '../_interfaces/IBackupManagementService.js'
+import type { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter.js'
+import type { IPathAdapter } from '../_interfaces/IPathAdapter.js'
 
 // These interfaces are defined in the _interfaces directory
 
 export class BackupManagementService implements IBackupManagementService {
+
 	constructor(
 		private readonly fileSystem: IFileSystemAdapter,
-		private readonly path: IPathAdapter
+		private readonly path: IPathAdapter,
 	) {}
 
-	async createBackup(filePath: string, options: IBackupOptions = {}): Promise<string> {
+	async createBackup(filePath: string, _options: IBackupOptions = {}): Promise<string> {
 		const sourcePath = filePath
 		const baseName = this.path.basename(sourcePath)
 		const directory = this.path.dirname(sourcePath)
@@ -26,7 +27,8 @@ export class BackupManagementService implements IBackupManagementService {
 				await this.fileSystem.stat(destinationPath)
 				fileExists = true
 				backupNumber++
-			} catch (_error: any) {
+			}
+			catch (_error: any) {
 				fileExists = false
 			}
 		} while (fileExists)
@@ -35,4 +37,5 @@ export class BackupManagementService implements IBackupManagementService {
 		
 		return destinationPath
 	}
-} 
+
+}

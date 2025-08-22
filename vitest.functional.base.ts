@@ -6,6 +6,9 @@ export default defineConfig({
 	test: {
 		
 		reporters: ['default'],
+        include: [
+            '__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+        ],
 		exclude: ['**/*.d.ts', '**/*.config.*', '**/__tests__/_reports/**'],
         
         globals: true,
@@ -15,12 +18,5 @@ export default defineConfig({
         deps: { optimizer: { ssr: { include: ['vscode'] } } }, 
 	},
 
-	resolve: {
-		alias: {
-			'@fux/mockly': path.resolve(process.cwd(), 'libs/mockly/src'),
-			'@fux/shared': path.resolve(process.cwd(), 'libs/shared/src'),
-			'vscode': path.resolve(process.cwd(), 'libs/shared/vscode-test-adapter.ts'),
-		},
-	},
     
 })

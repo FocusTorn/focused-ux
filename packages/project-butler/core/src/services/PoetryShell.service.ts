@@ -1,13 +1,14 @@
-import { IPoetryShellService, IPoetryShellCommand } from '../_interfaces/IPoetryShellService'
-import { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter'
-import { IPathAdapter } from '../_interfaces/IPathAdapter'
+import type { IPoetryShellService, IPoetryShellCommand } from '../_interfaces/IPoetryShellService.js'
+import type { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter.js'
+import type { IPathAdapter } from '../_interfaces/IPathAdapter.js'
 
 // These interfaces are defined in the _interfaces directory
 
 export class PoetryShellService implements IPoetryShellService {
+
 	constructor(
 		private readonly fileSystem: IFileSystemAdapter,
-		private readonly path: IPathAdapter
+		private readonly path: IPathAdapter,
 	) {}
 
 	async enterPoetryShell(filePath?: string): Promise<IPoetryShellCommand> {
@@ -16,14 +17,17 @@ export class PoetryShellService implements IPoetryShellService {
 		if (filePath) {
 			const stats = await this.fileSystem.stat(filePath)
 			const pathToSend = stats.type === 'directory' ? filePath : this.path.dirname(filePath)
+
 			command = `cd "${pathToSend}" && poetry shell`
-		} else {
+		}
+		else {
 			command = 'poetry shell'
 		}
 		
 		return {
 			command,
-			shouldShowTerminal: true
+			shouldShowTerminal: true,
 		}
 	}
-} 
+
+}

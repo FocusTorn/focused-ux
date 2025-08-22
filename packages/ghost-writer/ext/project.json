@@ -91,7 +91,13 @@
         "test": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "options":{
+                
+                
+                
+            }
+            
         },
         "test:full": {
             "executor": "@nx/vite:test",

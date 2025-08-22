@@ -1,16 +1,16 @@
 import * as vscode from 'vscode'
-import { 
+import {
 	PackageJsonFormattingService,
 	TerminalManagementService,
 	BackupManagementService,
 	PoetryShellService,
-	ProjectMaidManagerService
+	ProjectMaidManagerService,
 } from '@fux/project-butler-core'
-import { FileSystemAdapter } from './adapters/FileSystem.adapter'
-import { PathAdapter } from './adapters/Path.adapter'
-import { YamlAdapter } from './adapters/Yaml.adapter'
-import { WindowAdapter } from './adapters/Window.adapter'
-import { WorkspaceAdapter } from './adapters/Workspace.adapter'
+import { FileSystemAdapter } from './adapters/FileSystem.adapter.js'
+import { PathAdapter } from './adapters/Path.adapter.js'
+import { YamlAdapter } from './adapters/Yaml.adapter.js'
+import { WindowAdapter } from './adapters/Window.adapter.js'
+import { WorkspaceAdapter } from './adapters/Workspace.adapter.js'
 
 /**
  * Called when the extension is activated
@@ -35,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
 			packageJsonFormatting: packageJsonFormattingService,
 			terminalManagement: terminalManagementService,
 			backupManagement: backupManagementService,
-			poetryShell: poetryShellService
+			poetryShell: poetryShellService,
 		})
 
 		// Register all commands
@@ -51,7 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}),
 			vscode.commands.registerCommand('fux-project-butler.enterPoetryShell', async (uri?: vscode.Uri) => {
 				await enterPoetryShell(uri, poetryShellService, window)
-			})
+			}),
 		]
 
 		context.subscriptions.push(...disposables)
@@ -78,7 +78,7 @@ async function formatPackageJson(
 	uri: vscode.Uri | undefined,
 	projectMaidManager: ProjectMaidManagerService,
 	window: WindowAdapter,
-	workspace: WorkspaceAdapter
+	workspace: WorkspaceAdapter,
 ): Promise<void> {
 	try {
 		// Get the URI from context menu or active editor
@@ -123,7 +123,7 @@ async function formatPackageJson(
 async function updateTerminalPath(
 	uri: vscode.Uri | undefined,
 	terminalManagementService: TerminalManagementService,
-	window: WindowAdapter
+	window: WindowAdapter,
 ): Promise<void> {
 	try {
 		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
@@ -136,6 +136,7 @@ async function updateTerminalPath(
 		const terminalCommand = await terminalManagementService.updateTerminalPath(finalUri)
 		
 		const terminal = window.getActiveTerminal() || window.createTerminal('F-UX Terminal')
+
 		terminal.sendText(terminalCommand.command)
 		terminal.show()
 	}
@@ -150,7 +151,7 @@ async function updateTerminalPath(
 async function createBackup(
 	uri: vscode.Uri | undefined,
 	backupManagementService: BackupManagementService,
-	window: WindowAdapter
+	window: WindowAdapter,
 ): Promise<void> {
 	try {
 		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
@@ -176,7 +177,7 @@ async function createBackup(
 async function enterPoetryShell(
 	uri: vscode.Uri | undefined,
 	poetryShellService: PoetryShellService,
-	window: WindowAdapter
+	window: WindowAdapter,
 ): Promise<void> {
 	try {
 		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
@@ -184,10 +185,11 @@ async function enterPoetryShell(
 		const terminalCommand = await poetryShellService.enterPoetryShell(finalUri)
 		
 		const terminal = window.createTerminal('Poetry Shell')
+
 		terminal.sendText(terminalCommand.command)
 		terminal.show()
 	}
 	catch (error: any) {
 		await window.showErrorMessage(`Error entering poetry shell: ${error.message}`)
 	}
-} 
+}

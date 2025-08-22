@@ -1,9 +1,25 @@
-import type { ExtensionContext, Uri } from 'vscode'
-import type { AwilixContainer } from 'awilix'
-import { createDIContainer } from './injection.js'
-import type { Cradle } from './injection.js'
-import { dynamiconsConstants } from '@fux/dynamicons-core'
-import type { IUri } from '@fux/shared'
+import type { ExtensionContext } from 'vscode'
+import { Uri } from 'vscode'
+import {
+	dynamiconsConstants,
+	IconActionsService,
+	IconThemeGeneratorService,
+	ConfigurationService,
+	IconDiscoveryService,
+	IconPickerService,
+} from '@fux/dynamicons-core'
+
+import {
+	WindowAdapter,
+	CommandsAdapter,
+	WorkspaceAdapter,
+	ContextAdapter,
+	PathAdapter,
+	FileSystemAdapter,
+	QuickPickAdapter,
+	CommonUtilsAdapter,
+	UriAdapter,
+} from './adapters/index.js'
 
 const EXT_NAME = 'dynamicons'
 const CONFIG_PREFIX = dynamiconsConstants.configPrefix
@@ -18,24 +34,16 @@ let isActivated = false
 let isRegenerating = false
 let isThemeInitialized = false
 
-async function getGeneratedThemePath(context: ExtensionContext, container: AwilixContainer): Promise<IUri> {
-	const workspace = container.resolve('workspace')
+async function getGeneratedThemePath(context: ExtensionContext, workspace: any): Promise<Uri> {
 	const config = workspace.getConfiguration(CONFIG_PREFIX) as { get: <T>(key: string, defaultValue?: T) => T | undefined }
 	const generatedThemeFileName = config.get<string>(
 		CONFIG_KEYS.generatedThemeFileName,
 		DEFAULT_FILENAMES.generatedThemeFilenameDefault,
 	)
 
-	const uriAdapter = container.resolve('uriAdapter')
-	const baseUri = uriAdapter.create(context.extensionUri)
+	const baseUri = context.extensionUri
 	
-	const fullUri = uriAdapter.joinPath(baseUri, ASSETS_PATHS.themesPath, generatedThemeFileName)
-	
-	// console.log(`[dynamicons] Constructing generated theme URI:`)
-	// console.log(`  - extensionUri: ${context.extensionUri.toString()}`)
-	// console.log(`  - themesPath: ${ASSETS_PATHS.themesPath}`)
-	// console.log(`  - generatedThemeFileName: ${generatedThemeFileName}`)
-	// console.log(`  - fullUri.fsPath: ${fullUri.fsPath}`)
+	const fullUri = Uri.joinPath(baseUri, ASSETS_PATHS.themesPath, generatedThemeFileName || '')
 	
 	if (!fullUri || fullUri.fsPath.trim() === '') {
 		throw new Error('Generated theme URI is empty or invalid')
@@ -44,24 +52,16 @@ async function getGeneratedThemePath(context: ExtensionContext, container: Awili
 	return fullUri
 }
 
-async function getBaseThemePath(context: ExtensionContext, container: AwilixContainer): Promise<IUri> {
-	const workspace = container.resolve('workspace')
+async function getBaseThemePath(context: ExtensionContext, workspace: any): Promise<Uri> {
 	const config = workspace.getConfiguration(CONFIG_PREFIX) as { get: <T>(key: string, defaultValue?: T) => T | undefined }
 	const baseThemeFileName = config.get<string>(
 		CONFIG_KEYS.baseThemeFileName,
 		DEFAULT_FILENAMES.baseThemeFilenameDefault,
 	)
 
-	const uriAdapter = container.resolve('uriAdapter')
-	const baseUri = uriAdapter.create(context.extensionUri)
+	const baseUri = context.extensionUri
 
-	const fullUri = uriAdapter.joinPath(baseUri, ASSETS_PATHS.themesPath, baseThemeFileName)
-
-	// console.log(`[dynamicons] Constructing base theme URI:`)
-	// console.log(`  - extensionUri: ${context.extensionUri.toString()}`)
-	// console.log(`  - themesPath: ${ASSETS_PATHS.themesPath}`)
-	// console.log(`  - baseThemeFileName: ${baseThemeFileName}`)
-	// console.log(`  - fullUri.fsPath: ${fullUri.fsPath}`)
+	const fullUri = Uri.joinPath(baseUri, ASSETS_PATHS.themesPath, baseThemeFileName || '')
 	
 	if (!fullUri || fullUri.fsPath.trim() === '') {
 		throw new Error('Base theme URI is empty or invalid')
@@ -70,13 +70,10 @@ async function getBaseThemePath(context: ExtensionContext, container: AwilixCont
 	return fullUri
 }
 
-async function ensureThemeAssets(context: ExtensionContext, container: AwilixContainer): Promise<void> {
-	const fileSystem = container.resolve('fileSystem')
-	const uriAdapter = container.resolve('uriAdapter')
-
+async function ensureThemeAssets(context: ExtensionContext, fileSystem: any, uriAdapter: any, window: any): Promise<void> {
 	const themesDirUri = uriAdapter.joinPath(uriAdapter.create(context.extensionUri), ASSETS_PATHS.themesPath)
-	const baseThemeUri = await getBaseThemePath(context, container)
-	const generatedThemeUri = await getGeneratedThemePath(context, container)
+	const baseThemeUri = await getBaseThemePath(context, new WorkspaceAdapter())
+	const generatedThemeUri = await getGeneratedThemePath(context, new WorkspaceAdapter())
 
 	try {
 		await fileSystem.access(themesDirUri)
@@ -98,8 +95,6 @@ async function ensureThemeAssets(context: ExtensionContext, container: AwilixCon
 	catch {
 		await fileSystem.writeFile(baseThemeUri, `${JSON.stringify(defaultBaseManifest, null, 4)}\n`)
 
-		const window = container.resolve('window')
-
 		await window.showInformationMessage(
 			`${dynamiconsConstants.featureName}: Created default base theme at ${baseThemeUri.fsPath}. Consider generating a full one.`,
 		)
@@ -113,31 +108,32 @@ async function ensureThemeAssets(context: ExtensionContext, container: AwilixCon
 	}
 }
 
-async function regenerateAndApplyTheme(context: ExtensionContext, container: AwilixContainer): Promise<void> { //>
+async function regenerateAndApplyTheme(
+	context: ExtensionContext,
+	iconThemeGeneratorService: any,
+	workspaceService: any,
+	fileSystem: any,
+	uriAdapter: any,
+	window: any,
+): Promise<void> {
 	if (isRegenerating) {
-		// console.log(`[${EXT_NAME}] Theme regeneration already in progress, skipping...`)
 		return
 	}
 
 	isRegenerating = true
 	
 	try {
-		const iconThemeGeneratorService = container.resolve('iconThemeGeneratorService')
-		const workspaceService = container.resolve('workspace')
-		const fileSystem = container.resolve('fileSystem')
-		const uriAdapter = container.resolve('uriAdapter')
-
 		const config = workspaceService.getConfiguration(CONFIG_PREFIX) as { get: <T>(key: string, defaultValue?: T) => T | undefined }
 		const userIconsDir = config.get(CONFIG_KEYS.userIconsDirectory) as string | undefined
 		const customMappings = config.get(CONFIG_KEYS.customIconMappings) as Record<string, string> | undefined
 		const hideArrows = config.get(CONFIG_KEYS.hideExplorerArrows) as boolean | null | undefined
 
-		const baseThemeUri = await getBaseThemePath(context, container)
-		const generatedThemeUri = await getGeneratedThemePath(context, container)
+		const baseThemeUri = await getBaseThemePath(context, workspaceService)
+		const generatedThemeUri = await getGeneratedThemePath(context, workspaceService)
 		const generatedThemeDirUri = uriAdapter.dirname(generatedThemeUri)
 
 		// Log current theme file contents before regeneration (only for comparison)
-		let currentTheme: any = null
+		let _currentTheme: any = null
 
 		try {
 			// Check if the file exists and has content
@@ -146,7 +142,7 @@ async function regenerateAndApplyTheme(context: ExtensionContext, container: Awi
 			if (stats.size > 0) {
 				const currentThemeContent = await fileSystem.readFile(generatedThemeUri, 'utf8')
 
-				currentTheme = JSON.parse(currentThemeContent)
+				_currentTheme = JSON.parse(currentThemeContent)
 			}
 		}
 		catch (_error) {
@@ -162,93 +158,40 @@ async function regenerateAndApplyTheme(context: ExtensionContext, container: Awi
 		)
 
 		if (newManifest) {
-			// console.log(`[${EXT_NAME}] Writing theme file to: ${generatedThemeUri.fsPath}`)
 			await iconThemeGeneratorService.writeIconThemeFile(newManifest, generatedThemeUri)
-			
-			// Show only the specific items that were changed
-			if (customMappings) {
-				// console.log(`[${EXT_NAME}] === ASSIGNED ITEMS SUMMARY ===`)
-
-				let changedItemsCount = 0
-				
-				for (const [key, _value] of Object.entries(customMappings)) {
-					// Extract the actual name from the key (e.g., "folder:deploy" -> "deploy")
-					const actualName = key.includes(':') ? key.split(':')[1] : key
-					
-					// Determine which section to check based on the key prefix
-					let beforeInTheme = 'NOT FOUND'
-					let afterInTheme = 'NOT FOUND'
-					
-					if (key.startsWith('folder:')) {
-						beforeInTheme = currentTheme?.folderNames?.[actualName] || 'NOT FOUND'
-						afterInTheme = newManifest.folderNames?.[actualName] || 'NOT FOUND'
-					}
-					else if (key.startsWith('file:')) {
-						if (actualName.includes('.')) {
-							beforeInTheme = currentTheme?.fileNames?.[actualName] || 'NOT FOUND'
-							afterInTheme = newManifest.fileNames?.[actualName] || 'NOT FOUND'
-						}
-						else {
-							beforeInTheme = currentTheme?.fileExtensions?.[actualName] || 'NOT FOUND'
-							afterInTheme = newManifest.fileExtensions?.[actualName] || 'NOT FOUND'
-						}
-					}
-					
-					// Only show items that actually changed
-					if (beforeInTheme !== afterInTheme) {
-						// console.log(`[${EXT_NAME}] ${actualName}: ${beforeInTheme} → ${afterInTheme}`)
-						changedItemsCount++
-					}
-				}
-				
-				if (changedItemsCount === 0) {
-					// console.log(`[${EXT_NAME}] No items changed in theme file`)
-				}
-				
-				// console.log(`[${EXT_NAME}] === END ASSIGNED ITEMS ===`)
-			}
 			
 			// Add a minimal delay to ensure VS Code has time to detect the file change
 			await new Promise(resolve => setTimeout(resolve, 50))
 		}
 		else {
-			const window = container.resolve('window')
-
 			await window.showErrorMessage(`${dynamiconsConstants.featureName}: Failed to generate icon theme manifest.`)
 		}
 	}
 	catch (error: any) {
-		const window = container.resolve('window')
-
 		await window.showErrorMessage(`${dynamiconsConstants.featureName}: Error regenerating theme: ${error.message}`)
 	}
 	finally {
 		isRegenerating = false
 	}
-} //<
+}
 
-async function refreshFileExplorer(context: ExtensionContext, container: AwilixContainer): Promise<void> {
-	const workspaceService = container.resolve('workspace')
+async function refreshFileExplorer(workspaceService: any): Promise<void> {
 	const workbenchConfig = workspaceService.getConfiguration('workbench')
 	
 	await workbenchConfig.update('settings.openDefaultSettings', true)
 	await workbenchConfig.update('settings.openDefaultSettings', false)
 }
 
-async function activateIconThemeIfNeeded(context: ExtensionContext, container: AwilixContainer): Promise<void> {
-	const workspaceService = container.resolve('workspace')
-	const fileSystem = container.resolve('fileSystem')
-
+async function activateIconThemeIfNeeded(context: ExtensionContext, workspaceService: any, fileSystem: any, window: any): Promise<void> {
 	const workbenchConfig = workspaceService.getConfiguration('workbench')
 	const currentTheme = workbenchConfig.get('iconTheme') as string | undefined
 
 	if (currentTheme !== ICON_THEME_ID) {
-		const generatedThemeUri = await getGeneratedThemePath(context, container)
+		const generatedThemeUri = await getGeneratedThemePath(context, workspaceService)
 
 		try {
 			await fileSystem.access(generatedThemeUri)
 
-			const window = container.resolve('window')
 			const choice = await window.showInformationMessage(
 				`The "${EXT_NAME}" extension provides an icon theme. Do you want to activate it?`,
 				'Activate',
@@ -265,12 +208,13 @@ async function activateIconThemeIfNeeded(context: ExtensionContext, container: A
 	}
 }
 
-async function checkIfThemeNeedsRegeneration(context: ExtensionContext, container: AwilixContainer): Promise<boolean> {
-	const workspaceService = container.resolve('workspace')
-	const fileSystem = container.resolve('fileSystem')
-	const iconThemeGeneratorService = container.resolve('iconThemeGeneratorService')
-	const uriAdapter = container.resolve('uriAdapter')
-
+async function checkIfThemeNeedsRegeneration(
+	context: ExtensionContext,
+	workspaceService: any,
+	fileSystem: any,
+	iconThemeGeneratorService: any,
+	uriAdapter: any,
+): Promise<boolean> {
 	const config = workspaceService.getConfiguration(CONFIG_PREFIX) as { get: <T>(key: string, defaultValue?: T) => T | undefined }
 	const userIconsDir = config.get(CONFIG_KEYS.userIconsDirectory) as string | undefined
 	const customMappings = config.get(CONFIG_KEYS.customIconMappings) as Record<string, string> | undefined
@@ -280,13 +224,12 @@ async function checkIfThemeNeedsRegeneration(context: ExtensionContext, containe
 	const hasRelevantSettings = userIconsDir || (customMappings && Object.keys(customMappings).length > 0) || hideArrows !== null
 
 	if (!hasRelevantSettings) {
-		// console.log(`[${EXT_NAME}] No relevant settings found, theme regeneration not needed`)
 		return false
 	}
 
 	try {
-		const generatedThemeUri = await getGeneratedThemePath(context, container)
-		const baseThemeUri = await getBaseThemePath(context, container)
+		const generatedThemeUri = await getGeneratedThemePath(context, workspaceService)
+		const baseThemeUri = await getBaseThemePath(context, workspaceService)
 		const generatedThemeDirUri = uriAdapter.dirname(generatedThemeUri)
 
 		// Check if generated theme file exists
@@ -294,7 +237,6 @@ async function checkIfThemeNeedsRegeneration(context: ExtensionContext, containe
 			await fileSystem.access(generatedThemeUri)
 		}
 		catch {
-			// console.log(`[${EXT_NAME}] Generated theme file doesn't exist, regeneration needed`)
 			return true
 		}
 
@@ -307,7 +249,6 @@ async function checkIfThemeNeedsRegeneration(context: ExtensionContext, containe
 			currentTheme = JSON.parse(currentThemeContent)
 		}
 		catch (_error) {
-			// console.log(`[${EXT_NAME}] Error reading current theme file, regeneration needed:`, _error)
 			return true
 		}
 
@@ -321,7 +262,6 @@ async function checkIfThemeNeedsRegeneration(context: ExtensionContext, containe
 		)
 
 		if (!expectedTheme) {
-			// console.log(`[${EXT_NAME}] Could not generate expected theme, regeneration needed`)
 			return true
 		}
 
@@ -337,158 +277,194 @@ async function checkIfThemeNeedsRegeneration(context: ExtensionContext, containe
 		const expectedThemeStr = JSON.stringify(expectedThemeForComparison, null, 2)
 
 		if (currentThemeStr !== expectedThemeStr) {
-			// console.log(`[${EXT_NAME}] Current theme doesn't match expected theme, regeneration needed`)
-			// console.log(`[${EXT_NAME}] Current theme size: ${currentThemeStr.length} chars`)
-			// console.log(`[${EXT_NAME}] Expected theme size: ${expectedThemeStr.length} chars`)
 			return true
 		}
 
-		// console.log(`[${EXT_NAME}] Current theme matches expected theme, no regeneration needed`)
 		return false
 	}
 	catch (_error) {
-		// console.log(`[${EXT_NAME}] Error checking theme regeneration need:`, _error)
 		// If we can't determine, err on the side of regeneration
 		return true
 	}
 }
 
-export async function activate(context: ExtensionContext): Promise<void> { //>
+export async function activate(context: ExtensionContext): Promise<void> {
 	if (isActivated) {
-		// console.log(`[${EXT_NAME}] Already activated, skipping...`)
 		return
 	}
 	
-	// console.log(`[${EXT_NAME}] Activating...`)
 	isActivated = true
 
-	const container = await createDIContainer(context)
-	const iconActionsService = container.resolve('iconActionsService') as Cradle['iconActionsService']
-	const uriAdapter = container.resolve('uriAdapter') as Cradle['uriAdapter']
+	// Create adapters
+	const windowAdapter = new WindowAdapter()
+	const commandsAdapter = new CommandsAdapter()
+	const workspaceAdapter = new WorkspaceAdapter()
+	const contextAdapter = new ContextAdapter(context)
+	const pathAdapter = new PathAdapter()
+	const fileSystemAdapter = new FileSystemAdapter()
+	const quickPickAdapter = new QuickPickAdapter()
+	const uriAdapter = new UriAdapter()
+	const commonUtilsAdapter = new CommonUtilsAdapter(windowAdapter)
+
+	// Create core services
+	const iconThemeGeneratorService = new IconThemeGeneratorService(
+		fileSystemAdapter,
+		pathAdapter,
+		commonUtilsAdapter,
+	)
+
+	// Create missing dependencies for IconActionsService
+	const configService = new ConfigurationService(workspaceAdapter, commonUtilsAdapter)
+	const iconDiscoveryService = new IconDiscoveryService(
+		fileSystemAdapter,
+		pathAdapter,
+		commonUtilsAdapter,
+		contextAdapter.extensionPath,
+	)
+	const iconPickerService = new IconPickerService(
+		windowAdapter,
+		quickPickAdapter,
+		fileSystemAdapter,
+		commonUtilsAdapter,
+		iconDiscoveryService,
+		configService,
+	)
+
+	const iconActionsService = new IconActionsService(
+		contextAdapter,
+		windowAdapter,
+		commandsAdapter,
+		pathAdapter,
+		commonUtilsAdapter,
+		fileSystemAdapter,
+		iconThemeGeneratorService,
+		configService,
+		iconPickerService,
+	)
 
 	try {
-		await ensureThemeAssets(context, container)
+		await ensureThemeAssets(context, fileSystemAdapter, uriAdapter, windowAdapter)
 	}
 	catch (_error) {
-		// console.log(`[${EXT_NAME}] Error during theme assets setup, continuing...`, _error)
+		// Continue if theme assets setup fails
 	}
 	
 	// Check if theme regeneration is needed on first load
 	if (!isThemeInitialized) {
-		// console.log(`[${EXT_NAME}] First load detected, checking if theme regeneration is needed...`)
-		
 		let needsRegeneration = false
 
 		try {
-			// Use the new comprehensive check that considers user settings
-			needsRegeneration = await checkIfThemeNeedsRegeneration(context, container)
+			needsRegeneration = await checkIfThemeNeedsRegeneration(
+				context,
+				workspaceAdapter,
+				fileSystemAdapter,
+				iconThemeGeneratorService,
+				uriAdapter,
+			)
 		}
 		catch (_error) {
-			// console.log(`[${EXT_NAME}] Error checking theme regeneration need, skipping regeneration...`, _error)
+			// Continue if check fails
 		}
 		
 		if (needsRegeneration) {
 			try {
-				await regenerateAndApplyTheme(context, container)
+				await regenerateAndApplyTheme(
+					context,
+					iconThemeGeneratorService,
+					workspaceAdapter,
+					fileSystemAdapter,
+					uriAdapter,
+					windowAdapter,
+				)
 			}
 			catch (_error) {
-				// console.log(`[${EXT_NAME}] Error during theme regeneration, continuing...`, _error)
+				// Continue if regeneration fails
 			}
 			
 			// Force VS Code to reload the icon theme on first load (only if theme is currently active)
 			try {
-				const workspaceService = container.resolve('workspace') as Cradle['workspace']
-				const workbenchConfig = workspaceService.getConfiguration('workbench')
+				const workbenchConfig = workspaceAdapter.getConfiguration('workbench')
 				const currentTheme = workbenchConfig.get('iconTheme')
 
 				if (currentTheme === ICON_THEME_ID) {
-					// console.log(`[${EXT_NAME}] Forcing theme refresh on first load...`)
-
-					// Use a more direct refresh method - trigger file explorer refresh
-					const commands = container.resolve('commands')
-
-					await commands.executeCommand('workbench.files.action.refreshFilesExplorer')
-					// Also temporarily switch themes for immediate visual update
+					// Temporarily switch themes for immediate visual update
 					await workbenchConfig.update('iconTheme', 'vs-seti-file-icons', true)
 					await new Promise(resolve => setTimeout(resolve, 25))
 					await workbenchConfig.update('iconTheme', ICON_THEME_ID, true)
 				}
 			}
 			catch (_error) {
-				// console.log(`[${EXT_NAME}] Error during force refresh, continuing...`, _error)
+				// Continue if refresh fails
 			}
 		}
 		
 		isThemeInitialized = true
-		// console.log(`[${EXT_NAME}] Theme initialization completed`)
-	}
-	else {
-		// console.log(`[${EXT_NAME}] Theme already initialized, skipping regeneration`)
 	}
 	
 	try {
-		await activateIconThemeIfNeeded(context, container)
+		await activateIconThemeIfNeeded(context, workspaceAdapter, fileSystemAdapter, windowAdapter)
 	}
 	catch (_error) {
-		// console.log(`[${EXT_NAME}] Error during icon theme activation, continuing...`, _error)
+		// Continue if activation fails
 	}
 
-	const commands = container.resolve('commands')
-	const window = container.resolve('window')
-	const workspace = container.resolve('workspace')
-	
+	// Register commands
 	context.subscriptions.push(
-		commands.registerCommand(COMMANDS.activateIconTheme, async () => {
-			const workspaceService = container.resolve('workspace') as Cradle['workspace']
-			const workbenchConfig = workspaceService.getConfiguration('workbench')
+		commandsAdapter.registerCommand(COMMANDS.activateIconTheme, async () => {
+			const workbenchConfig = workspaceAdapter.getConfiguration('workbench')
 
 			await workbenchConfig.update('iconTheme', ICON_THEME_ID, true)
-			await window.showInformationMessage(`"${ICON_THEME_ID}" icon theme activated.`)
+			await windowAdapter.showInformationMessage(`"${ICON_THEME_ID}" icon theme activated.`)
 		}),
-		commands.registerCommand(COMMANDS.assignIcon, (uri?: Uri, uris?: Uri[]) => {
+		commandsAdapter.registerCommand(COMMANDS.assignIcon, async (uri?: Uri, uris?: Uri[]) => {
 			const finalUris = uris && uris.length > 0 ? uris : (uri ? [uri] : [])
 			const adaptedUris = finalUris.map(u => uriAdapter.create(u))
 
-			iconActionsService.assignIconToResource(adaptedUris)
+			await iconActionsService.assignIconToResource(adaptedUris, workspaceAdapter)
 		}),
-		commands.registerCommand(COMMANDS.revertIcon, (uri?: Uri, uris?: Uri[]) => {
+		commandsAdapter.registerCommand(COMMANDS.revertIcon, async (uri?: Uri, uris?: Uri[]) => {
 			const finalUris = uris && uris.length > 0 ? uris : (uri ? [uri] : [])
 			const adaptedUris = finalUris.map(u => uriAdapter.create(u))
 
-			iconActionsService.revertIconAssignment(adaptedUris)
+			await iconActionsService.revertIconAssignment(adaptedUris, workspaceAdapter)
 		}),
-		commands.registerCommand(COMMANDS.toggleExplorerArrows, () => iconActionsService.toggleExplorerArrows()),
-		commands.registerCommand(COMMANDS.showUserFileIconAssignments, () => iconActionsService.showUserIconAssignments('file')),
-		commands.registerCommand(COMMANDS.showUserFolderIconAssignments, () => iconActionsService.showUserIconAssignments('folder')),
-		commands.registerCommand(COMMANDS.refreshIconTheme, async () => {
-			await regenerateAndApplyTheme(context, container)
+		commandsAdapter.registerCommand(COMMANDS.toggleExplorerArrows, async () => await iconActionsService.toggleExplorerArrows(workspaceAdapter)),
+		commandsAdapter.registerCommand(COMMANDS.showUserFileIconAssignments, () => iconActionsService.showUserIconAssignments('file')),
+		commandsAdapter.registerCommand(COMMANDS.showUserFolderIconAssignments, () => iconActionsService.showUserIconAssignments('folder')),
+		commandsAdapter.registerCommand(COMMANDS.refreshIconTheme, async () => {
+			await regenerateAndApplyTheme(
+				context,
+				iconThemeGeneratorService,
+				workspaceAdapter,
+				fileSystemAdapter,
+				uriAdapter,
+				windowAdapter,
+			)
 			
 			// Force VS Code to reload the icon theme immediately
-			const workspaceService = container.resolve('workspace') as Cradle['workspace']
-			const workbenchConfig = workspaceService.getConfiguration('workbench')
+			const workbenchConfig = workspaceAdapter.getConfiguration('workbench')
 			const currentTheme = workbenchConfig.get('iconTheme')
 
 			if (currentTheme === ICON_THEME_ID) {
-				// Trigger file explorer refresh for immediate visual update
-				await commands.executeCommand('workbench.files.action.refreshFilesExplorer')
-				// Also temporarily switch themes for immediate visual update
+				// Temporarily switch themes for immediate visual update
 				await workbenchConfig.update('iconTheme', 'vs-seti-file-icons', true)
 				await new Promise(resolve => setTimeout(resolve, 25))
 				await workbenchConfig.update('iconTheme', ICON_THEME_ID, true)
 			}
 			
-			await window.showInformationMessage(`${dynamiconsConstants.featureName}: Icon theme manually refreshed.`)
+			await windowAdapter.showInformationMessage(`${dynamiconsConstants.featureName}: Icon theme manually refreshed.`)
 		}),
-		commands.registerCommand('dynamicons.refreshFileExplorer', async () => {
+		commandsAdapter.registerCommand('dynamicons.refreshFileExplorer', async () => {
 			try {
-				await refreshFileExplorer(context, container)
-				await window.showInformationMessage(`${dynamiconsConstants.featureName}: File explorer refreshed.`)
+				await refreshFileExplorer(workspaceAdapter)
+				await windowAdapter.showInformationMessage(`${dynamiconsConstants.featureName}: File explorer refreshed.`)
 			}
 			catch (error) {
-				await window.showErrorMessage(`${dynamiconsConstants.featureName}: Error refreshing file explorer: ${error}`)
+				await windowAdapter.showErrorMessage(`${dynamiconsConstants.featureName}: Error refreshing file explorer: ${error}`)
 			}
 		}),
-		workspace.onDidChangeConfiguration(async (e: any) => {
+		// Configuration change listener - automatically regenerate theme when settings change
+		workspaceAdapter.onDidChangeConfiguration(async (e: any) => {
 			if (
 				e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.customIconMappings}`)
 				|| e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.userIconsDirectory}`)
@@ -496,19 +472,18 @@ export async function activate(context: ExtensionContext): Promise<void> { //>
 				|| e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.baseThemeFileName}`)
 				|| e.affectsConfiguration(`${CONFIG_PREFIX}.${CONFIG_KEYS.generatedThemeFileName}`)
 			) {
-				await regenerateAndApplyTheme(context, container)
-				
-				// Immediately refresh the file explorer to show changes
-				try {
-					await commands.executeCommand('workbench.files.action.refreshFilesExplorer')
-				}
-				catch (_error) {
-					// console.log(`[${EXT_NAME}] Error refreshing file explorer after config change:`, _error)
-				}
+				await regenerateAndApplyTheme(
+					context,
+					iconThemeGeneratorService,
+					workspaceAdapter,
+					fileSystemAdapter,
+					uriAdapter,
+					windowAdapter,
+				)
 			}
 		}),
 	)
-} //<
+}
 
 export function deactivate(): void {
 	isActivated = false

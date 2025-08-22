@@ -1,13 +1,14 @@
-import { IPackageJsonFormattingService, IPackageJsonConfig, IPackageJsonData } from '../_interfaces/IPackageJsonFormattingService'
-import { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter'
-import { IYamlAdapter } from '../_interfaces/IYamlAdapter'
+import type { IPackageJsonFormattingService, IPackageJsonConfig, IPackageJsonData } from '../_interfaces/IPackageJsonFormattingService.js'
+import type { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter.js'
+import type { IYamlAdapter } from '../_interfaces/IYamlAdapter.js'
 
 // These interfaces are defined in the _interfaces directory
 
 export class PackageJsonFormattingService implements IPackageJsonFormattingService {
+
 	constructor(
 		private readonly fileSystem: IFileSystemAdapter,
-		private readonly yaml: IYamlAdapter
+		private readonly yaml: IYamlAdapter,
 	) {}
 
 	async formatPackageJson(packageJsonPath: string, workspaceRoot: string): Promise<void> {
@@ -17,14 +18,17 @@ export class PackageJsonFormattingService implements IPackageJsonFormattingServi
 
 		try {
 			configContent = await this.fileSystem.readFile(configPath)
-		} catch (err: any) {
+		}
+		catch (err: any) {
 			throw new Error(`Could not read '.FocusedUX' file: ${err.message}`)
 		}
 
 		let config: IPackageJsonConfig
+
 		try {
 			config = this.yaml.load(configContent)
-		} catch (err: any) {
+		}
+		catch (err: any) {
 			throw new Error(`Failed to parse YAML from '.FocusedUX': ${err.message}`)
 		}
 
@@ -40,9 +44,11 @@ export class PackageJsonFormattingService implements IPackageJsonFormattingServi
 
 		// Read and parse the package.json file
 		let packageContent: string
+
 		try {
 			packageContent = await this.fileSystem.readFile(packageJsonPath)
-		} catch (err: any) {
+		}
+		catch (err: any) {
 			throw new Error(`Failed to read package.json: ${err.message}`)
 		}
 
@@ -90,7 +96,8 @@ export class PackageJsonFormattingService implements IPackageJsonFormattingServi
 
 		try {
 			await this.fileSystem.writeFile(packageJsonPath, newJsonContent)
-		} catch (err: any) {
+		}
+		catch (err: any) {
 			throw new Error(`Failed to write updated package.json: ${err.message}`)
 		}
 	}
@@ -111,4 +118,5 @@ export class PackageJsonFormattingService implements IPackageJsonFormattingServi
 
 		return unknownKeys
 	}
-} 
+
+}

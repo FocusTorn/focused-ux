@@ -33,9 +33,6 @@
             "path": "./packages/context-cherry-picker/core"
         },
         {
-            "path": "./packages/ai-agent-interactor/core"
-        },
-        {
             "path": "./packages/project-butler/core"
         },
         {
@@ -60,10 +57,10 @@
             "path": "./packages/project-butler/ext"
         },
         {
-            "path": "./packages/project-butler/all"
+            "path": "./packages/ghost-writer/ext"
         },
         {
-            "path": "./packages/ghost-writer/ext"
+            "path": "./packages/dynamicons/ext"
         }
     ]
 }

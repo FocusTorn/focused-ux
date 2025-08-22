@@ -1,13 +1,14 @@
-import { ITerminalManagementService, ITerminalCommand } from '../_interfaces/ITerminalManagementService'
-import { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter'
-import { IPathAdapter } from '../_interfaces/IPathAdapter'
+import type { ITerminalManagementService, ITerminalCommand } from '../_interfaces/ITerminalManagementService.js'
+import type { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter.js'
+import type { IPathAdapter } from '../_interfaces/IPathAdapter.js'
 
 // These interfaces are defined in the _interfaces directory
 
 export class TerminalManagementService implements ITerminalManagementService {
+
 	constructor(
 		private readonly fileSystem: IFileSystemAdapter,
-		private readonly path: IPathAdapter
+		private readonly path: IPathAdapter,
 	) {}
 
 	async updateTerminalPath(filePath: string): Promise<ITerminalCommand> {
@@ -17,7 +18,8 @@ export class TerminalManagementService implements ITerminalManagementService {
 		
 		return {
 			command: cdCommand,
-			shouldShowTerminal: true
+			shouldShowTerminal: true,
 		}
 	}
-} 
+
+}

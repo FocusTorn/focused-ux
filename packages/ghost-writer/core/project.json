@@ -56,7 +56,12 @@
         "test": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "options":{
+                "configFile": "{projectRoot}/vitest.config.ts"
+            }
+            
+            
         },
         "test:full": {
             "executor": "@nx/vite:test",

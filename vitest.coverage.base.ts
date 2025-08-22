@@ -6,7 +6,7 @@ export default defineConfig({
 			enabled: true,
 			provider: 'v8',
 			reporter: ['text', 'html', 'json-summary', 'json'],
-			include: ['src/**/*.{ts,js}'],
+			include: ['__tests__/**/*.{test,test-cov}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}' ],
 			exclude: [
 				'**/_interfaces/**',
 				'**/__tests__/**',

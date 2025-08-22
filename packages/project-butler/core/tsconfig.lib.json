@@ -1,18 +1,16 @@
 {
-    "extends": "./tsconfig.json",
+    "extends": "../../../tsconfig.base.json",
+    
+    "include": ["src/**/*.ts"],
+    
     "compilerOptions": {
-        "outDir": "./dist",
+        "baseUrl": ".",
+        "rootDir": "src",
+        "outDir": "dist",
+        "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
+        "types": ["node"],
         "declaration": true,
         "declarationMap": true,
-        "emitDeclarationOnly": false,
         "composite": true
     },
-    "include": [
-        "src/**/*"
-    ],
-    "exclude": [
-        "**/*.test.ts",
-        "**/*.spec.ts",
-        "__tests__/**/*"
-    ]
 }

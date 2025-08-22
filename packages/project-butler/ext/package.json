@@ -75,7 +75,7 @@
         ]
     },
     "activationEvents": [
-        "*"
+        "onStartupFinished"
     ],
     "engines": {
         "vscode": "^1.99.3"

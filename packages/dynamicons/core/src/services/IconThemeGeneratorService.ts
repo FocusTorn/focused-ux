@@ -7,7 +7,7 @@ import type { IIconThemeGeneratorService } from '../_interfaces/IIconThemeGenera
 import type { ICommonUtils } from '../_interfaces/ICommonUtils.js'
 import type { IFileSystem } from '../_interfaces/IFileSystem.js'
 import type { IPath } from '../_interfaces/IPath.js'
-import type { IUri, UriAdapter } from '@fux/shared'
+import { Uri } from 'vscode'
 
 import stripJsonCommentsModule from 'strip-json-comments'
 
@@ -42,10 +42,9 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 		private readonly fileSystem: IFileSystem,
 		private readonly path: IPath,
 		private readonly commonUtils: ICommonUtils,
-		private readonly uriAdapter: typeof UriAdapter,
 	) {}
 
-	private async readJsonFile<T = any>(filePath: IUri, encoding: BufferEncoding = 'utf-8'): Promise<T | undefined> {
+	private async readJsonFile<T = any>(filePath: Uri, encoding: BufferEncoding = 'utf-8'): Promise<T | undefined> {
 		try {
 			const fileContent = await this.fileSystem.readFile(filePath, encoding)
 			const contentWithoutComments = stripJsonComments(fileContent.toString())
@@ -59,8 +58,8 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 	}
 
 	public async generateIconThemeManifest(
-		baseManifestUri: IUri,
-		generatedThemeDirUri: IUri,
+			baseManifestUri: Uri,
+	generatedThemeDirUri: Uri,
 		userIconsDirectory?: string,
 		customMappings?: Record<string, string>,
 		hideExplorerArrows?: boolean | null,
@@ -76,7 +75,7 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 
 		if (userIconsDirectory) {
 			try {
-				const userIconsDirUri = this.uriAdapter.file(userIconsDirectory)
+				const userIconsDirUri = Uri.file(userIconsDirectory)
 
 				await this.fileSystem.access(userIconsDirUri, fsConstants.R_OK)
 
@@ -170,7 +169,7 @@ export class IconThemeGeneratorService implements IIconThemeGeneratorService {
 		return manifest
 	}
 
-	public async writeIconThemeFile(manifest: Record<string, any>, outputPathUri: IUri): Promise<void> {
+	public async writeIconThemeFile(manifest: Record<string, any>, outputPathUri: Uri): Promise<void> {
 		try {
 			const manifestJsonString = `${JSON.stringify(manifest, null, 4)}\n`
 

@@ -1,0 +1,3977 @@
+{
+  "graph": {
+    "nodes": {
+      "@fux/context-cherry-picker-core": {
+        "name": "@fux/context-cherry-picker-core",
+        "type": "lib",
+        "data": {
+          "root": "packages/context-cherry-picker/core",
+          "name": "@fux/context-cherry-picker-core",
+          "tags": [
+            "npm:private",
+            "core"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/context-cherry-picker-core",
+              "packageExports": {
+                ".": {
+                  "types": "./dist/index.d.ts",
+                  "import": "./dist/index.js",
+                  "default": "./dist/index.js"
+                }
+              },
+              "packageMain": "./dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build": {
+              "dependsOn": [
+                "@fux/shared:build"
+              ],
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "main": "packages/context-cherry-picker/core/src/index.ts",
+                "outputPath": "packages/context-cherry-picker/core/dist",
+                "tsConfig": "packages/context-cherry-picker/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": [
+                  "esm"
+                ],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "packages/context-cherry-picker/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": [
+                  "vscode",
+                  "awilix",
+                  "gpt-tokenizer",
+                  "js-yaml",
+                  "micromatch"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "check-types": {
+              "extends": "check-types",
+              "configurations": {},
+              "options": {
+                "main": "packages/context-cherry-picker/core/src/index.ts",
+                "outputPath": "packages/context-cherry-picker/core/dist",
+                "tsConfig": "packages/context-cherry-picker/core/tsconfig.json"
+              },
+              "parallelism": true,
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/context-cherry-picker/core/**/*.ts",
+                  "packages/context-cherry-picker/core/**/*.tsx",
+                  "packages/context-cherry-picker/core/**/*.js",
+                  "packages/context-cherry-picker/core/**/*.jsx",
+                  "packages/context-cherry-picker/core/**/*.json",
+                  "packages/context-cherry-picker/core/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/context-cherry-picker/core/**/*.ts",
+                  "packages/context-cherry-picker/core/**/*.tsx",
+                  "packages/context-cherry-picker/core/**/*.js",
+                  "packages/context-cherry-picker/core/**/*.jsx",
+                  "packages/context-cherry-picker/core/**/*.json",
+                  "packages/context-cherry-picker/core/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/context-cherry-picker-core",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/context-cherry-picker-core",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/context-cherry-picker/core/dist packages/context-cherry-picker/core/coverage packages/context-cherry-picker/core/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/context-cherry-picker/core/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/context-cherry-picker/core/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "options": {
+                "passWithNoTests": true,
+                "reportsDirectory": "packages/context-cherry-picker/core/test-output/vitest/coverage"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:full": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "passWithNoTests": true,
+                "reportsDirectory": "packages/context-cherry-picker/core/test-output/vitest/coverage"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/context-cherry-picker/core/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/context-cherry-picker-ext": {
+        "name": "@fux/context-cherry-picker-ext",
+        "type": "app",
+        "data": {
+          "root": "packages/context-cherry-picker/ext",
+          "name": "@fux/context-cherry-picker-ext",
+          "tags": [
+            "npm:private",
+            "npm:context",
+            "npm:cherry pick",
+            "npm:developer tools",
+            "npm:focused ux",
+            "ext"
+          ],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": [
+                "test",
+                "test:run",
+                "test:coverage",
+                "test:ui"
+              ]
+            },
+            "description": "A standalone VS Code extension for advanced context selection and formatting, designed to streamline the process of gathering and organizing project context for AI interactions and documentation.",
+            "js": {
+              "packageName": "fux-context-cherry-picker",
+              "packageMain": "./dist/extension.cjs",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "test": {
+              "executor": "nx:run-script",
+              "metadata": {
+                "scriptContent": "nx vite:test",
+                "runCommand": "pnpm run test"
+              },
+              "extends": "vite:test",
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "script": "test"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:run": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:run"
+              },
+              "metadata": {
+                "scriptContent": "nx vite:test run",
+                "runCommand": "pnpm run test:run"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:coverage": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:coverage"
+              },
+              "metadata": {
+                "scriptContent": "nx vite:test run --coverage",
+                "runCommand": "pnpm run test:coverage"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:ui": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:ui"
+              },
+              "metadata": {
+                "scriptContent": "nx vite:test --ui",
+                "runCommand": "pnpm run test:ui"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "entryPoints": [
+                  "packages/context-cherry-picker/ext/src/extension.ts"
+                ],
+                "outputPath": "packages/context-cherry-picker/ext/dist",
+                "format": [
+                  "cjs"
+                ],
+                "metafile": true,
+                "platform": "node",
+                "bundle": true,
+                "external": [
+                  "vscode",
+                  "awilix",
+                  "gpt-tokenizer",
+                  "js-yaml",
+                  "micromatch"
+                ],
+                "sourcemap": true,
+                "main": "packages/context-cherry-picker/ext/src/extension.ts",
+                "tsConfig": "packages/context-cherry-picker/ext/tsconfig.json",
+                "assets": [
+                  {
+                    "glob": "**/*",
+                    "input": "packages/context-cherry-picker/ext/assets/",
+                    "output": "./assets/"
+                  }
+                ],
+                "thirdParty": true
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "package": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "build"
+              ],
+              "options": {
+                "command": "node scripts/create-vsix.js packages/context-cherry-picker/ext vsix_packages"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "package:dev": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "build"
+              ],
+              "options": {
+                "command": "node scripts/create-vsix.js packages/context-cherry-picker/ext vsix_packages --dev",
+                "outputPath": "vsix_packages"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": false,
+              "inputs": [
+                "production",
+                "^production",
+                "{workspaceRoot}/scripts/create-vsix.js"
+              ],
+              "outputs": [
+                "{options.outputPath}"
+              ]
+            },
+            "publish": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "package"
+              ],
+              "options": {
+                "command": "vsce publish",
+                "cwd": "packages/context-cherry-picker/ext"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "check-types": {
+              "extends": "check-types",
+              "configurations": {},
+              "options": {
+                "main": "packages/context-cherry-picker/ext/src/index.ts",
+                "outputPath": "packages/context-cherry-picker/ext/dist",
+                "tsConfig": "packages/context-cherry-picker/ext/tsconfig.json"
+              },
+              "parallelism": true,
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/context-cherry-picker/ext/**/*.ts",
+                  "packages/context-cherry-picker/ext/**/*.tsx",
+                  "packages/context-cherry-picker/ext/**/*.js",
+                  "packages/context-cherry-picker/ext/**/*.jsx",
+                  "packages/context-cherry-picker/ext/**/*.json",
+                  "packages/context-cherry-picker/ext/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/context-cherry-picker/ext/**/*.ts",
+                  "packages/context-cherry-picker/ext/**/*.tsx",
+                  "packages/context-cherry-picker/ext/**/*.js",
+                  "packages/context-cherry-picker/ext/**/*.jsx",
+                  "packages/context-cherry-picker/ext/**/*.json",
+                  "packages/context-cherry-picker/ext/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/context-cherry-picker-ext",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/context-cherry-picker-ext",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/context-cherry-picker/ext/dist packages/context-cherry-picker/ext/coverage packages/context-cherry-picker/ext/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/context-cherry-picker/ext/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/context-cherry-picker/ext/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test:full": {
+              "extends": "vite:test",
+              "dependsOn": [
+                "^test"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/context-cherry-picker/ext/src",
+          "projectType": "application",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/cursor-memory-optimizer": {
+        "name": "@fux/cursor-memory-optimizer",
+        "type": "lib",
+        "data": {
+          "root": "libs/tools/cursor-memory-optimizer",
+          "name": "@fux/cursor-memory-optimizer",
+          "tags": [
+            "npm:private",
+            "tool"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "description": "Memory optimization tool for Cursor IDE",
+            "js": {
+              "packageName": "@fux/cursor-memory-optimizer",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "targets": {
+            "optimize": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "tsx --expose-gc libs/tools/cursor-memory-optimizer/src/index.ts optimize"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "monitor": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "tsx --expose-gc libs/tools/cursor-memory-optimizer/src/index.ts monitor"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "launch": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "tsx --expose-gc libs/tools/cursor-memory-optimizer/src/index.ts launch"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "status": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "tsx --expose-gc libs/tools/cursor-memory-optimizer/src/index.ts status"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "gc": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "tsx --expose-gc libs/tools/cursor-memory-optimizer/src/index.ts gc"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "libs/tools/cursor-memory-optimizer/**/*.ts",
+                  "libs/tools/cursor-memory-optimizer/**/*.tsx",
+                  "libs/tools/cursor-memory-optimizer/**/*.js",
+                  "libs/tools/cursor-memory-optimizer/**/*.jsx",
+                  "libs/tools/cursor-memory-optimizer/**/*.json",
+                  "libs/tools/cursor-memory-optimizer/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ]
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/tools/cursor-memory-optimizer/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/project-butler-core": {
+        "name": "@fux/project-butler-core",
+        "type": "lib",
+        "data": {
+          "root": "packages/project-butler/core",
+          "name": "@fux/project-butler-core",
+          "tags": [
+            "npm:private",
+            "core"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/project-butler-core",
+              "packageExports": {
+                ".": {
+                  "types": "./dist/index.d.ts",
+                  "import": "./dist/index.js",
+                  "default": "./dist/index.js"
+                }
+              },
+              "packageMain": "./dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "main": "packages/project-butler/core/src/index.ts",
+                "outputPath": "packages/project-butler/core/dist",
+                "tsConfig": "packages/project-butler/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": [
+                  "esm"
+                ],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "packages/project-butler/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": [
+                  "vscode",
+                  "js-yaml"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "check-types": {
+              "extends": "check-types",
+              "configurations": {},
+              "options": {
+                "main": "packages/project-butler/core/src/index.ts",
+                "outputPath": "packages/project-butler/core/dist",
+                "tsConfig": "packages/project-butler/core/tsconfig.json"
+              },
+              "parallelism": true,
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/project-butler/core/**/*.ts",
+                  "packages/project-butler/core/**/*.tsx",
+                  "packages/project-butler/core/**/*.js",
+                  "packages/project-butler/core/**/*.jsx",
+                  "packages/project-butler/core/**/*.json",
+                  "packages/project-butler/core/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/project-butler/core/**/*.ts",
+                  "packages/project-butler/core/**/*.tsx",
+                  "packages/project-butler/core/**/*.js",
+                  "packages/project-butler/core/**/*.jsx",
+                  "packages/project-butler/core/**/*.json",
+                  "packages/project-butler/core/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/project-butler-core",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/project-butler-core",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/project-butler/core/dist packages/project-butler/core/coverage packages/project-butler/core/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/project-butler/core/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/project-butler/core/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true
+            },
+            "test:full": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                {
+                  "dependencies": true,
+                  "target": "test",
+                  "params": "forward"
+                }
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/project-butler/core/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/structure-auditor": {
+        "name": "@fux/structure-auditor",
+        "type": "lib",
+        "data": {
+          "root": "libs/tools/structure-auditor",
+          "name": "@fux/structure-auditor",
+          "tags": [
+            "npm:private",
+            "tool"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/structure-auditor",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "targets": {
+            "audit": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "libs/tools/structure-auditor/**/*.ts",
+                  "libs/tools/structure-auditor/**/*.tsx",
+                  "libs/tools/structure-auditor/**/*.js",
+                  "libs/tools/structure-auditor/**/*.jsx",
+                  "libs/tools/structure-auditor/**/*.json",
+                  "libs/tools/structure-auditor/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ]
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/tools/structure-auditor/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/project-butler-ext": {
+        "name": "@fux/project-butler-ext",
+        "type": "app",
+        "data": {
+          "root": "packages/project-butler/ext",
+          "name": "@fux/project-butler-ext",
+          "tags": [
+            "npm:private",
+            "ext"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "description": "A VSCode extension for project management utilities including package.json formatting, terminal management, backup creation, and Poetry shell integration.",
+            "js": {
+              "packageName": "fux-project-butler",
+              "packageMain": "./dist/extension.cjs",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "entryPoints": [
+                  "packages/project-butler/ext/src/extension.ts"
+                ],
+                "outputPath": "packages/project-butler/ext/dist",
+                "format": [
+                  "cjs"
+                ],
+                "metafile": true,
+                "platform": "node",
+                "bundle": true,
+                "external": [
+                  "vscode",
+                  "js-yaml"
+                ],
+                "sourcemap": true,
+                "main": "packages/project-butler/ext/src/extension.ts",
+                "tsConfig": "packages/project-butler/ext/tsconfig.json",
+                "assets": [
+                  {
+                    "glob": "**/*",
+                    "input": "packages/project-butler/ext/assets/",
+                    "output": "./assets/"
+                  }
+                ],
+                "thirdParty": true
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "package": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "build"
+              ],
+              "options": {
+                "command": "node scripts/create-vsix.js packages/project-butler/ext vsix_packages"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "package:dev": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "build"
+              ],
+              "options": {
+                "command": "node scripts/create-vsix.js packages/project-butler/ext vsix_packages --dev",
+                "outputPath": "vsix_packages"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": false,
+              "inputs": [
+                "production",
+                "^production",
+                "{workspaceRoot}/scripts/create-vsix.js"
+              ],
+              "outputs": [
+                "{options.outputPath}"
+              ]
+            },
+            "publish": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "package"
+              ],
+              "options": {
+                "command": "vsce publish",
+                "cwd": "packages/project-butler/ext"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "check-types": {
+              "extends": "check-types",
+              "configurations": {},
+              "options": {
+                "main": "packages/project-butler/ext/src/index.ts",
+                "outputPath": "packages/project-butler/ext/dist",
+                "tsConfig": "packages/project-butler/ext/tsconfig.json"
+              },
+              "parallelism": true,
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/project-butler/ext/**/*.ts",
+                  "packages/project-butler/ext/**/*.tsx",
+                  "packages/project-butler/ext/**/*.js",
+                  "packages/project-butler/ext/**/*.jsx",
+                  "packages/project-butler/ext/**/*.json",
+                  "packages/project-butler/ext/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/project-butler/ext/**/*.ts",
+                  "packages/project-butler/ext/**/*.tsx",
+                  "packages/project-butler/ext/**/*.js",
+                  "packages/project-butler/ext/**/*.jsx",
+                  "packages/project-butler/ext/**/*.json",
+                  "packages/project-butler/ext/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/project-butler-ext",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/project-butler-ext",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/project-butler/ext/dist packages/project-butler/ext/coverage packages/project-butler/ext/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/project-butler/ext/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/project-butler/ext/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true
+            },
+            "test:full": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                {
+                  "dependencies": true,
+                  "target": "test",
+                  "params": "forward"
+                }
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/project-butler/ext/src",
+          "projectType": "application",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/ghost-writer-core": {
+        "name": "@fux/ghost-writer-core",
+        "type": "lib",
+        "data": {
+          "root": "packages/ghost-writer/core",
+          "name": "@fux/ghost-writer-core",
+          "tags": [
+            "npm:public",
+            "core"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/ghost-writer-core",
+              "packageExports": {
+                "./package.json": "./package.json",
+                ".": {
+                  "types": "./dist/index.d.ts",
+                  "import": "./dist/index.js",
+                  "default": "./dist/index.js"
+                }
+              },
+              "packageMain": "./dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "main": "packages/ghost-writer/core/src/index.ts",
+                "outputPath": "packages/ghost-writer/core/dist",
+                "tsConfig": "packages/ghost-writer/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": [
+                  "esm"
+                ],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "packages/ghost-writer/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": [
+                  "vscode",
+                  "typescript",
+                  "awilix",
+                  "js-yaml"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "check-types": {
+              "extends": "check-types",
+              "configurations": {},
+              "options": {
+                "main": "packages/ghost-writer/core/src/index.ts",
+                "outputPath": "packages/ghost-writer/core/dist",
+                "tsConfig": "packages/ghost-writer/core/tsconfig.json"
+              },
+              "parallelism": true,
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/ghost-writer/core/**/*.ts",
+                  "packages/ghost-writer/core/**/*.tsx",
+                  "packages/ghost-writer/core/**/*.js",
+                  "packages/ghost-writer/core/**/*.jsx",
+                  "packages/ghost-writer/core/**/*.json",
+                  "packages/ghost-writer/core/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/ghost-writer/core/**/*.ts",
+                  "packages/ghost-writer/core/**/*.tsx",
+                  "packages/ghost-writer/core/**/*.js",
+                  "packages/ghost-writer/core/**/*.jsx",
+                  "packages/ghost-writer/core/**/*.json",
+                  "packages/ghost-writer/core/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/ghost-writer-core",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/ghost-writer-core",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/ghost-writer/core/dist packages/ghost-writer/core/coverage packages/ghost-writer/core/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/ghost-writer/core/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/ghost-writer/core/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "configFile": "packages/ghost-writer/core/vitest.config.ts"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:full": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                {
+                  "dependencies": true,
+                  "target": "test",
+                  "params": "forward"
+                }
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/ghost-writer/core/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/ghost-writer-ext": {
+        "name": "@fux/ghost-writer-ext",
+        "type": "app",
+        "data": {
+          "root": "packages/ghost-writer/ext",
+          "name": "@fux/ghost-writer-ext",
+          "tags": [
+            "npm:private",
+            "npm:import",
+            "npm:code generation",
+            "npm:automation",
+            "npm:logging",
+            "npm:console",
+            "npm:debug",
+            "npm:snippet",
+            "npm:clipboard",
+            "npm:developer tools",
+            "npm:focused ux",
+            "ext"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "description": "Dynamically generate frequently used code.",
+            "js": {
+              "packageName": "fux-ghost-writer",
+              "packageMain": "./dist/index.cjs",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "main": "packages/ghost-writer/ext/src/index.ts",
+                "entryPoints": [
+                  "packages/ghost-writer/ext/src/index.ts"
+                ],
+                "outputPath": "packages/ghost-writer/ext/dist",
+                "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
+                "format": [
+                  "cjs"
+                ],
+                "metafile": true,
+                "platform": "node",
+                "bundle": true,
+                "sourcemap": true,
+                "external": [
+                  "vscode"
+                ],
+                "assets": [
+                  {
+                    "glob": "**/*",
+                    "input": "packages/ghost-writer/ext/assets/",
+                    "output": "./assets/"
+                  }
+                ],
+                "thirdParty": true
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "package": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "build"
+              ],
+              "options": {
+                "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "package:dev": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "build"
+              ],
+              "options": {
+                "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages --dev",
+                "outputPath": "vsix_packages"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": false,
+              "inputs": [
+                "production",
+                "^production",
+                "{workspaceRoot}/scripts/create-vsix.js"
+              ],
+              "outputs": [
+                "{options.outputPath}"
+              ]
+            },
+            "publish": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "package"
+              ],
+              "options": {
+                "command": "vsce publish",
+                "cwd": "packages/ghost-writer/ext"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "check-types": {
+              "extends": "check-types",
+              "configurations": {},
+              "options": {
+                "main": "packages/ghost-writer/ext/src/index.ts",
+                "outputPath": "packages/ghost-writer/ext/dist",
+                "tsConfig": "packages/ghost-writer/ext/tsconfig.json"
+              },
+              "parallelism": true,
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/ghost-writer/ext/**/*.ts",
+                  "packages/ghost-writer/ext/**/*.tsx",
+                  "packages/ghost-writer/ext/**/*.js",
+                  "packages/ghost-writer/ext/**/*.jsx",
+                  "packages/ghost-writer/ext/**/*.json",
+                  "packages/ghost-writer/ext/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/ghost-writer/ext/**/*.ts",
+                  "packages/ghost-writer/ext/**/*.tsx",
+                  "packages/ghost-writer/ext/**/*.js",
+                  "packages/ghost-writer/ext/**/*.jsx",
+                  "packages/ghost-writer/ext/**/*.json",
+                  "packages/ghost-writer/ext/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/ghost-writer-ext",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/ghost-writer-ext",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/ghost-writer/ext/dist packages/ghost-writer/ext/coverage packages/ghost-writer/ext/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/ghost-writer/ext/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/ghost-writer/ext/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:full": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                {
+                  "dependencies": true,
+                  "target": "test",
+                  "params": "forward"
+                }
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/ghost-writer/ext/src",
+          "projectType": "application",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/prune-nx-cache": {
+        "name": "@fux/prune-nx-cache",
+        "type": "lib",
+        "data": {
+          "root": "libs/tools/prune-nx-cache",
+          "name": "@fux/prune-nx-cache",
+          "tags": [
+            "npm:public"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/prune-nx-cache",
+              "packageExports": {
+                "./package.json": "./package.json",
+                ".": {
+                  "types": "./dist/index.d.ts",
+                  "import": "./dist/index.js",
+                  "default": "./dist/index.js"
+                }
+              },
+              "packageMain": "./dist/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "targets": {
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "main": "libs/tools/prune-nx-cache/src/index.ts",
+                "outputPath": "libs/tools/prune-nx-cache/dist",
+                "tsConfig": "libs/tools/prune-nx-cache/tsconfig.lib.json",
+                "platform": "node",
+                "format": [
+                  "esm"
+                ],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "libs/tools/prune-nx-cache/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": [
+                  "vscode",
+                  "typescript",
+                  "awilix",
+                  "js-yaml"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "verify:dist:hash": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "node ../../../scripts/verify-dist-hash.cjs",
+                "cwd": "libs/tools/prune-nx-cache"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build:with-verify": {
+              "executor": "nx:run-commands",
+              "options": {
+                "commands": [
+                  "nx run @fux/prune-nx-cache:build",
+                  "nx run @fux/prune-nx-cache:verify:dist:hash"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf libs/tools/prune-nx-cache/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf libs/tools/prune-nx-cache/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "lintFilePatterns": [
+                  "libs/tools/prune-nx-cache/**/*.ts",
+                  "libs/tools/prune-nx-cache/**/*.tsx",
+                  "libs/tools/prune-nx-cache/**/*.js",
+                  "libs/tools/prune-nx-cache/**/*.jsx"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "extends": "vite:test",
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/tools/prune-nx-cache/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/dynamicons-core": {
+        "name": "@fux/dynamicons-core",
+        "type": "lib",
+        "data": {
+          "root": "packages/dynamicons/core",
+          "name": "@fux/dynamicons-core",
+          "tags": [
+            "npm:public"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/dynamicons-core",
+              "packageExports": {
+                "./package.json": "./package.json",
+                ".": {
+                  "types": "./dist/index.d.ts",
+                  "import": "./dist/index.js",
+                  "default": "./dist/index.js"
+                }
+              },
+              "packageMain": "./dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-assets": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "tsx ./src/scripts/build_dynamicon_assets.ts",
+                "cwd": "packages/dynamicons/core",
+                "forwardAllArgs": true
+              },
+              "configurations": {
+                "development": {
+                  "command": "tsx ./src/scripts/build_dynamicon_assets.ts"
+                }
+              },
+              "parallelism": true
+            },
+            "build": {
+              "dependsOn": [
+                "build-assets"
+              ],
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "inputs": [
+                "{projectRoot}/src/**/*",
+                "{projectRoot}/src/icons/**/*",
+                "{workspaceRoot}/packages/dynamicons/ext/assets/icons/**/*",
+                "{workspaceRoot}/packages/dynamicons/ext/assets/themes/*.json"
+              ],
+              "options": {
+                "main": "packages/dynamicons/core/src/index.ts",
+                "outputPath": "packages/dynamicons/core/dist",
+                "tsConfig": "packages/dynamicons/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": [
+                  "esm"
+                ],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "packages/dynamicons/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": [
+                  "vscode",
+                  "strip-json-comments"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true
+            },
+            "check-types": {
+              "extends": "check-types",
+              "configurations": {},
+              "options": {
+                "main": "packages/dynamicons/core/src/index.ts",
+                "outputPath": "packages/dynamicons/core/dist",
+                "tsConfig": "packages/dynamicons/core/tsconfig.json"
+              },
+              "parallelism": true,
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/dynamicons/core/**/*.ts",
+                  "packages/dynamicons/core/**/*.tsx",
+                  "packages/dynamicons/core/**/*.js",
+                  "packages/dynamicons/core/**/*.jsx",
+                  "packages/dynamicons/core/**/*.json",
+                  "packages/dynamicons/core/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/dynamicons/core/**/*.ts",
+                  "packages/dynamicons/core/**/*.tsx",
+                  "packages/dynamicons/core/**/*.js",
+                  "packages/dynamicons/core/**/*.jsx",
+                  "packages/dynamicons/core/**/*.json",
+                  "packages/dynamicons/core/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/dynamicons-core",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/dynamicons-core",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/dynamicons/core/dist packages/dynamicons/core/coverage packages/dynamicons/core/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/dynamicons/core/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/dynamicons/core/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:full": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                {
+                  "dependencies": true,
+                  "target": "test",
+                  "params": "forward"
+                }
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/dynamicons/core/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/dynamicons-ext": {
+        "name": "@fux/dynamicons-ext",
+        "type": "app",
+        "data": {
+          "root": "packages/dynamicons/ext",
+          "name": "@fux/dynamicons-ext",
+          "tags": [
+            "npm:private",
+            "npm:icon theme",
+            "npm:theme",
+            "npm:icons",
+            "npm:dynamicons",
+            "npm:focused ux",
+            "ext"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "description": "A dynamic and customizable icon theme for a focused user experience.",
+            "js": {
+              "packageName": "fux-dynamicons",
+              "packageMain": "./dist/extension.cjs",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "entryPoints": [
+                  "packages/dynamicons/ext/src/extension.ts"
+                ],
+                "outputPath": "packages/dynamicons/ext/dist",
+                "format": [
+                  "cjs"
+                ],
+                "metafile": true,
+                "platform": "node",
+                "bundle": true,
+                "external": [
+                  "vscode",
+                  "strip-json-comments"
+                ],
+                "sourcemap": true,
+                "main": "packages/dynamicons/ext/src/extension.ts",
+                "tsConfig": "packages/dynamicons/ext/tsconfig.json",
+                "assets": [
+                  {
+                    "glob": "**/*",
+                    "input": "packages/dynamicons/ext/assets/",
+                    "output": "./assets/"
+                  }
+                ],
+                "thirdParty": true
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "package": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "build"
+              ],
+              "options": {
+                "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "package:dev": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "build"
+              ],
+              "options": {
+                "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages --dev",
+                "outputPath": "vsix_packages"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": false,
+              "inputs": [
+                "production",
+                "^production",
+                "{workspaceRoot}/scripts/create-vsix.js"
+              ],
+              "outputs": [
+                "{options.outputPath}"
+              ]
+            },
+            "publish": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "package"
+              ],
+              "options": {
+                "command": "vsce publish",
+                "cwd": "packages/dynamicons/ext"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "check-types": {
+              "extends": "check-types",
+              "configurations": {},
+              "options": {
+                "main": "packages/dynamicons/ext/src/index.ts",
+                "outputPath": "packages/dynamicons/ext/dist",
+                "tsConfig": "packages/dynamicons/ext/tsconfig.json"
+              },
+              "parallelism": true,
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/dynamicons/ext/**/*.ts",
+                  "packages/dynamicons/ext/**/*.tsx",
+                  "packages/dynamicons/ext/**/*.js",
+                  "packages/dynamicons/ext/**/*.jsx",
+                  "packages/dynamicons/ext/**/*.json",
+                  "packages/dynamicons/ext/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/dynamicons/ext/**/*.ts",
+                  "packages/dynamicons/ext/**/*.tsx",
+                  "packages/dynamicons/ext/**/*.js",
+                  "packages/dynamicons/ext/**/*.jsx",
+                  "packages/dynamicons/ext/**/*.json",
+                  "packages/dynamicons/ext/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/dynamicons-ext",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/dynamicons-ext",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/dynamicons/ext/dist packages/dynamicons/ext/coverage packages/dynamicons/ext/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/dynamicons/ext/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/dynamicons/ext/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:full": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                {
+                  "dependencies": true,
+                  "target": "test",
+                  "params": "forward"
+                }
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/dynamicons/ext/src",
+          "projectType": "application",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/note-hub-core": {
+        "name": "@fux/note-hub-core",
+        "type": "lib",
+        "data": {
+          "root": "packages/note-hub/core",
+          "name": "@fux/note-hub-core",
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/note-hub-core",
+              "packageExports": {
+                "./package.json": "./package.json",
+                ".": {
+                  "types": "./dist/index.d.ts",
+                  "import": "./dist/index.js",
+                  "default": "./dist/index.js"
+                },
+                "./*": {
+                  "types": "./dist/*.d.ts",
+                  "import": "./dist/*.js",
+                  "default": "./dist/*.js"
+                }
+              },
+              "packageMain": "./dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build": {
+              "dependsOn": [
+                "@fux/shared:build"
+              ],
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "main": "packages/note-hub/core/src/index.ts",
+                "outputPath": "packages/note-hub/core/dist",
+                "tsConfig": "packages/note-hub/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": [
+                  "esm"
+                ],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "packages/note-hub/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": [
+                  "vscode"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "check-types": {
+              "extends": "check-types",
+              "configurations": {},
+              "options": {
+                "main": "packages/note-hub/core/src/index.ts",
+                "outputPath": "packages/note-hub/core/dist",
+                "tsConfig": "packages/note-hub/core/tsconfig.json"
+              },
+              "parallelism": true,
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/note-hub/core/**/*.ts",
+                  "packages/note-hub/core/**/*.tsx",
+                  "packages/note-hub/core/**/*.js",
+                  "packages/note-hub/core/**/*.jsx",
+                  "packages/note-hub/core/**/*.json",
+                  "packages/note-hub/core/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/note-hub/core/**/*.ts",
+                  "packages/note-hub/core/**/*.tsx",
+                  "packages/note-hub/core/**/*.js",
+                  "packages/note-hub/core/**/*.jsx",
+                  "packages/note-hub/core/**/*.json",
+                  "packages/note-hub/core/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/note-hub-core",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/note-hub-core",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/note-hub/core/dist packages/note-hub/core/coverage packages/note-hub/core/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/note-hub/core/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/note-hub/core/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "options": {
+                "configFile": "packages/note-hub/core/vitest.functional.config.ts",
+                "reporters": "default"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:full": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "options": {
+                "configFile": "packages/note-hub/core/vitest.coverage.config.ts",
+                "reporters": "default"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/note-hub/core/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/note-hub-ext": {
+        "name": "@fux/note-hub-ext",
+        "type": "app",
+        "data": {
+          "root": "packages/note-hub/ext",
+          "name": "@fux/note-hub-ext",
+          "tags": [
+            "npm:private",
+            "npm:focused ux",
+            "npm:f-ux",
+            "ext"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "description": "Notes Hub VSCode extension",
+            "js": {
+              "packageName": "fux-note-hub",
+              "packageMain": "./dist/extension.cjs",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "entryPoints": [
+                  "packages/note-hub/ext/src/extension.ts"
+                ],
+                "outputPath": "packages/note-hub/ext/dist",
+                "format": [
+                  "cjs"
+                ],
+                "platform": "node",
+                "bundle": true,
+                "external": [
+                  "vscode",
+                  "awilix",
+                  "js-yaml"
+                ],
+                "sourcemap": true,
+                "main": "packages/note-hub/ext/src/extension.ts",
+                "tsConfig": "packages/note-hub/ext/tsconfig.json",
+                "assets": [
+                  {
+                    "glob": "**/*",
+                    "input": "packages/note-hub/ext/assets/",
+                    "output": "./assets/"
+                  }
+                ],
+                "thirdParty": true
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "package": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "build"
+              ],
+              "options": {
+                "command": "node scripts/create-vsix.js packages/note-hub/ext vsix_packages"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "package:dev": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "build"
+              ],
+              "options": {
+                "command": "node scripts/create-vsix.js packages/note-hub/ext vsix_packages --dev",
+                "outputPath": "vsix_packages"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": false,
+              "inputs": [
+                "production",
+                "^production",
+                "{workspaceRoot}/scripts/create-vsix.js"
+              ],
+              "outputs": [
+                "{options.outputPath}"
+              ]
+            },
+            "publish": {
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                "package"
+              ],
+              "options": {
+                "command": "vsce publish",
+                "cwd": "packages/note-hub/ext"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "check-types": {
+              "extends": "check-types",
+              "configurations": {},
+              "options": {
+                "main": "packages/note-hub/ext/src/index.ts",
+                "outputPath": "packages/note-hub/ext/dist",
+                "tsConfig": "packages/note-hub/ext/tsconfig.json"
+              },
+              "parallelism": true,
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/note-hub/ext/**/*.ts",
+                  "packages/note-hub/ext/**/*.tsx",
+                  "packages/note-hub/ext/**/*.js",
+                  "packages/note-hub/ext/**/*.jsx",
+                  "packages/note-hub/ext/**/*.json",
+                  "packages/note-hub/ext/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "packages/note-hub/ext/**/*.ts",
+                  "packages/note-hub/ext/**/*.tsx",
+                  "packages/note-hub/ext/**/*.js",
+                  "packages/note-hub/ext/**/*.jsx",
+                  "packages/note-hub/ext/**/*.json",
+                  "packages/note-hub/ext/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/note-hub-ext",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/note-hub-ext",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/note-hub/ext/dist packages/note-hub/ext/coverage packages/note-hub/ext/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/note-hub/ext/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf packages/note-hub/ext/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "options": {
+                "configFile": "packages/note-hub/ext/vitest.config.ts",
+                "reporters": "default"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:full": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "^test"
+              ],
+              "options": {
+                "configFile": "packages/note-hub/ext/vitest.config.ts",
+                "reporters": "default"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "packages/note-hub/ext/src",
+          "projectType": "application",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/aka": {
+        "name": "@fux/aka",
+        "type": "lib",
+        "data": {
+          "root": "libs/tools/aka",
+          "name": "@fux/aka",
+          "tags": [
+            "npm:private",
+            "tool"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/aka",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "targets": {
+            "run": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "tsx libs/tools/aka/src/main.ts"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "libs/tools/aka/**/*.ts",
+                  "libs/tools/aka/**/*.tsx",
+                  "libs/tools/aka/**/*.js",
+                  "libs/tools/aka/**/*.jsx",
+                  "libs/tools/aka/**/*.json",
+                  "libs/tools/aka/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ]
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/tools/aka/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/mockly": {
+        "name": "@fux/mockly",
+        "type": "lib",
+        "data": {
+          "root": "libs/mockly",
+          "name": "@fux/mockly",
+          "tags": [
+            "npm:public"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/mockly",
+              "packageExports": {
+                "./package.json": "./package.json",
+                ".": {
+                  "types": "./dist/index.d.ts",
+                  "import": "./dist/index.js",
+                  "default": "./dist/index.js"
+                }
+              },
+              "packageMain": "./dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "main": "libs/mockly/src/index.ts",
+                "outputPath": "libs/mockly/dist",
+                "tsConfig": "libs/mockly/tsconfig.lib.json",
+                "platform": "node",
+                "format": [
+                  "esm"
+                ],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "libs/mockly/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": [
+                  "vscode",
+                  "typescript",
+                  "awilix",
+                  "js-yaml"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "check-types": {
+              "extends": "check-types",
+              "configurations": {},
+              "options": {
+                "main": "libs/mockly/src/index.ts",
+                "outputPath": "libs/mockly/dist",
+                "tsConfig": "libs/mockly/tsconfig.json"
+              },
+              "parallelism": true,
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "libs/mockly/**/*.ts",
+                  "libs/mockly/**/*.tsx",
+                  "libs/mockly/**/*.js",
+                  "libs/mockly/**/*.jsx",
+                  "libs/mockly/**/*.json",
+                  "libs/mockly/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "libs/mockly/**/*.ts",
+                  "libs/mockly/**/*.tsx",
+                  "libs/mockly/**/*.js",
+                  "libs/mockly/**/*.jsx",
+                  "libs/mockly/**/*.json",
+                  "libs/mockly/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/mockly",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/mockly",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf libs/mockly/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf libs/mockly/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true
+            },
+            "test:full": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                {
+                  "dependencies": true,
+                  "target": "test",
+                  "params": "forward"
+                }
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/mockly/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/shared": {
+        "name": "@fux/shared",
+        "type": "lib",
+        "data": {
+          "root": "libs/shared",
+          "name": "@fux/shared",
+          "tags": [
+            "npm:public"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/shared",
+              "packageExports": {
+                "./package.json": "./package.json",
+                ".": {
+                  "types": "./dist/index.d.ts",
+                  "import": "./dist/index.js",
+                  "default": "./dist/index.js"
+                }
+              },
+              "packageMain": "./dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": [
+                "^nx-release-publish"
+              ],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "main": "libs/shared/src/index.ts",
+                "outputPath": "libs/shared/dist",
+                "tsConfig": "libs/shared/tsconfig.lib.json",
+                "platform": "node",
+                "format": [
+                  "esm"
+                ],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "libs/shared/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": [
+                  "js-yaml"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "libs/shared/**/*.ts",
+                  "libs/shared/**/*.tsx",
+                  "libs/shared/**/*.js",
+                  "libs/shared/**/*.jsx",
+                  "libs/shared/**/*.json",
+                  "libs/shared/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                "^build"
+              ]
+            },
+            "lint:full": {
+              "extends": "lint:full",
+              "configurations": {},
+              "options": {
+                "lintFilePatterns": [
+                  "libs/shared/**/*.ts",
+                  "libs/shared/**/*.tsx",
+                  "libs/shared/**/*.js",
+                  "libs/shared/**/*.jsx",
+                  "libs/shared/**/*.json",
+                  "libs/shared/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "validate": {
+              "extends": "validate",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit"
+                }
+              ]
+            },
+            "validate:full": {
+              "extends": "validate:full",
+              "configurations": {},
+              "options": {
+                "commands": [],
+                "parallel": false
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "lint:full",
+                  "params": "forward"
+                },
+                {
+                  "target": "check-types"
+                },
+                {
+                  "target": "audit:full",
+                  "params": "forward"
+                }
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/shared",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "audit:full": {
+              "extends": "audit:full",
+              "configurations": {},
+              "options": {
+                "command": "tsx libs/tools/structure-auditor/src/main.ts @fux/shared",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands",
+              "dependsOn": [
+                {
+                  "target": "audit",
+                  "projects": "dependencies",
+                  "params": "forward"
+                }
+              ]
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf libs/shared/dist libs/shared/coverage libs/shared/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf libs/shared/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf libs/shared/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "^build"
+              ],
+              "configurations": {},
+              "options": {},
+              "parallelism": true
+            },
+            "test:full": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                {
+                  "dependencies": true,
+                  "target": "test",
+                  "params": "forward"
+                }
+              ],
+              "options": {
+                "passWithNoTests": true
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/shared/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/source": {
+        "name": "@fux/source",
+        "type": "app",
+        "data": {
+          "root": ".",
+          "name": "@fux/source",
+          "includedScripts": [],
+          "tags": [
+            "npm:private"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/source",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "local-registry": {
+              "executor": "@nx/js:verdaccio",
+              "options": {
+                "port": 4873,
+                "config": ".verdaccio/config.yml",
+                "storage": "tmp/local-registry/storage"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "continuous": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      }
+    },
+    "dependencies": {
+      "@fux/context-cherry-picker-core": [
+        {
+          "source": "@fux/context-cherry-picker-core",
+          "target": "@fux/shared",
+          "type": "static"
+        }
+      ],
+      "@fux/context-cherry-picker-ext": [
+        {
+          "source": "@fux/context-cherry-picker-ext",
+          "target": "@fux/mockly",
+          "type": "static"
+        },
+        {
+          "source": "@fux/context-cherry-picker-ext",
+          "target": "@fux/context-cherry-picker-core",
+          "type": "static"
+        },
+        {
+          "source": "@fux/context-cherry-picker-ext",
+          "target": "@fux/shared",
+          "type": "static"
+        }
+      ],
+      "@fux/cursor-memory-optimizer": [],
+      "@fux/project-butler-core": [],
+      "@fux/structure-auditor": [],
+      "@fux/project-butler-ext": [
+        {
+          "source": "@fux/project-butler-ext",
+          "target": "@fux/project-butler-core",
+          "type": "static"
+        }
+      ],
+      "@fux/ghost-writer-core": [],
+      "@fux/ghost-writer-ext": [
+        {
+          "source": "@fux/ghost-writer-ext",
+          "target": "@fux/ghost-writer-core",
+          "type": "static"
+        }
+      ],
+      "@fux/prune-nx-cache": [
+        {
+          "source": "@fux/prune-nx-cache",
+          "target": "@fux/shared",
+          "type": "static"
+        }
+      ],
+      "@fux/dynamicons-core": [],
+      "@fux/dynamicons-ext": [
+        {
+          "source": "@fux/dynamicons-ext",
+          "target": "@fux/dynamicons-core",
+          "type": "dynamic"
+        },
+        {
+          "source": "@fux/dynamicons-ext",
+          "target": "@fux/dynamicons-core",
+          "type": "static"
+        }
+      ],
+      "@fux/note-hub-core": [
+        {
+          "source": "@fux/note-hub-core",
+          "target": "@fux/mockly",
+          "type": "static"
+        },
+        {
+          "source": "@fux/note-hub-core",
+          "target": "@fux/shared",
+          "type": "dynamic"
+        },
+        {
+          "source": "@fux/note-hub-core",
+          "target": "@fux/shared",
+          "type": "static"
+        }
+      ],
+      "@fux/note-hub-ext": [
+        {
+          "source": "@fux/note-hub-ext",
+          "target": "@fux/shared",
+          "type": "static"
+        },
+        {
+          "source": "@fux/note-hub-ext",
+          "target": "@fux/shared",
+          "type": "dynamic"
+        },
+        {
+          "source": "@fux/note-hub-ext",
+          "target": "@fux/note-hub-core",
+          "type": "static"
+        },
+        {
+          "source": "@fux/note-hub-ext",
+          "target": "@fux/note-hub-core",
+          "type": "dynamic"
+        },
+        {
+          "source": "@fux/note-hub-ext",
+          "target": "@fux/mockly",
+          "type": "static"
+        }
+      ],
+      "@fux/aka": [],
+      "@fux/mockly": [],
+      "@fux/shared": [
+        {
+          "source": "@fux/shared",
+          "target": "@fux/mockly",
+          "type": "static"
+        }
+      ],
+      "@fux/source": []
+    }
+  }
+}

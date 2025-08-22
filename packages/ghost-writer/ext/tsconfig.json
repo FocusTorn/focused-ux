@@ -1,5 +1,9 @@
 {
     "extends": "../../../tsconfig.base.json",
+
+    "include": ["src/**/*"],
+    "exclude": ["**/*.test.ts", "**/*.spec.ts", "__tests__/**/*", "dist/**/*"],
+
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
@@ -8,14 +12,10 @@
         "declarationMap": true,
         "emitDeclarationOnly": true
     },
-    "include": ["src/**/*"],
-    "exclude": ["**/*.test.ts", "**/*.spec.ts", "__tests__/**/*", "dist/**/*"],
+
     "references": [
         {
             "path": "../core"
-        },
-        {
-            "path": "../../../libs/mockly"
         }
     ]
 }

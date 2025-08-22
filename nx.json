@@ -120,8 +120,10 @@
         //     "outputs": ["{options.reportsDirectory}"],
         //     "options": {
         //         "configFile": "{projectRoot}/vitest.config.ts",
-        //         "reporters": "default"
+        //         "reporters": "default",
+        //         "passWithNoTests": true
         //     }
+        // },
         
         // "test": {
         //     "executor": "@nx/vite:test",
@@ -285,7 +287,6 @@
                 "packages/project-butler/ext/**/*",
                 "packages/project-butler/core/**/*",
                 "packages/project-butler/ext/**/*",
-                "packages/project-butler/all/**/*",
                 "packages/context-cherry-picker/core/**/*",
                 "packages/context-cherry-picker/ext/**/*",
                 "packages/ai-agent-interactor/core/**/*",
@@ -359,7 +360,6 @@
             "@fux/project-butler-ext",
             "@fux/project-butler-core",
             "@fux/project-butler-ext",
-            "@fux/project-butler-all",
             "@fux/context-cherry-picker-core",
             "@fux/context-cherry-picker-ext",
             "@fux/ai-agent-interactor-core",

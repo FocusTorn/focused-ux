@@ -3,7 +3,11 @@ import { readFileSync, mkdirSync, cpSync, writeFileSync, existsSync, unlinkSync 
 import { resolve, join } from 'node:path'
 import process from 'node:process'
 import { sync as rimrafSync } from 'rimraf'
-import ora from 'ora'
+
+// Increase max listeners to prevent warnings during Nx task execution
+// This is necessary because Nx's run-commands executor adds multiple exit listeners
+// for task management, cleanup, and graceful shutdown handling
+process.setMaxListeners(25) // Increased to accommodate Nx's task management needs
 
 // This script creates a self-contained VSIX.
 // It relies on Nx for caching. By default, it is quiet but always shows vsce output.
@@ -155,6 +159,7 @@ try {
     const pnpmListOutput = execSync(`pnpm list --prod --json --depth=Infinity`, {
         cwd: packageDir,
         encoding: 'utf-8',
+        timeout: 60000, // 1 minute timeout
     })
     const pnpmList = JSON.parse(pnpmListOutput)
     completeStep('Dependency tree resolved')
@@ -250,7 +255,13 @@ try {
             cwd: deployDir,
             encoding: 'utf-8',
             stdio: ['pipe', 'pipe', 'pipe'],
-            env: { ...process.env, VSCE_SILENT: 'true' },
+            env: {
+                ...process.env,
+                VSCE_SILENT: 'true',
+                NODE_NO_WARNINGS: '1', // Suppress Node.js warnings in child process
+                NODE_OPTIONS: '--no-warnings', // Additional Node.js warning suppression
+            },
+            timeout: 300000, // 5 minute timeout
         })
 
         // Check for command not found or execution errors
@@ -291,6 +302,12 @@ try {
             vsceOutput = execSync(vsceCommand, {
                 cwd: deployDir,
                 encoding: 'utf-8',
+                timeout: 300000, // 5 minute timeout
+                env: {
+                    ...process.env,
+                    NODE_NO_WARNINGS: '1', // Suppress Node.js warnings in child process
+                    NODE_OPTIONS: '--no-warnings', // Additional Node.js warning suppression
+                },
             })
 
             // Clear the progress bar immediately after vsce completes

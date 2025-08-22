@@ -1,6 +1,7 @@
-import { IProjectMaidManagerService, IProjectMaidDependencies } from '../_interfaces/IProjectMaidManagerService'
+import type { IProjectMaidManagerService, IProjectMaidDependencies } from '../_interfaces/IProjectMaidManagerService.js'
 
 export class ProjectMaidManagerService implements IProjectMaidManagerService {
+
 	constructor(private readonly dependencies: IProjectMaidDependencies) {}
 
 	async formatPackageJson(packageJsonPath: string, workspaceRoot: string): Promise<void> {
@@ -18,4 +19,5 @@ export class ProjectMaidManagerService implements IProjectMaidManagerService {
 	async enterPoetryShell(filePath?: string): Promise<void> {
 		await this.dependencies.poetryShell.enterPoetryShell(filePath)
 	}
-} 
+
+}

@@ -20,7 +20,6 @@
         }, //<
         "build": { //>
             "dependsOn": [
-                "@fux/shared:build",
                 "build-assets"
             ],
             "executor": "@nx/esbuild:esbuild",
@@ -29,7 +28,6 @@
             ],
             "inputs": [
                 "{projectRoot}/src/**/*",
-                "{projectRoot}/src/models/*.json",
                 "{projectRoot}/src/icons/**/*",
                 "{workspaceRoot}/packages/dynamicons/ext/assets/icons/**/*",
                 "{workspaceRoot}/packages/dynamicons/ext/assets/themes/*.json"
@@ -50,13 +48,10 @@
                 "thirdParty": false,
                 "deleteOutputPath": true,
                 "external": [
-                    "awilix",
-                    "puppeteer",
-                    "sharp",
-                    "strip-json-comments",
-                    "svgo",
-                    "tsx"
+                    "vscode",
+                    "strip-json-comments"
                 ]
+
             }
         }, //<
         
@@ -73,12 +68,22 @@
         "clean:cache": { "extends": "clean:cache" },
 
         "test": { //>
-            "extends": "vite:test",
-            "dependsOn": ["^build"]
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["^build"],
+            "options": {}
         }, //<
         "test:full": { //>
-            "extends": "vite:test",
-            "dependsOn": ["^test"]
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ],
+            "options": {}
         } //<
 
     },
