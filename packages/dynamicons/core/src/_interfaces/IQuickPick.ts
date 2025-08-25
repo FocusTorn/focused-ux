@@ -1,11 +1,9 @@
-import type { QuickPickOptions } from 'vscode'
-
 export interface IQuickPick {
-	showQuickPickSingle<T, K extends keyof T>(
+	showQuickPickSingle: <T, K extends keyof T>(
 		items: T[],
 		options: IQuickPickOptions,
 		key: K
-	): Promise<T[K] | undefined>
+	) => Promise<T[K] | undefined>
 }
 
 export interface IQuickPickOptions {

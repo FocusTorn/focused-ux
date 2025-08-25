@@ -5,7 +5,7 @@
     "projectType": "library",
     "targets": {
         
-        "build": {
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": [
                 "{options.outputPath}"
@@ -30,13 +30,16 @@
                     "js-yaml"
                 ]
             }
-        },
+        }, //<
         
         "check-types": { "extends": "check-types" },
+        
         "lint": { "extends": "lint" },
         "lint:full": { "extends": "lint:full" },
+        
         "validate": { "extends": "validate" },
         "validate:full": { "extends": "validate:full" },
+        
         "audit": { "extends": "audit" },
         "audit:full": { "extends": "audit:full" },
         
@@ -44,12 +47,12 @@
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
        
-        "test": {
+        "test": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["^build"]
-        },
-        "test:full": {
+            "dependsOn": ["build", "^build"]
+        }, //<
+        "test:full": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
             "dependsOn": [
@@ -59,7 +62,7 @@
                     "params": "forward"
                 }
             ]
-        }
+        } //<
        
     },
     "tags": [

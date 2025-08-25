@@ -7,4 +7,4 @@ export default mergeConfig(
 	defineConfig({
 		// Any package-specific overrides for coverage can go here
 	}),
-) 
+)

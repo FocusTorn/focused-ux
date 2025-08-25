@@ -5,7 +5,7 @@ export interface IPackageJsonFormattingService {
 	 * @param workspaceRoot - Path to the workspace root (for .FocusedUX config)
 	 * @returns Promise that resolves when formatting is complete
 	 */
-	formatPackageJson(packageJsonPath: string, workspaceRoot: string): Promise<void>
+	formatPackageJson: (packageJsonPath: string, workspaceRoot: string) => Promise<void>
 }
 
 export interface IPackageJsonConfig {
@@ -16,4 +16,4 @@ export interface IPackageJsonConfig {
 
 export interface IPackageJsonData {
 	[key: string]: any
-} 
+}

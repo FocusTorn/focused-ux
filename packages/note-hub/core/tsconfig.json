@@ -1,20 +1,17 @@
 {
     "extends": "../../../tsconfig.base.json",
+
+    "include": ["src/**/*.ts"],
+    
+    "references": [{ "path": "./tsconfig.lib.json" }],
+    
     "compilerOptions": {
+        "outDir": "./out-tsc",
+        "rootDir": "./src",
         "composite": true,
-        "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
-    },
-    "files": [],
-    "include": [],
-    "references": [
-        {
-            "path": "../../../libs/shared"
-        },
-        {
-            "path": "../../../libs/mockly"
-        },
-        {
-            "path": "./tsconfig.lib.json"
-        }
-    ]
+        "declaration": true,
+        "declarationMap": true,
+        "tsBuildInfoFile": "./out-tsc/tsconfig.tsbuildinfo"
+    }
+    
 }

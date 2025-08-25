@@ -3,6 +3,7 @@ import { IconThemeGeneratorService } from '../../src/services/IconThemeGenerator
 import type { IFileSystem } from '../../src/_interfaces/IFileSystem.js'
 import type { IPath } from '../../src/_interfaces/IPath.js'
 import type { ICommonUtils } from '../../src/_interfaces/ICommonUtils.js'
+import type { IUriFactory } from '../../src/_interfaces/IUri.js'
 
 // Mock vscode
 vi.mock('vscode', () => ({
@@ -49,6 +50,22 @@ const mockCommonUtils: ICommonUtils = {
 	errMsg: vi.fn(),
 }
 
+const mockUriFactory: IUriFactory = {
+	file: vi.fn((path: string) => ({
+		fsPath: path,
+		scheme: 'file',
+		authority: '',
+		path,
+		query: '',
+		fragment: '',
+		toString: () => path,
+		with: vi.fn(),
+	})),
+	parse: vi.fn(),
+	create: vi.fn(),
+	joinPath: vi.fn(),
+}
+
 describe('IconThemeGeneratorService', () => {
 	let service: IconThemeGeneratorService
 	let baseManifestUri: any
@@ -56,7 +73,7 @@ describe('IconThemeGeneratorService', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
-		service = new IconThemeGeneratorService(mockFileSystem, mockPath, mockCommonUtils)
+		service = new IconThemeGeneratorService(mockFileSystem, mockPath, mockCommonUtils, mockUriFactory)
 		baseManifestUri = {
 			fsPath: '/test/base.theme.json',
 			toString: () => '/test/base.theme.json',

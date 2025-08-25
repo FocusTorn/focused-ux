@@ -1,27 +1,16 @@
 {
     "extends": "../../../tsconfig.base.json",
+    
+    "include": ["src/**/*.ts"],
+    
     "compilerOptions": {
         "baseUrl": ".",
         "rootDir": "src",
-        "outDir": "dist",
-        "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
-        "emitDeclarationOnly": true,
+        "outDir": "./out-tsc/lib",
+        "tsBuildInfoFile": "./out-tsc/lib/tsconfig.lib.tsbuildinfo",
+        "types": ["node"],
         "declaration": true,
         "declarationMap": true,
-        "types": ["node"],
-        "composite": true,
-        "paths": {
-            "@fux/shared": ["../../../libs/shared/src"]
-        }
-    },
-    "include": ["src/**/*.ts", "src/**/*.tsx"],
-    "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts"],
-    "references": [
-        {
-            "path": "../../../libs/shared/tsconfig.lib.json"
-        },
-        {
-            "path": "../../../libs/mockly/tsconfig.lib.json"
-        }
-    ]
+        "composite": true
+    }
 }

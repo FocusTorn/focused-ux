@@ -1,46 +1,12 @@
-# Universal Operational Doctrine
-
-## **Core Principles**
-
-### **Autonomous Operation**
-
-- **Proceed independently** after understanding the task - don't ask for confirmation on safe actions
-- **Fix issues immediately** when root cause is clear - don't just report problems
-- **Complete the full scope** - identify and fix related issues, update all consumers of changed components
-
-### **Evidence-Based Decision Making**
-
-- **Read before write; reread after write** - always verify current state before and after changes
-- **Privilege empiricism over assumptions** - check actual file contents and command outputs
-- **Verify against live system** - never assume behavior without testing
-
-### **System-Wide Thinking**
-
-- **Account for full system impact** - identify all consumers and dependencies before making changes
-- **Update all affected components** - shared adapters, imports, DI wiring, TypeScript mappings
-- **Leave system better** - fix related issues, improve consistency, document patterns
-
 ---
-
-## **When to Ask for Help**
-
-**ONLY consult the user when:**
-
-1. **Epistemic Conflict** - Authoritative sources contradict each other
-2. **Resource Absence** - Critical files/credentials genuinely inaccessible after thorough search
-3. **Irreversible Risk** - Action could cause data loss or production system damage
-4. **Research Saturation** - Exhausted all investigative avenues, ambiguity persists
-
-**Otherwise, proceed autonomously with verifiable evidence.**
-
+alwaysApply: true
 ---
-
 ## **Workflow: Reconnaissance → Plan → Execute → Verify → Report**
 
 ### **1. Reconnaissance**
 
 - **Read relevant files** - understand current state and patterns
-- **Check documentation** - consult SOP.md and FocusedUX-Testing-Strategy.md for established patterns
+- **Check documentation** - consult project-specific documentation for established patterns
 - **Identify dependencies** - map all affected components and consumers
 - **Verify assumptions** - test against actual system behavior
 
@@ -56,7 +22,7 @@
 - **Follow established patterns** - use documented architectural and testing approaches
 - **Update all consumers** - shared adapters, imports, DI wiring, TypeScript mappings
 - **Maintain consistency** - apply changes uniformly across affected components
-- **Document as you go** - update Actions Log and relevant documentation
+- **Document as you go** - update project logs and relevant documentation
 
 ### **4. Verify**
 
@@ -64,6 +30,7 @@
 - **Run quality gates** - tests, builds, linters, type checks
 - **End-to-end validation** - ensure primary workflows still function
 - **Check for regressions** - verify no unintended side effects
+- **Iterative test debugging** - run tests, identify failures, fix mocks/expectations, repeat until 100% success
 
 ### **5. Report**
 
@@ -97,6 +64,13 @@
 - Don't continue with failed approaches without pivoting
 - Don't blame external factors for internal errors
 
+### **❌ FORBIDDEN: Testing Anti-Patterns**
+
+- Don't simplify tests to the point where they don't verify actual implementation behavior
+- Don't write mock expectations without understanding actual method signatures and behavior patterns
+- Don't test service lifecycle without proper initialization setup
+- Don't underestimate platform-specific configuration system complexity
+
 ### **❌ FORBIDDEN: Creating Technical Debt**
 
 - Don't skip tests to meet deadlines
@@ -110,19 +84,24 @@
 - Don't ignore user feedback about testing flaws - investigate architectural implications
 - Don't create elaborate mock hierarchies that compete with production patterns
 - Don't treat test failures as isolated issues without considering systemic problems
+- Don't test only mock replacements without validating actual runtime behavior
+- **FORBIDDEN**: Assume modern architecture patterns without verification - always confirm technology choices with users
+- **FORBIDDEN**: Implement solutions before understanding the actual problem scope
+- **FORBIDDEN**: Ignore performance implications of large test files (750+ lines) - split proactively
+- **FORBIDDEN**: Over-engineer solutions when simpler approaches exist
 
 ### **❌ FORBIDDEN: Poor Template Management**
 
 - Don't hardcode configuration templates in validation logic
 - Don't place templates outside the tool package that uses them
-- Don't use CommonJS path resolution patterns in ES modules
+- Don't use inappropriate path resolution patterns for the module system in use
 - Don't skip incremental validation of file loading implementations
 
 ### **❌ FORBIDDEN: Documentation Violations**
 
-- **Skipping Date Verification**: NEVER write Actions Log entries without verifying actual file modification timestamps
+- **Skipping Date Verification**: NEVER write log entries without verifying actual file modification timestamps
 - **Making Up Dates**: NEVER use estimated or guessed dates - always use verified file timestamps
-- **Skipping Verification Commands**: NEVER skip the `Get-ChildItem` verification step
+- **Skipping Verification Commands**: NEVER skip file timestamp verification steps
 - **Ignoring Date Guidelines**: NEVER ignore explicit date handling requirements in documentation protocols
 - **Failing to Correct**: If you violate date verification, you MUST correct the entry immediately
 
@@ -134,7 +113,7 @@
 
 - **Always run builds first** - ensure clean state before testing
 - **Fix build errors immediately** - don't proceed with broken builds
-- **Use cache bypass when troubleshooting** - `--skip-nx-cache` for diagnosis
+- **Use appropriate cache bypass when troubleshooting** - follow project-specific guidance
 
 ### **Test Execution**
 
@@ -145,18 +124,20 @@
 - **Test real runtime behavior** - validate actual production patterns, not just mock replacements
 - **Create integration tests first** - validate core architectural patterns before fixing individual test failures
 - **Investigate user testing insights** - treat feedback about testing flaws as potential architectural revelations
+- **Mock complex internal methods** - prevent test timeouts by isolating unit tests from complex dependencies
+- **Split large test files** - proactively break down test files exceeding 500 lines to prevent performance issues
 
 ### **Documentation Updates**
 
-- **Update Actions Log** - document successful implementations and lessons learned
+- **Update project logs** - document successful implementations and lessons learned
 - **Include failure documentation** - what was tried and failed (MANDATORY)
 - **Update relevant strategies** - testing strategies, architectural patterns
 - **Document anti-patterns** - prevent future mistakes
-- **MANDATORY DATE VERIFICATION**: Before writing any Actions Log entry, you MUST:
-  1. Identify the relevant project directory
-  2. Run `Get-ChildItem "path/to/project" -Recurse | Measure-Object -Property LastWriteTime -Maximum`
-  3. Use the exact timestamp returned
-  4. If you fail to do this, you must correct the entry immediately
+- **MANDATORY DATE VERIFICATION**: Before writing any log entry, you MUST:
+    1. Identify the relevant project directory
+    2. Run appropriate file timestamp verification command for the system
+    3. Use the exact timestamp returned
+    4. If you fail to do this, you must correct the entry immediately
 
 ---
 
@@ -164,7 +145,7 @@
 
 ### **Test Execution Issues**
 
-- **Use cache bypass flags** - `--skip-nx-cache`, `--verbose` to see raw output
+- **Use appropriate cache bypass flags** - follow project-specific guidance
 - **Distinguish execution vs output** - tests not running vs output suppressed
 - **Check framework behavior** - verify against actual documentation
 - **Measure system impact** - overall performance, not just individual components
@@ -178,7 +159,7 @@
 
 ### **Architectural Issues**
 
-- **Consult documentation first** - SOP.md and FocusedUX-Testing-Strategy.md
+- **Consult documentation first** - project-specific documentation and patterns
 - **Verify against patterns** - ensure alignment with established approaches
 - **Check all consumers** - update imports, DI wiring, TypeScript mappings
 - **Maintain consistency** - apply patterns uniformly
@@ -186,7 +167,7 @@
 ### **Template and Configuration Management**
 
 - **Co-locate templates with tools** - place configuration templates within the package that validates them
-- **Use ES module path patterns** - always use `fileURLToPath(import.meta.url)` for file path resolution
+- **Use appropriate path patterns** - follow the module system conventions for the project
 - **Validate incrementally** - test each step of file loading implementations immediately
 - **Distinguish error types** - separate configuration issues from actual code problems
 
@@ -215,14 +196,14 @@
 ### **Session End Protocol**
 
 - **Verify completeness** - ensure all planned work is complete
-- **Document lessons** - update Actions Log with new patterns and anti-patterns
+- **Document lessons** - update project logs with new patterns and anti-patterns
 - **Identify improvements** - note areas where processes could be better
 - **Plan next steps** - outline any remaining work or follow-up actions
 - **MANDATORY VERIFICATION CHECKLIST**:
-  - [ ] Date verification command executed for any Actions Log entries
-  - [ ] Actual file modification timestamps used (no estimated dates)
-  - [ ] All timestamps match file system reality
-  - [ ] No violations of date handling protocols
+    - [ ] Date verification command executed for any log entries
+    - [ ] Actual file modification timestamps used (no estimated dates)
+    - [ ] All timestamps match file system reality
+    - [ ] No violations of date handling protocols
 
 ### **Pattern Recognition**
 
@@ -230,10 +211,6 @@
 - **Update documentation** - improve guidance based on experience
 - **Share learnings** - ensure institutional knowledge is preserved
 - **Refine processes** - continuously improve workflows and procedures
-
----
-
-> **Note:** This document contains universal AI behavior protocols that apply to ALL AI agents in ANY workspace. For project-specific guidelines, refer to the FocusedUX-Operational-Doctrine.mdc file.
 
 ---
 

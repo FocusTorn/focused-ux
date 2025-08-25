@@ -1,8 +1,8 @@
-# Externalizing Third-Party Packages
+# Externalizing Third-Party Packages v2
 
 ## Overview
 
-This document outlines the process and requirements for externalizing third-party packages in VSCode extensions within the FocusedUX workspace.
+This document outlines the process and requirements for externalizing third-party packages in VSCode extensions within the FocusedUX workspace, based on the confirmed final architecture from Ghost Writer and Project Butler packages.
 
 ## Why Externalize?
 
@@ -13,18 +13,47 @@ Third-party packages are externalized (not bundled) into the main extension bund
 3. **Caching**: Allows VSCode to cache dependencies separately
 4. **Maintainability**: Easier to update dependencies without rebuilding the entire extension
 
+## Confirmed Architecture Pattern
+
+### Core Package (`@fux/package-name-core`)
+
+- **Dependencies**: Minimal external dependencies (e.g., `js-yaml` for YAML parsing)
+- **Build**: `@nx/esbuild:esbuild` with `bundle: false`, `format: ["esm"]`
+- **Externalization**: All dependencies externalized in build configuration
+
+### Extension Package (`@fux/package-name-ext`)
+
+- **Dependencies**: Core package + VSCode APIs + minimal runtime dependencies
+- **Build**: `@nx/esbuild:esbuild` with `bundle: true`, `format: ["cjs"]`
+- **Externalization**: All dependencies externalized in build configuration
+
 ## How It Works
 
 ### 1. Build Configuration
 
 In the `project.json` file, third-party packages are listed in the `external` array:
 
+**Core Package:**
+
 ```json
 {
     "build": {
         "executor": "@nx/esbuild:esbuild",
         "options": {
-            "external": ["vscode", "js-yaml", "awilix"]
+            "external": ["vscode", "js-yaml"]
+        }
+    }
+}
+```
+
+**Extension Package:**
+
+```json
+{
+    "build": {
+        "executor": "@nx/esbuild:esbuild",
+        "options": {
+            "external": ["vscode", "js-yaml"]
         }
     }
 }
@@ -66,11 +95,14 @@ The `.vscodeignore` file must be configured to include the `node_modules` folder
 
 ## Package Structure
 
-### Core/Ext Pattern (e.g., Context Cherry Picker)
+### Core/Ext Pattern (e.g., Ghost Writer, Project Butler)
 
 ```
-packages/context-cherry-picker/
+packages/package-name/
 ├── core/           # Business logic (no VSCode dependencies)
+│   ├── package.json
+│   ├── project.json
+│   └── src/
 ├── ext/            # VSCode extension wrapper
 │   ├── package.json
 │   ├── project.json
@@ -79,35 +111,60 @@ packages/context-cherry-picker/
 └── all/            # Combined package (optional)
 ```
 
-### All-in-One Pattern (e.g., Project Maid All)
+## Dependency Management
 
+### Core Package Dependencies
+
+**Minimal Dependencies:**
+
+```json
+{
+    "dependencies": {
+        "js-yaml": "^4.1.0"
+    },
+    "devDependencies": {
+        "@types/js-yaml": "^4.0.9",
+        "@types/node": "^20.0.0",
+        "typescript": "^5.0.0",
+        "vitest": "^3.2.4"
+    }
+}
 ```
-packages/project-maid/
-└── all/            # Single package with direct VSCode integration
-    ├── package.json
-    ├── project.json
-    ├── .vscodeignore  # ← Required for node_modules inclusion
-    └── src/
+
+**Key Principles:**
+
+- Only include essential runtime dependencies
+- Keep dependencies minimal for "guinea pig" package compliance
+- No shared dependencies (`@fux/shared`, `@fux/mockly`)
+- No DI container dependencies (`awilix`)
+
+### Extension Package Dependencies
+
+**Thin Wrapper Dependencies:**
+
+```json
+{
+    "dependencies": {
+        "@fux/package-name-core": "workspace:*",
+        "js-yaml": "^4.1.0"
+    },
+    "devDependencies": {
+        "@types/node": "^24.0.10",
+        "@types/vscode": "^1.99.3",
+        "@types/js-yaml": "^4.0.9",
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4",
+        "@vitest/coverage-v8": "^3.2.4"
+    }
+}
 ```
 
-## Project Maid All - Expanded Functionality
+**Key Principles:**
 
-The Project Maid All package demonstrates a simplified, all-in-one approach that includes all Project Butler functionality:
-
-### Features
-
-- **Format Package.json**: Reorders package.json keys according to `.FocusedUX` configuration
-- **CD to Here**: Changes terminal directory to the selected file/folder location
-- **Create Backup**: Creates numbered backup files (.bak, .bak2, etc.)
-- **Enter Poetry Shell**: Opens a Poetry shell in the current directory
-
-### Context Menu Integration
-
-All commands are organized in a flyout submenu called "Project Maid All" in the explorer context menu, keeping the interface clean and organized.
-
-### Activation
-
-The extension activates on startup (`"activationEvents": ["*"]`) due to its small size and lightweight nature.
+- Only include core package and essential runtime dependencies
+- No DI container dependencies
+- No unnecessary build dependencies
+- Follow Project Butler pattern exactly
 
 ## Common Issues and Solutions
 
@@ -153,6 +210,27 @@ pnpm remove <package-name>
 pnpm install
 ```
 
+### Issue: Unnecessary Dependencies in Extension Package
+
+**Cause**: Extension packages including DI containers or unnecessary build dependencies.
+
+**Solution**: Follow the Project Butler pattern:
+
+```json
+{
+    "dependencies": {
+        "@fux/package-name-core": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^24.0.10",
+        "@types/vscode": "^1.99.3",
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4",
+        "@vitest/coverage-v8": "^3.2.4"
+    }
+}
+```
+
 ## Best Practices
 
 1. **Minimize Dependencies**: Only include essential third-party packages
@@ -160,6 +238,7 @@ pnpm install
 3. **Keep .vscodeignore Updated**: Ensure it includes all necessary files and folders
 4. **Test Packaging**: Always test the packaged extension to ensure dependencies are available
 5. **Document Dependencies**: Keep the `package.json` dependencies list accurate and minimal
+6. **Follow Project Butler Pattern**: Use the exact same dependency structure as the reference package
 
 ## Validation Checklist
 
@@ -171,40 +250,16 @@ Before packaging an extension, verify:
 - [ ] No phantom dependencies in `pnpm list`
 - [ ] Extension activates without "Cannot find module" errors
 - [ ] VSIX contains `node_modules` folder with all dependencies
+- [ ] Extension package follows Project Butler dependency pattern
+- [ ] Core package has minimal dependencies only
 
 ## Examples
 
-### Working Configuration (Context Cherry Picker)
+### Working Configuration (Project Butler)
+
+**Core Package (`project.json`):**
 
 ```json
-// project.json
-{
-    "build": {
-        "options": {
-            "external": ["vscode", "awilix", "gpt-tokenizer", "js-yaml", "micromatch"]
-        }
-    }
-}
-```
-
-```json
-// package.json
-{
-    "dependencies": {
-        "@fux/context-cherry-picker-core": "workspace:*",
-        "@fux/shared": "workspace:*",
-        "awilix": "^12.0.5",
-        "gpt-tokenizer": "^3.0.1",
-        "js-yaml": "^4.1.0",
-        "micromatch": "^4.0.8"
-    }
-}
-```
-
-### Working Configuration (Project Maid All)
-
-```json
-// project.json
 {
     "build": {
         "options": {
@@ -214,11 +269,103 @@ Before packaging an extension, verify:
 }
 ```
 
+**Core Package (`package.json`):**
+
 ```json
-// package.json
 {
     "dependencies": {
         "js-yaml": "^4.1.0"
+    },
+    "devDependencies": {
+        "@types/js-yaml": "^4.0.9",
+        "@types/node": "^20.0.0",
+        "typescript": "^5.0.0",
+        "vitest": "^3.2.4"
+    }
+}
+```
+
+**Extension Package (`project.json`):**
+
+```json
+{
+    "build": {
+        "options": {
+            "external": ["vscode", "js-yaml"]
+        }
+    }
+}
+```
+
+**Extension Package (`package.json`):**
+
+```json
+{
+    "dependencies": {
+        "@fux/project-butler-core": "workspace:*",
+        "js-yaml": "^4.1.0"
+    },
+    "devDependencies": {
+        "@types/node": "^24.0.10",
+        "@types/vscode": "^1.99.3",
+        "@types/js-yaml": "^4.0.9",
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4",
+        "@vitest/coverage-v8": "^3.2.4"
+    }
+}
+```
+
+### Working Configuration (Ghost Writer)
+
+**Core Package (`project.json`):**
+
+```json
+{
+    "build": {
+        "options": {
+            "external": ["vscode", "typescript", "awilix", "js-yaml"]
+        }
+    }
+}
+```
+
+**Core Package (`package.json`):**
+
+```json
+{
+    "dependencies": {},
+    "devDependencies": {
+        "typescript": "^5.8.3"
+    }
+}
+```
+
+**Extension Package (`project.json`):**
+
+```json
+{
+    "build": {
+        "options": {
+            "external": ["vscode"]
+        }
+    }
+}
+```
+
+**Extension Package (`package.json`):**
+
+```json
+{
+    "dependencies": {
+        "@fux/ghost-writer-core": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^24.0.10",
+        "@types/vscode": "^1.99.3",
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4",
+        "@vitest/coverage-v8": "^3.2.4"
     }
 }
 ```
@@ -240,3 +387,48 @@ nx build @fux/<package-name>
 Expand-Archive -Path vsix_packages/<package-name>-dev.vsix -DestinationPath tmp/vsix-test -Force
 ls tmp/vsix-test/extension
 ```
+
+## Lessons Learned from Ghost Writer and Project Butler
+
+### Dependency Management Insights
+
+**Problem**: Ghost Writer had unnecessary dependencies (`awilix`, `js-yaml`, `@fux/mockly`) in the extension package that violated the thin wrapper principle.
+
+**Solution**:
+
+- **Remove DI Container Dependencies**: Extension packages should not use `awilix` or other DI containers - use direct instantiation instead
+- **Remove Unnecessary Dependencies**: Only include dependencies that are actually needed for VSCode integration
+- **Follow Project Butler Pattern**: Use the exact same dependency structure as the reference package
+
+### Build Configuration Insights
+
+**Problem**: Build configuration had unnecessary external dependencies that were not actually needed.
+
+**Solution**:
+
+- **Minimal External Dependencies**: Only externalize what's actually needed:
+    ```json
+    "external": ["vscode"]
+    ```
+- **Remove Build Dependencies**: Don't externalize build-time dependencies like `typescript`, `awilix`, `js-yaml`
+
+### Package Structure Insights
+
+**Problem**: Complex package structures with unnecessary dependencies.
+
+**Solution**:
+
+- **Simple Core Packages**: Core packages should have minimal dependencies
+- **Thin Extension Wrappers**: Extension packages should only include essential dependencies
+- **Consistent Patterns**: Follow the exact same patterns as working packages
+
+## Conclusion
+
+The confirmed architecture from Ghost Writer and Project Butler demonstrates that proper externalization of third-party packages is essential for:
+
+- **Clean separation of concerns** between core and extension packages
+- **Minimal dependency footprints** for better performance
+- **Consistent packaging** across all extensions
+- **Maintainable codebase** with clear dependency boundaries
+
+By following the patterns established in these working packages, teams can ensure that their extensions are properly packaged and distributed with all necessary dependencies.

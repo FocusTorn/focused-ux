@@ -6,15 +6,16 @@ import type { IFileSystem } from '../../src/_interfaces/IFileSystem.js'
 import type { ICommonUtils } from '../../src/_interfaces/ICommonUtils.js'
 import type { IIconDiscoveryService } from '../../src/services/IconDiscoveryService.js'
 import type { IConfigurationService } from '../../src/services/ConfigurationService.js'
+import type { IUriFactory } from '../../src/_interfaces/IUri.js'
 
 // Mock vscode
 vi.mock('vscode', () => ({
 	Uri: {
 		file: (path: string) => ({
 			fsPath: path,
-			toString: () => path
-		})
-	}
+			toString: () => path,
+		}),
+	},
 }))
 
 // Mock dependencies
@@ -58,6 +59,22 @@ const mockConfigService: IConfigurationService = {
 	updateCustomMappings: vi.fn(),
 }
 
+const mockUriFactory: IUriFactory = {
+	file: vi.fn((path: string) => ({
+		fsPath: path,
+		scheme: 'file',
+		authority: '',
+		path,
+		query: '',
+		fragment: '',
+		toString: () => path,
+		with: vi.fn(),
+	})),
+	parse: vi.fn(),
+	create: vi.fn(),
+	joinPath: vi.fn(),
+}
+
 describe('IconPickerService', () => {
 	let service: IconPickerService
 
@@ -69,7 +86,8 @@ describe('IconPickerService', () => {
 			mockFileSystem,
 			mockCommonUtils,
 			mockIconDiscovery,
-			mockConfigService
+			mockConfigService,
+			mockUriFactory,
 		)
 	})
 
@@ -88,7 +106,7 @@ describe('IconPickerService', () => {
 
 			;(mockIconDiscovery.getBuiltInIconDirectories as any).mockResolvedValue({
 				fileIconsDir: '/test/file-icons',
-				folderIconsDir: '/test/folder-icons'
+				folderIconsDir: '/test/folder-icons',
 			})
 			;(mockConfigService.getUserIconsDirectory as any).mockResolvedValue('/test/user-icons')
 			;(mockFileSystem.access as any).mockResolvedValue(undefined)
@@ -114,7 +132,7 @@ describe('IconPickerService', () => {
 					matchOnDescription: true,
 					matchOnDetail: true,
 				}),
-				'iconNameInDefinitions'
+				'iconNameInDefinitions',
 			)
 			expect(result).toBe('_file1')
 		})
@@ -127,7 +145,7 @@ describe('IconPickerService', () => {
 
 			;(mockIconDiscovery.getBuiltInIconDirectories as any).mockResolvedValue({
 				fileIconsDir: '/test/file-icons',
-				folderIconsDir: '/test/folder-icons'
+				folderIconsDir: '/test/folder-icons',
 			})
 			;(mockConfigService.getUserIconsDirectory as any).mockResolvedValue('/test/user-icons')
 			;(mockFileSystem.access as any).mockResolvedValue(undefined)
@@ -148,7 +166,7 @@ describe('IconPickerService', () => {
 
 			;(mockIconDiscovery.getBuiltInIconDirectories as any).mockResolvedValue({
 				fileIconsDir: '/test/file-icons',
-				folderIconsDir: '/test/folder-icons'
+				folderIconsDir: '/test/folder-icons',
 			})
 			;(mockConfigService.getUserIconsDirectory as any).mockResolvedValue('/test/user-icons')
 			;(mockFileSystem.access as any).mockResolvedValue(undefined)
@@ -167,7 +185,7 @@ describe('IconPickerService', () => {
 
 			;(mockIconDiscovery.getBuiltInIconDirectories as any).mockResolvedValue({
 				fileIconsDir: '/test/file-icons',
-				folderIconsDir: '/test/folder-icons'
+				folderIconsDir: '/test/folder-icons',
 			})
 			;(mockConfigService.getUserIconsDirectory as any).mockResolvedValue('/test/user-icons')
 			;(mockFileSystem.access as any).mockRejectedValue({ code: 'ENOENT' })
@@ -177,7 +195,7 @@ describe('IconPickerService', () => {
 			const result = await service.showAvailableIconsQuickPick()
 
 			expect(mockWindow.showWarningMessage).toHaveBeenCalledWith(
-				expect.stringContaining('User icons directory not found')
+				expect.stringContaining('User icons directory not found'),
 			)
 			expect(result).toBe('_file1')
 		})
@@ -188,7 +206,7 @@ describe('IconPickerService', () => {
 
 			;(mockIconDiscovery.getBuiltInIconDirectories as any).mockResolvedValue({
 				fileIconsDir: '/test/file-icons',
-				folderIconsDir: '/test/folder-icons'
+				folderIconsDir: '/test/folder-icons',
 			})
 			;(mockConfigService.getUserIconsDirectory as any).mockResolvedValue('/test/user-icons')
 			;(mockFileSystem.access as any).mockRejectedValue(accessError)
@@ -199,7 +217,7 @@ describe('IconPickerService', () => {
 
 			expect(mockCommonUtils.errMsg).toHaveBeenCalledWith(
 				expect.stringContaining('Error accessing user icons directory'),
-				accessError
+				accessError,
 			)
 			expect(result).toBe('_file1')
 		})
@@ -215,7 +233,7 @@ describe('IconPickerService', () => {
 
 			;(mockIconDiscovery.getBuiltInIconDirectories as any).mockResolvedValue({
 				fileIconsDir: '/test/file-icons',
-				folderIconsDir: '/test/folder-icons'
+				folderIconsDir: '/test/folder-icons',
 			})
 			;(mockConfigService.getUserIconsDirectory as any).mockResolvedValue(undefined)
 			;(mockIconDiscovery.getIconOptionsFromDirectory as any)
@@ -233,15 +251,15 @@ describe('IconPickerService', () => {
 					{ label: 'folder1', iconNameInDefinitions: '_folder1' },
 				]),
 				expect.any(Object),
-				'iconNameInDefinitions'
+				'iconNameInDefinitions',
 			)
 			expect(result).toBe('_file1')
 		})
 
 		it('should show no icons message when no icons found', async () => {
-			;(mockIconDiscovery.getBuiltInIconDirectories as any).mockResolvedValue({
+			(mockIconDiscovery.getBuiltInIconDirectories as any).mockResolvedValue({
 				fileIconsDir: '/test/file-icons',
-				folderIconsDir: '/test/folder-icons'
+				folderIconsDir: '/test/folder-icons',
 			})
 			;(mockConfigService.getUserIconsDirectory as any).mockResolvedValue(undefined)
 			;(mockIconDiscovery.getIconOptionsFromDirectory as any).mockResolvedValue([])
@@ -257,7 +275,7 @@ describe('IconPickerService', () => {
 
 			;(mockIconDiscovery.getBuiltInIconDirectories as any).mockResolvedValue({
 				fileIconsDir: '/test/file-icons',
-				folderIconsDir: '/test/folder-icons'
+				folderIconsDir: '/test/folder-icons',
 			})
 			;(mockConfigService.getUserIconsDirectory as any).mockResolvedValue(undefined)
 			;(mockIconDiscovery.getIconOptionsFromDirectory as any).mockResolvedValue(fileIcons)
@@ -270,14 +288,14 @@ describe('IconPickerService', () => {
 					...fileIcons,
 				]),
 				expect.any(Object),
-				'iconNameInDefinitions'
+				'iconNameInDefinitions',
 			)
 			expect(mockQuickPick.showQuickPickSingle).not.toHaveBeenCalledWith(
 				expect.arrayContaining([
 					{ label: 'User Icons', kind: -1 },
 				]),
 				expect.any(Object),
-				'iconNameInDefinitions'
+				'iconNameInDefinitions',
 			)
 			expect(result).toBe('_file1')
 		})
@@ -287,7 +305,7 @@ describe('IconPickerService', () => {
 
 			;(mockIconDiscovery.getBuiltInIconDirectories as any).mockResolvedValue({
 				fileIconsDir: '/test/file-icons',
-				folderIconsDir: '/test/folder-icons'
+				folderIconsDir: '/test/folder-icons',
 			})
 			;(mockConfigService.getUserIconsDirectory as any).mockResolvedValue(undefined)
 			;(mockIconDiscovery.getIconOptionsFromDirectory as any).mockResolvedValue(fileIcons)
@@ -298,4 +316,4 @@ describe('IconPickerService', () => {
 			expect(result).toBeUndefined()
 		})
 	})
-}) 
+})

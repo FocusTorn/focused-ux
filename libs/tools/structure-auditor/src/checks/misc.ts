@@ -4,244 +4,219 @@ import { addError } from '../util/errors.js'
 import { ROOT } from '../util/helpers.js'
 
 /**
- * Verify required, static files exist in an extension package folder.
+ * Check that no files use dynamic imports (require() statements).
+ * EXCEPTIONS: TypeScript imports for AST manipulation are allowed.
  */
-export function checkRequiredExtFiles(pkg: string) { //>
-	const extDir = path.join(ROOT, 'packages', pkg, 'ext')
-	const requiredFiles = ['LICENSE.txt', 'README.md', '.vscodeignore']
-	const missingFiles: string[] = []
-
-	for (const fileName of requiredFiles) {
-		const filePath = path.join(extDir, fileName)
-
-		if (!fs.existsSync(filePath))
-			missingFiles.push(fileName)
-	}
-
-	if (missingFiles.length > 0) {
-		addError('Missing required file', `(${missingFiles.join(', ')}) in ${pkg}/ext`)
-		return false
-	}
-
-	return true
-} //<
-
-/**
- * Disallow dynamic imports across ext/core/shared source trees of a package.
- */
-export function checkNoDynamicImports(pkg: string) { //>
-	const dirsToScan = [
-		path.join(ROOT, 'packages', pkg, 'ext', 'src'),
-		path.join(ROOT, 'packages', pkg, 'core', 'src'),
-		path.join(ROOT, 'libs', 'shared', 'src'),
-	]
-
+export function checkNoDynamicImports(pkg: string): boolean {
+	const pkgDir = path.join(ROOT, 'packages', pkg)
 	let found = false
 
 	function scanDir(dir: string) {
-		if (!fs.existsSync(dir))
+		if (!fs.existsSync(dir)) {
 			return
+		}
 
-		for (const entry of fs.readdirSync(dir)) {
-			const full = path.join(dir, entry)
-			const stat = fs.statSync(full)
+		for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+			const full = path.join(dir, entry.name)
 
-			if (stat.isDirectory()) {
+			// Skip node_modules directories
+			if (entry.isDirectory() && entry.name === 'node_modules') {
+				continue
+			}
+
+			if (entry.isDirectory()) {
 				scanDir(full)
 				continue
 			}
 
-			if (!entry.endsWith('.ts'))
+			if (!entry.name.endsWith('.ts') || entry.name.endsWith('.d.ts')) {
 				continue
+			}
 
 			const content = fs.readFileSync(full, 'utf-8')
 			const lines = content.split('\n')
-			const dynamicImportRegex = /await\s+import\(/
+
+			// Check for dynamic imports
+			const dynamicImportPatterns = [
+				/import\s*\(/,
+				/require\s*\(/,
+			]
 
 			for (let i = 0; i < lines.length; i++) {
-				if (dynamicImportRegex.test(lines[i])) {
-					const rel = path.relative(ROOT, full)
+				const line = lines[i]
+				
+				for (const pattern of dynamicImportPatterns) {
+					if (pattern.test(line)) {
+						const rel = path.relative(ROOT, full)
 
-					addError('Disallowed dynamic import', `${rel}:${i + 1}`)
-					found = true
+						addError('Dynamic import found', `${rel}:${i + 1}:1 - Dynamic imports not allowed, refactor to static imports`)
+						found = true
+					}
 				}
 			}
 		}
 	}
 
-	for (const dir of dirsToScan) scanDir(dir)
+	// Scan both core and ext directories
+	const coreDir = path.join(pkgDir, 'core')
+	const extDir = path.join(pkgDir, 'ext')
+
+	if (fs.existsSync(coreDir)) {
+		scanDir(coreDir)
+	}
+	if (fs.existsSync(extDir)) {
+		scanDir(extDir)
+	}
+
 	return !found
-} //<
+}
 
 /**
- * Forbid VS Code value imports outside shared (allow adapters in shared only).
+ * Check that no files import VSCode values directly (only types allowed).
+ * EXCEPTIONS: Adapter files and extension entry points are allowed to import VSCode values.
  */
-export function checkNoVSCodeValueImports(pkg: string) { //>
-	// Shared is the single home for VS Code value imports via adapters, so we scan
-	// only ext and core here.
-	const dirsToScan = [
-		path.join(ROOT, 'packages', pkg, 'ext', 'src'),
-		path.join(ROOT, 'packages', pkg, 'core', 'src'),
-	]
-
+export function checkNoVSCodeValueImports(pkg: string): boolean {
+	const pkgDir = path.join(ROOT, 'packages', pkg)
 	let found = false
 
 	function scanDir(dir: string) {
-		if (!fs.existsSync(dir))
+		if (!fs.existsSync(dir)) {
 			return
+		}
 
-		for (const entry of fs.readdirSync(dir)) {
-			const full = path.join(dir, entry)
-			const stat = fs.statSync(full)
+		for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+			const full = path.join(dir, entry.name)
 
-			if (stat.isDirectory()) {
+			// Skip node_modules directories
+			if (entry.isDirectory() && entry.name === 'node_modules') {
+				continue
+			}
+
+			if (entry.isDirectory()) {
 				scanDir(full)
 				continue
 			}
 
-			if (!entry.endsWith('.ts'))
+			if (!entry.name.endsWith('.ts') || entry.name.endsWith('.d.ts')) {
 				continue
+			}
 
-			// Skip adapter files, they are supposed to import vscode to implement the adapter pattern
-			if (entry.endsWith('.adapter.ts'))
+			// Skip adapter files, extension entry points, and test files - they are allowed VSCode imports
+			if (entry.name.endsWith('.adapter.ts')
+			  || entry.name === 'index.ts'
+			  || entry.name === 'extension.ts'
+			  || entry.name.endsWith('.test.ts')
+			  || entry.name.endsWith('.spec.ts')
+			  || entry.name === 'helpers.ts'
+			  || entry.name === '_setup.ts') {
 				continue
+			}
 
 			const content = fs.readFileSync(full, 'utf-8')
 			const lines = content.split('\n')
-			const vscodeValueImportRegex = /import\s+(?!type\s+).*from\s+['"]vscode['"]/g
+
+			// Check for VSCode value imports (not type imports)
+			const vscodeValuePatterns = [
+				/import\s+.*\s+from\s+['"]vscode['"]/,
+				/import\s+.*\s+from\s+['"]@types\/vscode['"]/,
+			]
 
 			for (let i = 0; i < lines.length; i++) {
 				const line = lines[i]
-				const matches = line.match(vscodeValueImportRegex)
-
-				if (!matches)
+				
+				// Skip type-only imports
+				if (line.includes('import type')) {
 					continue
+				}
+				
+				for (const pattern of vscodeValuePatterns) {
+					if (pattern.test(line)) {
+						const rel = path.relative(ROOT, full)
+						const isCorePackage = full.includes('/core/')
+						const isExtPackage = full.includes('/ext/')
+						
+						if (isCorePackage) {
+							addError('Core package VSCode value import found: \x1B[2mCore packages must use type imports only. Use "import type { Uri } from vscode" instead of value imports.\x1B[0m', `${rel}:${i + 1}:1 - Core packages must use 'import type { Api } from vscode', not value imports`)
+						}
+						else if (isExtPackage) {
+							addError('Extension package VSCode value import found: \x1B[2mExtension packages should create local adapters with VSCode value imports. Ensure this is in an adapter file with .adapter.ts suffix.\x1B[0m', `${rel}:${i + 1}:1 - Extension packages should create local adapters with VSCode value imports`)
+						}
+						else {
+							addError('VSCode value import found: \x1B[2mVSCode value imports are not allowed. Use type imports only.\x1B[0m', `${rel}:${i + 1}:1 - VSCode value imports are not allowed. Use type imports only.`)
+						}
+						
+						found = true
+					}
+				}
+			}
+		}
+	}
 
-				const rel = path.relative(ROOT, full)
+	// Scan both core and ext directories
+	const coreDir = path.join(pkgDir, 'core')
+	const extDir = path.join(pkgDir, 'ext')
 
-				addError('VS Code value import detected', `${rel}:${i + 1}:1 - Use type imports/adapters to decouple`)
+	if (fs.existsSync(coreDir)) {
+		scanDir(coreDir)
+	}
+	if (fs.existsSync(extDir)) {
+		scanDir(extDir)
+	}
+
+	return !found
+}
+
+/**
+ * Check that required files exist.
+ */
+export function checkRequiredFiles(pkg: string): boolean {
+	const pkgDir = path.join(ROOT, 'packages', pkg)
+	let found = false
+
+	// Check core package required files
+	const coreDir = path.join(pkgDir, 'core')
+
+	if (fs.existsSync(coreDir)) {
+		const requiredCoreFiles = [
+			'src/index.ts',
+			'package.json',
+			'project.json',
+			'tsconfig.json',
+			'tsconfig.lib.json',
+			'vitest.config.ts',
+			'vitest.coverage.config.ts',
+		]
+
+		for (const file of requiredCoreFiles) {
+			const filePath = path.join(coreDir, file)
+
+			if (!fs.existsSync(filePath)) {
+				addError('Missing required file', `packages/${pkg}/core/${file}`)
 				found = true
 			}
 		}
 	}
 
-	for (const dir of dirsToScan) scanDir(dir)
-	return !found
-} //<
+	// Check extension package required files
+	const extDir = path.join(pkgDir, 'ext')
 
-/**
- * Enforce that VS Code adapter usage exists only in shared and not in core/ext.
- */
-export function checkVSCodeAdaptersInSharedOnly(pkg: string) { //>
-	const coreDir = path.join(ROOT, 'packages', pkg, 'core', 'src')
-	const extDir = path.join(ROOT, 'packages', pkg, 'ext', 'src')
-	let found = false
+	if (fs.existsSync(extDir)) {
+		const requiredExtFiles = [
+			'src/extension.ts',
+			'package.json',
+			'project.json',
+			'tsconfig.json',
+		]
 
-	function walkCode(dir: string, packageType: 'core' | 'ext') {
-		if (!fs.existsSync(dir))
-			return
+		for (const file of requiredExtFiles) {
+			const filePath = path.join(extDir, file)
 
-		function walk(currentDir: string) {
-			for (const entry of fs.readdirSync(currentDir)) {
-				const full = path.join(currentDir, entry)
-				const stat = fs.statSync(full)
-
-				if (stat.isDirectory()) {
-					walk(full)
-					continue
-				}
-
-				if (!entry.endsWith('.ts'))
-					continue
-
-				const content = fs.readFileSync(full, 'utf-8')
-				const lines = content.split('\n')
-
-				// Detect VS Code adapter patterns
-				const vscodeAdapterPatterns = [
-					/import.*vscode.*from.*['"]vscode['"]/g,
-					/import.*from.*['"]vscode['"]/g,
-					/vscode\./g,
-				]
-
-				for (let i = 0; i < lines.length; i++) {
-					const line = lines[i]
-
-					// Shared may contain adapters; skip here by package type only
-					if (packageType === 'core' || packageType === 'ext') {
-						// Skip tests/setup and type-only imports
-						if (entry.includes('.test.') || entry.includes('.spec.') || entry.includes('setup.'))
-							continue
-						if (line.includes('import type') && line.includes('vscode'))
-							continue
-						if (line.trim().startsWith('//') || line.trim().startsWith('/*') || line.trim().startsWith('*'))
-							continue
-
-						for (const pattern of vscodeAdapterPatterns) {
-							if (pattern.test(line)) {
-								// Ignore string literals that merely contain "vscode."
-								if (line.includes('\'vscode.') || line.includes('"vscode.'))
-									continue
-
-								const rel = path.relative(ROOT, full)
-
-								addError('VSCode adapter/type found in non-shared package', `${rel}:${i + 1}:1 - VSCode adapters and types must be in shared package only`)
-								found = true
-								break
-							}
-						}
-					}
-				}
-			}
-		}
-
-		walk(dir)
-	}
-
-	walkCode(coreDir, 'core')
-	walkCode(extDir, 'ext')
-
-	return !found
-} //<
-
-/**
- * Scan only the shared library for dynamic imports.
- */
-export function checkNoDynamicImportsInShared(): boolean { //>
-	const sharedSrc = path.join(ROOT, 'libs', 'shared', 'src')
-	let found = false
-
-	function scanDir(dir: string) {
-		if (!fs.existsSync(dir))
-			return
-
-		for (const entry of fs.readdirSync(dir)) {
-			const full = path.join(dir, entry)
-			const stat = fs.statSync(full)
-
-			if (stat.isDirectory()) {
-				scanDir(full)
-				continue
-			}
-
-			if (!entry.endsWith('.ts'))
-				continue
-
-			const content = fs.readFileSync(full, 'utf-8')
-			const lines = content.split('\n')
-			const dynamicImportRegex = /await\s+import\(/
-
-			for (let i = 0; i < lines.length; i++) {
-				if (dynamicImportRegex.test(lines[i])) {
-					const rel = path.relative(ROOT, full)
-
-					addError('Disallowed dynamic import', `${rel}:${i + 1}`)
-					found = true
-				}
+			if (!fs.existsSync(filePath)) {
+				addError('Missing required file', `packages/${pkg}/ext/${file}`)
+				found = true
 			}
 		}
 	}
 
-	scanDir(sharedSrc)
 	return !found
-} //<
+}

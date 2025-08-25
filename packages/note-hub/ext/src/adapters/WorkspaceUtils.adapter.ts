@@ -1,25 +1,84 @@
-import type { IWorkspaceUtilsService, IWorkspace } from '@fux/shared'
-import * as path from 'node:path'
+import type { IWorkspaceUtilsService, IWorkspace } from '@fux/note-hub-core'
 
 export class WorkspaceUtilsAdapter implements IWorkspaceUtilsService {
 
-	constructor(private readonly iWorkspace: IWorkspace) {}
+	constructor(private workspace: IWorkspace) {}
 
-	public getWorkspaceInfo(): { primaryName?: string, workspaceName?: string } {
-		const workspaceFolders = this.iWorkspace.workspaceFolders
+	get workspaceName(): string | undefined {
+		const info = this.getWorkspaceInfo()
 
-		if (!workspaceFolders || workspaceFolders.length === 0) {
-			return {}
+		return info.workspaceName
+	}
+
+	get multiRoot(): boolean {
+		const info = this.getWorkspaceInfo()
+
+		return info.multiRoot
+	}
+
+	get primaryUri(): any | undefined {
+		const info = this.getWorkspaceInfo()
+
+		return info.primaryUri
+	}
+
+	get primaryName(): string | undefined {
+		const info = this.getWorkspaceInfo()
+
+		return info.primaryName
+	}
+
+	get multiRootByIndex(): any[] {
+		const info = this.getWorkspaceInfo()
+
+		return info.multiRootByIndex
+	}
+
+	get multiRootByName(): { [key: string]: any } {
+		const info = this.getWorkspaceInfo()
+
+		return info.multiRootByName
+	}
+
+	get workspaceFolders(): readonly any[] | undefined {
+		const info = this.getWorkspaceInfo()
+
+		return info.workspaceFolders
+	}
+
+	get safeWorkspaceName(): string {
+		const info = this.getWorkspaceInfo()
+
+		return info.safeWorkspaceName
+	}
+
+	get isRemote(): boolean {
+		const info = this.getWorkspaceInfo()
+
+		return info.isRemote
+	}
+
+	get remoteUserAndHost(): string | undefined {
+		const info = this.getWorkspaceInfo()
+
+		return info.remoteUserAndHost
+	}
+
+	getWorkspaceInfo(): any {
+		// Mock implementation for now
+		return {
+			inWorkspace: false,
+			workspaceName: undefined,
+			multiRoot: false,
+			primaryUri: undefined,
+			primaryName: undefined,
+			multiRootByIndex: [],
+			multiRootByName: {},
+			workspaceFolders: undefined,
+			safeWorkspaceName: 'default',
+			isRemote: false,
+			remoteUserAndHost: undefined,
 		}
-
-		const primaryFolder = workspaceFolders[0]
-		const primaryName = primaryFolder ? path.basename(primaryFolder.uri.fsPath) : undefined
-
-		// The concept of a separate workspaceName is less relevant in the shared IWorkspace interface.
-		// We can treat the primary folder name as the workspace name for simplicity.
-		const workspaceName = primaryName
-
-		return { primaryName, workspaceName }
 	}
 
 }

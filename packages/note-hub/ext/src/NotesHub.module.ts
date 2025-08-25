@@ -1,7 +1,9 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) =======================================================================
-import type { Disposable, WindowAdapter, ICommands } from '@fux/shared'
+import type { IDisposable } from './_interfaces/IDisposable.js'
+import type { IWindow } from './_interfaces/IWindow.js'
+import type { ICommands } from './_interfaces/ICommands.js'
 import type { ExtensionContext } from 'vscode'
 
 import type {
@@ -19,7 +21,7 @@ export class NotesHubModule {
 
 	constructor(
 		private readonly notesHubService: INotesHubService,
-		private readonly windowAdapter: WindowAdapter,
+		private readonly windowAdapter: IWindow,
 		private readonly commandsAdapter: ICommands,
 	) {
 		this.service = notesHubService
@@ -27,7 +29,7 @@ export class NotesHubModule {
 
 	public registerCommands(
 		_context: ExtensionContext,
-	): Disposable[] {
+	): IDisposable[] {
 		const service = this.service!
 		const commandMap: { [key: string]: (...args: any[]) => any } = {
 			[constants.commands.newProjectFolder]: () => service.newFolderAtRoot('project'),

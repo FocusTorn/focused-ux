@@ -69,9 +69,8 @@
         
         "lint": { //>
             "executor": "@nx/eslint:lint",
-            "dependsOn": [
-                "^build"
-            ],
+            "dependsOn": ["build", "^build"],
+
             "options": {
                 "lintFilePatterns": [
                     "{projectRoot}/**/*.ts",
@@ -95,83 +94,24 @@
             "executor": "@nx/eslint:lint",
             "dependsOn": [
                 {
+                    "dependencies": true,
                     "target": "lint",
-                    "projects": "dependencies",
                     "params": "forward"
                 }
-            ],
-            "options": {
-                "lintFilePatterns": [
-                    "{projectRoot}/**/*.ts",
-                    "{projectRoot}/**/*.tsx",
-                    "{projectRoot}/**/*.js",
-                    "{projectRoot}/**/*.jsx",
-                    "{projectRoot}/**/*.json",
-                    "{projectRoot}/**/*.jsonc"
-                ],
-                "eslintConfig": "eslint.config.js",
-                "format": "stylish",
-                "quiet": false
-            }
+            ]
         }, //<
-        
-        // "test": {
-        //     "executor": "@nx/vite:test",
-        //     "outputs": ["{options.reportsDirectory}"],
-        //     "options": {
-        //         "configFile": "{projectRoot}/vitest.config.ts",
-        //         "reporters": "default",
-        //         "passWithNoTests": true
-        //     }
-        // },
-        
-        // "test": {
-        //     "executor": "@nx/vite:test",
-        //     "outputs": [
-        //         "{options.reportsDirectory}"
-        //     ],
-        //     "dependsOn": [
-        //         "^build"
-        //     ],
-        //     "options": {
-        //         // "configFile": "{projectRoot}/vitest.config.ts",
-        //         "passWithNoTests": true,
-        //         "reporters": "default"
-        //     }
-        // },
-        
-        // "test:full": {
-        //     "executor": "@nx/vite:test",
-        //     "outputs": [
-        //         "{options.reportsDirectory}"
-        //     ],
-        //     "dependsOn": [
-        //         "^test"
-        //     ],
-        //     "options": {
-        //         "configFile": "{projectRoot}/vitest.config.ts",
-        //         "passWithNoTests": true,
-        //         "reporters": "default"
-        //     }
-        // },
         
         "validate": { //>
             "executor": "nx:run-commands",
-            "dependsOn": [
-                {
-                    "target": "lint",
-                    "params": "forward"
-                },
-                {
-                    "target": "check-types"
-                },
-                {
-                    "target": "audit"
-                }
-                
-            ],
+            "dependsOn": [],
+            "inputs": ["default", "^default"],
+            "outputs": [],
+            "cache": true,
             "options": {
-                "commands": [],
+                "commands": [
+                    "nx run {projectName}:lint --fix",
+                    "nx run {projectName}:audit"
+                ],
                 "parallel": false
             }
         }, //<
@@ -179,34 +119,30 @@
             "executor": "nx:run-commands",
             "dependsOn": [
                 {
-                    "target": "lint:full",
-                    "params": "forward"
-                },
-                {
-                    "target": "check-types"
-                },
-                {
-                    "target": "audit:full",
+                    "dependencies": true,
+                    "target": "validate",
                     "params": "forward"
                 }
             ],
+            "inputs": ["default", "^default"],
+            "outputs": [],
+            "cache": true,
             "options": {
-                "commands": [],
+                "commands": [
+                    "nx run {projectName}:validate"
+                ],
                 "parallel": false
             }
         }, //<
 
         "audit": { //>
             "executor": "nx:run-commands",
+            "dependsOn": ["build", "^build"],
+            "inputs": ["default", "^default"],
+            "outputs": [],
+            "cache": true,
             "options": {
                 "command": "tsx libs/tools/structure-auditor/src/main.ts {projectName}",
-                "cwd": "{workspaceRoot}"
-            }
-        }, //<
-        "audit:warn": { //>
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "tsx libs/tools/structure-auditor/src/main.ts {projectName} --warn-only",
                 "cwd": "{workspaceRoot}"
             }
         }, //<
@@ -214,37 +150,19 @@
             "executor": "nx:run-commands",
             "dependsOn": [
                 {
+                    "dependencies": true,
                     "target": "audit",
-                    "projects": "dependencies",
                     "params": "forward"
                 }
             ],
+            "inputs": ["default", "^default"],
+            "outputs": [],
+            "cache": true,
             "options": {
-                "command": "tsx libs/tools/structure-auditor/src/main.ts {projectName}",
-                "cwd": "{workspaceRoot}"
-            }
-        }, //<
-
-        "analyze-bundle": { //>
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "tsx scripts/analyze-bundle.ts --project {options.projectName}",
-                "cwd": "{workspaceRoot}"
-            }
-        }, //<
-        "analyze-bundle:open": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
-            "options": {
-                "command": "tsx scripts/analyze-bundle.ts --project {projectName} --open",
-                "cwd": "{workspaceRoot}"
-            }
-        }, //<
-        "analyze-bundle:custom": { //>
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "tsx scripts/analyze-bundle.ts --project {options.projectName} --output {options.outputDir}",
-                "cwd": "{workspaceRoot}"
+                "commands": [
+                    "nx run {projectName}:audit"
+                ],
+                "parallel": false
             }
         }, //<
 

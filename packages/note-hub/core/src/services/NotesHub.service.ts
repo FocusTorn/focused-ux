@@ -1,7 +1,10 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) ================================================================================
-import type { IWindow, IWorkspace, ICommands, Disposable } from '@fux/shared'
+import type { IWindow } from '../_interfaces/IWindow.js'
+import type { IWorkspace } from '../_interfaces/IWorkspace.js'
+import type { ICommands } from '../_interfaces/ICommands.js'
+import type { Disposable } from '../_interfaces/IDisposable.js'
 import type { INotesHubService } from '../_interfaces/INotesHubService.js'
 import type { INotesHubDataProvider } from '../_interfaces/INotesHubDataProvider.js'
 import type { INotesHubItem } from '../_interfaces/INotesHubItem.js'

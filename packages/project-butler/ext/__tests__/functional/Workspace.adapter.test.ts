@@ -41,4 +41,4 @@ describe('WorkspaceAdapter', () => {
 			expect(result).toBeUndefined()
 		})
 	})
-}) 
+})

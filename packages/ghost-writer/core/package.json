@@ -1,9 +1,12 @@
 {
     "name": "@fux/ghost-writer-core",
     "version": "0.0.1",
-    "type": "module",
-    "main": "./dist/index.js",
+    "dependencies": {},
+    "devDependencies": {
+        "typescript": "^5.8.3"
+    },
     "module": "./dist/index.js",
+    "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
         "./package.json": "./package.json",
@@ -16,9 +19,5 @@
     "files": [
         "dist",
         "!**/*.tsbuildinfo"
-    ],
-    "dependencies": {},
-    "devDependencies": {
-        "typescript": "^5.8.3"
-    }
+    ]
 }

@@ -3,14 +3,15 @@ import type { ICommonUtils } from '../_interfaces/ICommonUtils.js'
 import { dynamiconsConstants } from '../_config/dynamicons.constants.js'
 
 export interface IConfigurationService {
-	getUserIconsDirectory(): Promise<string | undefined>
-	getCustomMappings(): Promise<Record<string, string> | undefined>
-	getHideArrowsSetting(): Promise<boolean | null | undefined>
-	updateCustomMappings(updateFn: (mappings: Record<string, string>) => Promise<boolean | Record<string, string>>): Promise<void>
-	updateHideArrowsSetting(value: boolean): Promise<void>
+	getUserIconsDirectory: () => Promise<string | undefined>
+	getCustomMappings: () => Promise<Record<string, string> | undefined>
+	getHideArrowsSetting: () => Promise<boolean | null | undefined>
+	updateCustomMappings: (updateFn: (mappings: Record<string, string>) => Promise<boolean | Record<string, string>>) => Promise<void>
+	updateHideArrowsSetting: (value: boolean) => Promise<void>
 }
 
 export class ConfigurationService implements IConfigurationService {
+
 	private readonly EXTENSION_CONFIG_PREFIX = dynamiconsConstants.configPrefix
 	private readonly CUSTOM_MAPPINGS_KEY = dynamiconsConstants.configKeys.customIconMappings
 	private readonly HIDE_ARROWS_KEY = dynamiconsConstants.configKeys.hideExplorerArrows
@@ -22,23 +23,26 @@ export class ConfigurationService implements IConfigurationService {
 	) {}
 
 	public async getUserIconsDirectory(): Promise<string | undefined> {
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { 
-			get: <T>(key: string) => T | undefined 
+		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as {
+			get: <T>(key: string) => T | undefined
 		}
+
 		return config.get<string>(this.USER_ICONS_DIR_KEY) || undefined
 	}
 
 	public async getCustomMappings(): Promise<Record<string, string> | undefined> {
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { 
-			get: <T>(key: string) => T | undefined 
+		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as {
+			get: <T>(key: string) => T | undefined
 		}
+
 		return config.get<Record<string, string>>(this.CUSTOM_MAPPINGS_KEY) || undefined
 	}
 
 	public async getHideArrowsSetting(): Promise<boolean | null | undefined> {
-		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as { 
-			get: <T>(key: string) => T | undefined 
+		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as {
+			get: <T>(key: string) => T | undefined
 		}
+
 		return config.get<boolean | null>(this.HIDE_ARROWS_KEY)
 	}
 
@@ -96,4 +100,5 @@ export class ConfigurationService implements IConfigurationService {
 			throw new Error(`Failed to update hide arrows setting: ${error.message || 'Unknown error'}`)
 		}
 	}
-} 
+
+}

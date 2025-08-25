@@ -2,21 +2,23 @@ import type { window as vscodeWindow } from 'vscode'
 import type { ICommonUtilsService } from '@fux/ghost-writer-core'
 
 export class WindowAdapter implements ICommonUtilsService {
-  constructor(private readonly window: typeof vscodeWindow) {}
 
-  errMsg(message: string): void {
-    this.window.showErrorMessage(message)
-  }
+	constructor(private readonly window: typeof vscodeWindow) {}
 
-  showInformationMessage(message: string): Thenable<string | undefined> {
-    return this.window.showInformationMessage(message)
-  }
+	errMsg(message: string): void {
+		this.window.showErrorMessage(message)
+	}
 
-  showTimedInformationMessage(message: string): Thenable<string | undefined> {
-    return this.window.showInformationMessage(message)
-  }
+	showInformationMessage(message: string): Thenable<string | undefined> {
+		return this.window.showInformationMessage(message)
+	}
 
-  get activeTextEditor() {
-    return this.window.activeTextEditor
-  }
-} 
+	showTimedInformationMessage(message: string): Thenable<string | undefined> {
+		return this.window.showInformationMessage(message)
+	}
+
+	get activeTextEditor() {
+		return this.window.activeTextEditor
+	}
+
+}

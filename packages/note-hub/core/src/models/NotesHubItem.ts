@@ -1,10 +1,13 @@
 // ESLint & Imports -->>
 
-//= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-// Local interface definitions to avoid importing from shared
 //= IMPLEMENTATION TYPES ======================================================================================
-
-import type { INotesHubItem } from '../_interfaces/INotesHubItem.js'
+import type {
+	INotesHubItem,
+	IUri,
+	IUriFactory,
+	IThemeIcon,
+	TreeItemLabel,
+} from '../_interfaces/INotesHubItem.js'
 
 export interface ITreeItem {
 	label: string | TreeItemLabel | undefined
@@ -16,25 +19,8 @@ export interface ITreeItem {
 	collapsibleState: number | undefined
 }
 
-export interface IThemeIcon {
-	readonly id: string
-	readonly color?: IThemeColor
-}
-
 export interface IThemeColor {
 	readonly id: string
-}
-
-export interface IUri {
-	path: string
-	query: string
-	fsPath: string
-	toString: () => string
-}
-
-export interface TreeItemLabel {
-	label: string
-	highlights?: [number, number][]
 }
 
 //--------------------------------------------------------------------------------------------------------------<<
@@ -65,7 +51,7 @@ export class NotesHubItem implements INotesHubItem {
 	private treeItemAdapter: any
 	private themeIconAdapter: any
 	private themeColorAdapter: any
-	private uriAdapter: any
+	private uriAdapter: IUriFactory
 	private treeItemCollapsibleStateAdapter: any
 
 	// TreeItem interface compatibility

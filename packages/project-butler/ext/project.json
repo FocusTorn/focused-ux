@@ -7,20 +7,12 @@
 
         "build": {
             "executor": "@nx/esbuild:esbuild",
-            "outputs": [
-                "{options.outputPath}"
-            ],
-            "dependsOn": [
-                "^build"
-            ],
+            "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
             "options": {
-                "entryPoints": [
-                    "packages/project-butler/ext/src/extension.ts"
-                ],
+                "entryPoints": ["packages/project-butler/ext/src/extension.ts"],
                 "outputPath": "packages/project-butler/ext/dist",
-                "format": [
-                    "cjs"
-                ],
+                "format": ["cjs"],
                 "metafile": true,
                 "platform": "node",
                 "bundle": true,
@@ -95,6 +87,22 @@
                     "params": "forward"
                 }
             ]
+        },
+        "test:integration": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "tsc -p __tests__/integration/tsconfig.json && tsx __tests__/integration/runTest.ts",
+                "cwd": "packages/project-butler/ext"
+            }
+        },
+        "test:integration:full": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "tsx __tests__/integration/runTest.ts --full",
+                "cwd": "packages/project-butler/ext"
+            }
         }
         
     },

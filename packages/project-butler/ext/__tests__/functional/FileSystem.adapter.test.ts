@@ -17,6 +17,7 @@ describe('FileSystemAdapter', () => {
 			const path = '/test/file.txt'
 			const content = 'file content'
 			const buffer = Buffer.from(content)
+
 			vi.mocked(vscode.workspace.fs.readFile).mockResolvedValue(buffer)
 
 			// Act
@@ -34,6 +35,7 @@ describe('FileSystemAdapter', () => {
 			// Arrange
 			const path = '/test/file.txt'
 			const content = 'file content'
+
 			vi.mocked(vscode.workspace.fs.writeFile).mockResolvedValue(undefined)
 
 			// Act
@@ -43,7 +45,7 @@ describe('FileSystemAdapter', () => {
 			expect(vscode.Uri.file).toHaveBeenCalledWith(path)
 			expect(vscode.workspace.fs.writeFile).toHaveBeenCalledWith(
 				{ fsPath: path },
-				Buffer.from(content)
+				Buffer.from(content),
 			)
 		})
 	})
@@ -52,6 +54,7 @@ describe('FileSystemAdapter', () => {
 		it('should return file stats', async () => {
 			// Arrange
 			const path = '/test/file.txt'
+
 			vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({ type: vscode.FileType.File })
 
 			// Act
@@ -66,6 +69,7 @@ describe('FileSystemAdapter', () => {
 		it('should return directory stats', async () => {
 			// Arrange
 			const path = '/test/directory'
+
 			vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({ type: vscode.FileType.Directory })
 
 			// Act
@@ -81,6 +85,7 @@ describe('FileSystemAdapter', () => {
 			// Arrange
 			const source = '/test/source.txt'
 			const destination = '/test/destination.txt'
+
 			vi.mocked(vscode.workspace.fs.copy).mockResolvedValue(undefined)
 
 			// Act
@@ -91,8 +96,8 @@ describe('FileSystemAdapter', () => {
 			expect(vscode.Uri.file).toHaveBeenCalledWith(destination)
 			expect(vscode.workspace.fs.copy).toHaveBeenCalledWith(
 				{ fsPath: source },
-				{ fsPath: destination }
+				{ fsPath: destination },
 			)
 		})
 	})
-}) 
+})

@@ -1,13 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import * as vscode from 'vscode'
-import { IconPickerService } from '@fux/dynamicons-core'
-import { QuickPickAdapter } from '../../src/adapters/QuickPickAdapter.js'
-import { WindowAdapter } from '../../src/adapters/WindowAdapter.js'
-import { FileSystemAdapter } from '../../src/adapters/FileSystemAdapter.js'
-import { CommonUtilsAdapter } from '../../src/adapters/CommonUtilsAdapter.js'
-import { IconDiscoveryService } from '@fux/dynamicons-core'
-import { ConfigurationService } from '@fux/dynamicons-core'
-import { PathAdapter } from '../../src/adapters/PathAdapter.js'
+import { IconPickerService, IconDiscoveryService, ConfigurationService } from '@fux/dynamicons-core'
+import { QuickPickAdapter, WindowAdapter, FileSystemAdapter, CommonUtilsAdapter, PathAdapter } from '../../src/adapters/index.js'
 
 // Mock vscode
 vi.mock('vscode', () => ({
@@ -20,14 +14,16 @@ vi.mock('vscode', () => ({
 	Uri: {
 		file: (path: string) => ({
 			fsPath: path,
-			toString: () => path
-		})
-	}
+			toString: () => path,
+		}),
+	},
 }))
 
 describe('Icon Picker Functional Tests', () => {
+	/* eslint-disable unused-imports/no-unused-vars */
 	let iconPickerService: IconPickerService
 	let mockVscodeWindow: any
+	/* eslint-enable unused-imports/no-unused-vars */
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -44,11 +40,11 @@ describe('Icon Picker Functional Tests', () => {
 			fileSystemAdapter,
 			pathAdapter,
 			commonUtilsAdapter,
-			'/test/extension/path'
+			'/test/extension/path',
 		)
 		const configService = new ConfigurationService(
 			{} as any, // workspace adapter
-			commonUtilsAdapter
+			commonUtilsAdapter,
 		)
 
 		iconPickerService = new IconPickerService(
@@ -57,7 +53,7 @@ describe('Icon Picker Functional Tests', () => {
 			fileSystemAdapter,
 			commonUtilsAdapter,
 			iconDiscoveryService,
-			configService
+			configService,
 		)
 
 		mockVscodeWindow = vscode.window
@@ -69,33 +65,33 @@ describe('Icon Picker Functional Tests', () => {
 			const mockIconDiscovery = {
 				getBuiltInIconDirectories: vi.fn().mockResolvedValue({
 					fileIconsDir: '/test/file-icons',
-					folderIconsDir: '/test/folder-icons'
+					folderIconsDir: '/test/folder-icons',
 				}),
 				getIconOptionsFromDirectory: vi.fn().mockResolvedValue([
 					{
 						label: 'typescript',
 						description: '(file) typescript.svg',
 						iconPath: '/test/file-icons/typescript.svg',
-						iconNameInDefinitions: '_typescript'
+						iconNameInDefinitions: '_typescript',
 					},
 					{
 						label: 'javascript',
 						description: '(file) javascript.svg',
 						iconPath: '/test/file-icons/javascript.svg',
-						iconNameInDefinitions: '_javascript'
-					}
-				])
+						iconNameInDefinitions: '_javascript',
+					},
+				]),
 			}
 
 			// Mock the config service
 			const mockConfigService = {
-				getUserIconsDirectory: vi.fn().mockResolvedValue(undefined)
+				getUserIconsDirectory: vi.fn().mockResolvedValue(undefined),
 			}
 
 			// Mock the file system
 			const mockFileSystem = {
 				access: vi.fn().mockResolvedValue(undefined),
-				readdir: vi.fn().mockResolvedValue([])
+				readdir: vi.fn().mockResolvedValue([]),
 			}
 
 			// Create a test instance with mocked dependencies
@@ -105,12 +101,12 @@ describe('Icon Picker Functional Tests', () => {
 				mockFileSystem as any,
 				{} as any, // commonUtils
 				mockIconDiscovery as any,
-				mockConfigService as any
+				mockConfigService as any,
 			)
 
 			// Mock the quick pick to return a selection
 			const mockQuickPick = {
-				showQuickPickSingle: vi.fn().mockResolvedValue('_typescript')
+				showQuickPickSingle: vi.fn().mockResolvedValue('_typescript'),
 			}
 
 			// Replace the quick pick adapter
@@ -126,11 +122,11 @@ describe('Icon Picker Functional Tests', () => {
 						label: 'typescript',
 						description: '(file) typescript.svg',
 						iconPath: '/test/file-icons/typescript.svg',
-						iconNameInDefinitions: '_typescript'
-					})
+						iconNameInDefinitions: '_typescript',
+					}),
 				]),
 				expect.any(Object),
-				'iconNameInDefinitions'
+				'iconNameInDefinitions',
 			)
 
 			expect(result).toBe('_typescript')
@@ -140,7 +136,7 @@ describe('Icon Picker Functional Tests', () => {
 			const mockIconDiscovery = {
 				getBuiltInIconDirectories: vi.fn().mockResolvedValue({
 					fileIconsDir: '/test/file-icons',
-					folderIconsDir: '/test/folder-icons'
+					folderIconsDir: '/test/folder-icons',
 				}),
 				getIconOptionsFromDirectory: vi.fn()
 					.mockResolvedValueOnce([ // file icons
@@ -148,26 +144,26 @@ describe('Icon Picker Functional Tests', () => {
 							label: 'typescript',
 							description: '(file) typescript.svg',
 							iconPath: '/test/file-icons/typescript.svg',
-							iconNameInDefinitions: '_typescript'
-						}
+							iconNameInDefinitions: '_typescript',
+						},
 					])
 					.mockResolvedValueOnce([ // folder icons
 						{
 							label: 'src',
 							description: '(folder) folder-src.svg',
 							iconPath: '/test/folder-icons/folder-src.svg',
-							iconNameInDefinitions: '_folder-src'
-						}
-					])
+							iconNameInDefinitions: '_folder-src',
+						},
+					]),
 			}
 
 			const mockConfigService = {
-				getUserIconsDirectory: vi.fn().mockResolvedValue(undefined)
+				getUserIconsDirectory: vi.fn().mockResolvedValue(undefined),
 			}
 
 			const mockFileSystem = {
 				access: vi.fn().mockResolvedValue(undefined),
-				readdir: vi.fn().mockResolvedValue([])
+				readdir: vi.fn().mockResolvedValue([]),
 			}
 
 			const testIconPicker = new IconPickerService(
@@ -176,11 +172,11 @@ describe('Icon Picker Functional Tests', () => {
 				mockFileSystem as any,
 				{} as any,
 				mockIconDiscovery as any,
-				mockConfigService as any
+				mockConfigService as any,
 			)
 
 			const mockQuickPick = {
-				showQuickPickSingle: vi.fn().mockResolvedValue('_typescript')
+				showQuickPickSingle: vi.fn().mockResolvedValue('_typescript'),
 			}
 
 			;(testIconPicker as any).quickPick = mockQuickPick
@@ -196,31 +192,31 @@ describe('Icon Picker Functional Tests', () => {
 			const mockIconDiscovery = {
 				getBuiltInIconDirectories: vi.fn().mockResolvedValue({
 					fileIconsDir: '/test/file-icons',
-					folderIconsDir: '/test/folder-icons'
+					folderIconsDir: '/test/folder-icons',
 				}),
 				getIconOptionsFromDirectory: vi.fn().mockResolvedValue([
 					{
 						label: 'src',
 						description: '(folder) folder-src.svg',
 						iconPath: '/test/folder-icons/folder-src.svg',
-						iconNameInDefinitions: '_folder-src'
+						iconNameInDefinitions: '_folder-src',
 					},
 					{
 						label: 'src-open',
 						description: '(folder) folder-src-open.svg',
 						iconPath: '/test/folder-icons/folder-src-open.svg',
-						iconNameInDefinitions: '_folder-src-open'
-					}
-				])
+						iconNameInDefinitions: '_folder-src-open',
+					},
+				]),
 			}
 
 			const mockConfigService = {
-				getUserIconsDirectory: vi.fn().mockResolvedValue(undefined)
+				getUserIconsDirectory: vi.fn().mockResolvedValue(undefined),
 			}
 
 			const mockFileSystem = {
 				access: vi.fn().mockResolvedValue(undefined),
-				readdir: vi.fn().mockResolvedValue([])
+				readdir: vi.fn().mockResolvedValue([]),
 			}
 
 			const testIconPicker = new IconPickerService(
@@ -229,11 +225,11 @@ describe('Icon Picker Functional Tests', () => {
 				mockFileSystem as any,
 				{} as any,
 				mockIconDiscovery as any,
-				mockConfigService as any
+				mockConfigService as any,
 			)
 
 			const mockQuickPick = {
-				showQuickPickSingle: vi.fn().mockResolvedValue('_folder-src')
+				showQuickPickSingle: vi.fn().mockResolvedValue('_folder-src'),
 			}
 
 			;(testIconPicker as any).quickPick = mockQuickPick
@@ -244,7 +240,7 @@ describe('Icon Picker Functional Tests', () => {
 			expect(mockIconDiscovery.getIconOptionsFromDirectory).toHaveBeenCalledWith(
 				'/test/folder-icons',
 				'folder',
-				expect.any(Function)
+				expect.any(Function),
 			)
 		})
 
@@ -252,50 +248,71 @@ describe('Icon Picker Functional Tests', () => {
 			const mockIconDiscovery = {
 				getBuiltInIconDirectories: vi.fn().mockResolvedValue({
 					fileIconsDir: '/test/file-icons',
-					folderIconsDir: '/test/folder-icons'
+					folderIconsDir: '/test/folder-icons',
 				}),
 				getIconOptionsFromDirectory: vi.fn()
-					.mockResolvedValueOnce([]) // file icons
-					.mockResolvedValueOnce([]) // folder icons
+					.mockResolvedValueOnce([{ // file icons
+						label: 'typescript',
+						description: '(file) typescript.svg',
+						iconPath: '/test/file-icons/typescript.svg',
+						iconNameInDefinitions: '_typescript',
+					}])
+					.mockResolvedValueOnce([{ // folder icons
+						label: 'folder',
+						description: '(folder) folder.svg',
+						iconPath: '/test/folder-icons/folder.svg',
+						iconNameInDefinitions: '_folder',
+					}])
 					.mockResolvedValueOnce([ // user icons
 						{
 							label: 'custom-icon',
 							description: '(user) custom-icon.svg',
 							iconPath: '/test/user-icons/custom-icon.svg',
-							iconNameInDefinitions: '_user_custom-icon'
-						}
-					])
+							iconNameInDefinitions: '_user_custom-icon',
+						},
+					]),
 			}
 
 			const mockConfigService = {
-				getUserIconsDirectory: vi.fn().mockResolvedValue('/test/user-icons')
+				getUserIconsDirectory: vi.fn().mockResolvedValue('/test/user-icons'),
 			}
 
 			const mockFileSystem = {
 				access: vi.fn().mockResolvedValue(undefined),
-				readdir: vi.fn().mockResolvedValue([])
+				readdir: vi.fn().mockResolvedValue([]),
+			}
+
+			const mockCommonUtils = {
+				errMsg: vi.fn(),
+			}
+
+			const mockWindow = {
+				showInformationMessage: vi.fn(),
+				showErrorMessage: vi.fn(),
+				showWarningMessage: vi.fn(),
 			}
 
 			const testIconPicker = new IconPickerService(
-				{} as any,
+				mockWindow as any,
 				{} as any,
 				mockFileSystem as any,
-				{} as any,
+				mockCommonUtils as any,
 				mockIconDiscovery as any,
-				mockConfigService as any
+				mockConfigService as any,
+				{} as any, // uriFactory
 			)
 
 			const mockQuickPick = {
-				showQuickPickSingle: vi.fn().mockResolvedValue('_user_custom-icon')
+				showQuickPickSingle: vi.fn().mockResolvedValue('_user_custom-icon'),
 			}
 
 			;(testIconPicker as any).quickPick = mockQuickPick
 
 			const result = await testIconPicker.showAvailableIconsQuickPick()
 
-			expect(mockIconDiscovery.getIconOptionsFromDirectory).toHaveBeenCalledWith(
+			expect(mockIconDiscovery.getIconOptionsFromDirectory).toHaveBeenNthCalledWith(3,
 				'/test/user-icons',
-				'user'
+				'user',
 			)
 			expect(result).toBe('_user_custom-icon')
 		})
@@ -304,25 +321,25 @@ describe('Icon Picker Functional Tests', () => {
 			const mockIconDiscovery = {
 				getBuiltInIconDirectories: vi.fn().mockResolvedValue({
 					fileIconsDir: '/test/file-icons',
-					folderIconsDir: '/test/folder-icons'
+					folderIconsDir: '/test/folder-icons',
 				}),
 				getIconOptionsFromDirectory: vi.fn().mockResolvedValue([
 					{
 						label: 'typescript',
 						description: '(file) typescript.svg',
 						iconPath: '/test/file-icons/typescript.svg',
-						iconNameInDefinitions: '_typescript'
-					}
-				])
+						iconNameInDefinitions: '_typescript',
+					},
+				]),
 			}
 
 			const mockConfigService = {
-				getUserIconsDirectory: vi.fn().mockResolvedValue(undefined)
+				getUserIconsDirectory: vi.fn().mockResolvedValue(undefined),
 			}
 
 			const mockFileSystem = {
 				access: vi.fn().mockResolvedValue(undefined),
-				readdir: vi.fn().mockResolvedValue([])
+				readdir: vi.fn().mockResolvedValue([]),
 			}
 
 			const testIconPicker = new IconPickerService(
@@ -331,11 +348,11 @@ describe('Icon Picker Functional Tests', () => {
 				mockFileSystem as any,
 				{} as any,
 				mockIconDiscovery as any,
-				mockConfigService as any
+				mockConfigService as any,
 			)
 
 			const mockQuickPick = {
-				showQuickPickSingle: vi.fn().mockResolvedValue(undefined) // User cancelled
+				showQuickPickSingle: vi.fn().mockResolvedValue(undefined), // User cancelled
 			}
 
 			;(testIconPicker as any).quickPick = mockQuickPick
@@ -349,22 +366,22 @@ describe('Icon Picker Functional Tests', () => {
 			const mockIconDiscovery = {
 				getBuiltInIconDirectories: vi.fn().mockResolvedValue({
 					fileIconsDir: '/test/file-icons',
-					folderIconsDir: '/test/folder-icons'
+					folderIconsDir: '/test/folder-icons',
 				}),
-				getIconOptionsFromDirectory: vi.fn().mockResolvedValue([]) // No icons
+				getIconOptionsFromDirectory: vi.fn().mockResolvedValue([]), // No icons
 			}
 
 			const mockConfigService = {
-				getUserIconsDirectory: vi.fn().mockResolvedValue(undefined)
+				getUserIconsDirectory: vi.fn().mockResolvedValue(undefined),
 			}
 
 			const mockFileSystem = {
 				access: vi.fn().mockResolvedValue(undefined),
-				readdir: vi.fn().mockResolvedValue([])
+				readdir: vi.fn().mockResolvedValue([]),
 			}
 
 			const mockWindow = {
-				showInformationMessage: vi.fn()
+				showInformationMessage: vi.fn(),
 			}
 
 			const testIconPicker = new IconPickerService(
@@ -373,15 +390,15 @@ describe('Icon Picker Functional Tests', () => {
 				mockFileSystem as any,
 				{} as any,
 				mockIconDiscovery as any,
-				mockConfigService as any
+				mockConfigService as any,
 			)
 
 			const result = await testIconPicker.showAvailableIconsQuickPick()
 
 			expect(mockWindow.showInformationMessage).toHaveBeenCalledWith(
-				'No available icons match the criteria.'
+				'No available icons match the criteria.',
 			)
 			expect(result).toBeUndefined()
 		})
 	})
-}) 
+})

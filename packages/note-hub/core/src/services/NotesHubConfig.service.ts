@@ -1,7 +1,13 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) ================================================================================
-import type { IWorkspace, IPathUtilsService, IWorkspaceUtilsService, ICommonUtilsService, ICommands, IFileSystem } from '@fux/shared'
+import type { IWorkspace } from '../_interfaces/IWorkspace.js'
+import type { IPathUtilsService } from '../_interfaces/IPathUtils.ts'
+import type { IWorkspaceUtilsService } from '../_interfaces/IWorkspaceUtils.ts'
+import type { ICommonUtilsService } from '../_interfaces/ICommonUtils.ts'
+import type { ICommands } from '../_interfaces/ICommands.js'
+import type { IFileSystem } from '../_interfaces/IFileSystem.ts'
+import type { IUriFactory } from '../_interfaces/IUri.js'
 import type * as nodeOs from 'node:os'
 import type * as nodePath from 'node:path'
 import type { INotesHubConfigService, NotesHubConfig } from '../_interfaces/INotesHubConfigService.js'
@@ -23,7 +29,7 @@ export class NotesHubConfigService implements INotesHubConfigService {
 		private readonly iOsHomedir: typeof nodeOs.homedir,
 		private readonly iPathJoin: typeof nodePath.join,
 		private readonly iPathNormalize: typeof nodePath.normalize,
-		private readonly uriAdapter: any,
+		private readonly uriAdapter: IUriFactory,
 	) {}
 
 	public getNotesHubConfig(configPrefix: string): NotesHubConfig { //>

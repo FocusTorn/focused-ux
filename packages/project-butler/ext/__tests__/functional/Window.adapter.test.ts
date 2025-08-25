@@ -14,6 +14,7 @@ describe('WindowAdapter', () => {
 		it('should show information message', async () => {
 			// Arrange
 			const message = 'Test info message'
+
 			vi.mocked(vscode.window.showInformationMessage).mockResolvedValue(undefined)
 
 			// Act
@@ -28,6 +29,7 @@ describe('WindowAdapter', () => {
 		it('should show warning message', async () => {
 			// Arrange
 			const message = 'Test warning message'
+
 			vi.mocked(vscode.window.showWarningMessage).mockResolvedValue(undefined)
 
 			// Act
@@ -42,6 +44,7 @@ describe('WindowAdapter', () => {
 		it('should show error message', async () => {
 			// Arrange
 			const message = 'Test error message'
+
 			vi.mocked(vscode.window.showErrorMessage).mockResolvedValue(undefined)
 
 			// Act
@@ -67,6 +70,7 @@ describe('WindowAdapter', () => {
 			// Arrange
 			const name = 'Test Terminal'
 			const mockTerminal = { sendText: vi.fn(), show: vi.fn() }
+
 			vi.mocked(vscode.window.createTerminal).mockReturnValue(mockTerminal)
 
 			// Act
@@ -80,6 +84,7 @@ describe('WindowAdapter', () => {
 		it('should create terminal without name', () => {
 			// Arrange
 			const mockTerminal = { sendText: vi.fn(), show: vi.fn() }
+
 			vi.mocked(vscode.window.createTerminal).mockReturnValue(mockTerminal)
 
 			// Act
@@ -100,4 +105,4 @@ describe('WindowAdapter', () => {
 			expect(result).toBe(vscode.window.activeTerminal)
 		})
 	})
-}) 
+})

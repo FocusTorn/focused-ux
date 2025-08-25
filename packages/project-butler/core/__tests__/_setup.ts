@@ -4,29 +4,29 @@ import process from 'node:process'
 // 1) Mock fs/promises globally (no real disk I/O)
 // This is needed for the Node.js adapters to work properly in tests
 vi.mock('node:fs/promises', () => ({
-  stat: vi.fn(),
-  access: vi.fn(),
-  copyFile: vi.fn(),
-  readFile: vi.fn(),
-  writeFile: vi.fn(),
-  readdir: vi.fn(),
-  mkdir: vi.fn(),
-  rmdir: vi.fn(),
-  unlink: vi.fn(),
+	stat: vi.fn(),
+	access: vi.fn(),
+	copyFile: vi.fn(),
+	readFile: vi.fn(),
+	writeFile: vi.fn(),
+	readdir: vi.fn(),
+	mkdir: vi.fn(),
+	rmdir: vi.fn(),
+	unlink: vi.fn(),
 }))
 
 // 2) Use fake timers globally (no real waits)
 beforeAll(() => {
-  vi.useFakeTimers()
+	vi.useFakeTimers()
 })
 
 afterAll(() => {
-  vi.useRealTimers()
+	vi.useRealTimers()
 })
 
 // 3) Keep mocks clean between tests
 afterEach(() => {
-  vi.clearAllMocks()
+	vi.clearAllMocks()
 })
 
 // Console output configuration for tests
@@ -81,23 +81,23 @@ export function setupTestEnvironment(): TestMocks {
 		readFile: vi.fn(),
 		writeFile: vi.fn(),
 		stat: vi.fn(),
-		copyFile: vi.fn()
+		copyFile: vi.fn(),
 	}
 
 	const path = {
 		dirname: vi.fn(),
 		basename: vi.fn(),
-		join: vi.fn()
+		join: vi.fn(),
 	}
 
 	const yaml = {
-		load: vi.fn()
+		load: vi.fn(),
 	}
 
 	return {
 		fileSystem,
 		path,
-		yaml
+		yaml,
 	}
 }
 
@@ -126,8 +126,8 @@ export function setupYamlMocks(mocks: TestMocks): void {
 	// Default implementations
 	mocks.yaml.load.mockReturnValue({
 		ProjectButler: {
-			'packageJson-order': ['name', 'version', 'description', 'main', 'scripts', 'dependencies']
-		}
+			'packageJson-order': ['name', 'version', 'description', 'main', 'scripts', 'dependencies'],
+		},
 	})
 }
 
@@ -136,7 +136,7 @@ export function createMockFileSystem(): TestMocks['fileSystem'] {
 		readFile: vi.fn(),
 		writeFile: vi.fn(),
 		stat: vi.fn(),
-		copyFile: vi.fn()
+		copyFile: vi.fn(),
 	}
 }
 
@@ -144,12 +144,12 @@ export function createMockPathUtils(): TestMocks['path'] {
 	return {
 		dirname: vi.fn(),
 		basename: vi.fn(),
-		join: vi.fn()
+		join: vi.fn(),
 	}
 }
 
 export function createMockYaml(): TestMocks['yaml'] {
 	return {
-		load: vi.fn()
+		load: vi.fn(),
 	}
-} 
+}

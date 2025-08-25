@@ -1,29 +1,59 @@
-import type { IFrontmatterUtilsService, IFileSystem } from '@fux/shared'
+import type { IFrontmatterUtilsService, IFileSystem } from '@fux/note-hub-core'
+
 import * as yaml from 'js-yaml'
 
 export class FrontmatterUtilsAdapter implements IFrontmatterUtilsService {
 
-	constructor(private readonly iFileSystem: IFileSystem) {}
+	constructor(private fileSystem: IFileSystem) {}
 
-	public getFrontmatter_validateFrontmatter(content: string): boolean {
-		const match = content.match(/^---\s*\n([\s\S]+?)\n---\s*\n/)
-
-		return !!match
+	async addFrontmatter(filePath: string, frontmatter: Record<string, any>): Promise<void> {
+		const content = await this.fileSystem.readFile(filePath)
+		const contentStr = content.toString()
+        
+		const yamlStr = yaml.dump(frontmatter)
+		const newContent = `---\n${yamlStr}---\n${contentStr}`
+        
+		await this.fileSystem.writeFile(filePath, newContent)
 	}
 
-	public async getFrontmatter(filePath: string): Promise<{ [key: string]: string } | undefined> {
+	async getFrontmatter(filePath: string): Promise<{ [key: string]: string } | undefined> {
 		try {
-			const content = await this.iFileSystem.readFile(filePath)
-			const match = content.match(/^---\s*\n([\s\S]+?)\n---\s*\n/)
+			const content = await this.fileSystem.readFile(filePath)
+			const contentStr = content.toString()
+            
+			const match = contentStr.match(/^---\n([\s\S]*?)\n---\n/)
 
-			if (match && match[1]) {
-				return yaml.load(match[1]) as { [key: string]: string }
+			if (match) {
+				const yamlStr = match[1]
+				const parsed = yaml.load(yamlStr) as Record<string, any>
+				// Convert to string values as expected by interface
+				const result: { [key: string]: string } = {}
+
+				for (const [key, value] of Object.entries(parsed)) {
+					result[key] = String(value)
+				}
+				return result
 			}
+			return undefined
 		}
 		catch (_error) {
-			// Silently fail if file not found or other read error
+			return undefined
 		}
-		return undefined
+	}
+
+	getFrontmatter_validateFrontmatter(content: string): boolean {
+		try {
+			const match = content.match(/^---\n([\s\S]*?)\n---\n/)
+
+			if (match) {
+				yaml.load(match[1])
+				return true
+			}
+			return false
+		}
+		catch {
+			return false
+		}
 	}
 
 }

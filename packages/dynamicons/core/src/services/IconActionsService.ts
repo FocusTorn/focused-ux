@@ -9,7 +9,7 @@ import type { IFileSystem } from '../_interfaces/IFileSystem.js'
 import type { IIconThemeGeneratorService } from '../_interfaces/IIconThemeGeneratorService.js'
 import type { IConfigurationService } from './ConfigurationService.js'
 import type { IIconPickerService } from './IconPickerService.js'
-import { Uri } from 'vscode'
+import type { IUri, IUriFactory } from '../_interfaces/IUri.js'
 import { dynamiconsConstants } from '../_config/dynamicons.constants.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
@@ -28,9 +28,10 @@ export class IconActionsService {
 		private readonly iconThemeGenerator: IIconThemeGeneratorService,
 		private readonly configService: IConfigurationService,
 		private readonly iconPicker: IIconPickerService,
+		private readonly uriFactory: IUriFactory,
 	) {}
 
-	private async getResourceName(resourceUri: Uri): Promise<string | undefined> {
+	private async getResourceName(resourceUri: IUri): Promise<string | undefined> {
 		try {
 			const stat = await this.fileSystem.stat(resourceUri)
 
@@ -53,7 +54,7 @@ export class IconActionsService {
 		return `${prefix}${name}`
 	}
 
-	private async detectResourceType(resourceUris: Uri[]): Promise<IconAssociationType> {
+	private async detectResourceType(resourceUris: IUri[]): Promise<IconAssociationType> {
 		try {
 			// Check the first resource to determine the type
 			const firstResource = resourceUris[0]
@@ -90,7 +91,7 @@ export class IconActionsService {
 	}
 
 	public async assignIconToResource(
-		resourceUris: Uri[],
+		resourceUris: IUri[],
 		workspaceAdapter?: any,
 		iconTypeScope?: IconAssociationType,
 	): Promise<void> {
@@ -132,7 +133,7 @@ export class IconActionsService {
 		this.window.showInformationMessage(`Icon assigned to ${resourceUris.length} resource(s).`)
 	}
 
-	public async revertIconAssignment(resourceUris: Uri[], workspaceAdapter?: any): Promise<void> {
+	public async revertIconAssignment(resourceUris: IUri[], workspaceAdapter?: any): Promise<void> {
 		if (!resourceUris || resourceUris.length === 0) {
 			this.window.showWarningMessage('No resources selected for icon reversion.')
 			return
@@ -212,8 +213,8 @@ export class IconActionsService {
 			const customMappings = await this.configService.getCustomMappings()
 			const hideArrows = await this.configService.getHideArrowsSetting()
 
-			const baseThemeUri = Uri.file(baseThemePath)
-			const generatedThemeDirUri = Uri.file(generatedThemeDir)
+			const baseThemeUri = this.uriFactory.file(baseThemePath)
+			const generatedThemeDirUri = this.uriFactory.file(generatedThemeDir)
 
 			const manifest = await this.iconThemeGenerator.generateIconThemeManifest(
 				baseThemeUri,
@@ -227,7 +228,7 @@ export class IconActionsService {
 				throw new Error('Failed to generate icon theme manifest')
 			}
 
-			const outputPath = Uri.file(this.path.join(generatedThemeDir, 'dynamicons.theme.json'))
+			const outputPath = this.uriFactory.file(this.path.join(generatedThemeDir, 'dynamicons.theme.json'))
 
 			await this.iconThemeGenerator.writeIconThemeFile(manifest, outputPath)
 

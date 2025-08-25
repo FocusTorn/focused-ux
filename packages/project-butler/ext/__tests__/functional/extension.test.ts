@@ -5,20 +5,20 @@ import * as vscode from 'vscode'
 // Mock the core package
 vi.mock('@fux/project-butler-core', () => ({
 	PackageJsonFormattingService: vi.fn().mockImplementation(() => ({
-		formatPackageJson: vi.fn()
+		formatPackageJson: vi.fn(),
 	})),
 	TerminalManagementService: vi.fn().mockImplementation(() => ({
-		updateTerminalPath: vi.fn().mockResolvedValue({ command: 'cd /test', shouldShowTerminal: true })
+		updateTerminalPath: vi.fn().mockResolvedValue({ command: 'cd /test', shouldShowTerminal: true }),
 	})),
 	BackupManagementService: vi.fn().mockImplementation(() => ({
-		createBackup: vi.fn().mockResolvedValue('/test/file.txt.bak')
+		createBackup: vi.fn().mockResolvedValue('/test/file.txt.bak'),
 	})),
 	PoetryShellService: vi.fn().mockImplementation(() => ({
-		enterPoetryShell: vi.fn().mockResolvedValue({ command: 'poetry shell', shouldShowTerminal: true })
+		enterPoetryShell: vi.fn().mockResolvedValue({ command: 'poetry shell', shouldShowTerminal: true }),
 	})),
 	ProjectMaidManagerService: vi.fn().mockImplementation(() => ({
-		formatPackageJson: vi.fn()
-	}))
+		formatPackageJson: vi.fn(),
+	})),
 }))
 
 describe('Extension', () => {
@@ -28,8 +28,8 @@ describe('Extension', () => {
 		vi.clearAllMocks()
 		context = {
 			subscriptions: {
-				push: vi.fn()
-			}
+				push: vi.fn(),
+			},
 		}
 	})
 
@@ -42,25 +42,26 @@ describe('Extension', () => {
 			expect(vscode.commands.registerCommand).toHaveBeenCalledTimes(4)
 			expect(vscode.commands.registerCommand).toHaveBeenCalledWith(
 				'fux-project-butler.formatPackageJson',
-				expect.any(Function)
+				expect.any(Function),
 			)
 			expect(vscode.commands.registerCommand).toHaveBeenCalledWith(
 				'fux-project-butler.updateTerminalPath',
-				expect.any(Function)
+				expect.any(Function),
 			)
 			expect(vscode.commands.registerCommand).toHaveBeenCalledWith(
 				'fux-project-butler.createBackup',
-				expect.any(Function)
+				expect.any(Function),
 			)
 			expect(vscode.commands.registerCommand).toHaveBeenCalledWith(
 				'fux-project-butler.enterPoetryShell',
-				expect.any(Function)
+				expect.any(Function),
 			)
 		})
 
 		it('should add disposables to context subscriptions', () => {
 			// Arrange
 			const mockDisposable = { dispose: vi.fn() }
+
 			vi.mocked(vscode.commands.registerCommand).mockReturnValue(mockDisposable)
 
 			// Act
@@ -72,7 +73,7 @@ describe('Extension', () => {
 				mockDisposable,
 				mockDisposable,
 				mockDisposable,
-				mockDisposable
+				mockDisposable,
 			)
 		})
 
@@ -87,7 +88,7 @@ describe('Extension', () => {
 
 			// Assert
 			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
-				'Failed to activate Project Maid: Registration failed'
+				'Failed to activate Project Maid: Registration failed',
 			)
 		})
 	})
@@ -107,4 +108,4 @@ describe('Extension', () => {
 			consoleSpy.mockRestore()
 		})
 	})
-}) 
+})

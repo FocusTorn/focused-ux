@@ -71,4 +71,4 @@ describe('PathAdapter', () => {
 			expect(result).toMatch(/[\/\\]test/)
 		})
 	})
-}) 
+})

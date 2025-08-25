@@ -1,10 +1,5 @@
-import type * as ts from 'typescript'
-import * as tsModule from 'typescript'
+import * as ts from 'typescript'
 import type { ConsoleLoggerGenerateOptions, ConsoleLoggerResult, IConsoleLoggerService } from '../_interfaces/IConsoleLoggerService.js'
-
-function getTS(): typeof import('typescript') {
-	return tsModule
-}
 
 class LogMessageHelper {
 
@@ -13,7 +8,7 @@ class LogMessageHelper {
 
 	constructor(documentContent: string, fileName: string) {
 		this.documentContent = documentContent
-		this.sourceFile = getTS().createSourceFile(fileName, documentContent, getTS().ScriptTarget.Latest, true)
+		this.sourceFile = ts.createSourceFile(fileName, documentContent, ts.ScriptTarget.Latest, true)
 	}
 
 	private getLineAndCharacterOfPosition(pos: number): { line: number, character: number } {
@@ -71,12 +66,12 @@ class LogMessageHelper {
 
 			if (nodeStartLine <= line && nodeEndLine >= line && node.getText(this.sourceFile).includes(varName)) {
 				// Check for regular variable declaration
-				if (node.kind === getTS().SyntaxKind.VariableDeclaration && (node as any).name.getText(this.sourceFile) === varName) {
+				if (node.kind === ts.SyntaxKind.VariableDeclaration && (node as any).name.getText(this.sourceFile) === varName) {
 					foundNode = node
 					return
 				}
 				// Check for destructured variable (BindingElement)
-				else if (node.kind === getTS().SyntaxKind.BindingElement && (node as any).name.getText(this.sourceFile) === varName) {
+				else if (node.kind === ts.SyntaxKind.BindingElement && (node as any).name.getText(this.sourceFile) === varName) {
 					foundNode = node
 					return
 				}
@@ -84,7 +79,7 @@ class LogMessageHelper {
 					foundNode = node
 				}
 			}
-			getTS().forEachChild(node, traverse)
+			ts.forEachChild(node, traverse)
 		}
 
 		traverse(this.sourceFile)
@@ -102,7 +97,7 @@ class LogMessageHelper {
 					foundNode = node
 				}
 			}
-			getTS().forEachChild(node, traverse)
+			ts.forEachChild(node, traverse)
 		}
 
 		traverse(this.sourceFile)
@@ -113,7 +108,7 @@ class LogMessageHelper {
 		let parent = node.parent
 
 		while (parent) {
-			if (getTS().isBlock(parent) || getTS().isSourceFile(parent)) {
+			if (ts.isBlock(parent) || ts.isSourceFile(parent)) {
 				let statement = node
 
 				while (statement.parent && statement.parent !== parent) {
@@ -121,7 +116,7 @@ class LogMessageHelper {
 				}
 				return this.getLineAndCharacterOfPosition(statement.getEnd()).line + 1
 			}
-			if (getTS().isArrowFunction(parent) && parent.body !== node) {
+			if (ts.isArrowFunction(parent) && parent.body !== node) {
 				return this.getLineAndCharacterOfPosition(node.getEnd()).line + 1
 			}
 			parent = parent.parent
@@ -145,7 +140,7 @@ class LogMessageHelper {
 		let current = varNode
 
 		while (current) {
-			if (getTS().isClassDeclaration(current) && current.name) {
+			if (ts.isClassDeclaration(current) && current.name) {
 				return `${current.name.getText(this.sourceFile)} -> `
 			}
 			current = current.parent
@@ -164,31 +159,31 @@ class LogMessageHelper {
 
 		while (current) {
 			// Function declaration: function myFunction() {}
-			if (getTS().isFunctionDeclaration(current) && current.name) {
+			if (ts.isFunctionDeclaration(current) && current.name) {
 				return `${current.name.getText(this.sourceFile)} -> `
 			}
 			
 			// Function expression: const myFunction = function() {}
-			if (getTS().isFunctionExpression(current) && current.name) {
+			if (ts.isFunctionExpression(current) && current.name) {
 				return `${current.name.getText(this.sourceFile)} -> `
 			}
 			
 			// Variable declaration with function: const myFunction = function() {}
-			if (getTS().isVariableDeclaration(current) && current.name && getTS().isIdentifier(current.name)) {
+			if (ts.isVariableDeclaration(current) && current.name && ts.isIdentifier(current.name)) {
 				const initializer = current.initializer
 
-				if (initializer && (getTS().isFunctionExpression(initializer) || getTS().isArrowFunction(initializer))) {
+				if (initializer && (ts.isFunctionExpression(initializer) || ts.isArrowFunction(initializer))) {
 					return `${current.name.getText(this.sourceFile)} -> `
 				}
 			}
 			
 			// Arrow function: const myFunction = () => {}
-			if (getTS().isArrowFunction(current)) {
+			if (ts.isArrowFunction(current)) {
 				// Try to find the parent variable declaration
 				let parent = current.parent
 
 				while (parent) {
-					if (getTS().isVariableDeclaration(parent) && parent.name && getTS().isIdentifier(parent.name)) {
+					if (ts.isVariableDeclaration(parent) && parent.name && ts.isIdentifier(parent.name)) {
 						return `${parent.name.getText(this.sourceFile)} -> `
 					}
 					parent = parent.parent

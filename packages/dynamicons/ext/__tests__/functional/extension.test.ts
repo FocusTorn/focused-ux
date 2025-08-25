@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import * as adaptersModule from '../../src/adapters/index.js'
+import * as coreModule from '@fux/dynamicons-core'
+import * as extensionModule from '../../src/extension.js'
 
 // Mock vscode
 vi.mock('vscode', () => ({
@@ -140,67 +143,45 @@ describe('Extension', () => {
 		}
 
 		// Mock the adapters to return our mock instances
-		const adaptersModule = await import('../../src/adapters/index.js')
-
-		vi.mocked(adaptersModule.CommandsAdapter).mockImplementation(() => mockCommandsAdapter)
-		vi.mocked(adaptersModule.WorkspaceAdapter).mockImplementation(() => mockWorkspaceAdapter)
+		vi.mocked(adaptersModule.CommandsAdapter).mockImplementation(() => mockCommandsAdapter as any)
+		vi.mocked(adaptersModule.WorkspaceAdapter).mockImplementation(() => mockWorkspaceAdapter as any)
 		vi.mocked(adaptersModule.WindowAdapter).mockImplementation(() => ({
 			showInformationMessage: vi.fn(),
 			showErrorMessage: vi.fn(),
 			showWarningMessage: vi.fn(),
 			showTimedInformationMessage: vi.fn(),
-		}))
-		vi.mocked(adaptersModule.ContextAdapter).mockImplementation((_context: any) => {
-			const mockAdapter = {
-				extensionPath: '/test/extension/path',
-				subscriptions: [],
-			}
-
-			return mockAdapter as any
-		})
+		} as any))
+		vi.mocked(adaptersModule.ContextAdapter).mockImplementation(() => ({
+			subscriptions: [],
+			extensionPath: '/test/extension/path',
+		} as any))
 		vi.mocked(adaptersModule.PathAdapter).mockImplementation(() => ({
-			basename: vi.fn(),
-			parse: vi.fn(),
 			join: vi.fn(),
-			dirname: vi.fn(),
 			relative: vi.fn(),
-		}))
-		vi.mocked(adaptersModule.FileSystemAdapter).mockImplementation(() => {
-			const mock = {
-				stat: vi.fn(),
-				readdir: vi.fn(),
-				readFile: vi.fn(),
-				writeFile: vi.fn(),
-				mkdir: vi.fn(),
-				access: vi.fn(),
-				copyFile: vi.fn(),
-				readFileSync: vi.fn(),
-			}
-
-			return mock as any
-		})
+			basename: vi.fn(),
+			dirname: vi.fn(),
+			parse: vi.fn(),
+		} as any))
+		vi.mocked(adaptersModule.FileSystemAdapter).mockImplementation(() => ({
+			stat: vi.fn(),
+			readdir: vi.fn(),
+			readFile: vi.fn(),
+			writeFile: vi.fn(),
+		} as any))
 		vi.mocked(adaptersModule.QuickPickAdapter).mockImplementation(() => ({
-			showQuickPick: vi.fn(),
 			showQuickPickSingle: vi.fn(),
-		}))
-		vi.mocked(adaptersModule.CommonUtilsAdapter).mockImplementation(() => {
-			const mock = {
-				errMsg: vi.fn(),
-				infoMsg: vi.fn(),
-				delay: vi.fn(),
-			}
-
-			return mock as any
-		})
+		} as any))
+		vi.mocked(adaptersModule.CommonUtilsAdapter).mockImplementation(() => ({
+			delay: vi.fn(),
+			errMsg: vi.fn(),
+		} as any))
 		vi.mocked(adaptersModule.UriAdapter).mockImplementation(() => ({
+			file: vi.fn(),
 			create: vi.fn(),
 			joinPath: vi.fn(),
-			file: vi.fn(),
+			parse: vi.fn(),
 			dirname: vi.fn(),
-		}))
-
-		// Mock the core services
-		const coreModule = await import('@fux/dynamicons-core')
+		} as any))
 
 		vi.mocked(coreModule.IconActionsService).mockImplementation(() => {
 			const mock = {
@@ -252,11 +233,11 @@ describe('Extension', () => {
 
 	describe('Extension Import', () => {
 		it('should be able to import extension', async () => {
-			const extension = await import('../../src/extension.js')
+			// Using static import instead of dynamic import
 
-			expect(extension).toBeDefined()
-			expect(extension.activate).toBeDefined()
-			expect(extension.deactivate).toBeDefined()
+			expect(extensionModule).toBeDefined()
+			expect(extensionModule.activate).toBeDefined()
+			expect(extensionModule.deactivate).toBeDefined()
 		})
 	})
 
@@ -264,12 +245,11 @@ describe('Extension', () => {
 		it('should register commands', async () => {
 			console.log('Before activate call')
 
-			const { activate } = await import('../../src/extension.js')
+			const { activate } = extensionModule
 
 			await activate(mockContext)
 			console.log('After activate call')
 
-			const adaptersModule = await import('../../src/adapters/index.js')
 			const mockCommandsAdapter = vi.mocked(adaptersModule.CommandsAdapter).mock.results[0].value
 
 			console.log('Mock calls:', mockCommandsAdapter.registerCommand.mock.calls.length)
@@ -278,13 +258,11 @@ describe('Extension', () => {
 
 		it('should handle activation errors gracefully', async () => {
 			// Mock CommandsAdapter to throw an error
-			const adaptersModule = await import('../../src/adapters/index.js')
-
 			vi.mocked(adaptersModule.CommandsAdapter).mockImplementation(() => {
 				throw new Error('Test error')
 			})
 
-			const { activate } = await import('../../src/extension.js')
+			const { activate } = extensionModule
 
 			await expect(activate(mockContext)).resolves.toBeUndefined()
 		})
@@ -292,13 +270,13 @@ describe('Extension', () => {
 
 	describe('deactivate', () => {
 		it('should be defined', async () => {
-			const { deactivate } = await import('../../src/extension.js')
+			const { deactivate } = extensionModule
 
 			expect(deactivate).toBeDefined()
 		})
 
 		it('should not throw when called', async () => {
-			const { deactivate } = await import('../../src/extension.js')
+			const { deactivate } = extensionModule
 
 			expect(() => deactivate()).not.toThrow()
 		})
@@ -306,11 +284,10 @@ describe('Extension', () => {
 
 	describe('command handlers', () => {
 		it('should register all required command handlers', async () => {
-			const { activate } = await import('../../src/extension.js')
+			const { activate } = extensionModule
 
 			await activate(mockContext)
 
-			const adaptersModule = await import('../../src/adapters/index.js')
 			const mockCommandsAdapter = vi.mocked(adaptersModule.CommandsAdapter).mock.results[0].value
 
 			console.log('Command handlers count:', mockCommandsAdapter.registerCommand.mock.calls.length)

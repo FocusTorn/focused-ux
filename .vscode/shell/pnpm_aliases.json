@@ -11,6 +11,10 @@
         "tsc": "check-types",
 
         "v": "validate",
+        "vf": "validate:full",
+        
+        "a": "audit",
+        "af": "audit:full",
 
         // Test aliases
         "t": "test", // Run functional tests for target package only
@@ -27,30 +31,31 @@
         "cc": "clean:cache",
         "cd": "clean:dist",
         
+        
+        // cmo specific aliases
         "s": "status",
         "o": "optimize",
         "m": "monitor"
     },
 
-    "not-nx-targets": {
-        "a": "tsx libs/tools/structure-auditor/src/main.ts",
+    "not-nx-targets": { //>
         "esv": "npx esbuild-visualizer --metadata"
-    },
+    }, //<
 
-    "expandables": {
-        "f": "fix", // Enable auto-fix for linting
+    "expandables": { //>
+        "f": "fix",           // Enable auto-fix for linting
         "s": "skip-nx-cache", // Skip Nx cache (useful for troubleshooting)
-        "v": "verbose", // Enable verbose output
-        "d": "debug", // Enable debug output
+        "v": "verbose",       // Enable verbose output
+        "d": "debug",         // Enable debug output
         
-        "watch": "watch", // Enable watch mode
-        
+        "watch": "watch",
         "stream": "output-style=stream", // Use streaming output style
         "echo": "aka-echo" // Echo the resolved command without executing
-    },
+    }, //<
     
     "packages": {
-        // Context Cherry Picker package aliases
+        
+        //> Context Cherry Picker package aliases
         "ccp": {
             "name": "context-cherry-picker",
             "suffix": "ext",
@@ -63,9 +68,8 @@
         "ccpe": {
             "name": "context-cherry-picker",
             "suffix": "ext"
-        },
-        
-        // Dynamicons package aliases
+        }, //<
+        //> Dynamicons package aliases
         "dc": {
             "name": "dynamicons",
             "suffix": "ext",
@@ -78,9 +82,8 @@
         "dce": {
             "name": "dynamicons",
             "suffix": "ext"
-        },
-
-        // Ghost Writer package aliases
+        }, //<
+        //> Ghost Writer package aliases
         "gw": {
             "name": "ghost-writer",
             "suffix": "ext",
@@ -93,9 +96,8 @@
         "gwe": {
             "name": "ghost-writer",
             "suffix": "ext"
-        },
-        
-        // Project Butler package aliases
+        }, //<
+        //> Project Butler package aliases
         "pb": {
             "name": "project-butler",
             "suffix": "ext",
@@ -108,9 +110,8 @@
         "pbe": {
             "name": "project-butler",
             "suffix": "ext"
-        },
-        
-        // Note Hub package aliases
+        }, //<
+        //> Note Hub package aliases
         "nh": {
             "name": "note-hub",
             "suffix": "ext",
@@ -123,27 +124,14 @@
         "nhe": {
             "name": "note-hub",
             "suffix": "ext"
-        },
-        
-        // AI Agent Interactor package aliases
-        "ai": {
-            "name": "ai-agent-interactor",
-            "suffix": "ext",
-            "full": true // This package runs full dependency chain by default
-        },
-        "aic": {
-            "name": "ai-agent-interactor",
-            "suffix": "core"
-        },
-        "aie": {
-            "name": "ai-agent-interactor",
-            "suffix": "ext"
-        },
-        
-        // Library aliases
+        }, //<
+        //> Library aliases
         "mockly": "@fux/mockly", // Mockly library for VSCode API mocking
         "shared": "@fux/shared", // Shared library with VSCode adapters
         "audit": "@fux/structure-auditor", // Structure auditor tool
         "cmo": "@fux/cursor-memory-optimizer" // Cursor memory optimizer tool
+        
+        //<
+
     }
 }

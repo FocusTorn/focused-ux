@@ -6,6 +6,7 @@ import process from 'node:process'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import stripJsonComments from 'strip-json-comments'
+import { PerformanceMonitor } from './performance-monitor'
 
 const __filename = fileURLToPath(import.meta.url)
 const ROOT = path.resolve(path.dirname(__filename), '../../../..')
@@ -166,6 +167,30 @@ function injectVitestConfig(project: string, target: string, args: string[]): st
 	return ['--config', relativeConfigPath, ...args]
 }
 
+function injectPerformanceMonitoring(project: string, target: string, args: string[]): string[] {
+	const hasPerformanceFlag = args.some(arg => 
+		arg === '--performance-baseline' ||
+		arg === '--performance-check' ||
+		arg === '--performance-validate'
+	)
+	
+	if (!hasPerformanceFlag) {
+		return args
+	}
+
+	// Add performance reporter for test targets
+	if (target.startsWith('test')) {
+		return [
+			'--reporter=verbose',
+			'--reporter=json',
+			'--outputFile=./__tests__/_reports/performance.json',
+			...args
+		]
+	}
+	
+	return args
+}
+
 function runNx(argv: string[]): number {
 	if (process.env.AKA_ECHO === '1') {
 		console.log(`NX_CALL -> ${argv.join(' ')}`)
@@ -216,7 +241,19 @@ function runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: stri
 
 	const target = targets[0]
 
-	return runNx(['run-many', `--target=${target}`, `--projects=${projects.join(',')}`, `--parallel=${par}`, ...flags, ...targets.slice(1)])
+	// Auto-inject --output-style=stream and --parallel=false for test:full, validate:full, and lint:full targets in run-many operations
+	let enhancedFlags = [...flags]
+
+	if ((target === 'test:full' || target === 'validate:full' || target === 'lint:full') && !enhancedFlags.some(flag => flag === '--stream' || flag === '--output-style=stream' || flag.startsWith('--output='))) {
+		enhancedFlags = ['--output-style=stream', ...enhancedFlags]
+	}
+
+	// Auto-inject --parallel=false for validate:full to get cleaner sequential output
+	if (target === 'validate:full' && !enhancedFlags.some(flag => flag === '--parallel=false' || flag === '--parallel=true')) {
+		enhancedFlags = ['--parallel=false', ...enhancedFlags]
+	}
+
+	return runNx(['run-many', `--target=${target}`, `--projects=${projects.join(',')}`, `--parallel=${par}`, ...enhancedFlags, ...targets.slice(1)])
 }
 
 function main() {
@@ -264,6 +301,8 @@ function main() {
 		console.log('  aka ext build')
 		console.log('  aka pm esv')
 		console.log('  aka pm -f -s')
+		console.log('  aka shared test --performance-baseline')
+		console.log('  aka shared test --performance-check')
 		process.exit(0)
 	}
 
@@ -317,6 +356,7 @@ function main() {
 
 	const { project, full } = resolveProjectForAlias(aliasVal)
 
+	// Check args length before removing --aka-echo flag
 	if (args.length === 0) {
 		console.error(`Please provide a command for '${alias}'.`)
 		process.exit(1)
@@ -386,7 +426,34 @@ function main() {
 	const restArgs = args.slice(1).filter(a => !a.startsWith('--'))
 
 	// Inject Vitest config if needed
-	const injectedArgs = injectVitestConfig(project, normalizedTarget, flagArgs)
+	let injectedArgs = injectVitestConfig(project, normalizedTarget, flagArgs)
+
+	// Inject performance monitoring if needed
+	injectedArgs = injectPerformanceMonitoring(project, normalizedTarget, injectedArgs)
+
+	// Auto-inject --output-style=stream for test:full, validate:full, and lint:full targets
+	if ((normalizedTarget === 'test:full' || normalizedTarget === 'validate:full' || normalizedTarget === 'lint:full') && !injectedArgs.some(arg => arg === '--stream' || arg === '--output-style=stream' || arg.startsWith('--output='))) {
+		injectedArgs = ['--output-style=stream', ...injectedArgs]
+	}
+
+	// Auto-inject --parallel=false for validate:full to get cleaner sequential output
+	if (normalizedTarget === 'validate:full' && !injectedArgs.some(arg => arg === '--parallel=false' || arg === '--parallel=true')) {
+		injectedArgs = ['--parallel=false', ...injectedArgs]
+	}
+
+	// Check for performance monitoring flags
+	const hasPerformanceFlag = injectedArgs.some(arg => 
+		arg === '--performance-baseline' ||
+		arg === '--performance-check' ||
+		arg === '--performance-validate'
+	)
+
+	// Initialize performance monitoring if needed
+	const performanceMonitor = hasPerformanceFlag ? new PerformanceMonitor() : null
+	
+	if (performanceMonitor) {
+		performanceMonitor.startMonitoring(project, normalizedTarget)
+	}
 
 	// Default single invocation
 	const previousEcho = process.env.AKA_ECHO
@@ -404,6 +471,29 @@ function main() {
 		}
 		else {
 			process.env.AKA_ECHO = previousEcho
+		}
+	}
+
+	// Handle performance monitoring results
+	if (performanceMonitor) {
+		const status = rc === 0 ? 'success' : 'failure'
+		const metrics = performanceMonitor.endMonitoring(status)
+		
+		if (metrics) {
+			const report = performanceMonitor.analyzePerformance(metrics)
+			
+			// Save report
+			performanceMonitor.saveReport(report)
+			
+			// Print report
+			performanceMonitor.printReport(report)
+			
+			// Handle baseline creation
+			if (injectedArgs.includes('--performance-baseline')) {
+				const baseline = performanceMonitor.createBaselineFromMetrics(metrics)
+				performanceMonitor.saveBaseline(baseline)
+				console.log(`\n✅ Baseline created for ${project}-${normalizedTarget}`)
+			}
 		}
 	}
 

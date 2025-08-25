@@ -3,15 +3,16 @@ import { IconDiscoveryService } from '../../src/services/IconDiscoveryService.js
 import type { IFileSystem } from '../../src/_interfaces/IFileSystem.js'
 import type { IPath } from '../../src/_interfaces/IPath.js'
 import type { ICommonUtils } from '../../src/_interfaces/ICommonUtils.js'
+import type { IUriFactory } from '../../src/_interfaces/IUri.js'
 
 // Mock vscode
 vi.mock('vscode', () => ({
 	Uri: {
 		file: (path: string) => ({
 			fsPath: path,
-			toString: () => path
-		})
-	}
+			toString: () => path,
+		}),
+	},
 }))
 
 // Mock dependencies
@@ -39,13 +40,29 @@ const mockCommonUtils: ICommonUtils = {
 	errMsg: vi.fn(),
 }
 
+const mockUriFactory: IUriFactory = {
+	file: vi.fn((path: string) => ({
+		fsPath: path,
+		scheme: 'file',
+		authority: '',
+		path,
+		query: '',
+		fragment: '',
+		toString: () => path,
+		with: vi.fn(),
+	})),
+	parse: vi.fn(),
+	create: vi.fn(),
+	joinPath: vi.fn(),
+}
+
 describe('IconDiscoveryService', () => {
 	let service: IconDiscoveryService
 	const extensionPath = '/test/extension'
 
 	beforeEach(() => {
 		vi.clearAllMocks()
-		service = new IconDiscoveryService(mockFileSystem, mockPath, mockCommonUtils, extensionPath)
+		service = new IconDiscoveryService(mockFileSystem, mockPath, mockCommonUtils, extensionPath, mockUriFactory)
 	})
 
 	describe('getIconOptionsFromDirectory', () => {
@@ -158,6 +175,7 @@ describe('IconDiscoveryService', () => {
 		it('should handle directory read error', async () => {
 			const directoryPath = '/test/icons'
 			const error = new Error('Permission denied')
+
 			error.code = 'EACCES'
 
 			;(mockFileSystem.readdir as any).mockRejectedValue(error)
@@ -167,13 +185,14 @@ describe('IconDiscoveryService', () => {
 			expect(result).toEqual([])
 			expect(mockCommonUtils.errMsg).toHaveBeenCalledWith(
 				`Error reading icon directory ${directoryPath}`,
-				error
+				error,
 			)
 		})
 
 		it('should ignore ENOENT errors', async () => {
 			const directoryPath = '/test/icons'
 			const error = new Error('Directory not found')
+
 			error.code = 'ENOENT'
 
 			;(mockFileSystem.readdir as any).mockRejectedValue(error)
@@ -235,16 +254,16 @@ describe('IconDiscoveryService', () => {
 
 	describe('getBuiltInIconDirectories', () => {
 		it('should return correct built-in icon directories', async () => {
-			;(mockPath.join as any).mockImplementation((...args: string[]) => args.join('/'))
+			(mockPath.join as any).mockImplementation((...args: string[]) => args.join('/'))
 
 			const result = await service.getBuiltInIconDirectories()
 
 			expect(result).toEqual({
 				fileIconsDir: '/test/extension/assets/icons/file_icons',
-				folderIconsDir: '/test/extension/assets/icons/folder_icons'
+				folderIconsDir: '/test/extension/assets/icons/folder_icons',
 			})
 			expect(mockPath.join).toHaveBeenCalledWith(extensionPath, 'assets/icons/file_icons')
 			expect(mockPath.join).toHaveBeenCalledWith(extensionPath, 'assets/icons/folder_icons')
 		})
 	})
-}) 
+})

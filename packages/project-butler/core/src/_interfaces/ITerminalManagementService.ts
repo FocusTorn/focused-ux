@@ -4,10 +4,10 @@ export interface ITerminalManagementService {
 	 * @param filePath - Path to the file or folder
 	 * @returns Promise that resolves when terminal path is updated
 	 */
-	updateTerminalPath(filePath: string): Promise<ITerminalCommand>
+	updateTerminalPath: (filePath: string) => Promise<ITerminalCommand>
 }
 
 export interface ITerminalCommand {
 	command: string
 	shouldShowTerminal: boolean
-} 
+}

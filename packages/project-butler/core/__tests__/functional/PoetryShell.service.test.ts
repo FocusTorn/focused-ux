@@ -19,6 +19,7 @@ describe('PoetryShellService', () => {
 		it('should return poetry shell command for directory', async () => {
 			// Arrange
 			const filePath = '/test/directory'
+
 			mocks.fileSystem.stat.mockResolvedValue({ type: 'directory' })
 
 			// Act
@@ -60,11 +61,13 @@ describe('PoetryShellService', () => {
 		it('should handle file system errors', async () => {
 			// Arrange
 			const filePath = '/test/file.txt'
+
 			mocks.fileSystem.stat.mockRejectedValue(new Error('File system error'))
 
 			// Act & Assert
 			await expect(service.enterPoetryShell(filePath))
-				.rejects.toThrow('File system error')
+				.rejects
+				.toThrow('File system error')
 		})
 	})
-}) 
+})

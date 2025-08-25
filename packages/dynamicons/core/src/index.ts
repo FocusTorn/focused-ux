@@ -10,7 +10,7 @@ export type { IPath } from './_interfaces/IPath.js'
 export type { IQuickPick, IQuickPickOptions } from './_interfaces/IQuickPick.js'
 export type { IWindow } from './_interfaces/IWindow.js'
 export type { IWorkspace, IConfiguration } from './_interfaces/IWorkspace.js'
-
+export type { IUri, IUriFactory } from './_interfaces/IUri.js'
 
 // Services
 export { IconActionsService } from './services/IconActionsService.js'

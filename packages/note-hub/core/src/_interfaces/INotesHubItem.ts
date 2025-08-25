@@ -1,7 +1,33 @@
 // ESLint & Imports -->>
 
-//= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { TreeItemLabel, IUri, IThemeIcon } from '@fux/shared'
+//= LOCAL TYPE DEFINITIONS ====================================================================================
+export type TreeItemLabel = string | { label: string, highlights?: [number, number][] }
+export interface IUri {
+	scheme: string
+	authority: string
+	path: string
+	query: string
+	fragment: string
+	fsPath: string
+	with: (change: { scheme?: string, authority?: string, path?: string, query?: string, fragment?: string }) => IUri
+	toString: () => string
+}
+
+export interface IUriFactory {
+	file: (path: string) => IUri
+	parse: (value: string) => IUri
+	create: (uri: any) => IUri
+	joinPath: (base: IUri, ...paths: string[]) => IUri
+}
+
+export interface IThemeColor {
+	readonly id: string
+}
+export interface IThemeIcon {
+	id: string
+	theme?: string
+	color?: IThemeColor
+}
 
 //= IMPLEMENTATION TYPES ======================================================================================
 

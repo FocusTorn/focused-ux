@@ -1,235 +1,172 @@
 import path from 'node:path'
 import fs from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { addError } from '../util/errors.js'
-import { readJson, findJsonLocation } from '../util/fs.js'
-import { deepEqual, ROOT } from '../util/helpers.js'
+import { ROOT } from '../util/helpers.js'
+import { readJson } from '../util/fs.js'
 
-// Load canonical tsconfig template from standalone file
-function getCanonicalTsconfig(): Record<string, any> {
-	const __filename = fileURLToPath(import.meta.url)
-	const __dirname = path.dirname(__filename)
-	const templatePath = path.join(__dirname, '..', '..', 'templates', 'tsconfig.ext.json')
-	const template = readJson(templatePath)
+/**
+ * Check that core package tsconfig.json matches canonical template.
+ */
+export function checkTsconfigCore(pkg: string): boolean {
+	const tsconfigPath = path.join(ROOT, 'packages', pkg, 'core', 'tsconfig.json')
+	const templatePath = path.join(ROOT, 'libs', 'tools', 'structure-auditor', 'templates', 'tsconfig.core.json')
 	
-	if (!template) {
-		throw new Error(`Failed to load canonical tsconfig template from ${templatePath}`)
+	if (!fs.existsSync(tsconfigPath)) {
+		addError('Missing tsconfig.json', `packages/${pkg}/core`)
+		return false
 	}
-	
-	return template
+
+	if (!fs.existsSync(templatePath)) {
+		addError('Missing canonical template', `libs/tools/structure-auditor/templates/tsconfig.core.json`)
+		return false
+	}
+
+	const tsconfig = readJson(tsconfigPath)
+	const template = readJson(templatePath)
+
+	if (!tsconfig || !template) {
+		return false
+	}
+
+	// Compare the configurations
+	if (JSON.stringify(tsconfig, null, 4) !== JSON.stringify(template, null, 4)) {
+		const relativeTemplatePath = path.relative(ROOT, templatePath).replace(/\\/g, '/')
+
+		addError('Non-canonical tsconfig.json', `packages/${pkg}/core/tsconfig.json: Must match ${relativeTemplatePath}:1:1`)
+		return false
+	}
+
+	return true
 }
 
-export function checkTsconfigExt(pkg: string) { //>
+/**
+ * Check that core package tsconfig.lib.json matches canonical template.
+ */
+export function checkTsconfigCoreLib(pkg: string): boolean {
+	const tsconfigPath = path.join(ROOT, 'packages', pkg, 'core', 'tsconfig.lib.json')
+	const templatePath = path.join(ROOT, 'libs', 'tools', 'structure-auditor', 'templates', 'tsconfig.core.lib.json')
+	
+	if (!fs.existsSync(tsconfigPath)) {
+		addError('Missing tsconfig.lib.json', `packages/${pkg}/core`)
+		return false
+	}
+
+	if (!fs.existsSync(templatePath)) {
+		addError('Missing canonical template', `libs/tools/structure-auditor/templates/tsconfig.core.lib.json`)
+		return false
+	}
+
+	const tsconfig = readJson(tsconfigPath)
+	const template = readJson(templatePath)
+
+	if (!tsconfig || !template) {
+		return false
+	}
+
+	// Compare the configurations
+	if (JSON.stringify(tsconfig, null, 4) !== JSON.stringify(template, null, 4)) {
+		const relativeTemplatePath = path.relative(ROOT, templatePath).replace(/\\/g, '/')
+
+		addError('Non-canonical tsconfig.lib.json', `packages/${pkg}/core/tsconfig.lib.json: Must match ${relativeTemplatePath}:1:1`)
+		return false
+	}
+
+	return true
+}
+
+/**
+ * Check that extension package tsconfig.json matches canonical template.
+ */
+export function checkTsconfigExt(pkg: string): boolean {
 	const tsconfigPath = path.join(ROOT, 'packages', pkg, 'ext', 'tsconfig.json')
-
+	const templatePath = path.join(ROOT, 'libs', 'tools', 'structure-auditor', 'templates', 'tsconfig.ext.json')
+	
 	if (!fs.existsSync(tsconfigPath)) {
-		addError('Missing tsconfig.json', `${pkg}/ext`)
+		addError('Missing tsconfig.json', `packages/${pkg}/ext`)
+		return false
+	}
+
+	if (!fs.existsSync(templatePath)) {
+		addError('Missing canonical template', `libs/tools/structure-auditor/templates/tsconfig.ext.json`)
 		return false
 	}
 
 	const tsconfig = readJson(tsconfigPath)
+	const template = readJson(templatePath)
 
-	if (!tsconfig)
-		return false
-
-	// Only compare keys present in canonical config
-	const canonicalConfig = getCanonicalTsconfig()
-
-	for (const key of Object.keys(canonicalConfig)) {
-		if (!deepEqual(tsconfig[key], canonicalConfig[key])) {
-			const location = findJsonLocation(tsconfigPath, key)
-			const locationStr = location ? `:${location.line}:${location.column}` : ''
-
-			addError('Invalid tsconfig.json', `${pkg}/ext/tsconfig.json${locationStr}: Key '${key}' does not match canonical config.`)
-			return false
-		}
-	}
-	if (fs.existsSync(path.join(ROOT, 'packages', pkg, 'ext', 'tsconfig.lib.json'))) {
-		addError('Invalid tsconfig structure', `${pkg}/ext/tsconfig.lib.json should not exist.`)
+	if (!tsconfig || !template) {
 		return false
 	}
 
-	// Check that references point to tsconfig.lib.json files, not main tsconfig.json
-	if (tsconfig.references) {
-		for (const ref of tsconfig.references) {
-			const refPath = ref.path
+	// Compare the configurations
+	if (JSON.stringify(tsconfig, null, 4) !== JSON.stringify(template, null, 4)) {
+		const relativeTemplatePath = path.relative(ROOT, templatePath).replace(/\\/g, '/')
 
-			if (refPath.endsWith('/core') || refPath.endsWith('/shared')) {
-				const location = findJsonLocation(tsconfigPath, 'references')
-				const locationStr = location ? `:${location.line}:${location.column}` : ''
-
-				addError('Invalid tsconfig references', `${pkg}/ext/tsconfig.json${locationStr}: Reference '${refPath}' should point to tsconfig.lib.json, not main tsconfig.json`)
-				return false
-			}
-		}
+		addError('Non-canonical tsconfig.json', `packages/${pkg}/ext/tsconfig.json: Must match ${relativeTemplatePath}:1:1`)
+		return false
 	}
 
 	return true
-} //<
+}
 
-export function checkTsconfigCore(pkg: string) { //>
-	const tsconfigPath = path.join(ROOT, 'packages', pkg, 'core', 'tsconfig.json')
-	const tsconfigLibPath = path.join(ROOT, 'packages', pkg, 'core', 'tsconfig.lib.json')
-
-	if (!fs.existsSync(tsconfigPath)) {
-		addError('Missing tsconfig.json', `${pkg}/core`)
+/**
+ * Check that core package vitest.config.ts matches canonical template.
+ */
+export function checkVitestConfig(pkg: string): boolean {
+	const vitestPath = path.join(ROOT, 'packages', pkg, 'core', 'vitest.config.ts')
+	const templatePath = path.join(ROOT, 'libs', 'tools', 'structure-auditor', 'templates', 'vitest.config.ts')
+	
+	if (!fs.existsSync(vitestPath)) {
+		addError('Missing vitest.config.ts', `packages/${pkg}/core`)
 		return false
 	}
 
-	const tsconfig = readJson(tsconfigPath)
-
-	if (!tsconfig)
-		return false
-
-	// Check that main tsconfig.json has composite: true
-	if (!tsconfig.compilerOptions?.composite) {
-		const location = findJsonLocation(tsconfigPath, 'compilerOptions')
-		const locationStr = location ? `:${location.line}:${location.column}` : ''
-
-		addError('Missing \'composite: true\'', `${pkg}/core/tsconfig.json${locationStr}`)
+	if (!fs.existsSync(templatePath)) {
+		addError('Missing canonical template', `libs/tools/structure-auditor/templates/vitest.config.ts`)
 		return false
 	}
 
-	// Check tsconfig.lib.json if it exists
-	if (fs.existsSync(tsconfigLibPath)) {
-		const tsconfigLib = readJson(tsconfigLibPath)
+	const vitestContent = fs.readFileSync(vitestPath, 'utf-8')
+	const templateContent = fs.readFileSync(templatePath, 'utf-8')
 
-		if (!tsconfigLib)
-			return false
+	// Compare the content exactly
+	if (vitestContent !== templateContent) {
+		const relativeTemplatePath = path.relative(ROOT, templatePath).replace(/\\/g, '/')
 
-		if (!tsconfigLib.compilerOptions?.composite) {
-			const location = findJsonLocation(tsconfigLibPath, 'compilerOptions')
-			const locationStr = location ? `:${location.line}:${location.column}` : ''
-
-			addError('Missing \'composite: true\'', `${pkg}/core/tsconfig.lib.json${locationStr}`)
-			return false
-		}
+		addError('Non-canonical vitest.config.ts', `packages/${pkg}/core/vitest.config.ts: Must match ${relativeTemplatePath}:1:1`)
+		return false
 	}
 
 	return true
-} //<
+}
 
-export function checkTsconfigShared() { //>
-	const tsconfigPath = path.join(ROOT, 'libs', 'shared', 'tsconfig.json')
-	const tsconfigLibPath = path.join(ROOT, 'libs', 'shared', 'tsconfig.lib.json')
-
-	if (!fs.existsSync(tsconfigPath)) {
-		addError('Missing tsconfig.json', `libs/shared`)
+/**
+ * Check that core package vitest.coverage.config.ts matches canonical template.
+ */
+export function checkVitestCoverageConfig(pkg: string): boolean {
+	const vitestPath = path.join(ROOT, 'packages', pkg, 'core', 'vitest.coverage.config.ts')
+	const templatePath = path.join(ROOT, 'libs', 'tools', 'structure-auditor', 'templates', 'vitest.coverage.config.ts')
+	
+	if (!fs.existsSync(vitestPath)) {
+		addError('Missing vitest.coverage.config.ts', `packages/${pkg}/core`)
 		return false
 	}
 
-	const tsconfig = readJson(tsconfigPath)
-
-	if (!tsconfig)
-		return false
-
-	// Check that main tsconfig.json has composite: true
-	if (!tsconfig.compilerOptions?.composite) {
-		const location = findJsonLocation(tsconfigPath, 'compilerOptions')
-		const locationStr = location ? `:${location.line}:${location.column}` : ''
-
-		addError('Missing \'composite: true\'', `libs/shared/tsconfig.json${locationStr}`)
+	if (!fs.existsSync(templatePath)) {
+		addError('Missing canonical template', `libs/tools/structure-auditor/templates/vitest.coverage.config.ts`)
 		return false
 	}
 
-	// Check tsconfig.lib.json if it exists
-	if (fs.existsSync(tsconfigLibPath)) {
-		const tsconfigLib = readJson(tsconfigLibPath)
+	const vitestContent = fs.readFileSync(vitestPath, 'utf-8')
+	const templateContent = fs.readFileSync(templatePath, 'utf-8')
 
-		if (!tsconfigLib)
-			return false
+	// Compare the content exactly
+	if (vitestContent !== templateContent) {
+		const relativeTemplatePath = path.relative(ROOT, templatePath).replace(/\\/g, '/')
 
-		if (!tsconfigLib.compilerOptions?.composite) {
-			const location = findJsonLocation(tsconfigLibPath, 'compilerOptions')
-			const locationStr = location ? `:${location.line}:${location.column}` : ''
-
-			addError('Missing \'composite: true\'', `libs/shared/tsconfig.lib.json${locationStr}`)
-			return false
-		}
-
-		// Ensure tests directory is excluded so setup files (e.g., src/__tests__/setup.ts)
-		// are not compiled during library builds.
-		const exclude: string[] = tsconfigLib.exclude || []
-		const hasTestsDirExclude = exclude.some((p: string) => p.replace(/\\/g, '/') === 'src/__tests__/**')
-
-		if (!hasTestsDirExclude) {
-			const location = findJsonLocation(tsconfigLibPath, 'exclude')
-			const locationStr = location ? `:${location.line}:${location.column}` : ''
-
-			addError('Missing tests directory exclude', `libs/shared/tsconfig.lib.json${locationStr}: exclude should include 'src/__tests__/**' to avoid compiling test setup files.`)
-			return false
-		}
+		addError('Non-canonical vitest.coverage.config.ts', `packages/${pkg}/core/vitest.coverage.config.ts: Must match ${relativeTemplatePath}:1:1`)
+		return false
 	}
 
 	return true
-} //<
-
-export function checkTsconfigLibPaths(pkg: string) { //>
-	const tsconfigLibPath = path.join(ROOT, 'packages', pkg, 'core', 'tsconfig.lib.json')
-
-	if (!fs.existsSync(tsconfigLibPath))
-		return true // Not a core library, skip
-
-	const tsconfigLib = readJson(tsconfigLibPath)
-
-	if (!tsconfigLib)
-		return false
-
-	// Check if using project references (composite: true in base config indicates this)
-	const tsconfigBasePath = path.join(ROOT, 'tsconfig.base.json')
-	const tsconfigBase = readJson(tsconfigBasePath)
-	const usingProjectReferences = tsconfigBase?.compilerOptions?.composite === true
-
-	if (usingProjectReferences) {
-		// When using project references, paths should NOT be set - references handle module resolution
-		const actualPaths = tsconfigLib.compilerOptions?.paths || {}
-		
-		if (Object.keys(actualPaths).length > 0) {
-			const location = findJsonLocation(tsconfigLibPath, 'paths')
-			const locationStr = location ? `:${location.line}:${location.column}` : ''
-
-			addError('Unexpected paths in project references setup', `${pkg}/core/tsconfig.lib.json${locationStr}: When using TypeScript project references, 'paths' should not be set. Module resolution is handled by project references. Remove the 'paths' property and run 'nx sync' to update references.`)
-			return false
-		}
-	}
-	else {
-		// Legacy path-based setup - validate paths match dependencies
-		const pkgJsonPath = path.join(ROOT, 'packages', pkg, 'core', 'package.json')
-		const pkgJson = readJson(pkgJsonPath)
-
-		if (!pkgJson)
-			return false
-
-		const dependencies = Object.keys(pkgJson.dependencies || {})
-		const expectedPaths: Record<string, string[]> = {}
-
-		for (const dep of dependencies) {
-			if (dep.startsWith('@fux/')) {
-				const depName = dep.replace('@fux/', '')
-				const depPath = depName === 'shared' ? path.join(ROOT, 'libs', 'shared') : path.join(ROOT, 'packages', depName, 'core')
-				const expectedRelativePath = path.relative(
-					path.dirname(tsconfigLibPath),
-					path.join(depPath, 'src'),
-				).replace(/\\/g, '/')
-
-				expectedPaths[dep] = [expectedRelativePath]
-			}
-		}
-
-		const actualPaths = tsconfigLib.compilerOptions?.paths || {}
-
-		if (Object.keys(expectedPaths).length > 0 || Object.keys(actualPaths).length > 0) {
-			if (!deepEqual(actualPaths, expectedPaths)) {
-				const location = findJsonLocation(tsconfigLibPath, 'paths')
-				const locationStr = location ? `:${location.line}:${location.column}` : ''
-				const pkgJsonLocation = findJsonLocation(pkgJsonPath, 'dependencies')
-				const pkgJsonLocationStr = pkgJsonLocation ? `:${pkgJsonLocation.line}:${pkgJsonLocation.column}` : ''
-
-				addError('Incorrect tsconfig.lib.json paths', `${pkg}/core/tsconfig.lib.json${locationStr}: The 'paths' configuration does not match the package's dependencies in ${pkg}/core/package.json${pkgJsonLocationStr}.`)
-				return false
-			}
-		}
-	}
-
-	return true
-} //<
+}

@@ -96,7 +96,8 @@ describe('BackupManagementService', () => {
 
 			// Act & Assert
 			await expect(service.createBackup(sourcePath))
-				.rejects.toThrow('Copy failed')
+				.rejects
+				.toThrow('Copy failed')
 		})
 	})
-}) 
+})

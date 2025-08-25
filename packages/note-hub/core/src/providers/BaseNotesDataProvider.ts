@@ -2,23 +2,29 @@
 
 // _UTILITIES ==================================================================================================
 
-import type { IExtensionContext, IUri, ITreeItem, IFileSystemWatcher, Event, ProviderResult, IFileType, IFrontmatterUtilsService, IWindow, IWorkspace, ICommands, ICommonUtilsService, IPathUtilsService } from '@fux/shared'
+import type { IExtensionContext } from '../_interfaces/IExtensionContext.js'
+import type { IUri, IUriFactory } from '../_interfaces/IUri.js'
+import type { IFileType } from '../_interfaces/IFileType.js'
+import type { IFrontmatterUtilsService } from '../_interfaces/IFrontmatterUtils.js'
+import type { IWindow } from '../_interfaces/IWindow.js'
+import type { IWorkspace, IFileSystemWatcher } from '../_interfaces/IWorkspace.js'
+import type { ICommands } from '../_interfaces/ICommands.js'
+import type { ICommonUtilsService } from '../_interfaces/ICommonUtils.js'
+import type { IPathUtilsService } from '../_interfaces/IPathUtils.js'
 import type { INotesHubItem } from '../_interfaces/INotesHubItem.js'
 import type { INotesHubDataProvider } from '../_interfaces/INotesHubDataProvider.js'
-import {
-	EventEmitterAdapter,
-	ThemeIconAdapter,
-	UriAdapter,
-	RelativePatternAdapter,
-	TreeItemAdapter,
-	TreeItemCollapsibleStateAdapter,
-} from '@fux/shared'
+import type { ITreeItem } from '../_interfaces/ITreeItem.js'
+import type { Event } from '../_interfaces/IEvent.js'
+import { EventEmitterAdapter } from '../adapters/EventEmitterAdapter.js'
+import { RelativePatternAdapter } from '../adapters/RelativePatternAdapter.js'
+import { TreeItemAdapter } from '../adapters/TreeItemAdapter.js'
+import { ThemeIconAdapter } from '../adapters/ThemeIconAdapter.js'
+import { TreeItemCollapsibleStateAdapter } from '../adapters/TreeItemCollapsibleStateAdapter.js'
 import { basename, dirname, extname, join, normalize } from 'node:path'
 import { constants as fsConstants } from 'node:fs'
 import { Buffer } from 'node:buffer'
 import { access as fspAccess } from 'node:fs/promises'
 import { NotesHubItem } from '../models/NotesHubItem.js'
-// import type { ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, IWindow, IWorkspace, ICommands } from '@fux/_utilities' (update to actual path)
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -29,6 +35,8 @@ const GLOBAL_ROOT_ICON = 'globe'
 const DEFAULT_FOLDER_ICON = 'folder'
 
 const ALLOWED_EXTENSIONS = ['.md', '.txt', '.txte']
+
+type ProviderResult<T> = T | undefined | null
 
 export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 
@@ -57,7 +65,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 		protected readonly treeItemAdapter: any,
 		protected readonly themeIconAdapter: any,
 		protected readonly themeColorAdapter: any,
-		protected readonly uriAdapter: any,
+		protected readonly uriAdapter: IUriFactory,
 		protected readonly treeItemCollapsibleStateAdapter: any,
 	) {
 		// Guard: invalid notesDir makes provider inert
@@ -153,7 +161,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 		}
 
 		try {
-			const parentParentUri = (UriAdapter.file(parentParentPath) as any).uri
+			const parentParentUri = (this.uriAdapter.file(parentParentPath) as any).uri
 
 			return new NotesHubItem(parentName, parentPath, true, this.treeItemAdapter, this.themeIconAdapter, this.themeColorAdapter, this.uriAdapter, this.treeItemCollapsibleStateAdapter, parentParentUri)
 		}
@@ -358,7 +366,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 
 			if (parentPath !== filePath && parentPath.trim() !== '') {
 				try {
-					parentUri = (UriAdapter.file(parentPath) as any).uri
+					parentUri = (this.uriAdapter.file(parentPath) as any).uri
 				}
 				catch (uriError) {
 					console.warn('[BaseNotesDataProvider] Error creating parent URI:', { parentPath, uriError })

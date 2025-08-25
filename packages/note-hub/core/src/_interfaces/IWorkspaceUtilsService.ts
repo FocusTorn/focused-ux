@@ -1,7 +1,8 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { IUri, IWorkspaceFolder } from '@fux/shared'
+import type { IUri } from './IUri.ts'
+import type { IWorkspaceFolder } from './IWorkspaceFolder.ts'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -30,4 +31,5 @@ export interface IWorkspaceUtilsService {
 	safeWorkspaceName: string
 	isRemote: boolean
 	remoteUserAndHost?: string
+	getWorkspaceInfo: () => WorkspaceInfo
 }

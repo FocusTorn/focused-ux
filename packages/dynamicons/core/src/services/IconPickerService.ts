@@ -4,8 +4,8 @@ import type { IFileSystem } from '../_interfaces/IFileSystem.js'
 import type { ICommonUtils } from '../_interfaces/ICommonUtils.js'
 import type { IIconDiscoveryService } from './IconDiscoveryService.js'
 import type { IConfigurationService } from './ConfigurationService.js'
+import type { IUriFactory } from '../_interfaces/IUri.js'
 import { dynamiconsConstants } from '../_config/dynamicons.constants.js'
-import { Uri } from 'vscode'
 
 // QuickPickItemKind values - these should match VSCode's QuickPickItemKind enum
 const QuickPickItemKind = {
@@ -34,6 +34,7 @@ export class IconPickerService implements IIconPickerService {
 		private readonly commonUtils: ICommonUtils,
 		private readonly iconDiscovery: IIconDiscoveryService,
 		private readonly configService: IConfigurationService,
+		private readonly uriFactory: IUriFactory,
 	) {}
 
 	public async showAvailableIconsQuickPick(
@@ -71,7 +72,7 @@ export class IconPickerService implements IIconPickerService {
 
 		if (userIconsDirSetting) {
 			try {
-				await this.fileSystem.access(Uri.file(userIconsDirSetting))
+				await this.fileSystem.access(this.uriFactory.file(userIconsDirSetting))
 				console.log(`[IconPickerService] showAvailableIconsQuickPick - Loading user icons...`)
 				userIconOptions = await this.iconDiscovery.getIconOptionsFromDirectory(userIconsDirSetting, 'user')
 				console.log(`[IconPickerService] showAvailableIconsQuickPick - User icons loaded:`, userIconOptions.length)

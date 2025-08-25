@@ -4,7 +4,9 @@
 import type { IWorkspaceUtilsService, WorkspaceInfo } from '../_interfaces/IWorkspaceUtilsService.js'
 
 //= INJECTED TYPES ============================================================================================
-import type { IWorkspace, IUri, IWorkspaceFolder } from '@fux/shared'
+import type { IWorkspace } from '../_interfaces/IWorkspace.js'
+import type { IUri } from '../_interfaces/IUri.js'
+import type { IWorkspaceFolder } from '../_interfaces/IWorkspaceFolder.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -80,10 +82,11 @@ export class WorkspaceUtilsService implements IWorkspaceUtilsService {
 		const inWorkspace = !!workspaceFolders && workspaceFolders.length > 0
 		const multiRoot = inWorkspace && workspaceFolders.length > 1
 		const workspaceName = inWorkspace ? 'workspace' : undefined // VSCode doesn't expose workspace name directly
-		let primaryUri: any | undefined
+		
+		let primaryUri: IUri | undefined
 		let primaryName: string | undefined
-		const multiRootByIndex: any[] = []
-		const multiRootByName: { [key: string]: any } = {}
+		const multiRootByIndex: IUri[] = []
+		const multiRootByName: { [key: string]: IUri } = {}
 		let safeWorkspaceName: string = 'default'
 		let isRemote: boolean = false
 		let remoteUserAndHost: string | undefined
@@ -93,27 +96,21 @@ export class WorkspaceUtilsService implements IWorkspaceUtilsService {
 			primaryName = workspaceFolders[0].name
 			safeWorkspaceName = workspaceName ?? primaryName ?? 'default_workspace'
 
-			workspaceFolders.forEach((folder: any) => {
+			workspaceFolders.forEach((folder: IWorkspaceFolder) => {
 				if (folder) {
 					multiRootByIndex.push(folder.uri)
 					multiRootByName[folder.name] = folder.uri
 
-					if (folder.uri?.scheme === 'vscode-remote') {
+					// Check for remote workspace
+					if (folder.uri?.scheme && folder.uri.scheme !== 'file') {
 						isRemote = true
-
-						const authority = folder.uri.authority
-
-						if (authority) {
-							const parts = authority.split('+')
-
-							remoteUserAndHost = parts[0] // e.g., 'ssh-remote+my-server' -> 'ssh-remote'
-						}
+						remoteUserAndHost = folder.name
 					}
 				}
 			})
 		}
 		else {
-			safeWorkspaceName = `no_workspace_open` // Or handle as per application needs
+			safeWorkspaceName = 'no_workspace_open' // Or handle as per application needs
 		}
 
 		return {

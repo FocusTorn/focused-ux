@@ -1,7 +1,16 @@
 // ESLint & Imports -->>
 
 // _UTILITIES (direct imports) ================================================================================
-import type { IWindow, IWorkspace, ICommonUtilsService, IFrontmatterUtilsService, IPathUtilsService, ICommands, IFileType } from '@fux/shared'
+import type { IWindow } from '../_interfaces/IWindow.js'
+import type { IWorkspace } from '../_interfaces/IWorkspace.js'
+import type { ICommonUtilsService } from '../_interfaces/ICommonUtils.js'
+import type { IFrontmatterUtilsService } from '../_interfaces/IFrontmatterUtils.js'
+import type { IPathUtilsService } from '../_interfaces/IPathUtils.js'
+import type { ICommands } from '../_interfaces/ICommands.js'
+import type { IFileType } from '../_interfaces/IFileType.js'
+import type { IExtensionContext } from '../_interfaces/IExtensionContext.js'
+import type { IUriFactory } from '../_interfaces/IUri.js'
+import type { Disposable } from '../_interfaces/IDisposable.js'
 import type { INotesHubProviderManager } from '../_interfaces/INotesHubProviderManager.js'
 import type { INotesHubDataProvider } from '../_interfaces/INotesHubDataProvider.js'
 import type { INotesHubItem } from '../_interfaces/INotesHubItem.js'
@@ -9,7 +18,6 @@ import { ProjectNotesDataProvider } from '../providers/ProjectNotesDataProvider.
 import { RemoteNotesDataProvider } from '../providers/RemoteNotesDataProvider.js'
 import { GlobalNotesDataProvider } from '../providers/GlobalNotesDataProvider.js'
 import type { NotesHubConfig } from '../_interfaces/INotesHubConfigService.js'
-import type { IExtensionContext, Disposable } from '@fux/shared'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -32,7 +40,7 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 		private readonly treeItemAdapter: any,
 		private readonly themeIconAdapter: any,
 		private readonly themeColorAdapter: any,
-		private readonly uriAdapter: any,
+		private readonly uriAdapter: IUriFactory,
 		private readonly treeItemCollapsibleStateAdapter: any,
 	) {}
 

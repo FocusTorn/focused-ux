@@ -25,8 +25,8 @@ ProjectButler:
 			// Assert
 			expect(result).toEqual({
 				ProjectButler: {
-					'packageJson-order': ['name', 'version', 'scripts']
-				}
+					'packageJson-order': ['name', 'version', 'scripts'],
+				},
 			})
 		})
 
@@ -49,4 +49,4 @@ ProjectButler:
 			expect(result).toEqual({ key: 'value' })
 		})
 	})
-}) 
+})

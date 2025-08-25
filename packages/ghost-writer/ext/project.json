@@ -4,11 +4,10 @@
     "sourceRoot": "packages/ghost-writer/ext/src",
     "projectType": "application",
     "targets": {
-        "build": {
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "dependsOn": ["^build"],
-            
             "options": {
                 "main": "packages/ghost-writer/ext/src/index.ts",
                 "entryPoints": ["packages/ghost-writer/ext/src/index.ts"],
@@ -34,72 +33,53 @@
                     }
                 ]
             }
-        },
-        "package": {
+        }, //<
+        
+        "package": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
                 "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages"
             }
-        },
-        "package:dev": {
+        }, //<
+        "package:dev": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
                 "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"
             }
-        },
-        "publish": {
+        }, //<
+        "publish": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["package"],
             "options": {
                 "command": "vsce publish",
                 "cwd": "{projectRoot}"
             }
-        },
-        "check-types": {
-            "extends": "check-types"
-        },
-        "lint": {
-            "extends": "lint"
-        },
-        "lint:full": {
-            "extends": "lint:full"
-        },
-        "validate": {
-            "extends": "validate"
-        },
-        "validate:full": {
-            "extends": "validate:full"
-        },
-        "audit": {
-            "extends": "audit"
-        },
-        "audit:full": {
-            "extends": "audit:full"
-        },
-        "clean": {
-            "extends": "clean"
-        },
-        "clean:dist": {
-            "extends": "clean:dist"
-        },
-        "clean:cache": {
-            "extends": "clean:cache"
-        },
-        "test": {
+        }, //<
+        
+        "check-types": { "extends": "check-types" },
+        
+        "lint": { "extends": "lint" },
+        "lint:full": { "extends": "lint:full" },
+        
+        "validate": { "extends": "validate" },
+        "validate:full": { "extends": "validate:full" },
+        
+        "audit": { "extends": "audit" },
+        "audit:full": { "extends": "audit:full" },
+        
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+        
+        "test": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["^build"],
-            "options":{
-                
-                
-                
-            }
-            
-        },
-        "test:full": {
+            "dependsOn": ["^build"]
+        }, //<
+        "test:full": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
             "dependsOn": [
@@ -109,7 +89,8 @@
                     "params": "forward"
                 }
             ]
-        }
+        } //<
+    
     },
     "tags": ["ext"]
 }

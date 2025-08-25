@@ -1,175 +1,437 @@
 import { vi, beforeEach } from 'vitest'
-import process from 'node:process'
 import { Buffer } from 'node:buffer'
-import { mockly, mocklyService } from '@fux/mockly'
-import type { AwilixContainer } from 'awilix'
-import { createContainer, InjectionMode, asValue } from 'awilix'
+import { env } from 'node:process'
 
-// Mock VSCode at the module level to prevent import issues
-vi.mock('vscode', () => ({
-	Uri: {
-		file: vi.fn().mockReturnValue({ fsPath: '/mock/path', path: '/mock/path' }),
-		joinPath: vi.fn().mockReturnValue({ fsPath: '/mock/path', path: '/mock/path' }),
-		create: vi.fn().mockReturnValue({ fsPath: '/mock/path', path: '/mock/path' }),
-		parse: vi.fn().mockReturnValue({ fsPath: '/mock/path', path: '/mock/path' }),
-	},
-	TreeItem: vi.fn().mockImplementation(() => ({
-		label: 'Mock TreeItem',
-		collapsibleState: 0,
+// Keep test output quiet by default; enable via ENABLE_TEST_CONSOLE=true
+const ENABLE_CONSOLE_OUTPUT = env.ENABLE_TEST_CONSOLE === 'true'
+
+if (!ENABLE_CONSOLE_OUTPUT) {
+	console.log = vi.fn()
+	console.info = vi.fn()
+	console.warn = vi.fn()
+	console.error = vi.fn()
+}
+
+// Clean up between tests
+beforeEach(() => {
+	vi.clearAllMocks()
+})
+
+// ============================================================================
+// MOCK TYPES (from mock-types.ts)
+// ============================================================================
+
+export interface MockUri {
+	scheme: string
+	authority: string
+	path: string
+	query: string
+	fragment: string
+	fsPath: string
+	with: (change: { scheme?: string, authority?: string, path?: string, query?: string, fragment?: string }) => MockUri
+	toString: () => string
+}
+
+export interface MockThemeIcon {
+	id: string
+	theme?: string
+	color?: { readonly id: string }
+}
+
+export interface MockTreeItem {
+	label: string
+	resourceUri?: MockUri
+	description?: string | boolean
+	tooltip?: string
+	contextValue?: string
+	iconPath?: MockThemeIcon
+	collapsibleState: number | undefined
+}
+
+export interface MockDisposable {
+	dispose: () => void
+}
+
+export interface MockEventEmitter<T> {
+	event: any
+	fire: (data?: T) => void
+	dispose: () => void
+}
+
+// Factory functions for creating mocks
+export function createMockUri(path: string): MockUri {
+	return {
+		scheme: 'file',
+		authority: '',
+		path,
+		query: '',
+		fragment: '',
+		fsPath: path,
+		with: change => createMockUri(change.path || path),
+		toString: () => `file://${path}`,
+	}
+}
+
+export function createMockThemeIcon(id: string): MockThemeIcon {
+	return {
+		id,
+		theme: undefined,
+		color: undefined,
+	}
+}
+
+export function createMockTreeItem(label: string): MockTreeItem {
+	return {
+		label,
 		resourceUri: undefined,
-		iconPath: undefined,
-		contextValue: undefined,
-		tooltip: undefined,
 		description: undefined,
-	})),
-	ThemeIcon: vi.fn().mockImplementation(() => ({ id: 'mock-icon' })),
-	ThemeColor: vi.fn().mockImplementation(() => ({ id: 'mock-color' })),
-	TreeItemCollapsibleState: {
-		None: 0,
-		Collapsed: 1,
-		Expanded: 2,
-	},
-	EventEmitter: vi.fn().mockImplementation(() => ({
-		event: { on: vi.fn(), fire: vi.fn() },
-		fire: vi.fn(),
-		dispose: vi.fn(),
-	})),
-	RelativePattern: vi.fn().mockImplementation(() => ({})),
-	Disposable: vi.fn().mockImplementation(() => ({ dispose: vi.fn() })),
-	Position: vi.fn().mockImplementation(() => ({ line: 0, character: 0 })),
-	Range: vi.fn().mockImplementation(() => ({ start: { line: 0, character: 0 }, end: { line: 0, character: 0 } })),
-	window: {
-		showInputBox: vi.fn().mockResolvedValue('test-input'),
-		showInformationMessage: vi.fn().mockResolvedValue('Overwrite'),
-		showWarningMessage: vi.fn().mockResolvedValue('Confirm'),
-		showErrorMessage: vi.fn().mockResolvedValue(undefined),
-		showTextDocument: vi.fn().mockResolvedValue(undefined),
-		activeTextEditor: undefined,
-	},
-	workspace: {
-		fs: {
-			readFile: vi.fn().mockResolvedValue(Buffer.from('test content')),
-			writeFile: vi.fn().mockResolvedValue(undefined),
-			rename: vi.fn().mockResolvedValue(undefined),
-			copy: vi.fn().mockResolvedValue(undefined),
-			delete: vi.fn().mockResolvedValue(undefined),
-			createDirectory: vi.fn().mockResolvedValue(undefined),
-			readDirectory: vi.fn().mockResolvedValue([['test.md', 1]]),
-			stat: vi.fn().mockResolvedValue({ type: 1, isFile: () => true, isDirectory: () => false }),
-			access: vi.fn().mockResolvedValue(undefined),
-		},
-		openTextDocument: vi.fn().mockResolvedValue({ uri: { fsPath: '/test/path' } }),
-		workspaceFolders: [],
-		onDidChangeConfiguration: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-		getConfiguration: vi.fn().mockReturnValue({ get: vi.fn().mockReturnValue(undefined) }),
-	},
-	commands: {
-		executeCommand: vi.fn().mockResolvedValue(undefined),
-		registerCommand: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-	},
-	env: {
-		clipboard: {
-			readText: vi.fn().mockResolvedValue('test-clipboard'),
-			writeText: vi.fn().mockResolvedValue(undefined),
-		},
-	},
-	extensions: {
-		all: [],
-		getExtension: vi.fn().mockReturnValue(undefined),
-	},
-	ExtensionContext: vi.fn().mockImplementation(() => ({
-		subscriptions: [],
-		workspaceState: {
-			get: vi.fn(),
-			update: vi.fn(),
-		},
-		globalState: {
-			get: vi.fn(),
-			update: vi.fn(),
-		},
-	})),
-}))
+		tooltip: undefined,
+		contextValue: undefined,
+		iconPath: undefined,
+		collapsibleState: undefined,
+	}
+}
 
-// Mock the entire @fux/shared module to prevent any shared library code from loading
-vi.mock('@fux/shared', () => ({
-	// Mock all the adapters that might be imported
-	FileSystemAdapter: vi.fn().mockImplementation(() => ({
-		readFile: vi.fn().mockResolvedValue(Buffer.from('test content')),
-		writeFile: vi.fn().mockResolvedValue(undefined),
-		rename: vi.fn().mockResolvedValue(undefined),
-		copy: vi.fn().mockResolvedValue(undefined),
-		delete: vi.fn().mockResolvedValue(undefined),
+export function createMockDisposable(): MockDisposable {
+	return {
+		dispose: () => {},
+	}
+}
+
+export function createMockEventEmitter<T>(): MockEventEmitter<T> {
+	return {
+		event: () => createMockDisposable(),
+		fire: () => {},
+		dispose: () => {},
+	}
+}
+
+// ============================================================================
+// SHARED ADAPTER MOCKS (from shared-adapters.mock.ts)
+// ============================================================================
+
+// Mock TreeItemAdapter
+export const TreeItemAdapter = {
+	create: vi.fn(),
+}
+
+// Mock UriAdapter
+export const UriAdapter = {
+	file: vi.fn(),
+}
+
+// Mock ThemeIconAdapter
+export const ThemeIconAdapter = {
+	create: vi.fn(),
+}
+
+// Mock ThemeColorAdapter
+export const ThemeColorAdapter = {
+	create: vi.fn(),
+}
+
+// Mock RelativePatternAdapter
+export const RelativePatternAdapter = {
+	create: vi.fn(),
+}
+
+// Mock TreeItemCollapsibleState
+export const TreeItemCollapsibleState = {
+	None: 0,
+	Collapsed: 1,
+	Expanded: 2,
+}
+
+// Mock TreeItem
+export const TreeItem = vi.fn()
+
+// Mock Uri
+export const Uri = {
+	file: vi.fn(),
+}
+
+// Mock ThemeIcon
+export const ThemeIcon = vi.fn()
+
+// Mock ThemeColor
+export const ThemeColor = vi.fn()
+
+// Mock RelativePattern
+export const RelativePattern = vi.fn()
+
+// ============================================================================
+// MOCK INTERFACES (from mock-interfaces.ts)
+// ============================================================================
+
+export function createMockFileSystem(): any {
+	return {
 		createDirectory: vi.fn().mockResolvedValue(undefined),
-		readDirectory: vi.fn().mockResolvedValue([['test.md', 1]]),
-		stat: vi.fn().mockResolvedValue({ type: 1, isFile: () => true, isDirectory: () => false }),
-		access: vi.fn().mockResolvedValue(undefined),
-	})),
-	WindowAdapter: vi.fn().mockImplementation(() => ({
-		showInputBox: vi.fn().mockResolvedValue('test-input'),
-		showInformationMessage: vi.fn().mockResolvedValue('Overwrite'),
-		showWarningMessage: vi.fn().mockResolvedValue('Confirm'),
+		deleteFile: vi.fn().mockResolvedValue(undefined),
+		deleteDirectory: vi.fn().mockResolvedValue(undefined),
+		fileExists: vi.fn().mockResolvedValue(true),
+		readFile: vi.fn().mockResolvedValue('mock file content'),
+		writeFile: vi.fn().mockResolvedValue(undefined),
+		readDirectory: vi.fn().mockResolvedValue([
+			{ name: 'test-file.md', type: 1 },
+			{ name: 'test-folder', type: 2 },
+		]),
+		stat: vi.fn().mockResolvedValue({
+			type: 1,
+			ctime: Date.now(),
+			mtime: Date.now(),
+			size: 1024,
+		}),
+		copy: vi.fn().mockResolvedValue(undefined),
+		rename: vi.fn().mockResolvedValue(undefined),
+	}
+}
+
+export function createMockWorkspaceUtils(): any {
+	return {
+		createFileWatcher: vi.fn().mockReturnValue({
+			onDidCreate: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			dispose: vi.fn(),
+		}),
+		getWorkspaceFolders: vi.fn().mockReturnValue([{
+			uri: { fsPath: '/workspace' },
+			name: 'test-workspace',
+			index: 0,
+		}]),
+		findFiles: vi.fn().mockResolvedValue([]),
+		openTextDocument: vi.fn().mockResolvedValue({}),
+		showTextDocument: vi.fn().mockResolvedValue({}),
+	}
+}
+
+export function createMockFrontmatterUtils(): any {
+	return {
+		getFrontmatter_extractContent: vi.fn().mockReturnValue('---\nLabel: Test\n---\nContent'),
+		getFrontmatter_parseContent: vi.fn().mockReturnValue({ Label: 'Test' }),
+		addFrontmatterToFile: vi.fn().mockResolvedValue(undefined),
+		updateFrontmatterInFile: vi.fn().mockResolvedValue(undefined),
+	}
+}
+
+export function createMockProviderManager(): any {
+	return {
+		initializeProviders: vi.fn().mockResolvedValue(undefined),
+		getProviderInstance: vi.fn().mockReturnValue(null),
+		getProviderForNote: vi.fn().mockResolvedValue(null),
+		refreshProviders: vi.fn(),
+		revealNotesHubItem: vi.fn().mockResolvedValue(undefined),
+		dispose: vi.fn(),
+	}
+}
+
+export function createMockExtensionContext(): any {
+	const subscriptions: MockDisposable[] = []
+    
+	return {
+		subscriptions,
+		globalState: {
+			get: vi.fn().mockReturnValue(undefined),
+			update: vi.fn().mockResolvedValue(undefined),
+		},
+		workspaceState: {
+			get: vi.fn().mockReturnValue(undefined),
+			update: vi.fn().mockResolvedValue(undefined),
+		},
+	}
+}
+
+// Mock common utility functions
+export const mockCommonUtils = {
+	errMsg: vi.fn(),
+	infoMsg: vi.fn(),
+	warnMsg: vi.fn(),
+}
+
+export const mockWindow = {
+	showInformationMessage: vi.fn().mockResolvedValue(undefined),
+	showWarningMessage: vi.fn().mockResolvedValue(undefined),
+	showErrorMessage: vi.fn().mockResolvedValue(undefined),
+	showInputBox: vi.fn().mockResolvedValue('test-input'),
+	showTextDocument: vi.fn().mockResolvedValue({}),
+	withProgress: vi.fn().mockImplementation((options, task) => task()),
+	registerTreeDataProvider: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+}
+
+export const mockCommands = {
+	registerCommand: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+	executeCommand: vi.fn().mockResolvedValue(undefined),
+}
+
+export const mockEnv = {
+	clipboard: {
+		readText: vi.fn().mockResolvedValue(''),
+		writeText: vi.fn().mockResolvedValue(undefined),
+	},
+}
+
+// ============================================================================
+// EXISTING MOCK IMPLEMENTATIONS
+// ============================================================================
+
+// Create mock implementations for all local interfaces
+export function createMockWindow() {
+	return {
+		showInformationMessage: vi.fn().mockResolvedValue('OK'),
 		showErrorMessage: vi.fn().mockResolvedValue(undefined),
+		showWarningMessage: vi.fn().mockResolvedValue('Confirm'),
+		showInputBox: vi.fn().mockResolvedValue('test-input'),
 		showTextDocument: vi.fn().mockResolvedValue(undefined),
-		activeTextEditor: undefined,
-	})),
-	WorkspaceAdapter: vi.fn().mockImplementation(() => ({
+		withProgress: vi.fn().mockImplementation((_options, task) => task({}, {})),
+		registerTreeDataProvider: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+	}
+}
+
+export function createMockWorkspace() {
+	return {
+		onDidChangeConfiguration: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+		getConfiguration: vi.fn().mockReturnValue({
+			get: vi.fn().mockReturnValue(undefined),
+			update: vi.fn().mockResolvedValue(undefined),
+		}),
+		openTextDocument: vi.fn().mockResolvedValue({ uri: { fsPath: '/test/path' } }),
+		workspaceFolders: [],
+		createFileSystemWatcher: vi.fn().mockReturnValue({
+			onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			onDidCreate: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			dispose: vi.fn(),
+		}),
 		fs: {
 			readFile: vi.fn().mockResolvedValue(Buffer.from('test content')),
 			writeFile: vi.fn().mockResolvedValue(undefined),
-			rename: vi.fn().mockResolvedValue(undefined),
-			copy: vi.fn().mockResolvedValue(undefined),
-			delete: vi.fn().mockResolvedValue(undefined),
-			createDirectory: vi.fn().mockResolvedValue(undefined),
-			readDirectory: vi.fn().mockResolvedValue([['test.md', 1]]),
 			stat: vi.fn().mockResolvedValue({ type: 1, isFile: () => true, isDirectory: () => false }),
-			access: vi.fn().mockResolvedValue(undefined),
+			readDirectory: vi.fn().mockResolvedValue([['test.md', 1]]),
+			createDirectory: vi.fn().mockResolvedValue(undefined),
+			delete: vi.fn().mockResolvedValue(undefined),
+			copy: vi.fn().mockResolvedValue(undefined),
+			rename: vi.fn().mockResolvedValue(undefined),
 		},
-		openTextDocument: vi.fn().mockResolvedValue({ uri: { fsPath: '/test/path' } }),
-		workspaceFolders: [],
-		onDidChangeConfiguration: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-		getConfiguration: vi.fn().mockReturnValue({ get: vi.fn().mockReturnValue(undefined) }),
-	})),
-	CommandsAdapter: vi.fn().mockImplementation(() => ({
+	}
+}
+
+export function createMockCommands() {
+	return {
 		executeCommand: vi.fn().mockResolvedValue(undefined),
 		registerCommand: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-	})),
-	PathUtilsAdapter: vi.fn().mockImplementation(() => ({
-		sanitizePath: vi.fn().mockImplementation(path => path),
-		basename: vi.fn().mockImplementation(path => path.split('/').pop() || path),
-		dirname: vi.fn().mockImplementation(path => path.split('/').slice(0, -1).join('/') || '.'),
-		extname: vi.fn().mockImplementation(path => path.includes('.') ? `.${path.split('.').pop()}` : ''),
-		join: vi.fn().mockImplementation((...paths) => paths.join('/')),
-		normalize: vi.fn().mockImplementation(path => path.replace(/\\/g, '/')),
-		parse: vi.fn().mockImplementation(path => ({
+	}
+}
+
+export function createMockCommonUtils() {
+	return {
+		errMsg: vi.fn(),
+		infoMsg: vi.fn(),
+		warnMsg: vi.fn(),
+	}
+}
+
+export function createMockPathUtils() {
+	return {
+		sanitizePath: vi.fn().mockImplementation((path: string) => path.replace(/[\\]/g, '/')),
+		join: vi.fn().mockImplementation((...paths: string[]) => paths.join('/')),
+		dirname: vi.fn().mockImplementation((path: string) => path.split('/').slice(0, -1).join('/') || '.'),
+		basename: vi.fn().mockImplementation((path: string, ext?: string) => {
+			const base = path.split('/').pop() || path
+
+			if (ext && base.endsWith(ext)) {
+				return base.slice(0, -ext.length)
+			}
+			return base
+		}),
+		parse: vi.fn().mockImplementation((path: string) => ({
 			root: '',
 			dir: path.split('/').slice(0, -1).join('/') || '.',
 			base: path.split('/').pop() || path,
 			ext: path.includes('.') ? `.${path.split('.').pop()}` : '',
 			name: path.split('/').pop()?.split('.')[0] ?? path,
 		})),
-	})),
-	ProcessAdapter: vi.fn().mockImplementation(() => ({
-		workspaceRoot: vi.fn().mockReturnValue(process.cwd()),
-	})),
-	EnvAdapter: vi.fn().mockImplementation(() => ({
+		extname: vi.fn().mockImplementation((path: string) => path.includes('.') ? `.${path.split('.').pop()}` : ''),
+	}
+}
+
+export function createMockUriFactory() {
+	return {
+		file: vi.fn().mockReturnValue({
+			fsPath: '/mock/path',
+			scheme: 'file',
+			authority: '',
+			path: '/mock/path',
+			query: '',
+			fragment: '',
+			toString: () => 'file:///mock/path',
+			with: vi.fn().mockReturnValue({
+				fsPath: '/mock/path',
+				scheme: 'file',
+				authority: '',
+				path: '/mock/path',
+				query: '',
+				fragment: '',
+				toString: () => 'file:///mock/path',
+				with: vi.fn(),
+			}),
+		}),
+		parse: vi.fn().mockReturnValue({
+			fsPath: '/mock/path',
+			scheme: 'file',
+			authority: '',
+			path: '/mock/path',
+			query: '',
+			fragment: '',
+			toString: () => 'file:///mock/path',
+			with: vi.fn().mockReturnValue({
+				fsPath: '/mock/path',
+				scheme: 'file',
+				authority: '',
+				path: '/mock/path',
+				query: '',
+				fragment: '',
+				toString: () => 'file:///mock/path',
+				with: vi.fn(),
+			}),
+		}),
+	}
+}
+
+export function createMockFileType() {
+	return {
+		File: 1,
+		Directory: 2,
+		SymbolicLink: 64,
+	}
+}
+
+export function createMockStorageService() {
+	return {
+		get: vi.fn().mockReturnValue(undefined),
+		update: vi.fn().mockResolvedValue(undefined),
+		delete: vi.fn().mockResolvedValue(undefined),
+	}
+}
+
+export function createMockEnv() {
+	return {
+		machineId: 'test-machine',
+		sessionId: 'test-session',
+		language: 'en',
+		appName: 'test-app',
+		appRoot: '/test/app',
+		appHost: 'test-host',
+		uiKind: 1,
 		clipboard: {
-			readText: vi.fn().mockResolvedValue('test-uri'),
+			readText: vi.fn().mockResolvedValue('test-clipboard'),
 			writeText: vi.fn().mockResolvedValue(undefined),
 		},
-	})),
-	ConfigurationService: vi.fn().mockImplementation(() => ({
-		get: vi.fn().mockReturnValue({ get: vi.fn().mockReturnValue(undefined) }),
-	})),
-	CommonUtilsAdapter: vi.fn().mockImplementation(() => ({
-		showTimedInformationMessage: vi.fn().mockResolvedValue(undefined),
-		errMsg: vi.fn().mockImplementation((msg, error) => console.error(msg, error)),
-	})),
-	StorageService: vi.fn().mockImplementation(() => ({
-		update: vi.fn().mockResolvedValue(undefined),
-		get: vi.fn().mockResolvedValue(undefined),
-	})),
-	// Mock the specific adapters used by NotesHubItem
-	TreeItemAdapter: vi.fn().mockImplementation(() => ({
+	}
+}
+
+// Adapter mocks
+export function createMockTreeItemAdapter() {
+	return {
 		create: vi.fn().mockReturnValue({
 			label: 'Mock TreeItem',
 			collapsibleState: 0,
@@ -179,226 +441,41 @@ vi.mock('@fux/shared', () => ({
 			tooltip: undefined,
 			description: undefined,
 		}),
-	})),
-	ThemeIconAdapter: vi.fn().mockImplementation(() => ({
+	}
+}
+
+export function createMockThemeIconAdapter() {
+	return {
 		create: vi.fn().mockReturnValue({ id: 'mock-icon' }),
-	})),
-	ThemeColorAdapter: vi.fn().mockImplementation(() => ({
-		create: vi.fn().mockReturnValue({ id: 'mock-color' }),
-	})),
-	UriAdapter: vi.fn().mockImplementation(() => ({
-		file: vi.fn().mockReturnValue({
-			fsPath: '/mock/path',
-			path: '/mock/path',
-			uri: { fsPath: '/mock/path', path: '/mock/path' },
-		}),
-		create: vi.fn().mockReturnValue({
-			fsPath: '/mock/path',
-			path: '/mock/path',
-			uri: { fsPath: '/mock/path', path: '/mock/path' },
-		}),
-		joinPath: vi.fn().mockReturnValue({
-			fsPath: '/mock/path',
-			path: '/mock/path',
-			uri: { fsPath: '/mock/path', path: '/mock/path' },
-		}),
-	})),
-	TreeItemCollapsibleStateAdapter: vi.fn().mockImplementation(() => ({
+	}
+}
+
+export function createMockTreeItemCollapsibleStateAdapter() {
+	return {
 		None: 0,
 		Collapsed: 1,
 		Expanded: 2,
-	})),
-	// Mock other services that might be imported
-	FrontmatterUtilsService: vi.fn().mockImplementation(() => ({
-		getFrontmatter: vi.fn().mockResolvedValue({}),
-	})),
-	WorkspaceUtilsService: vi.fn().mockImplementation(() => ({
-		getWorkspaceFolder: vi.fn().mockReturnValue({ uri: { fsPath: '/test/workspace' } }),
-	})),
-}))
-
-// Keep test output quiet by default; enable via ENABLE_TEST_CONSOLE=true
-const ENABLE_CONSOLE_OUTPUT = process.env.ENABLE_TEST_CONSOLE === 'true'
-
-if (!ENABLE_CONSOLE_OUTPUT) {
-	console.log = vi.fn()
-	console.info = vi.fn()
-	console.warn = vi.fn()
-	console.error = vi.fn()
+	}
 }
 
-// Reset Mockly state between tests for isolation
-beforeEach(() => {
-	mocklyService.reset()
-})
-
-// Create a test container with Mockly shims and mocked shared adapters
-export function createTestContainer(): AwilixContainer {
-	const container = createContainer({
-		injectionMode: InjectionMode.PROXY,
-	})
-	
-	// Register Mockly services directly for testing
-	container.register({
-		iFileSystem: asValue(mockly.workspace.fs),
-		iWindow: asValue({
-			...mockly.window,
-			showInputBox: vi.fn().mockResolvedValue('test-input'),
-			showInformationMessage: vi.fn().mockResolvedValue('Overwrite'),
-			showWarningMessage: vi.fn().mockResolvedValue('Confirm'),
-			showErrorMessage: vi.fn().mockResolvedValue(undefined),
-			showTextDocument: vi.fn().mockResolvedValue(undefined),
+// Helper function to create mock NotesHubItem
+export function createMockNotesHubItem(overrides: any = {}) {
+	return {
+		fileName: 'test.md',
+		filePath: '/test/test.md',
+		isDirectory: false,
+		label: 'test.md',
+		resourceUri: { fsPath: '/test/test.md' },
+		contextValue: 'notesHubFileItem',
+		iconPath: { id: 'file' },
+		tooltip: '/test/test.md',
+		description: undefined,
+		collapsibleState: 0,
+		frontmatter: undefined,
+		toVsCode: vi.fn().mockReturnValue({
+			label: 'test.md',
+			collapsibleState: 0,
 		}),
-		iWorkspace: asValue({
-			...mockly.workspace,
-			fs: {
-				...mockly.workspace.fs,
-				readFile: vi.fn().mockResolvedValue(Buffer.from('test content')),
-				writeFile: vi.fn().mockResolvedValue(undefined),
-				rename: vi.fn().mockResolvedValue(undefined),
-				copy: vi.fn().mockResolvedValue(undefined),
-				delete: vi.fn().mockResolvedValue(undefined),
-				createDirectory: vi.fn().mockResolvedValue(undefined),
-				readDirectory: vi.fn().mockResolvedValue([['test.md', 1]]),
-				stat: vi.fn().mockResolvedValue({ type: 1, isFile: () => true, isDirectory: () => false }),
-				access: vi.fn().mockResolvedValue(undefined),
-			},
-			openTextDocument: vi.fn().mockResolvedValue({ uri: { fsPath: '/test/path' } }),
-		}),
-		iCommands: asValue({
-			...mockly.commands,
-			executeCommand: vi.fn().mockResolvedValue(undefined),
-		}),
-		iPathUtils: asValue({
-			...mockly.node.path,
-			sanitizePath: vi.fn().mockImplementation(path => path),
-		}),
-		iProcess: asValue({ workspaceRoot: () => process.cwd() }),
-		iEnv: asValue({
-			...mockly.env,
-			clipboard: {
-				readText: vi.fn().mockResolvedValue('test-uri'),
-				writeText: vi.fn().mockResolvedValue(undefined),
-			},
-		}),
-		iConfigurationService: asValue({ get: () => ({ get: () => undefined }) }),
-		iCommonUtils: asValue({
-			showTimedInformationMessage: async () => {},
-			errMsg: vi.fn().mockImplementation((msg, error) => console.error(msg, error)),
-		}),
-		iFrontmatterUtils: asValue({
-			getFrontmatter: vi.fn().mockResolvedValue({}),
-		}),
-		iFileType: asValue({
-			Directory: 1,
-			File: 2,
-		}),
-		iStorage: asValue({
-			update: vi.fn().mockResolvedValue(undefined),
-			get: vi.fn().mockResolvedValue(undefined),
-		}),
-		iExtensionContext: asValue({
-			subscriptions: [],
-			workspaceState: {
-				get: vi.fn(),
-				update: vi.fn(),
-			},
-		}),
-		iWorkspaceUtils: asValue({
-			getWorkspaceFolder: vi.fn().mockReturnValue({ uri: { fsPath: '/test/workspace' } }),
-		}),
-		iFspRename: asValue(vi.fn().mockResolvedValue(undefined)),
-		// Mock shared adapters to work with mocked VSCode
-		treeItemAdapter: asValue({
-			create: vi.fn().mockReturnValue({
-				label: 'Mock TreeItem',
-				collapsibleState: 0,
-				resourceUri: undefined,
-				iconPath: undefined,
-				contextValue: undefined,
-				tooltip: undefined,
-				description: undefined,
-			}),
-		}),
-		themeIconAdapter: asValue({
-			create: vi.fn().mockReturnValue({ id: 'mock-icon' }),
-		}),
-		themeColorAdapter: asValue({
-			create: vi.fn().mockReturnValue({ id: 'mock-color' }),
-		}),
-		uriAdapter: asValue({
-			file: vi.fn().mockReturnValue({
-				fsPath: '/mock/path',
-				path: '/mock/path',
-				uri: { fsPath: '/mock/path', path: '/mock/path' },
-			}),
-			create: vi.fn().mockReturnValue({
-				fsPath: '/mock/path',
-				path: '/mock/path',
-				uri: { fsPath: '/mock/path', path: '/mock/path' },
-			}),
-			joinPath: vi.fn().mockReturnValue({
-				fsPath: '/mock/path',
-				path: '/mock/path',
-				uri: { fsPath: '/mock/path', path: '/mock/path' },
-			}),
-		}),
-		treeItemCollapsibleStateAdapter: asValue({
-			None: 0,
-			Collapsed: 1,
-			Expanded: 2,
-		}),
-		// Add missing services that tests might need
-		iPathJoin: asValue(vi.fn().mockImplementation((...paths) => paths.join('/'))),
-		iPathDirname: asValue(vi.fn().mockImplementation(path => path.split('/').slice(0, -1).join('/') ?? '.')),
-		iPathBasename: asValue(vi.fn().mockImplementation(path => path.split('/').pop() ?? path)),
-		iPathParse: asValue(vi.fn().mockImplementation(path => ({
-			root: '',
-			dir: path.split('/').slice(0, -1).join('/') ?? '.',
-			base: path.split('/').pop() ?? path,
-			ext: path.includes('.') ? `.${path.split('.').pop()}` : '',
-			name: path.split('/').pop()?.split('.')[0] ?? path,
-		}))),
-		iPathExtname: asValue(vi.fn().mockImplementation(path => path.includes('.') ? `.${path.split('.').pop()}` : '')),
-		iFspAccess: asValue(vi.fn().mockResolvedValue(undefined)),
-		iOsHomedir: asValue(vi.fn().mockReturnValue('/home/user')),
-		iPathNormalize: asValue(vi.fn().mockImplementation(path => path.replace(/\\/g, '/'))),
-	})
-	
-	return container
-}
-
-// Helper function to create test NotesHubItem instances with proper dependencies
-export function createTestNotesHubItem(
-	fileName: string,
-	filePath: string,
-	isDirectory: boolean,
-	parentUri?: any,
-	frontmatter?: { [key: string]: string },
-) {
-	const container = createTestContainer()
-	
-	// Import NotesHubItem dynamically to avoid import issues
-	const { NotesHubItem } = require('../../src/models/NotesHubItem.js')
-	
-	return new NotesHubItem(
-		fileName,
-		filePath,
-		isDirectory,
-		container.resolve('treeItemAdapter'),
-		container.resolve('themeIconAdapter'),
-		container.resolve('themeColorAdapter'),
-		container.resolve('uriAdapter'),
-		container.resolve('treeItemCollapsibleStateAdapter'),
-		parentUri,
-		frontmatter,
-	)
-}
-
-// Helper function to create test service instances with proper dependencies
-export function createTestService<T>(serviceClass: new (...args: any[]) => T, ...args: any[]): T {
-	const container = createTestContainer()
-	
-	// Create a new instance with the provided arguments
-	return new serviceClass(...args)
+		...overrides,
+	}
 }

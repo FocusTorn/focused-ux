@@ -59,3 +59,5 @@ Thumbs.db
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+
+.vscode-test

@@ -19,6 +19,7 @@ export function printGroupedErrors() { //>
 	const filePath = 38
 	const lineCol = 214 // Bright yellow for line:column
 	const parentheses = 37
+	const failurePoint = 196 // Bright red for failure points
 
 	if (Object.keys(errors).length === 0) {
 		console.log(`${color(40)}Feature structure audit passed.\x1B[0m`)
@@ -81,11 +82,17 @@ export function printGroupedErrors() { //>
 		const messages = errors[category]
 		console.log(`${color(sectionTitle)}${category}:\x1B[0m`)
 		for (const message of messages) {
+			// Convert all paths to Unix style first
+			let unixMessage = message.replace(/\\/g, '/')
+			
 			// Colorize line:column numbers in bright yellow FIRST (before file paths)
-			let colorizedMessage = message.replace(/:(\d+):(\d+)/g, `:${color(lineCol)}$1:$2\x1B[0m`)
+			let colorizedMessage = unixMessage.replace(/:(\d+):(\d+)/g, `:${color(lineCol)}$1:$2\x1B[0m`)
 
 			// Colorize file paths in specific blue (but exclude the already colored line:column)
-			colorizedMessage = colorizedMessage.replace(/([a-zA-Z0-9\/\\\-_\.]+\.(json|ts|js|md))(?=:)/g, `${color(filePath)}$1\x1B[0m`)
+			colorizedMessage = colorizedMessage.replace(/([a-zA-Z0-9\/\-_\.]+\.(json|ts|js|md))(?=:)/g, `${color(filePath)}$1\x1B[0m`)
+
+			// Colorize directory paths (failure points) in bright red
+			colorizedMessage = colorizedMessage.replace(/([a-zA-Z0-9\/\-_\.]+\/):/g, `${color(failurePoint)}$1\x1B[0m:`)
 
 			// Make parentheses brighter (light gray)
 			colorizedMessage = colorizedMessage.replace(/(\([^)]+\))/g, `\x1B[${parentheses}m$1\x1B[0m`)
@@ -100,6 +107,7 @@ export function printExpandedErrors() { //>
 	const filePath = 38
 	const lineCol = 214 // Bright yellow for line:column
 	const parentheses = 37
+	const failurePoint = 196 // Bright red for failure points
 
 	if (Object.keys(errors).length === 0) {
 		console.log(`${color(40)}Feature structure audit passed.\x1B[0m`)
@@ -162,11 +170,17 @@ export function printExpandedErrors() { //>
 		const messages = errors[category]
 		console.log(`${color(sectionTitle)}${category}:\x1B[0m`)
 		for (const message of messages) {
+			// Convert all paths to Unix style first
+			let unixMessage = message.replace(/\\/g, '/')
+			
 			// Colorize line:column numbers in bright yellow FIRST (before file paths)
-			let colorizedMessage = message.replace(/:(\d+):(\d+)/g, `:${color(lineCol)}$1:$2\x1B[0m`)
+			let colorizedMessage = unixMessage.replace(/:(\d+):(\d+)/g, `:${color(lineCol)}$1:$2\x1B[0m`)
 
 			// Colorize file paths in specific blue (but exclude the already colored line:column)
-			colorizedMessage = colorizedMessage.replace(/([a-zA-Z0-9\/\\\-_\.]+\.(json|ts|js|md))(?=:)/g, `${color(filePath)}$1\x1B[0m`)
+			colorizedMessage = colorizedMessage.replace(/([a-zA-Z0-9\/\-_\.]+\.(json|ts|js|md))(?=:)/g, `${color(filePath)}$1\x1B[0m`)
+
+			// Colorize directory paths (failure points) in bright red
+			colorizedMessage = colorizedMessage.replace(/([a-zA-Z0-9\/\-_\.]+\/):/g, `${color(failurePoint)}$1\x1B[0m:`)
 
 			// Make parentheses brighter (light gray)
 			colorizedMessage = colorizedMessage.replace(/(\([^)]+\))/g, `\x1B[${parentheses}m$1\x1B[0m`)

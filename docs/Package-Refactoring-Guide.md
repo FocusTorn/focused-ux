@@ -1,8 +1,8 @@
-# Package Refactoring Guide
+# Package Refactoring Guide v2
 
 ## **Overview**
 
-This guide provides a systematic approach for refactoring existing packages to align with the Project Butler architectural patterns. The goal is to establish consistent core/extension separation, proper testing strategies, and clean dependency management across all packages.
+This guide provides a systematic approach for refactoring existing packages to align with the **confirmed final architecture** from Ghost Writer and Project Butler packages. The goal is to establish consistent core/extension separation, proper testing strategies, and clean dependency management across all packages.
 
 ## **End Goals**
 
@@ -10,15 +10,16 @@ This guide provides a systematic approach for refactoring existing packages to a
 
 - **Clean Core/Extension Separation**: Business logic in core packages, VSCode integration in extension packages
 - **Guinea Pig Package Principles**: Core packages self-contained without shared dependencies
-- **Direct Service Instantiation**: No DI containers in core packages, direct dependency injection
-- **Thin Extension Wrappers**: Extension packages contain only VSCode integration code
+- **Reasonable Dependencies**: Services have a reasonable number of dependencies based on their functionality, not excessive dependencies like 9+ in the old architecture
+- **Focused Service Design**: Each service has a clear, focused responsibility with dependencies that make sense for that responsibility
+- **Thin Extension Wrappers**: Extension packages contain only VSCode integration code while preserving all VSCode extension configuration (contributes, activationEvents, etc.)
 
 ### **Testing Strategy Alignment**
 
-- **Mockly Integration**: Proper use of Mockly for VSCode API mocking
+- **Simple Mock Dependencies**: Use direct mock classes for dependencies
 - **Functional Test Focus**: Main tests in `__tests__/functional/` directory
 - **Real Pattern Validation**: Test actual runtime behavior, not just mock replacements
-- **Clean Test Setup**: Global VSCode mocking with proper test isolation
+- **Clean Test Setup**: Global dependency mocking with proper test isolation
 
 ### **Build System Consistency**
 
@@ -40,7 +41,7 @@ Before beginning refactoring, assess the current package:
     - [ ] Are shared dependencies used in core package?
 
 2. **Testing Assessment**:
-    - [ ] Are tests using Mockly properly?
+    - [ ] Are tests using simple mock dependencies?
     - [ ] Are tests organized in functional/unit/coverage structure?
     - [ ] Are there complex mock hierarchies?
     - [ ] Are tests validating real runtime behavior?
@@ -88,8 +89,12 @@ Rate the package complexity to plan effort:
     packages/{package}/core/
     ├── src/
     │   ├── _interfaces/          # Service interfaces
-    │   ├── services/             # Business logic services
-    │   └── index.ts              # Public exports
+    │   ├── _config/              # Configuration constants
+    │   ├── features/             # Feature-specific services
+    │   │   └── feature-name/
+    │   │       ├── _interfaces/  # Feature interfaces
+    │   │       └── services/     # Feature services
+    │   └── index.ts              # Package exports
     ├── __tests__/
     │   ├── _setup.ts             # Global test setup
     │   ├── functional/           # Main tests
@@ -99,8 +104,8 @@ Rate the package complexity to plan effort:
     ├── project.json              # Nx build config
     ├── tsconfig.json             # TypeScript config
     ├── tsconfig.lib.json         # Library build config
-    ├── vitest.functional.config.ts
-    └── vitest.coverage.config.ts
+    ├── vitest.config.ts          # Test config
+    └── vitest.coverage.config.ts # Coverage test config
     ```
 
 2. **Implement Core Services**:
@@ -112,7 +117,7 @@ Rate the package complexity to plan effort:
 3. **Configure Build System**:
     - Set up `@nx/esbuild:esbuild` with `bundle: false`
     - Configure proper TypeScript settings
-    - Set up test targets with Mockly integration
+    - Set up test targets with simple mocking
 
 ### **Phase 3: Extension Package Refactoring**
 
@@ -122,18 +127,22 @@ Rate the package complexity to plan effort:
     packages/{package}/ext/
     ├── src/
     │   ├── adapters/             # VSCode API adapters
-    │   ├── extension.ts          # Main extension entry
-    │   └── index.ts              # Public exports
+    │   ├── _interfaces/          # Extension interfaces
+    │   ├── _config/              # Extension configuration
+    │   ├── services/             # Extension-specific services
+    │   ├── extension.ts          # Main extension entry point
+    │   └── index.ts              # Package exports
     ├── __tests__/
-    │   ├── _setup.ts             # Global VSCode mocking
+    │   ├── _setup.ts             # Global test setup
     │   ├── functional/           # Extension tests
     │   └── coverage/             # Coverage tests
+    ├── assets/                   # Extension assets
     ├── package.json              # Extension config
     ├── project.json              # Nx build config
     ├── tsconfig.json             # TypeScript config
     ├── .vscodeignore             # VSIX packaging
-    ├── vitest.functional.config.ts
-    └── vitest.coverage.config.ts
+    ├── vitest.config.ts          # Test config
+    └── vitest.coverage.config.ts # Coverage test config
     ```
 
 2. **Implement VSCode Adapters**:
@@ -146,11 +155,17 @@ Rate the package complexity to plan effort:
     - Implement proper activation/deactivation
     - Use adapter pattern for VSCode APIs
 
+4. **Preserve VSCode Extension Configuration**:
+    - **CRITICAL**: Maintain all `contributes` sections in package.json (commands, views, menus, configuration)
+    - **CRITICAL**: Preserve all `activationEvents` and extension metadata
+    - **CRITICAL**: Keep all VSCode extension-specific configuration intact
+    - Only remove business logic dependencies, not VSCode extension configuration
+
 ### **Phase 4: Testing Implementation**
 
 1. **Set Up Test Infrastructure**:
-    - Configure global VSCode mocking
-    - Set up Mockly integration
+    - Configure global dependency mocking
+    - Set up simple mock classes
     - Create test helper functions
 
 2. **Implement Core Tests**:
@@ -184,8 +199,8 @@ Rate the package complexity to plan effort:
 
 1. **Update All Consumers**:
     - Update imports in dependent packages
-    - Update DI container configurations
     - Update TypeScript path mappings
+    - Update documentation
 
 2. **Update Documentation**:
     - Update README files
@@ -224,13 +239,25 @@ Rate the package complexity to plan effort:
 - [ ] **Thin Wrapper**: Extension acts as thin wrapper around core
 - [ ] **Command Registration**: All commands properly registered
 - [ ] **Error Handling**: Proper error handling and user feedback
+- [ ] **VSCode Extension Configuration Preserved**: All contributes, activationEvents, and extension metadata maintained
 - [ ] **Build Configuration**: Extension package build system configured
 - [ ] **Test Infrastructure**: Extension package test setup implemented
 
+#### **Source Code Refactoring (CRITICAL)**
+
+- [ ] **Remove Shared Dependencies**: Eliminate all `@fux/shared` imports from core package
+- [ ] **Remove DI Container**: Eliminate all `awilix` usage from extension package
+- [ ] **Direct Service Instantiation**: Replace DI container with direct service instantiation
+- [ ] **Local Adapter Implementation**: Create local adapters instead of using shared ones
+- [ ] **Business Logic Extraction**: Move all business logic from extension to core package
+- [ ] **Interface Alignment**: Ensure all interfaces align with confirmed architecture
+- [ ] **Import Cleanup**: Remove all unnecessary imports and dependencies
+- [ ] **Code Validation**: Verify source code follows guinea pig package principles
+
 #### **Testing Implementation**
 
-- [ ] **Mockly Integration**: Proper Mockly setup and usage
-- [ ] **Global VSCode Mocking**: Comprehensive VSCode API mocking
+- [ ] **Simple Mock Dependencies**: Direct mock classes for dependencies
+- [ ] **Global Dependency Mocking**: Comprehensive dependency mocking
 - [ ] **Core Tests**: All core services tested with real behavior validation
 - [ ] **Extension Tests**: All extension functionality tested
 - [ ] **Test Organization**: Tests properly organized in functional/unit/coverage
@@ -248,7 +275,6 @@ Rate the package complexity to plan effort:
 
 - [ ] **Consumer Updates**: All dependent packages updated
 - [ ] **Import Updates**: All imports updated to new package structure
-- [ ] **DI Container Updates**: DI containers updated for new architecture
 - [ ] **Path Mapping Updates**: TypeScript path mappings updated
 - [ ] **Documentation Updates**: All documentation updated
 - [ ] **Alias Updates**: CLI aliases updated for new package structure
@@ -280,23 +306,25 @@ Rate the package complexity to plan effort:
 1. Identify pure business logic components
 2. Extract to core services with clear interfaces
 3. Create VSCode adapters for all API usage
-4. Use dependency injection to wire components
+4. **BREAK DOWN INTO SMALLER SERVICES** where appropriate, with reasonable dependencies
+5. Use direct dependency injection with reasonable dependencies
 
 ### **Challenge: Existing DI Container in Core Package**
 
 **Solution**:
 
 1. Remove DI container from core package
-2. Use direct service instantiation
-3. Pass dependencies as constructor parameters
-4. Mock dependencies in tests
+2. **REDUCE DEPENDENCIES TO REASONABLE LEVEL** (not excessive 9+)
+3. Use direct service instantiation with reasonable dependencies
+4. Pass dependencies as constructor parameters
+5. Mock dependencies in tests
 
 ### **Challenge: Complex Test Mocking**
 
 **Solution**:
 
-1. Use Mockly for VSCode API mocking
-2. Create simple mock objects for dependencies
+1. Use simple mock classes for dependencies
+2. Create mock objects for dependencies
 3. Test real runtime behavior, not just mocks
 4. Use integration tests for complex scenarios
 
@@ -313,10 +341,25 @@ Rate the package complexity to plan effort:
 
 **Solution**:
 
-1. Use global VSCode mocking to avoid repeated setup
+1. Use global dependency mocking to avoid repeated setup
 2. Clear mocks in `beforeEach` blocks
 3. Use targeted mocking instead of global approaches
 4. Optimize test data and setup
+
+### **Challenge: Preserving VSCode Extension Configuration**
+
+**Problem**: When refactoring extension packages, it's easy to accidentally remove essential VSCode extension configuration.
+
+**Solution**:
+
+1. **CRITICAL**: Never remove `contributes` sections from extension package.json
+2. **CRITICAL**: Preserve all `activationEvents`, `engines`, and extension metadata
+3. **CRITICAL**: Keep all VSCode extension-specific configuration intact
+4. Only remove business logic dependencies (`awilix`, `@fux/shared`, etc.)
+5. Maintain all commands, views, menus, and configuration sections
+6. Verify extension still activates and registers all commands after refactoring
+
+**Common Mistake**: Removing VSCode extension configuration while trying to make the package "thinner"
 
 ## **Verification Checklist**
 
@@ -327,10 +370,11 @@ Rate the package complexity to plan effort:
 - [ ] No DI containers in core package
 - [ ] No shared dependencies in core package
 - [ ] All VSCode API usage goes through adapters
+- [ ] VSCode extension configuration preserved (contributes, activationEvents, etc.)
 
 ### **Testing Compliance**
 
-- [ ] Tests use Mockly for VSCode API mocking
+- [ ] Tests use simple mock classes for dependencies
 - [ ] Tests are organized in functional/unit/coverage structure
 - [ ] Tests validate real runtime behavior
 - [ ] Tests have proper isolation and cleanup
@@ -382,7 +426,270 @@ Rate the package complexity to plan effort:
 - All CLI aliases work correctly
 - End-to-end functionality verified
 
-## **Lessons Learned from Ghost Writer Refactoring**
+## **Source Code Refactoring (CRITICAL STEP)**
+
+### **Why Source Code Refactoring is Essential**
+
+**⚠️ CRITICAL WARNING**: The infrastructure setup (test directories, build configurations, package.json updates) is **NOT ENOUGH**. The actual source code must be refactored to align with the confirmed architecture.
+
+**⚠️ CRITICAL WARNING**: Simply replacing DI containers with direct instantiation is **NOT ENOUGH**. Services must be redesigned to have reasonable dependencies based on their functionality.
+
+**⚠️ CRITICAL WARNING**: Completing interface refactoring is **NOT ENOUGH**. All methods in service interfaces must be implemented, not just the constructor changes.
+
+**⚠️ CRITICAL WARNING**: VSCode API decoupling is **ESSENTIAL**. Core packages must use local interfaces (e.g., `IUri`, `IUriFactory`) instead of direct VSCode value imports and API calls.
+
+**Common Mistake**: Updating configuration files and test infrastructure without refactoring the actual source code, resulting in packages that still violate guinea pig package principles.
+
+**Common Mistake**: Replacing DI containers with direct instantiation but keeping excessive dependencies (9+) that don't align with the service's core responsibility.
+
+**Common Mistake**: Creating refactored service files but not completing the implementation - missing method implementations can cause runtime errors even when TypeScript checks pass.
+
+**Common Mistake**: Using VSCode value imports and direct API calls in core packages instead of creating local interfaces for complete decoupling.
+
+### **What Must Be Refactored in Source Code**
+
+#### **Dependency Principle: Reasonable vs Excessive**
+
+The goal is not to arbitrarily limit dependencies, but to ensure they make sense for the service's responsibility:
+
+- **Reasonable Dependencies**: Dependencies that directly support the service's core functionality
+- **Excessive Dependencies**: Dependencies that are not essential to the service's primary responsibility
+- **Complex Services**: May legitimately need more dependencies, but should still be focused and cohesive
+
+**Examples**:
+
+- A file processing service might need 4-5 dependencies (file system, path utils, config, logging, validation)
+- A simple utility service should have 1-3 dependencies
+- A complex orchestration service might need 6-8 dependencies if they're all essential
+
+The key is that each dependency should have a clear, justifiable purpose for that specific service.
+
+#### **Core Package Source Code Changes**
+
+1. **Remove All Shared Dependencies**:
+
+    ```typescript
+    // ❌ BEFORE - Violates guinea pig package principle
+    import type { IWindow, ICommands, IWorkspace } from '@fux/shared'
+    import { UriAdapter } from '@fux/shared'
+
+    // ✅ AFTER - Self-contained core package
+    import type { IWindow, ICommands, IWorkspace } from './_interfaces/IWindow.js'
+    // Create local adapter implementations
+    ```
+
+2. **VSCode API Decoupling with Local Interfaces**:
+
+    ```typescript
+    // ❌ BEFORE - Direct VSCode value usage in core package
+    import { Uri } from 'vscode' // ❌ Value import
+
+    export class IconActionsService {
+        constructor(private readonly fileSystem: IFileSystem) {}
+
+        async processFile(path: string) {
+            const uri = Uri.file(path) // ❌ Direct VSCode API call
+            // ...
+        }
+    }
+
+    // ✅ AFTER - Local interface implementation
+    import type { Uri } from 'vscode' // ✅ Type import only
+
+    export interface IUri {
+        fsPath: string
+        scheme: string
+        authority: string
+        path: string
+        query: string
+        fragment: string
+        toString: () => string
+        with: (change: {
+            /* ... */
+        }) => IUri
+    }
+
+    export interface IUriFactory {
+        file: (path: string) => IUri
+        parse: (value: string) => IUri
+        create: (uri: any) => IUri
+        joinPath: (base: IUri, ...paths: string[]) => IUri
+    }
+
+    export class IconActionsService {
+        constructor(
+            private readonly fileSystem: IFileSystem,
+            private readonly uriFactory: IUriFactory
+        ) {}
+
+        async processFile(path: string) {
+            const uri = this.uriFactory.file(path) // ✅ Local interface usage
+            // ...
+        }
+    }
+    ```
+
+3. **Reasonable Dependencies Based on Functionality**:
+
+    ```typescript
+    // ❌ BEFORE - Excessive dependencies (9+) for a single service
+    constructor(
+        private readonly context: IContext,
+        private readonly window: IWindow,
+        private readonly commands: ICommands,
+        private readonly path: IPath,
+        private readonly commonUtils: ICommonUtils,
+        private readonly fileSystem: IFileSystem,
+        private readonly iconThemeGenerator: IIconThemeGeneratorService,
+        private readonly configService: IConfigurationService,
+        private readonly iconPicker: IIconPickerService,
+    ) {}
+
+    // ✅ AFTER - Reasonable dependencies for the service's responsibility
+    constructor(
+        private readonly fileSystem: IFileSystemAdapter,
+        private readonly path: IPathAdapter,
+        private readonly configService: IConfigurationService, // If needed for this service
+    ) {}
+    ```
+
+4. **Direct Service Instantiation**:
+
+    ```typescript
+    // ❌ BEFORE - DI container usage
+    const service = container.resolve('myService')
+
+    // ✅ AFTER - Direct instantiation
+    const service = new MyService(dependency1, dependency2)
+    ```
+
+5. **Local Interface Definitions**:
+    ```typescript
+    // ✅ Create local interfaces in core package
+    export interface IWindow {
+        showInformationMessage(message: string): Promise<string | undefined>
+        showErrorMessage(message: string): Promise<string | undefined>
+    }
+    ```
+
+#### **Extension Package Source Code Changes**
+
+1. **Remove DI Container**:
+
+    ```typescript
+    // ❌ BEFORE - awilix usage
+    import { createContainer, asClass } from 'awilix'
+    const container = createContainer()
+    container.register({ service: asClass(MyService) })
+
+    // ✅ AFTER - Direct instantiation
+    const service = new MyService(dependency1, dependency2)
+    ```
+
+2. **Thin Wrapper Implementation**:
+
+    ```typescript
+    // ❌ BEFORE - Business logic in extension
+    export class ExtensionService {
+        async processData() {
+            // Complex business logic here
+        }
+    }
+
+    // ✅ AFTER - Thin wrapper around core
+    export async function activate(context: ExtensionContext) {
+        const coreService = new CoreService(mockDependencies)
+        const command = commands.registerCommand('myCommand', () => {
+            coreService.processData()
+        })
+    }
+    ```
+
+3. **Local Adapter Implementation**:
+
+    ```typescript
+    // ✅ Create local adapters instead of using shared ones
+    class LocalWindowAdapter implements IWindow {
+        constructor(private vscodeWindow: typeof vscode.window) {}
+
+        async showInformationMessage(message: string) {
+            return this.vscodeWindow.showInformationMessage(message)
+        }
+    }
+    ```
+
+### **Source Code Refactoring Checklist**
+
+- [ ] **Core Package**:
+    - [ ] Remove all `@fux/shared` imports
+    - [ ] Create local interface definitions
+    - [ ] Implement local adapter classes
+    - [ ] **REDUCE DEPENDENCIES TO REASONABLE LEVEL** (not excessive 9+)
+    - [ ] Use direct service instantiation
+    - [ ] Remove any DI container usage
+    - [ ] Ensure self-contained business logic
+    - [ ] **BREAK DOWN COMPLEX SERVICES** into smaller, focused services where appropriate
+    - [ ] **COMPLETE ALL METHOD IMPLEMENTATIONS** - ensure no methods are missing from interfaces
+
+- [ ] **Extension Package**:
+    - [ ] Remove all `awilix` imports and usage
+    - [ ] Remove all `@fux/shared` imports
+    - [ ] Implement direct service instantiation
+    - [ ] Create local VSCode adapters
+    - [ ] Move all business logic to core package
+    - [ ] Ensure thin wrapper architecture
+
+- [ ] **Validation**:
+    - [ ] Core package builds without shared dependencies
+    - [ ] Extension package builds without DI container
+    - [ ] All imports are local or external only
+    - [ ] Business logic is properly separated
+    - [ ] **SERVICES HAVE REASONABLE DEPENDENCIES** (not excessive 9+)
+- [ ] **ALL SERVICE METHODS ARE IMPLEMENTED** (no missing implementations)
+- [ ] **VSCode API DECOUPLING COMPLETE** (local interfaces replace direct VSCode value imports and API calls)
+- [ ] Tests pass with new architecture
+- [ ] **EXTENSION CONSTRUCTOR PARAMETERS ARE CORRECT** (proper dependency order and types)
+
+## **Lessons Learned from Ghost Writer, Project Butler, and Dynamicons**
+
+### **Critical Implementation Lessons from Dynamicons Refactoring**
+
+**Problem**: During the Dynamicons refactoring, several critical implementation issues were discovered that went beyond the initial architecture setup.
+
+**Key Lessons Learned**:
+
+1. **Missing Method Implementations**:
+    - **Issue**: Service interfaces were refactored but not all methods were implemented in the concrete classes
+    - **Symptom**: TypeScript compilation passed but runtime errors occurred when calling missing methods
+    - **Solution**: Always verify that all interface methods are implemented in concrete service classes
+    - **Prevention**: Add thorough functional tests that exercise all service methods
+
+2. **Constructor Parameter Mismatches**:
+    - **Issue**: Extension package had incorrect constructor parameter order/types when instantiating services
+    - **Symptom**: TypeScript compilation failed with parameter type mismatches
+    - **Solution**: Carefully verify constructor parameter order and types when creating service instances
+    - **Prevention**: Use TypeScript strict mode and proper type checking
+
+3. **Missing Dependency Chain Setup**:
+    - **Issue**: Refactored services required additional dependencies that weren't created in the extension
+    - **Symptom**: Runtime errors due to missing dependency services
+    - **Solution**: Create a complete dependency chain when refactoring service constructors
+    - **Prevention**: Map out all dependencies before refactoring and ensure all are properly instantiated
+
+4. **Test Infrastructure Not Reflecting Real Usage**:
+    - **Issue**: Tests were passing but not validating actual runtime behavior
+    - **Symptom**: Tests showed green but extension failed when actually running
+    - **Solution**: Write functional tests that mirror real extension usage patterns
+    - **Prevention**: Always test actual command registration and service method calls
+
+**Refactoring Validation Strategy**:
+
+- [ ] **Build Verification**: Both core and extension packages build successfully
+- [ ] **Type Checking**: All TypeScript errors resolved
+- [ ] **Method Implementation**: All interface methods have concrete implementations
+- [ ] **Dependency Chain**: All required dependencies are properly instantiated
+- [ ] **Functional Testing**: Tests exercise real runtime behavior
+- [ ] **Extension Integration**: Extension properly registers commands and activates
 
 ### **Dependency Management Insights**
 
@@ -417,11 +724,18 @@ Rate the package complexity to plan effort:
     "test": {
       "executor": "@nx/vite:test",
       "outputs": ["{options.reportsDirectory}"],
-      "dependsOn": ["^build"],
-      "options": {
-        "configFile": "{projectRoot}/vitest.functional.config.ts",
-        "reporters": "default"
-      }
+      "dependsOn": ["^build"]
+    },
+    "test:full": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "dependsOn": [
+        {
+          "dependencies": true,
+          "target": "test",
+          "params": "forward"
+        }
+      ]
     }
     ```
 - **Remove Mockly Dependencies**: Extension tests should not depend on `@fux/mockly` - use simple mocks instead
@@ -555,6 +869,28 @@ Rate the package complexity to plan effort:
 - Ensure new features follow established patterns
 - Maintain test coverage and performance
 - Update documentation as patterns evolve
+
+### **Known Issues**
+
+#### **EventEmitter Warning During Packaging**
+
+**Issue**: `MaxListenersExceededWarning` appears during VSIX packaging showing "11 exit listeners added to [process]".
+
+**Root Cause**: **Nx's `run-commands` executor** adds multiple exit listeners for task management, cleanup, and graceful shutdown handling. The warning comes from Nx's `RunningNodeProcess.addListeners` method, not from `vsce` or our packaging script.
+
+**Why 11 Listeners**: Complex build pipelines with multiple task dependencies (build, test, package) cause Nx to accumulate exit listeners for:
+
+- Process cleanup handlers for each dependent task
+- Signal handlers for graceful shutdown
+- Resource cleanup for temporary files/processes
+- Cache management listeners
+- Progress reporting handlers
+
+**Impact**: None - packaging completes successfully and produces valid VSIX files.
+
+**Status**: Known characteristic of Nx's task execution system for complex build pipelines. This is normal Nx behavior, not a bug.
+
+**Technical Details**: The warning originates from Nx's `SeriallyRunningTasks` and `RunningNodeProcess` classes in `running-tasks.js`, which manage child process execution and cleanup.
 
 ### **Pattern Evolution**
 

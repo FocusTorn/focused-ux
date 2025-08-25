@@ -4,7 +4,6 @@
     "sourceRoot": "packages/dynamicons/core/src",
     "projectType": "library",
     "targets": {
-        
         "build-assets": { //>
             "executor": "nx:run-commands",
             "options": {
@@ -56,10 +55,13 @@
         }, //<
         
         "check-types": { "extends": "check-types" },
+        
         "lint": { "extends": "lint" },
         "lint:full": { "extends": "lint:full" },
+        
         "validate": { "extends": "validate" },
         "validate:full": { "extends": "validate:full" },
+        
         "audit": { "extends": "audit" },
         "audit:full": { "extends": "audit:full" },
         
@@ -70,8 +72,7 @@
         "test": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["^build"],
-            "options": {}
+            "dependsOn": ["build", "^build"]
         }, //<
         "test:full": { //>
             "executor": "@nx/vite:test",
@@ -82,27 +83,9 @@
                     "target": "test",
                     "params": "forward"
                 }
-            ],
-            "options": {}
+            ]
         } //<
 
     },
     "tags": []
 }
-
-// "verify:dist:hash": {
-//             "executor": "nx:run-commands",
-//             "options": {
-//                 "command": "node ../../../scripts/verify-dist-hash.cjs",
-//                 "cwd": "packages/dynamicons/core"
-//             }
-//         },
-//         "build:with-verify": {
-//             "executor": "nx:run-commands",
-//             "options": {
-//                 "commands": [
-//                     "nx run @fux/dynamicons-core:build",
-//                     "nx run @fux/dynamicons-core:verify:dist:hash"
-//                 ]
-//             }
-//         },

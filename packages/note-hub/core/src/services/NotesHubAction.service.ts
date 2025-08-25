@@ -1,5 +1,15 @@
 //= IMPLEMENTATION TYPES ======================================================================================
-import type { IWindow, IWorkspace, ICommands, ICommonUtilsService, IPathUtilsService, IFrontmatterUtilsService, IExtensionContext, IUri, IFileType, IStorageService, IEnv } from '@fux/shared'
+import type { IWindow } from '../_interfaces/IWindow.js'
+import type { IWorkspace } from '../_interfaces/IWorkspace.js'
+import type { ICommands } from '../_interfaces/ICommands.js'
+import type { ICommonUtilsService } from '../_interfaces/ICommonUtils.ts'
+import type { IPathUtilsService } from '../_interfaces/IPathUtils.ts'
+import type { IFrontmatterUtilsService } from '../_interfaces/IFrontmatterUtils.ts'
+import type { IExtensionContext } from '../_interfaces/IExtensionContext.ts'
+import type { IUri, IUriFactory } from '../_interfaces/IUri.ts'
+import type { IFileType } from '../_interfaces/IFileType.ts'
+import type { IStorageService } from '../_interfaces/IStorage.ts'
+import type { IEnv } from '../_interfaces/IEnv.ts'
 import type { INotesHubActionService } from '../_interfaces/INotesHubActionService.js'
 import type { INotesHubItem } from '../_interfaces/INotesHubItem.js'
 import type { INotesHubProviderManager } from '../_interfaces/INotesHubProviderManager.js'
@@ -40,7 +50,7 @@ export class NotesHubActionService implements INotesHubActionService {
 		private readonly treeItemAdapter: any,
 		private readonly themeIconAdapter: any,
 		private readonly themeColorAdapter: any,
-		private readonly uriAdapter: any,
+		private readonly uriAdapter: IUriFactory,
 		private readonly treeItemCollapsibleStateAdapter: any,
 	) {}
 

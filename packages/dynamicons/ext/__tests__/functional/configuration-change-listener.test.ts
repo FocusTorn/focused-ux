@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import * as coreModule from '@fux/dynamicons-core'
+import * as extensionModule from '../../src/extension.js'
+import * as adaptersModule from '../../src/adapters/index.js'
 
 // Mock vscode
 vi.mock('vscode', () => ({
@@ -98,6 +101,19 @@ vi.mock('@fux/dynamicons-core', () => ({
 	IconPickerService: vi.fn(),
 }))
 
+// Mock adapters
+vi.mock('../../src/adapters/index.js', () => ({
+	WindowAdapter: vi.fn(),
+	CommandsAdapter: vi.fn(),
+	WorkspaceAdapter: vi.fn(),
+	ContextAdapter: vi.fn(),
+	PathAdapter: vi.fn(),
+	FileSystemAdapter: vi.fn(),
+	QuickPickAdapter: vi.fn(),
+	CommonUtilsAdapter: vi.fn(),
+	UriAdapter: vi.fn(),
+}))
+
 describe('Configuration Change Listener - Core Functionality Tests', () => {
 	let mockContext: any
 	let mockWorkspaceAdapter: any
@@ -167,35 +183,32 @@ describe('Configuration Change Listener - Core Functionality Tests', () => {
 			}),
 		}
 
-		// Mock the adapters module
-		vi.doMock('../../src/adapters/index.js', () => ({
-			WindowAdapter: vi.fn().mockImplementation(() => mockWindowAdapter),
-			CommandsAdapter: vi.fn().mockImplementation(() => mockCommandsAdapter),
-			WorkspaceAdapter: vi.fn().mockImplementation(() => mockWorkspaceAdapter),
-			ContextAdapter: vi.fn().mockImplementation(() => ({
-				extensionPath: '/test/extension/path',
-				subscriptions: [],
-			})),
-			PathAdapter: vi.fn().mockImplementation(() => ({
-				basename: vi.fn(),
-				parse: vi.fn(),
-				join: vi.fn(),
-				dirname: vi.fn(),
-				relative: vi.fn(),
-			})),
-			FileSystemAdapter: vi.fn().mockImplementation(() => mockFileSystemAdapter),
-			QuickPickAdapter: vi.fn().mockImplementation(() => ({
-				showQuickPick: vi.fn(),
-			})),
-			CommonUtilsAdapter: vi.fn().mockImplementation(() => ({
-				errMsg: vi.fn(),
-				infoMsg: vi.fn(),
-			})),
-			UriAdapter: vi.fn().mockImplementation(() => mockUriAdapter),
+		// Mock the adapters to return our mock instances
+		vi.mocked(adaptersModule.WindowAdapter).mockImplementation(() => mockWindowAdapter)
+		vi.mocked(adaptersModule.CommandsAdapter).mockImplementation(() => mockCommandsAdapter)
+		vi.mocked(adaptersModule.WorkspaceAdapter).mockImplementation(() => mockWorkspaceAdapter)
+		vi.mocked(adaptersModule.ContextAdapter).mockImplementation(() => ({
+			extensionPath: '/test/extension/path',
+			subscriptions: [],
 		}))
+		vi.mocked(adaptersModule.PathAdapter).mockImplementation(() => ({
+			basename: vi.fn(),
+			parse: vi.fn(),
+			join: vi.fn(),
+			dirname: vi.fn(),
+			relative: vi.fn(),
+		}))
+		vi.mocked(adaptersModule.FileSystemAdapter).mockImplementation(() => mockFileSystemAdapter)
+		vi.mocked(adaptersModule.QuickPickAdapter).mockImplementation(() => ({
+			showQuickPick: vi.fn(),
+		}))
+		vi.mocked(adaptersModule.CommonUtilsAdapter).mockImplementation(() => ({
+			errMsg: vi.fn(),
+			infoMsg: vi.fn(),
+		}))
+		vi.mocked(adaptersModule.UriAdapter).mockImplementation(() => mockUriAdapter)
 
-		// Mock the core services
-		const coreModule = await import('@fux/dynamicons-core')
+		// Core services are already mocked via vi.mock() at the top
 
 		vi.mocked(coreModule.IconThemeGeneratorService).mockImplementation(() => mockIconThemeGeneratorService)
 		vi.mocked(coreModule.IconActionsService).mockImplementation(() => ({
@@ -226,7 +239,7 @@ describe('Configuration Change Listener - Core Functionality Tests', () => {
 	})
 
 	it('should register configuration change listener during activation', async () => {
-		const { activate } = await import('../../src/extension.js')
+		const { activate } = extensionModule
 
 		await activate(mockContext)
 
@@ -236,7 +249,7 @@ describe('Configuration Change Listener - Core Functionality Tests', () => {
 	})
 
 	it('should trigger configuration change listener when customIconMappings changes', async () => {
-		const { activate } = await import('../../src/extension.js')
+		const { activate } = extensionModule
 
 		await activate(mockContext)
 
@@ -259,7 +272,7 @@ describe('Configuration Change Listener - Core Functionality Tests', () => {
 	})
 
 	it('should not trigger action for unrelated configuration changes', async () => {
-		const { activate } = await import('../../src/extension.js')
+		const { activate } = extensionModule
 
 		await activate(mockContext)
 
@@ -280,7 +293,7 @@ describe('Configuration Change Listener - Core Functionality Tests', () => {
 	})
 
 	it('should handle multiple configuration changes in one event', async () => {
-		const { activate } = await import('../../src/extension.js')
+		const { activate } = extensionModule
 
 		await activate(mockContext)
 

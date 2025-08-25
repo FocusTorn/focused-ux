@@ -27,7 +27,7 @@ describe('ProjectMaidManager Integration', () => {
 			packageJsonFormatting,
 			terminalManagement,
 			backupManagement,
-			poetryShell
+			poetryShell,
 		})
 		
 		resetAllMocks(mocks)
@@ -42,7 +42,7 @@ describe('ProjectMaidManager Integration', () => {
 			const packageContent = JSON.stringify({
 				scripts: { test: 'jest' },
 				name: 'test-package',
-				version: '1.0.0'
+				version: '1.0.0',
 			}, null, 2)
 
 			mocks.fileSystem.readFile
@@ -51,8 +51,8 @@ describe('ProjectMaidManager Integration', () => {
 
 			mocks.yaml.load.mockReturnValue({
 				ProjectButler: {
-					'packageJson-order': ['name', 'version', 'scripts']
-				}
+					'packageJson-order': ['name', 'version', 'scripts'],
+				},
 			})
 
 			// Act
@@ -61,7 +61,7 @@ describe('ProjectMaidManager Integration', () => {
 			// Assert
 			expect(mocks.fileSystem.writeFile).toHaveBeenCalledWith(
 				packageJsonPath,
-				expect.stringContaining('"name": "test-package"')
+				expect.stringContaining('"name": "test-package"'),
 			)
 		})
 	})
@@ -120,4 +120,4 @@ describe('ProjectMaidManager Integration', () => {
 			expect(mocks.path.dirname).toHaveBeenCalledWith(filePath)
 		})
 	})
-}) 
+})

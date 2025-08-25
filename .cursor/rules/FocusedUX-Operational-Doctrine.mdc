@@ -41,15 +41,251 @@ Is the package intended to be a VS Code extension?
 
 ### **Core Architectural Principles**
 
-- **VSCode API Import Rules**: Value imports for VSCode APIs must come only from shared adapters
+- **VSCode API Import Rules**:
+    - **Core packages**: Use type imports only (`import type { Uri } from 'vscode'`)
+    - **Extension packages**: Create local adapters with VSCode value imports
+    - **No shared package usage**: Each package is completely self-contained
 - **Direct VSCode imports**: Limited to types only for decoupling and complete injection
 - **Thin Wrapper Extensions**: Extension packages contain only VSCode integration code
 - **Business Logic in Core**: All business logic belongs in core packages, not extensions
 - **Guinea Pig Package Principles**: Core packages should be self-contained without shared dependencies, using direct instantiation rather than DI containers
+- **Local Interface Implementation**: Core packages define their own interfaces and adapters, no shared dependencies
 
----
+## **Build System Architecture**
+
+### **Core Package Build Configuration**
+
+- **Executor**: `@nx/esbuild:esbuild`
+- **Bundle**: `false` (library mode)
+- **Format**: `["esm"]` (ES modules)
+- **Declaration**: `true` with `declarationMap: true`
+- **External Dependencies**: All runtime dependencies must be externalized
+- **TypeScript Config**: Uses `tsconfig.lib.json` for build, `tsconfig.json` for IDE support
+
+### **Extension Package Build Configuration**
+
+- **Executor**: `@nx/esbuild:esbuild`
+- **Bundle**: `true` (application mode)
+- **Format**: `["cjs"]` (CommonJS for VSCode compatibility)
+- **External Dependencies**: Only `vscode` and core package dependencies
+- **Assets**: Include extension assets in build output
+- **TypeScript Config**: Uses `tsconfig.json` with cross-project references
+
+### **TypeScript Configuration Patterns**
+
+#### **Core Package TypeScript Setup**
+
+- **`tsconfig.json`**: IDE support with `composite: true`, references `tsconfig.lib.json`
+- **`tsconfig.lib.json`**: Build configuration with unique output directories
+- **Output Structure**:
+    - `tsconfig.json`: `./out-tsc/tsconfig.tsbuildinfo`
+    - `tsconfig.lib.json`: `./out-tsc/lib/tsconfig.lib.tsbuildinfo`
+- **Declaration Generation**: `declaration: true`, `declarationMap: true`
+
+#### **Extension Package TypeScript Setup**
+
+- **`tsconfig.json`**: Single configuration with `composite: true`
+- **Cross-Project References**: References core package for type checking
+- **Declaration Only**: `emitDeclarationOnly: true` (no JS output from TypeScript)
+- **Output**: `./dist` directory for build artifacts
+
+### **Package.json Configuration**
+
+#### **Core Package Package.json**
+
+- **Type**: `"module"` (ES modules)
+- **Main/Module**: Point to built output
+- **Types**: Point to declaration files
+- **Exports**: Proper module resolution
+- **Dependencies**: Only runtime dependencies
+- **DevDependencies**: Build and development tools
+
+#### **Extension Package Package.json**
+
+- **Type**: No `"type"` field (CommonJS)
+- **Main**: Point to bundled output
+- **Dependencies**: Core package and minimal runtime dependencies
+- **DevDependencies**: Build tools and types
+- **VSCode Configuration**: Complete extension manifest
+
+## **Testing Architecture**
+
+### **Test Configuration Pattern**
+
+- **Executor**: `@nx/vite:test` (direct executor, not extends)
+- **Dependency Chain**: `dependsOn: ["^build"]` for core packages
+- **Test Organization**: `__tests__/functional/` structure
+- **Setup Files**: `./__tests__/_setup.ts` for global test setup
+- **Vitest Config**: Extends base functional config with project-specific setup
+
+### **Test Target Configuration**
+
+#### **Core Package Test Targets**
+
+```json
+"test": {
+    "executor": "@nx/vite:test",
+    "outputs": ["{options.reportsDirectory}"],
+    "dependsOn": ["build", "^build"],
+    "options": {}
+},
+"test:full": {
+    "executor": "@nx/vite:test",
+    "outputs": ["{options.reportsDirectory}"],
+    "dependsOn": [
+        {
+            "dependencies": true,
+            "target": "test",
+            "params": "forward"
+        }
+    ],
+    "options": {}
+}
+```
+
+#### **Extension Package Test Targets**
+
+- **Same pattern as core** but with extension-specific setup
+- **Cross-project references** for testing extension with core dependencies
+- **VSCode API mocking** through shared test utilities
+
+### **Testing Strategy**
+
+- **Comprehensive Testing Mandate**: Test suites MUST comprehensively cover all functionality to prevent unforeseen issues in the codebase
+- **FORBIDDEN Setup Tests**: Never create "setup tests" that only verify imports, basic instantiation, or framework configuration
+- **Functional Tests**: All main tests in `__tests__/functional/` directory OR `__tests__/` for adapter/service tests
+- **Global Setup**: VSCode API mocking and common test utilities with comprehensive coverage
+- **Mock Precision**: Test mocks must precisely match actual API signatures and parameter handling patterns
+- **Mock Patterns**: Simple mock objects with Vitest's built-in capabilities
+- **Test Isolation**: Clean test runs with no state leakage
+- **Real Behavior Validation**: Test actual runtime behavior, not just mock replacements
+- **Performance-Aware Testing**: Split large test files (500+ lines) proactively to prevent hanging and performance issues
+- **Internal Method Mocking**: Mock complex internal methods (like `regenerateAndApplyTheme`) to prevent test timeouts and isolate unit tests
+- **Standard VSCode Mocking**: Use `vi.mock('vscode')` for extension tests, not Mockly unless explicitly required
+- **100% Success Requirement**: All tests must pass before considering testing complete
+- **User Feedback Priority**: When user provides explicit testing guidance, immediately realign all testing efforts
+- **Interface-First Testing**: Always analyze interface signatures before implementing adapters to prevent type errors
+- **Constants over Assumptions**: Always check configuration files for actual values rather than guessing in tests
+- **Incremental Test Validation**: Regular test execution during implementation prevents accumulated errors
+
+## **Dependency Management**
+
+### **Core Package Dependencies**
+
+- **Runtime Dependencies**: Only essential business logic dependencies
+- **External Dependencies**: All dependencies externalized in build config
+- **No Shared Dependencies**: Self-contained without shared package dependencies
+- **Direct Instantiation**: No DI containers, use direct service instantiation
+
+### **Extension Package Dependencies**
+
+- **Core Package**: Primary dependency on corresponding core package
+- **VSCode Types**: `@types/vscode` in devDependencies
+- **Minimal Runtime**: Only essential VSCode integration dependencies
+- **Build Dependencies**: TypeScript, Vitest, and build tools in devDependencies
+
+### **Externalization Strategy**
+
+- **Core Packages**: Externalize all dependencies except internal business logic
+- **Extension Packages**: Externalize `vscode` and core package dependencies
+- **Build Configuration**: Explicit `external` array in esbuild configuration
+
+## **Project.json Configuration Patterns**
+
+### **Core Package Project.json**
+
+```json
+{
+    "name": "@fux/{feature}-core",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "options": {
+                "main": "packages/{feature}/core/src/index.ts",
+                "outputPath": "packages/{feature}/core/dist",
+                "tsConfig": "packages/{feature}/core/tsconfig.lib.json",
+                "format": ["esm"],
+                "bundle": false,
+                "external": ["vscode", "dependency1", "dependency2"]
+            }
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "dependsOn": ["^build"]
+        }
+    },
+    "tags": ["core"]
+}
+```
+
+### **Extension Package Project.json**
+
+```json
+{
+    "name": "@fux/{feature}-ext",
+    "projectType": "application",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "dependsOn": ["^build"],
+            "options": {
+                "entryPoints": ["packages/{feature}/ext/src/extension.ts"],
+                "outputPath": "packages/{feature}/ext/dist",
+                "format": ["cjs"],
+                "bundle": true,
+                "external": ["vscode"],
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/{feature}/ext/assets/",
+                        "output": "./assets/"
+                    }
+                ]
+            }
+        },
+        "package": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node scripts/create-vsix.js packages/{feature}/ext vsix_packages"
+            }
+        },
+        "package:dev": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node scripts/create-vsix.js packages/{feature}/ext vsix_packages --dev"
+            }
+        }
+    },
+    "tags": ["ext"]
+}
+```
 
 ## **Systematic Refactoring Protocols**
+
+### **Architecture Refactoring Protocol**
+
+When refactoring packages to align with new architectural guidelines:
+
+1. **Documentation Update First**:
+    - Update architectural documentation with critical requirements
+    - Document preservation requirements for framework-specific configuration
+2. **Interface-First Development**:
+    - Define complete interface contracts before implementation
+    - Create local interfaces to replace external dependencies
+3. **Incremental Complexity Management**:
+    - Start with simple, well-understood services
+    - Establish patterns before tackling complex, interdependent components
+4. **Test Infrastructure Foundation**:
+    - Establish comprehensive testing infrastructure with proper mocking
+    - Create mock functions for all local interfaces
+5. **Systematic Error Resolution**:
+    - Address interface completeness first
+    - Fix type mismatches systematically
+    - Update adapters to match interfaces
+    - Verify build success before proceeding
 
 ### **Large-Scale Renaming Protocol**
 
@@ -87,21 +323,36 @@ When implementing new features or refactoring existing code:
 3. **Architectural Compliance Verification**: Validate core architectural assumptions before addressing surface-level issues
 4. **Documentation Consistency**: Ensure alignment with existing documentation and patterns
 
----
-
 ## **Critical Architectural Rules**
 
 ### **Adapter Architecture**
 
-- **Rule**: All adapters MUST be in the shared package (`@fux/shared`)
-- **Rationale**: Ensures consistent abstraction across all packages, prevents duplication, maintains single source of truth
-- **Implementation**: Create adapters in `libs/shared/src/vscode/adapters/`, export from `libs/shared/src/index.ts`
+- **Rule**:
+    - **Core packages**: Define interfaces only, no adapters
+    - **Extension packages**: Create local adapters in `src/adapters/` that implement core interfaces
+    - **No shared package usage**: Each package is self-contained
+- **Rationale**:
+    - Core packages remain pure business logic without VSCode dependencies
+    - Extension packages handle VSCode integration through local adapters
+    - Self-contained packages enable comprehensive testing and independent validation
+- **Implementation**:
+    - Core packages: Define interfaces in `src/_interfaces/`
+    - Extension packages: Create adapters in `src/adapters/` with VSCode value imports
+    - No dependencies on `@fux/shared` or other shared packages
 
 ### **VSCode Value Import Restrictions**
 
-- **Rule**: NO VSCode values are to be imported outside of adapters in the shared package
-- **Rationale**: Maintains decoupling from VSCode API, enables complete dependency injection
-- **Implementation**: Only import VSCode types (using `import type`) outside of adapters
+- **Rule**:
+    - **Core packages**: NO VSCode value imports allowed, use `import type { Api } from 'vscode'` only
+    - **Extension packages**: Create local adapters with VSCode value imports, no shared package usage
+- **Rationale**:
+    - Core packages maintain decoupling from VSCode API for comprehensive testing
+    - Extension packages handle VSCode integration through local adapters
+    - Self-contained packages enable independent testing and validation
+- **Implementation**:
+    - Core packages: `import type { Uri } from 'vscode'`
+    - Extension packages: Create adapters in `src/adapters/` with VSCode value imports
+    - No dependencies on `@fux/shared` or other shared packages
 
 ### **Dependency Management**
 
@@ -132,65 +383,47 @@ When implementing new features or refactoring existing code:
 - **Rule**: Core packages must be self-contained without shared dependencies
 - **Rationale**: Enables independent testing and validation of core logic
 - **Implementation**: Use direct service instantiation, not DI containers; mock all external dependencies in tests
+- **Local Interface Pattern**: Core packages define their own interfaces (e.g., `IUri`, `IUriFactory`) to replace VSCode value usage
+- **Reasonable Dependencies**: Services should have reasonable dependencies based on functionality, not excessive dependencies (9+)
 
----
+### **VSCode Extension Configuration Preservation**
 
-## **Dependency Injection with Awilix**
+- **Rule**: ALWAYS preserve all VSCode extension configuration when refactoring extension packages
+- **Rationale**: VSCode extension functionality depends on `contributes`, `activationEvents`, `engines`, and other metadata
+- **Implementation**: Only remove business logic dependencies, never remove VSCode-specific configuration sections
+- **CRITICAL**: This is non-negotiable - removing VSCode configuration breaks extension functionality
 
-### **Framework**
+### **TypeScript Project References**
 
-The project uses **awilix** for dependency injection across all packages.
+- **Rule**: Core packages must use proper project references with unique output directories
+- **Rationale**: Prevents build info conflicts and enables proper incremental builds
+- **Implementation**:
+    - `tsconfig.json`: `./out-tsc/tsconfig.tsbuildinfo`
+    - `tsconfig.lib.json`: `./out-tsc/lib/tsconfig.lib.tsbuildinfo`
 
-### **Container Setup**
+### **Test Configuration Consistency**
 
-Each extension package includes an `injection.ts` file that sets up the DI container.
+- **Rule**: All packages must use direct `@nx/vite:test` executor, not extends
+- **Rationale**: Ensures consistent test execution and prevents configuration conflicts
+- **Implementation**: Explicit executor configuration in project.json test targets
 
-### **Service Registration**
+### **Comprehensive Testing Architecture**
 
-All services (core, shared, and adapters) are registered in the DI container.
-
-### **Static Imports**
-
-`awilix` and other externalized packages **MUST** be imported using static, top-level `import` statements.
-
-### **Dependency Injection Best Practices**
-
-- **One Container Per Extension**: Each extension has its own DI container
-- **Use Factories for Dependencies**: Services that depend on other services **MUST** use factory functions (`asFunction`)
-- **Register All Dependencies**: Container **MUST** provide concrete implementation for every interface
-- **Import Required Interfaces**: All interfaces used in DI registration **MUST** be imported from respective packages
-
-### **Common DI Pitfalls & Troubleshooting**
-
-- **`AwilixResolutionError`**: Almost always means a dependency is missing from the container
-- **Hallucinated Adapters**: Do not assume an adapter exists in `@fux/shared`
-- **Path Sanitization Issues**: `PathUtilsAdapter.santizePath()` is designed for filenames only
-- **Missing Interface Imports**: DI container registration requires proper interface imports
-
----
-
-## **Build System Architecture**
-
-### **Build Configuration Requirements**
-
-- **Core Package**: Use `tsconfig.lib.json` with `declaration: true`, `declarationMap: true`
-- **Extension Package**: Use `tsconfig.json` with CommonJS module format
-- **Tool Package**: Use `tsconfig.json` with `composite: false`, `declaration: false`
-
-### **Build Target Configuration**
-
-- **Core Package**: Use `@nx/esbuild:esbuild` with `bundle: false`, `format: ["esm"]`
-- **Extension Package**: Use `@nx/esbuild:esbuild` with `bundle: true`, `format: ["cjs"]`
-- **Tool Package**: Use `nx:run-commands` executor for direct tsx execution
-
-### **Global Targets in nx.json**
-
-The workspace defines standardized global targets under `targetDefaults`:
-
-- **`build:core`**: For core packages with `bundle: false`
-- **`build:extension`**: For extension packages with `bundle: true`
-
----
+- **Rule**:
+    - **Core packages**: Test business logic in complete isolation without VSCode dependencies
+    - **Extension packages**: Test VSCode integration through local adapters
+    - **No shared package testing**: Each package tests its own functionality independently
+- **Rationale**:
+    - Core packages can be tested without complex VSCode mocking
+    - Extension packages test real VSCode integration patterns
+    - Self-contained testing enables deep validation and fast execution
+- **Implementation**:
+    - Core packages: Mock all external dependencies, test pure business logic
+    - Extension packages: Test adapters with VSCode API mocks, validate integration flows
+    - Independent test suites enable comprehensive coverage and regression prevention
+- **Mock Precision**: Test mocks must precisely match actual API signatures and parameter handling patterns
+- **Real Behavior Validation**: Tests must validate actual runtime behavior, not just mock replacements
+- **Performance-Aware Testing**: Split large test files (500+ lines) proactively to prevent hanging and performance issues
 
 ## **Development Workflow**
 
@@ -218,8 +451,6 @@ The workspace defines standardized global targets under `targetDefaults`:
     - [ ] Date verification command executed for any Actions Log entries
     - [ ] Actual file modification timestamps used (no estimated dates)
     - [ ] All timestamps match file system reality
-
----
 
 ## **Quality Assurance**
 
@@ -251,8 +482,6 @@ The workspace defines standardized global targets under `targetDefaults`:
 - **Dependency count**: "X tasks it depends on" = build dependencies, not test dependencies
 - **Cache-bypass diagnosis**: Use `--skip-nx-cache` to distinguish execution vs output suppression
 
----
-
 ## **Command Execution & Tooling**
 
 ### **Aka Alias Mandate**
@@ -280,8 +509,6 @@ The workspace defines standardized global targets under `targetDefaults`:
     ```
 - **FAILURE RECOVERY**: If profile loading fails, halt operations and report before proceeding
 
----
-
 ## **Shared Adapter Change Protocol**
 
 ### **When Modifying Shared Components**
@@ -297,8 +524,6 @@ The workspace defines standardized global targets under `targetDefaults`:
 - **DI container wiring** - update injection configurations
 - **TypeScript mappings** - verify `@fux/shared` path resolution
 - **Test mocks** - update any test files using the adapter
-
----
 
 ## **Common Build Issues**
 
@@ -330,7 +555,13 @@ The workspace defines standardized global targets under `targetDefaults`:
 - Remove `"type": "module"` from extension package `package.json` when using CommonJS build format
 - Ensure build configuration format matches package.json module type
 
----
+### **TypeScript Build Info Conflicts**
+
+- **Rule**: Each TypeScript configuration must have unique output directories
+- **Core Package Fix**:
+    - `tsconfig.json`: `./out-tsc/tsconfig.tsbuildinfo`
+    - `tsconfig.lib.json`: `./out-tsc/lib/tsconfig.lib.tsbuildinfo`
+- **Extension Package**: Single `tsconfig.json` with `./dist` output
 
 ## **Documentation Standards**
 
@@ -342,7 +573,25 @@ The workspace defines standardized global targets under `targetDefaults`:
     - Explicit request to add entry
 - **MANDATORY sections**: "What Was Tried and Failed" documenting all failed attempts
 - **Post-change documentation**: Update in same session as implementation
-- **MANDATORY DATE VERIFICATION**: You MUST run `Get-ChildItem "path/to/project" -Recurse | Measure-Object -Property LastWriteTime -Maximum` to get the latest modification time
+- \*\*System.Collections.Hashtable[0]
+
+### **Date Verification Priority Protocol**
+
+**Priority Order for Date Retrieval:**
+
+1. **Modified Files Only**: Start by running .\scripts\Get-FileStats.ps1 -FilePaths @("file1.ts", "file2.js", "file3.json") on only the files that were actually modified during the session
+2. **Project Directory**: If modified files cannot be determined, run .\scripts\Get-FileStats.ps1 -Directories @("packages/project-name") on the specific project(s) worked on
+3. **User Input**: If neither modified files nor project scope can be determined systematically, **ASK THE USER** for the date and time to be used
+
+**❌ FORBIDDEN Actions:**
+
+- **NEVER use placeholders**: No "today", "recently", or estimated dates
+- **NEVER create random dates**: No guessing or making up timestamps
+- **NEVER skip verification**: Always attempt systematic date retrieval first
+- **NEVER use current system time**: Use actual file modification times, not when the script runs
+
+**CRITICAL**: If systematic date retrieval fails, the user must provide the exact date and time to be used as the final fallback.
+
 - **CRITICAL**: If you skip this verification step, you are violating the protocol and must correct immediately
 - **Date Format**: Use exact timestamp returned: `YYYY-MM-DD HH:MM:SS`
 
@@ -368,8 +617,6 @@ The workspace defines standardized global targets under `targetDefaults`:
 - **Update based on lessons learned** from Actions Log entries
 - **Maintain consistency** with Universal Doctrine principles
 
----
-
 ## **Auditor Behavior & Ergonomics**
 
 ### **Canonical Configuration**
@@ -385,8 +632,6 @@ The workspace defines standardized global targets under `targetDefaults`:
 - **Essential checks only** - focus on critical architectural violations
 - **Advisory warnings** - provide guidance without blocking development
 - **Context-aware validation** - consider project-specific requirements
-
----
 
 ## **Common Workflows**
 
@@ -413,7 +658,13 @@ The workspace defines standardized global targets under `targetDefaults`:
 3. **Verify assumptions** - test against actual system behavior
 4. **Document solutions** - update Actions Log with new patterns
 
----
+### **Test Failure Resolution Protocol**
+
+1. **Run tests** - identify specific failure patterns and error messages
+2. **Analyze implementation** - understand actual method signatures, parameter patterns, and behavior
+3. **Fix mocks/expectations** - align mock behavior with real implementation details
+4. **Iterate until success** - repeat the cycle until 100% test success is achieved
+5. **Document learnings** - capture new patterns and anti-patterns discovered
 
 ## **Anti-Patterns**
 
@@ -425,6 +676,8 @@ The workspace defines standardized global targets under `targetDefaults`:
 - Skipping quality gates for expediency
 - **DI Containers in Guinea Pig Packages**: Never use DI containers in core packages that should be self-contained
 - **Custom Test Organization**: Don't create custom test structures when established patterns exist
+- **Shared Dependencies in Core Packages**: Never add shared package dependencies to core packages
+- **VSCode Extension Configuration Removal**: NEVER remove `contributes`, `activationEvents`, `engines`, or other VSCode extension metadata when refactoring
 
 ### **❌ FORBIDDEN: Testing Violations**
 
@@ -436,6 +689,15 @@ The workspace defines standardized global targets under `targetDefaults`:
 - **Complex Mock Hierarchies**: Avoid elaborate mock setups that compete with real production patterns
 - **Ignoring User Testing Insights**: When user identifies testing flaws, investigate architectural implications
 - **Surface-Level Problem Fixing**: Don't fix individual test failures without considering systemic architectural issues
+- **Large Test File Anti-Pattern**: Never allow test files to exceed 500 lines - split into focused units proactively
+- **Architectural Assumption Violations**: Never assume modern packages use specific mocking strategies without user confirmation
+- **Timeout-Inducing Tests**: Never create tests that call complex internal methods without mocking them to prevent timeouts
+- **Test Simplification Anti-Pattern**: Never simplify tests to the point where they don't verify actual implementation behavior - this defeats regression testing
+- **Mock Parameter Mismatches**: Never write mock expectations without understanding actual method signatures, parameter counts, and behavior patterns
+- **Service Lifecycle Testing Neglect**: Never test service disposal without first initializing the service to set up disposables
+- **Configuration Mocking Oversimplification**: Never underestimate the complexity of mocking platform-specific configuration systems
+- **Dynamic Import Violations**: Never use `await import()` for mocking in test files - use static imports with `vi.mocked()`
+- **Redundant Mocking**: Never create redundant mocks when standard Vitest mocking patterns are sufficient
 
 ### **❌ FORBIDDEN: Documentation Violations**
 
@@ -446,6 +708,7 @@ The workspace defines standardized global targets under `targetDefaults`:
 - **Skipping Date Verification**: NEVER write Actions Log entries without verifying actual file modification timestamps
 - **Making Up Dates**: NEVER use estimated or guessed dates - always use verified file timestamps
 - **Ignoring Date Guidelines**: NEVER ignore explicit date handling requirements in documentation protocols
+- **Premature Completion Claims**: NEVER document completion without verification of ALL claimed components
 
 ### **❌ FORBIDDEN: Build Violations**
 
@@ -456,6 +719,8 @@ The workspace defines standardized global targets under `targetDefaults`:
 - **Caching Packaging Targets**: NEVER cache `package:dev` targets - they create unique timestamped versions
 - **Modifying Working Scripts**: NEVER modify working packaging scripts without clear evidence they're the problem
 - **Missing .vscodeignore Files**: ALWAYS include `.vscodeignore` files for extensions that need `node_modules` inclusion
+- **TypeScript Build Info Conflicts**: NEVER use overlapping output directories for different TypeScript configurations
+- **Test Configuration Extends**: NEVER use `extends: "test"` in project.json - use direct executor configuration
 
 ### **❌ FORBIDDEN: Validation Violations**
 
@@ -476,7 +741,74 @@ The workspace defines standardized global targets under `targetDefaults`:
 - **Pattern Deviation**: Don't create custom solutions when established patterns exist
 - **Architectural Assumption Ignorance**: Never ignore user feedback about testing flaws - investigate architectural implications
 - **Real Behavior Bypass**: Never test only mock replacements without validating actual runtime behavior
+- **Interface-First Violations**: Never implement services before defining complete interface contracts
+- **Complex Component Refactoring**: Never refactor complex, interdependent components before establishing patterns with simple components
+- **Build-Before-Interface**: Never attempt to build before completing interface definitions and architectural refactoring
 
----
+## **Critical Communication Protocols**
+
+### **Question vs Directive Distinction**
+
+**CRITICAL RULE**: Distinguish between user questions seeking understanding and directives requiring action.
+
+#### **Questions Seeking Understanding**
+
+When the user asks questions like:
+
+- "Why are we creating adapters in ext and not in core?"
+- "Shouldn't the tests be using \_setup instead of standalone mock files?"
+- "Why did you think that was the right approach?"
+- "What caused you to believe/think that?"
+
+**RESPONSE PROTOCOL**:
+
+- **Explain the rationale** behind the current approach
+- **Share the architectural reasoning** and design decisions
+- **Educate on the patterns** and why they exist
+- **DO NOT take action** unless explicitly requested
+- **Treat as learning opportunities** for both parties
+
+#### **Directives Requiring Action**
+
+When the user uses directive language like:
+
+- "We need to do X"
+- "You need to implement Y"
+- "We should change Z"
+- "Move this to that location"
+
+**RESPONSE PROTOCOL**:
+
+- **Confirm understanding** of the request
+- **Validate against best practices** and project documentation
+- **Suggest improvements** if the directive conflicts with established patterns
+- **Propose better approaches** if the idea is good but implementation could be improved
+- **Execute immediately** if the directive aligns with project standards
+
+#### **Mentorship Role Recognition**
+
+- **User is learning** and seeking understanding of architectural decisions
+- **Agent is mentor** with expertise in best practices and project patterns
+- **Collaborative relationship** where both parties contribute to better solutions
+- **User may have good ideas with suboptimal implementation approaches**
+- **Agent should guide toward better implementations** while respecting user's intent
+
+#### **Implementation Guidelines**
+
+- **Questions**: Provide educational explanations, don't take action
+- **Directives**: Validate, suggest improvements if needed, then execute
+- **Always consider**: Industry best practices, project documentation, architectural consistency
+- **Be transparent**: If a directive conflicts with established patterns, explain why and suggest alternatives
+- **Maintain trust**: User's suggestions are valuable input, even if implementation needs refinement
+
+#### **Tool Execution Context Awareness**
+
+- **Output Handling Differences**: Tool execution may handle script output differently than direct terminal execution
+- **Verification Required**: Always verify script output when using tool execution, especially for scripts that return objects
+- **Fallback Strategy**: If tool execution produces unexpected results, test the same command directly in terminal
+- **Profile Loading**: FUX profile loads correctly in both contexts, but output processing may differ
+- **Known Limitation**: Some scripts may behave differently in tool execution context vs direct terminal execution
+
+> **Note:** This document contains FocusedUX-specific operational guidelines. For universal AI behavior protocols, refer to Universal-Operational-Doctrine.mdc. For detailed build system and architectural patterns, refer to docs/SOP.md.
 
 > **Note:** This document contains FocusedUX-specific operational guidelines. For universal AI behavior protocols, refer to Universal-Operational-Doctrine.mdc. For detailed build system and architectural patterns, refer to docs/SOP.md.

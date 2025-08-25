@@ -1,13 +1,13 @@
 // Adapters
-export { WindowAdapter } from './adapters/WindowAdapter.js'
-export { CommandsAdapter } from './adapters/CommandsAdapter.js'
-export { WorkspaceAdapter } from './adapters/WorkspaceAdapter.js'
-export { ContextAdapter } from './adapters/ContextAdapter.js'
-export { PathAdapter } from './adapters/PathAdapter.js'
-export { FileSystemAdapter } from './adapters/FileSystemAdapter.js'
-export { QuickPickAdapter } from './adapters/QuickPickAdapter.js'
-export { UriAdapter } from './adapters/UriAdapter.js'
-export { CommonUtilsAdapter } from './adapters/CommonUtilsAdapter.js'
+export { WindowAdapter } from './adapters/window.adapter.js'
+export { CommandsAdapter } from './adapters/commands.adapter.js'
+export { WorkspaceAdapter } from './adapters/workspace.adapter.js'
+export { ContextAdapter } from './adapters/context.adapter.js'
+export { PathAdapter } from './adapters/path.adapter.js'
+export { FileSystemAdapter } from './adapters/filesystem.adapter.js'
+export { QuickPickAdapter } from './adapters/quick-pick.adapter.js'
+export { UriAdapter } from './adapters/uri.adapter.js'
+export { CommonUtilsAdapter } from './adapters/common-utils.adapter.js'
 
 // Extension
-export { activate, deactivate } from './extension.js' 
+export { activate, deactivate } from './extension.js'

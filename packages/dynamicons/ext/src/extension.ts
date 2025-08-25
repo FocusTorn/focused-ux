@@ -311,6 +311,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		fileSystemAdapter,
 		pathAdapter,
 		commonUtilsAdapter,
+		uriAdapter,
 	)
 
 	// Create missing dependencies for IconActionsService
@@ -320,6 +321,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		pathAdapter,
 		commonUtilsAdapter,
 		contextAdapter.extensionPath,
+		uriAdapter,
 	)
 	const iconPickerService = new IconPickerService(
 		windowAdapter,
@@ -328,6 +330,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		commonUtilsAdapter,
 		iconDiscoveryService,
 		configService,
+		uriAdapter,
 	)
 
 	const iconActionsService = new IconActionsService(
@@ -340,6 +343,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		iconThemeGeneratorService,
 		configService,
 		iconPickerService,
+		uriAdapter,
 	)
 
 	try {

@@ -1,5 +1,6 @@
 import { vi } from 'vitest'
-import * as vscode from 'vscode'
+import type * as vscode from 'vscode'
+import { Buffer } from 'node:buffer'
 
 export interface ExtensionTestMocks {
 	vscode: {
@@ -39,26 +40,26 @@ export interface ExtensionTestMocks {
 export function setupTestEnvironment(): ExtensionTestMocks {
 	const mockTerminal = {
 		sendText: vi.fn(),
-		show: vi.fn()
+		show: vi.fn(),
 	} as any
 
 	const mockTextEditor = {
 		document: {
 			uri: {
-				fsPath: '/test/file.txt'
-			}
-		}
+				fsPath: '/test/file.txt',
+			},
+		},
 	} as any
 
 	const mockWorkspaceFolder = {
 		uri: {
-			fsPath: '/test'
-		}
+			fsPath: '/test',
+		},
 	} as any
 
 	const vscode = {
 		commands: {
-			registerCommand: vi.fn()
+			registerCommand: vi.fn(),
 		},
 		window: {
 			showInformationMessage: vi.fn(),
@@ -66,39 +67,39 @@ export function setupTestEnvironment(): ExtensionTestMocks {
 			showErrorMessage: vi.fn(),
 			activeTextEditor: mockTextEditor,
 			createTerminal: vi.fn().mockReturnValue(mockTerminal),
-			activeTerminal: mockTerminal
+			activeTerminal: mockTerminal,
 		},
 		workspace: {
 			fs: {
 				readFile: vi.fn(),
 				writeFile: vi.fn(),
 				stat: vi.fn(),
-				copy: vi.fn()
+				copy: vi.fn(),
 			},
-			workspaceFolders: [mockWorkspaceFolder]
+			workspaceFolders: [mockWorkspaceFolder],
 		},
 		Uri: {
-			file: vi.fn().mockImplementation((path: string) => ({ fsPath: path }))
+			file: vi.fn().mockImplementation((path: string) => ({ fsPath: path })),
 		},
 		FileType: {
 			Directory: 1,
-			File: 2
-		}
+			File: 2,
+		},
 	}
 
 	const context = {
-		subscriptions: []
+		subscriptions: [],
 	}
 
 	return {
 		vscode,
-		context
+		context,
 	}
 }
 
 export function resetAllMocks(mocks: ExtensionTestMocks): void {
 	Object.values(mocks.vscode.commands).forEach(mock => mock.mockReset())
-	Object.values(mocks.vscode.window).forEach(mock => {
+	Object.values(mocks.vscode.window).forEach((mock) => {
 		if (typeof mock === 'function') {
 			mock.mockReset()
 		}
@@ -131,7 +132,12 @@ export function createMockExtensionContext(): vscode.ExtensionContext {
 		globalStorageUri: { fsPath: '/test/global' } as any,
 		logUri: { fsPath: '/test/log' } as any,
 		extensionMode: 1,
-		environmentVariableCollection: {} as any
+		environmentVariableCollection: {} as any,
+		secrets: {} as any,
+		asAbsolutePath: vi.fn(),
+		storagePath: '/test/storage',
+		extension: {} as any,
+		languageModelAccessInformation: {} as any,
 	}
 }
 
@@ -140,10 +146,10 @@ export function createMockUri(path: string): vscode.Uri {
 		fsPath: path,
 		scheme: 'file',
 		authority: '',
-		path: path,
+		path,
 		query: '',
 		fragment: '',
 		with: vi.fn(),
-		toJSON: vi.fn()
+		toJSON: vi.fn(),
 	} as any
-} 
+}

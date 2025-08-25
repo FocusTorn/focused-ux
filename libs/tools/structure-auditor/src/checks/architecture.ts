@@ -2,7 +2,166 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { addError } from '../util/errors.js'
 import { ROOT } from '../util/helpers.js'
-import { readJson } from '../util/fs.js'
+
+/**
+ * CRITICAL: Check that NO package has any knowledge of @fux/shared.
+ * In the refactored end state, all packages must be completely self-contained.
+ */
+export function checkNoSharedReferencesAnywhere(pkg: string): boolean {
+	const pkgDir = path.join(ROOT, 'packages', pkg)
+	let found = false
+
+	if (!fs.existsSync(pkgDir)) {
+		return true
+	}
+
+	function scanDir(dir: string) {
+		if (!fs.existsSync(dir)) {
+			return
+		}
+
+		for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+			const full = path.join(dir, entry.name)
+
+			// Skip node_modules directories
+			if (entry.isDirectory() && entry.name === 'node_modules') {
+				continue
+			}
+
+			if (entry.isDirectory()) {
+				scanDir(full)
+				continue
+			}
+
+			if ((!entry.name.endsWith('.ts') && !entry.name.endsWith('.json')) || entry.name.endsWith('.d.ts')) {
+				continue
+			}
+
+			const content = fs.readFileSync(full, 'utf-8')
+			const lines = content.split('\n')
+
+			// Check for any references to @fux/shared
+			const sharedPatterns = [
+				/@fux\/shared/,
+				/from\s+['"]@fux\/shared['"]/,
+				/import.*@fux\/shared/,
+				/require.*@fux\/shared/,
+			]
+
+			for (let i = 0; i < lines.length; i++) {
+				const line = lines[i]
+				
+				// Skip comment lines
+				const trimmedLine = line.trim()
+				if (trimmedLine.startsWith('//') || trimmedLine.startsWith('/*') || trimmedLine.startsWith('*')) {
+					continue
+				}
+				
+				for (const pattern of sharedPatterns) {
+					if (pattern.test(line)) {
+						const rel = path.relative(ROOT, full)
+						addError('CRITICAL: Package references @fux/shared', 
+							`${rel}:${i + 1}:1 - Invalid use of @fux/shared`)
+						found = true
+					}
+				}
+			}
+		}
+	}
+
+	// Scan both core and ext directories
+	const coreDir = path.join(pkgDir, 'core')
+	const extDir = path.join(pkgDir, 'ext')
+
+	if (fs.existsSync(coreDir)) {
+		scanDir(coreDir)
+	}
+	if (fs.existsSync(extDir)) {
+		scanDir(extDir)
+	}
+
+	return !found
+}
+
+/**
+ * CRITICAL: Check that NO package has any knowledge of @fux/mockly.
+ * In the refactored end state, all packages must use direct instantiation.
+ */
+export function checkNoMocklyReferencesAnywhere(pkg: string): boolean {
+	const pkgDir = path.join(ROOT, 'packages', pkg)
+	let found = false
+
+	if (!fs.existsSync(pkgDir)) {
+		return true
+	}
+
+	function scanDir(dir: string) {
+		if (!fs.existsSync(dir)) {
+			return
+		}
+
+		for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+			const full = path.join(dir, entry.name)
+
+			// Skip node_modules directories
+			if (entry.isDirectory() && entry.name === 'node_modules') {
+				continue
+			}
+
+			if (entry.isDirectory()) {
+				scanDir(full)
+				continue
+			}
+
+			if ((!entry.name.endsWith('.ts') && !entry.name.endsWith('.json')) || entry.name.endsWith('.d.ts')) {
+				continue
+			}
+
+			const content = fs.readFileSync(full, 'utf-8')
+			const lines = content.split('\n')
+
+			// Check for any references to @fux/mockly
+			const mocklyPatterns = [
+				/@fux\/mockly/,
+				/from\s+['"]@fux\/mockly['"]/,
+				/import.*@fux\/mockly/,
+				/require.*@fux\/mockly/,
+			]
+
+			for (let i = 0; i < lines.length; i++) {
+				const line = lines[i]
+				
+				// Skip comment lines
+				const trimmedLine = line.trim()
+				if (trimmedLine.startsWith('//') || trimmedLine.startsWith('/*') || trimmedLine.startsWith('*')) {
+					continue
+				}
+				
+				for (const pattern of mocklyPatterns) {
+					if (pattern.test(line)) {
+						const rel = path.relative(ROOT, full)
+						addError('CRITICAL: Package references @fux/mockly', 
+							`${rel}:${i + 1}:1 - In refactored end state, NO package should have any knowledge of @fux/mockly. All packages must use direct instantiation.`)
+						found = true
+					}
+				}
+			}
+		}
+	}
+
+	// Scan both core and ext directories
+	const coreDir = path.join(pkgDir, 'core')
+	const extDir = path.join(pkgDir, 'ext')
+
+	if (fs.existsSync(coreDir)) {
+		scanDir(coreDir)
+	}
+	if (fs.existsSync(extDir)) {
+		scanDir(extDir)
+	}
+
+	return !found
+}
 
 /**
  * Check that extension packages follow the thin wrapper principle.
@@ -21,21 +180,25 @@ export function checkExtensionThinWrapperPrinciple(pkg: string): boolean {
 			return
 		}
 
-		for (const entry of fs.readdirSync(dir)) {
-			const full = path.join(dir, entry)
-			const stat = fs.statSync(full)
+		for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+			const full = path.join(dir, entry.name)
 
-			if (stat.isDirectory()) {
+			// Skip node_modules directories
+			if (entry.isDirectory() && entry.name === 'node_modules') {
+				continue
+			}
+
+			if (entry.isDirectory()) {
 				scanDir(full)
 				continue
 			}
 
-			if (!entry.endsWith('.ts')) {
+			if (!entry.name.endsWith('.ts')) {
 				continue
 			}
 
-			// Skip injection.ts and extension.ts as they are allowed to have some logic
-			if (entry === 'injection.ts' || entry === 'extension.ts') {
+			// Skip extension.ts as it is allowed to have some logic
+			if (entry.name === 'extension.ts') {
 				continue
 			}
 
@@ -72,9 +235,10 @@ export function checkExtensionThinWrapperPrinciple(pkg: string): boolean {
 }
 
 /**
- * Check that core packages use proper DI container patterns.
+ * Check that core packages use direct instantiation (no DI containers).
+ * Core packages should be self-contained with direct service instantiation.
  */
-export function checkCoreDIContainerPatterns(pkg: string): boolean {
+export function checkCoreDirectInstantiation(pkg: string): boolean {
 	const coreSrcDir = path.join(ROOT, 'packages', pkg, 'core', 'src')
 	let found = false
 
@@ -82,137 +246,59 @@ export function checkCoreDIContainerPatterns(pkg: string): boolean {
 		return true
 	}
 
-	// Look for injection.ts file
+	// Look for injection.ts file - should not exist in refactored end state
 	const injectionFile = path.join(coreSrcDir, 'injection.ts')
 	
 	if (fs.existsSync(injectionFile)) {
-		const content = fs.readFileSync(injectionFile, 'utf-8')
-		const lines = content.split('\n')
-
-		// Check for proper DI container creation
-		let hasCreateContainer = false
-		let hasAsFunction = false
-		let hasAsClass = false
-
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i]
-			
-			if (line.includes('createContainer')) {
-				hasCreateContainer = true
-			}
-			
-			if (line.includes('asFunction')) {
-				hasAsFunction = true
-			}
-			
-			if (line.includes('asClass')) {
-				hasAsClass = true
-			}
-		}
-
-		if (!hasCreateContainer) {
-			addError('Missing DI container creation', 
-				`${pkg}/core/src/injection.ts: Core packages should use proper DI container patterns`)
-			found = true
-		}
+		addError('CRITICAL: Core package has injection.ts file', 
+			`packages/${pkg}/core/src/injection.ts: Core packages should use direct instantiation, not DI containers. Remove injection.ts file.`)
+		found = true
 	}
 
-	return !found
-}
-
-/**
- * Check that packages follow the adapter architecture rule.
- * All adapters must be in the shared package.
- */
-export function checkAdapterArchitecture(pkg: string): boolean {
-	const extSrcDir = path.join(ROOT, 'packages', pkg, 'ext', 'src')
-	const coreSrcDir = path.join(ROOT, 'packages', pkg, 'core', 'src')
-	let found = false
-
+	// Look for DI container patterns in any file
 	function scanDir(dir: string) {
 		if (!fs.existsSync(dir)) {
 			return
 		}
 
-		for (const entry of fs.readdirSync(dir)) {
-			const full = path.join(dir, entry)
-			const stat = fs.statSync(full)
+		for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+			const full = path.join(dir, entry.name)
 
-			if (stat.isDirectory()) {
+			// Skip node_modules directories
+			if (entry.isDirectory() && entry.name === 'node_modules') {
+				continue
+			}
+
+			if (entry.isDirectory()) {
 				scanDir(full)
 				continue
 			}
 
-			if (!entry.endsWith('.ts')) {
-				continue
-			}
-
-			// Check for adapter files outside shared package
-			if (entry.endsWith('.adapter.ts')) {
-				const rel = path.relative(ROOT, full)
-				addError('Adapter file outside shared package', 
-					`${rel}: All adapters must be in the shared package (@fux/shared)`)
-				found = true
-			}
-		}
-	}
-
-	scanDir(extSrcDir)
-	scanDir(coreSrcDir)
-	return !found
-}
-
-/**
- * Check that packages don't have direct Node.js module imports.
- * VSCode extensions should not include Node.js built-in modules.
- */
-export function checkNoNodeJsImports(pkg: string): boolean {
-	const dirsToScan = [
-		path.join(ROOT, 'packages', pkg, 'ext', 'src'),
-		path.join(ROOT, 'packages', pkg, 'core', 'src'),
-	]
-	let found = false
-
-	function scanDir(dir: string) {
-		if (!fs.existsSync(dir)) {
-			return
-		}
-
-		for (const entry of fs.readdirSync(dir)) {
-			const full = path.join(dir, entry)
-			const stat = fs.statSync(full)
-
-			if (stat.isDirectory()) {
-				scanDir(full)
-				continue
-			}
-
-			if (!entry.endsWith('.ts')) {
+			if (!entry.name.endsWith('.ts')) {
 				continue
 			}
 
 			const content = fs.readFileSync(full, 'utf-8')
 			const lines = content.split('\n')
 
-			// Check for Node.js module imports
-			const nodeJsImportPatterns = [
-				/import.*from\s+['"]node:fs['"]/,
-				/import.*from\s+['"]node:path['"]/,
-				/import.*from\s+['"]node:os['"]/,
-				/import.*from\s+['"]node:crypto['"]/,
-				/import.*from\s+['"]node:child_process['"]/,
-				/import.*from\s+['"]fs['"]/,
-				/import.*from\s+['"]path['"]/,
+			// Check for DI container patterns
+			const diPatterns = [
+				/createContainer/,
+				/asFunction/,
+				/asClass/,
+				/asValue/,
+				/awilix/,
+				/InjectionMode/,
 			]
 
 			for (let i = 0; i < lines.length; i++) {
 				const line = lines[i]
 				
-				for (const pattern of nodeJsImportPatterns) {
+				for (const pattern of diPatterns) {
 					if (pattern.test(line)) {
 						const rel = path.relative(ROOT, full)
-						addError('Direct Node.js module import', 
-							`${rel}:${i + 1}:1 - VSCode extensions should not include Node.js built-in modules. Use VSCode APIs or shared adapters.`)
+						addError('CRITICAL: Core package uses DI container patterns', 
+							`${rel}:${i + 1}:1 - Core packages should use direct instantiation, not DI containers.`)
 						found = true
 					}
 				}
@@ -220,56 +306,6 @@ export function checkNoNodeJsImports(pkg: string): boolean {
 		}
 	}
 
-	for (const dir of dirsToScan) {
-		scanDir(dir)
-	}
-
+	scanDir(coreSrcDir)
 	return !found
 }
-
-/**
- * Check that build-only dependencies are in devDependencies.
- */
-export function checkBuildDependenciesInDevDeps(pkg: string): boolean {
-	const packageJsonPaths = [
-		path.join(ROOT, 'packages', pkg, 'ext', 'package.json'),
-		path.join(ROOT, 'packages', pkg, 'core', 'package.json'),
-	]
-	let found = false
-
-	const buildOnlyDeps = [
-		'puppeteer',
-		'sharp',
-		'svgo',
-		'tsx',
-		'@types/node',
-		'typescript',
-		'eslint',
-		'vitest',
-	]
-
-	for (const packageJsonPath of packageJsonPaths) {
-		if (!fs.existsSync(packageJsonPath)) {
-			continue
-		}
-
-		const pkgJson = readJson(packageJsonPath)
-		
-		if (pkgJson === null) {
-			continue
-		}
-
-		const deps = pkgJson.dependencies || {}
-		const devDeps = pkgJson.devDependencies || {}
-
-		for (const dep of buildOnlyDeps) {
-			if (deps[dep] && !devDeps[dep]) {
-				addError('Build dependency in wrong section', 
-					`${packageJsonPath}: '${dep}' should be in devDependencies, not dependencies`)
-				found = true
-			}
-		}
-	}
-
-	return !found
-} 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { TreeFormatterService, type TreeFormatterNode } from '../../src/services/TreeFormatter.service.js'
+import { TreeFormatterService } from '../../src/services/TreeFormatter.service.js'
+import type { TreeFormatterNode } from '../../src/services/TreeFormatter.service.js'
 
 describe('TreeFormatterService', () => {
 	let service: TreeFormatterService
@@ -12,10 +13,11 @@ describe('TreeFormatterService', () => {
 		it('should format a simple root node without children', () => {
 			const rootNode: TreeFormatterNode = {
 				label: 'root',
-				isDirectory: true
+				isDirectory: true,
 			}
 
 			const result = service.formatTree(rootNode)
+
 			expect(result).toBe('root/')
 		})
 
@@ -23,10 +25,11 @@ describe('TreeFormatterService', () => {
 			const rootNode: TreeFormatterNode = {
 				label: 'project',
 				details: 'TypeScript project',
-				isDirectory: true
+				isDirectory: true,
 			}
 
 			const result = service.formatTree(rootNode)
+
 			expect(result).toBe('project/ TypeScript project')
 		})
 
@@ -37,8 +40,8 @@ describe('TreeFormatterService', () => {
 				children: [
 					{ label: 'index.ts', isDirectory: false },
 					{ label: 'utils.ts', isDirectory: false },
-					{ label: 'components', isDirectory: true }
-				]
+					{ label: 'components', isDirectory: true },
+				],
 			}
 
 			const result = service.formatTree(rootNode)
@@ -46,7 +49,7 @@ describe('TreeFormatterService', () => {
 				'src/',
 				'├─ index.ts',
 				'├─ utils.ts',
-				'└─ components/'
+				'└─ components/',
 			].join('\n')
 
 			expect(result).toBe(expected)
@@ -62,17 +65,17 @@ describe('TreeFormatterService', () => {
 						isDirectory: true,
 						children: [
 							{ label: 'index.ts', isDirectory: false },
-							{ label: 'utils.ts', isDirectory: false }
-						]
+							{ label: 'utils.ts', isDirectory: false },
+						],
 					},
 					{
 						label: 'tests',
 						isDirectory: true,
 						children: [
-							{ label: 'index.test.ts', isDirectory: false }
-						]
-					}
-				]
+							{ label: 'index.test.ts', isDirectory: false },
+						],
+					},
+				],
 			}
 
 			const result = service.formatTree(rootNode)
@@ -82,7 +85,7 @@ describe('TreeFormatterService', () => {
 				'│  ├─ index.ts',
 				'│  └─ utils.ts',
 				'└─ tests/',
-				'   └─ index.test.ts'
+				'   └─ index.test.ts',
 			].join('\n')
 
 			expect(result).toBe(expected)
@@ -94,15 +97,15 @@ describe('TreeFormatterService', () => {
 				isDirectory: true,
 				children: [
 					{ label: 'config.json', details: '2.1KB', isDirectory: false },
-					{ label: 'data.csv', details: '15.3KB', isDirectory: false }
-				]
+					{ label: 'data.csv', details: '15.3KB', isDirectory: false },
+				],
 			}
 
 			const result = service.formatTree(rootNode)
 			const expected = [
 				'files/',
 				'├─ config.json 2.1KB',
-				'└─ data.csv 15.3KB'
+				'└─ data.csv 15.3KB',
 			].join('\n')
 
 			expect(result).toBe(expected)
@@ -112,20 +115,22 @@ describe('TreeFormatterService', () => {
 			const rootNode: TreeFormatterNode = {
 				label: 'empty',
 				isDirectory: true,
-				children: []
+				children: [],
 			}
 
 			const result = service.formatTree(rootNode)
+
 			expect(result).toBe('empty/')
 		})
 
 		it('should handle undefined children', () => {
 			const rootNode: TreeFormatterNode = {
 				label: 'no-children',
-				isDirectory: true
+				isDirectory: true,
 			}
 
 			const result = service.formatTree(rootNode)
+
 			expect(result).toBe('no-children/')
 		})
 
@@ -143,20 +148,20 @@ describe('TreeFormatterService', () => {
 								isDirectory: true,
 								children: [
 									{ label: 'package.json', isDirectory: false },
-									{ label: 'src', isDirectory: true }
-								]
+									{ label: 'src', isDirectory: true },
+								],
 							},
 							{
 								label: 'app2',
 								isDirectory: true,
 								children: [
-									{ label: 'package.json', isDirectory: false }
-								]
-							}
-						]
+									{ label: 'package.json', isDirectory: false },
+								],
+							},
+						],
 					},
-					{ label: 'README.md', isDirectory: false }
-				]
+					{ label: 'README.md', isDirectory: false },
+				],
 			}
 
 			const result = service.formatTree(rootNode)
@@ -168,7 +173,7 @@ describe('TreeFormatterService', () => {
 				'│  │  └─ src/',
 				'│  └─ app2/',
 				'│     └─ package.json',
-				'└─ README.md'
+				'└─ README.md',
 			].join('\n')
 
 			expect(result).toBe(expected)
@@ -180,18 +185,18 @@ describe('TreeFormatterService', () => {
 				isDirectory: true,
 				children: [
 					{ label: 'file1.txt' },
-					{ label: 'folder', isDirectory: true }
-				]
+					{ label: 'folder', isDirectory: true },
+				],
 			}
 
 			const result = service.formatTree(rootNode)
 			const expected = [
 				'mixed/',
 				'├─ file1.txt',
-				'└─ folder/'
+				'└─ folder/',
 			].join('\n')
 
 			expect(result).toBe(expected)
 		})
 	})
-}) 
+})

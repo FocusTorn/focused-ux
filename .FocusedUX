@@ -12,35 +12,40 @@ ContextCherryPicker:
       visible: false
       style: drop
     file_groups:
-      conf:
-        initially_visible: true
+      config:
+        initially_visible: false
         items:
           - '**/.FocusedUX'
           - '**/.prettierignore'
           - '**/eslint.config.js'
-      bld:
+          - '**/.npmrc'
+          - '**/knip*'
+          - '**/prettier.config.cjs'
+          - '**/.cursor-rules*'
+      build:
         initially_visible: false
         items:
           - '**/**/dist'
+          - '**/**/out-tsc'
           - '**/*.tsbuildinfo'
           - '**/.turbo'
           - '**/.nx'
           - '**/tmp'
-      tst:
-        initially_visible: false
+      test:
+        initially_visible: true
         items:
-          - '**/test'
+          - '**/__tests__'
           - '**/coverage'
           - '**/.vscode-test.mjs'
-      ign:
-        initially_visible: true
+      ignore:
+        initially_visible: false
         items:
           - '**/.gitignore'
           - '**/.vscodeignore'
           - '**/.npmignore'
           - '**/.turbignore'
       docs:
-        initially_visible: true
+        initially_visible: false
         items:
           - '**/LICENSE.*'
           - '**/README.*'
@@ -61,6 +66,7 @@ ContextCherryPicker:
     - '**/*.jpeg'
     - '**/*.svg'
     - '**/*.bak*'
+    - '**/.vscode-test'
   project_tree:
     always_show: null
     always_hide: null

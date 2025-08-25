@@ -112,6 +112,66 @@ Route lessons to the correct rule file based on scope and update accordingly.
 - **Placement**: Add to TOP of document
 - **Purpose**: Living reference for successful patterns and solutions
 
+#### **Date/Time Protocol**
+
+**MANDATORY**: Always use PowerShell to get the actual last modified time of files worked on during the session:
+
+**For Entire Project Analysis**:
+
+```powershell
+# Get file statistics for entire project directory
+.\scripts\Get-FileStats.ps1 -Directories @("path/to/project")
+```
+
+**For Specific Files Worked On**:
+
+```powershell
+# Get file statistics for specific modified files
+.\scripts\Get-FileStats.ps1 -FilePaths @("path/to/file1.ts", "path/to/file2.js", "path/to/file3.json")
+```
+
+**Format**: Use the output format `[YYYY-MM-DD HH:MM:SS]` for all Actions Log entry titles.
+
+**Example**: `### [2025-08-22 13:11:06] Dynamicons Test Performance Optimization`
+
+**Note**: Use the Maximum field from the output as the timestamp for the Actions Log entry. Use actual file modification times, not the current system time.
+
+#### **Changelog Update Protocol**
+
+**AUTOMATIC TRIGGER**: After completing any Actions Log entry, if the changes affected one or more packages specifically:
+
+1. **Identify Affected Packages**: Determine which packages were modified during the session
+2. **Update Package Changelogs**: For each affected package, update its `CHANGELOG.md` file
+3. **Changelog Format**: Follow the established format with sections for Added, Changed, Fixed, Technical Improvements
+4. **Version Tracking**: Use the same date format as the Actions Log entry for consistency
+
+**Changelog Locations**:
+
+- `packages/{package-name}/core/CHANGELOG.md`
+- `packages/{package-name}/ext/CHANGELOG.md`
+
+**Example Changelog Entry**:
+
+```markdown
+## [2025-08-22] - Session Title
+
+### Added
+
+- New feature description
+
+### Changed
+
+- Modified behavior description
+
+### Fixed
+
+- Bug fix description
+
+### Technical Improvements
+
+- Architectural or technical changes
+```
+
 ### **Testing Strategy Documentation**
 
 - **Location**: `docs/FocusedUX-Testing-Strategy.md` for project-specific patterns

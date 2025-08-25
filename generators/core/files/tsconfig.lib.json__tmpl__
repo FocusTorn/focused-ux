@@ -1,18 +1,16 @@
 {
-  "extends": "../../../tsconfig.base.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "rootDir": "src",
-    "outDir": "dist",
-    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
-    "types": ["node"],
-    "declaration": true,
-    "declarationMap": true,
-    "composite": true,
-    "paths": {
-      "@fux/shared": ["../../../libs/shared/src"]
+    "extends": "../../../tsconfig.base.json",
+    
+    "include": ["src/**/*.ts"],
+    
+    "compilerOptions": {
+        "baseUrl": ".",
+        "rootDir": "src",
+        "outDir": "./out-tsc/lib",
+        "tsBuildInfoFile": "./out-tsc/lib/tsconfig.lib.tsbuildinfo",
+        "types": ["node"],
+        "declaration": true,
+        "declarationMap": true,
+        "composite": true
     }
-  },
-  "include": ["src/**/*.ts"],
-  "references": [{ "path": "../../../libs/shared/tsconfig.lib.json" }]
 } 

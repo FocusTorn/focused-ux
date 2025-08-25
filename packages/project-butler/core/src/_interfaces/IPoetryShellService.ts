@@ -4,10 +4,10 @@ export interface IPoetryShellService {
 	 * @param directoryPath - Path to the directory (optional, uses current if not provided)
 	 * @returns Promise that resolves when poetry shell command is ready
 	 */
-	enterPoetryShell(filePath?: string): Promise<IPoetryShellCommand>
+	enterPoetryShell: (filePath?: string) => Promise<IPoetryShellCommand>
 }
 
 export interface IPoetryShellCommand {
 	command: string
 	shouldShowTerminal: boolean
-} 
+}

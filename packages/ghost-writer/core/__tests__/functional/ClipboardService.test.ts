@@ -4,116 +4,125 @@ import type { IStorageService, StoredFragment } from '../../src/features/clipboa
 
 // Mock storage service
 class MockStorageService implements IStorageService {
-  private storage: Map<string, any> = new Map()
 
-  async update(key: string, value: any): Promise<void> {
-    this.storage.set(key, value)
-  }
+	private storage: Map<string, any> = new Map()
 
-  async get<T>(key: string): Promise<T | undefined> {
-    return this.storage.get(key)
-  }
+	async update(key: string, value: any): Promise<void> {
+		this.storage.set(key, value)
+	}
+
+	async get<T>(key: string): Promise<T | undefined> {
+		return this.storage.get(key)
+	}
+
 }
 
 describe('ClipboardService', () => {
-  let clipboardService: ClipboardService
-  let mockStorage: MockStorageService
+	let clipboardService: ClipboardService
+	let mockStorage: MockStorageService
 
-  beforeEach(() => {
-    mockStorage = new MockStorageService()
-    clipboardService = new ClipboardService(mockStorage)
-  })
+	beforeEach(() => {
+		mockStorage = new MockStorageService()
+		clipboardService = new ClipboardService(mockStorage)
+	})
 
-  describe('store', () => {
-    it('should store a code fragment', async () => {
-      const fragment: StoredFragment = {
-        text: 'MyComponent',
-        sourceFilePath: '/path/to/component.ts'
-      }
+	describe('store', () => {
+		it('should store a code fragment', async () => {
+			const fragment: StoredFragment = {
+				text: 'MyComponent',
+				sourceFilePath: '/path/to/component.ts',
+			}
 
-      await clipboardService.store(fragment)
+			await clipboardService.store(fragment)
 
-      const stored = await mockStorage.get<StoredFragment>('fux-ghost-writer.clipboard')
-      expect(stored).toEqual(fragment)
-    })
+			const stored = await mockStorage.get<StoredFragment>('fux-ghost-writer.clipboard')
 
-    it('should overwrite existing fragment', async () => {
-      const fragment1: StoredFragment = {
-        text: 'OldComponent',
-        sourceFilePath: '/path/to/old.ts'
-      }
-      const fragment2: StoredFragment = {
-        text: 'NewComponent',
-        sourceFilePath: '/path/to/new.ts'
-      }
+			expect(stored).toEqual(fragment)
+		})
 
-      await clipboardService.store(fragment1)
-      await clipboardService.store(fragment2)
+		it('should overwrite existing fragment', async () => {
+			const fragment1: StoredFragment = {
+				text: 'OldComponent',
+				sourceFilePath: '/path/to/old.ts',
+			}
+			const fragment2: StoredFragment = {
+				text: 'NewComponent',
+				sourceFilePath: '/path/to/new.ts',
+			}
 
-      const stored = await mockStorage.get<StoredFragment>('fux-ghost-writer.clipboard')
-      expect(stored).toEqual(fragment2)
-    })
-  })
+			await clipboardService.store(fragment1)
+			await clipboardService.store(fragment2)
 
-  describe('retrieve', () => {
-    it('should retrieve stored fragment', async () => {
-      const fragment: StoredFragment = {
-        text: 'MyComponent',
-        sourceFilePath: '/path/to/component.ts'
-      }
+			const stored = await mockStorage.get<StoredFragment>('fux-ghost-writer.clipboard')
 
-      await mockStorage.update('fux-ghost-writer.clipboard', fragment)
-      const retrieved = await clipboardService.retrieve()
+			expect(stored).toEqual(fragment2)
+		})
+	})
 
-      expect(retrieved).toEqual(fragment)
-    })
+	describe('retrieve', () => {
+		it('should retrieve stored fragment', async () => {
+			const fragment: StoredFragment = {
+				text: 'MyComponent',
+				sourceFilePath: '/path/to/component.ts',
+			}
 
-    it('should return undefined when no fragment stored', async () => {
-      const retrieved = await clipboardService.retrieve()
-      expect(retrieved).toBeUndefined()
-    })
-  })
+			await mockStorage.update('fux-ghost-writer.clipboard', fragment)
 
-  describe('clear', () => {
-    it('should clear stored fragment', async () => {
-      const fragment: StoredFragment = {
-        text: 'MyComponent',
-        sourceFilePath: '/path/to/component.ts'
-      }
+			const retrieved = await clipboardService.retrieve()
 
-      await clipboardService.store(fragment)
-      await clipboardService.clear()
+			expect(retrieved).toEqual(fragment)
+		})
 
-      const retrieved = await clipboardService.retrieve()
-      expect(retrieved).toBeUndefined()
-    })
+		it('should return undefined when no fragment stored', async () => {
+			const retrieved = await clipboardService.retrieve()
 
-    it('should handle clearing when no fragment exists', async () => {
-      await expect(clipboardService.clear()).resolves.not.toThrow()
-    })
-  })
+			expect(retrieved).toBeUndefined()
+		})
+	})
 
-  describe('integration', () => {
-    it('should handle complete store-retrieve-clear cycle', async () => {
-      const fragment: StoredFragment = {
-        text: 'TestComponent',
-        sourceFilePath: '/test/path.ts'
-      }
+	describe('clear', () => {
+		it('should clear stored fragment', async () => {
+			const fragment: StoredFragment = {
+				text: 'MyComponent',
+				sourceFilePath: '/path/to/component.ts',
+			}
 
-      // Store
-      await clipboardService.store(fragment)
-      let retrieved = await clipboardService.retrieve()
-      expect(retrieved).toEqual(fragment)
+			await clipboardService.store(fragment)
+			await clipboardService.clear()
 
-      // Clear
-      await clipboardService.clear()
-      retrieved = await clipboardService.retrieve()
-      expect(retrieved).toBeUndefined()
+			const retrieved = await clipboardService.retrieve()
 
-      // Store again
-      await clipboardService.store(fragment)
-      retrieved = await clipboardService.retrieve()
-      expect(retrieved).toEqual(fragment)
-    })
-  })
-}) 
+			expect(retrieved).toBeUndefined()
+		})
+
+		it('should handle clearing when no fragment exists', async () => {
+			await expect(clipboardService.clear()).resolves.not.toThrow()
+		})
+	})
+
+	describe('integration', () => {
+		it('should handle complete store-retrieve-clear cycle', async () => {
+			const fragment: StoredFragment = {
+				text: 'TestComponent',
+				sourceFilePath: '/test/path.ts',
+			}
+
+			// Store
+			await clipboardService.store(fragment)
+
+			let retrieved = await clipboardService.retrieve()
+
+			expect(retrieved).toEqual(fragment)
+
+			// Clear
+			await clipboardService.clear()
+			retrieved = await clipboardService.retrieve()
+			expect(retrieved).toBeUndefined()
+
+			// Store again
+			await clipboardService.store(fragment)
+			retrieved = await clipboardService.retrieve()
+			expect(retrieved).toEqual(fragment)
+		})
+	})
+})

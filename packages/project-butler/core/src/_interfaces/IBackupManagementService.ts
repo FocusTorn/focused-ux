@@ -4,11 +4,11 @@ export interface IBackupManagementService {
 	 * @param filePath - Path to the file to backup
 	 * @returns Promise that resolves with the backup file path
 	 */
-	createBackup(filePath: string): Promise<string>
+	createBackup: (filePath: string) => Promise<string>
 }
 
 export interface IBackupOptions {
 	prefix?: string
 	suffix?: string
 	directory?: string
-} 
+}

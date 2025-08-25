@@ -1,7 +1,15 @@
 // ESLint & Imports -->>
 
 // _UTILITIES ==================================================================================================
-import type { IWindow, IWorkspace, ICommonUtilsService, IPathUtilsService, IFrontmatterUtilsService, ICommands, IExtensionContext, IFileType } from '@fux/shared'
+import type { IWindow } from '../_interfaces/IWindow.js'
+import type { IWorkspace } from '../_interfaces/IWorkspace.js'
+import type { ICommonUtilsService } from '../_interfaces/ICommonUtils.js'
+import type { IPathUtilsService } from '../_interfaces/IPathUtils.js'
+import type { IFrontmatterUtilsService } from '../_interfaces/IFrontmatterUtils.js'
+import type { ICommands } from '../_interfaces/ICommands.js'
+import type { IExtensionContext } from '../_interfaces/IExtensionContext.js'
+import type { IFileType } from '../_interfaces/IFileType.js'
+import type { IUriFactory } from '../_interfaces/IUri.js'
 
 import { BaseNotesDataProvider } from './BaseNotesDataProvider.js'
 
@@ -24,7 +32,7 @@ export class ProjectNotesDataProvider extends BaseNotesDataProvider {
 		treeItemAdapter: any,
 		themeIconAdapter: any,
 		themeColorAdapter: any,
-		uriAdapter: any,
+		uriAdapter: IUriFactory,
 		treeItemCollapsibleStateAdapter: any,
 	) {
 		super(notesDir, 'project', openNoteCommandId, context, window, workspace, commands, commonUtils, frontmatterUtils, pathUtils, fileTypeEnum, treeItemAdapter, themeIconAdapter, themeColorAdapter, uriAdapter, treeItemCollapsibleStateAdapter)

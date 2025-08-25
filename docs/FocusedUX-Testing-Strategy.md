@@ -1,754 +1,1023 @@
-# FocusedUX Testing Strategy
+# FocusedUX Testing Strategy v2
 
-## **Quick Reference**
+## Overview
 
-### **Testing Approach Decision Tree**
+This document outlines the testing strategy for the **confirmed final Core/Extension Package Architecture** established in the FocusedUX project, based on the working implementations in Ghost Writer and Project Butler packages. This strategy provides comprehensive testing patterns for packages that follow the separation of business logic (core) from VSCode integration (extension).
+
+## Package Architecture Pattern
+
+### Core Package (`@fux/package-name-core`)
+
+- **Purpose**: Pure business logic, no VSCode dependencies
+- **Dependencies**: Minimal external dependencies (e.g., `js-yaml` for YAML parsing)
+- **No DI Container**: Services are directly instantiated with dependencies
+- **No Shared Dependencies**: Self-contained "guinea pig" packages
+
+### Extension Package (`@fux/package-name-ext`)
+
+- **Purpose**: Lightweight VSCode wrapper for core logic
+- **Dependencies**: Core package + VSCode APIs
+- **No DI Container**: Direct service instantiation
+- **VSCode Adapters**: Abstract VSCode API calls
+
+## Directory Structure
 
 ```
-Are you testing a SHARED package?
-├─ YES → Use Mockly (import vscode normally)
-└─ NO → Are you testing a CORE package?
-    ├─ YES → Use Mockly via DI injection
-    └─ NO → Are you testing an EXTENSION package?
-        ├─ YES → Mock shared adapters, test VSCode integration only
-        └─ Performance-critical test?
-            ├─ YES → Use comprehensive vi.mock('vscode') (document exception)
-            └─ NO → Use Mockly or shared adapter mocks
+packages/package-name/
+├── core/
+│   ├── __tests__/
+│   │   ├── _setup.ts                    # Global test setup
+│   │   ├── README.md                    # Test documentation
+│   │   ├── functional/                  # Main test directory
+│   │   │   ├── _readme.md              # Functional test docs
+│   │   │   └── *.service.test.ts       # Service tests
+│   │   ├── unit/                       # Specific isolated tests
+│   │   │   ├── _readme.md              # Unit test docs
+│   │   │   └── *.test.ts               # Unit tests
+│   │   └── coverage/                   # Coverage reports
+│   │       └── _readme.md              # Coverage docs
+│   ├── src/
+│   │   ├── _interfaces/                # Service interfaces
+│   │   ├── _config/                    # Configuration constants
+│   │   ├── features/                   # Feature-specific services
+│   │   └── index.ts                    # Package exports
+│   ├── vitest.config.ts                # Test config
+│   ├── vitest.coverage.config.ts       # Coverage test config
+│   └── project.json                    # Nx build configuration
+└── ext/
+    ├── __tests__/
+    │   ├── _setup.ts                    # Global test setup
+    │   ├── README.md                    # Test documentation
+    │   ├── functional/                  # Main test directory
+    │   │   ├── _readme.md              # Functional test docs
+    │   │   ├── extension.test.ts       # Main extension test
+    │   │   └── adapters/*.adapter.test.ts # Adapter tests
+    │   ├── unit/                       # Specific isolated tests
+    │   │   └── _readme.md              # Unit test docs
+    │   └── coverage/                   # Coverage reports
+    │       └── _readme.md              # Coverage docs
+    ├── src/
+    │   ├── adapters/                   # VSCode API adapters
+    │   ├── _interfaces/                # Extension interfaces
+    │   ├── _config/                    # Extension configuration
+    │   ├── services/                   # Extension-specific services
+    │   ├── extension.ts                # Main extension entry point
+    │   └── index.ts                    # Package exports
+    ├── vitest.config.ts                # Test config
+    ├── vitest.coverage.config.ts       # Coverage test config
+    └── project.json                    # Nx build configuration
 ```
 
-### **Test Lane Selection**
+## Testing Patterns
 
-| Scenario    | Command          | Coverage | Speed   | Use Case                          |
-| ----------- | ---------------- | -------- | ------- | --------------------------------- |
-| Development | `t`              | ❌       | ⚡ Fast | Daily development, quick feedback |
-| Validation  | `tc`             | ✅       | 🐌 Slow | CI/CD, coverage enforcement       |
-| Debugging   | `t -s --verbose` | ❌       | ⚡ Fast | Troubleshooting, detailed output  |
+### 1. Core Package Testing
 
-### **Common Patterns Quick Reference**
-
-#### **Shared Package Testing**
+#### Service Testing Pattern
 
 ```typescript
-// ✅ CORRECT - Import normally, Mockly handles mocking
-import * as vscode from 'vscode'
+// packages/package-name/core/__tests__/functional/ServiceName.service.test.ts
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { ServiceName } from '../../src/features/feature-name/services/ServiceName.service.js'
+import type {
+    IDependency1,
+    IDependency2,
+} from '../../src/features/feature-name/_interfaces/IServiceName.js'
 
-describe('Window Tests', () => {
-    it('should show message', async () => {
-        await vscode.window.showInformationMessage('test')
-        // Test assertions here...
-    })
-})
-```
-
-#### **Core Package Testing**
-
-```typescript
-// ✅ CORRECT - Use Mockly via DI injection
-import { mockly } from '@fux/mockly'
-
-const container = createCoreContainer({
-    fileSystem: mockly.workspace.fs,
-    window: mockly.window,
-    // ... other dependencies
-})
-```
-
-#### **Extension Package Testing**
-
-```typescript
-// ✅ CORRECT - Mock shared adapters, test VSCode integration
-vi.mock('@fux/shared', () => ({
-    FileSystemAdapter: vi.fn().mockImplementation(() => ({
-        stat: mockFsStat,
-        access: mockFsAccess,
-        copyFile: mockFsCopyFile,
-        readFile: mockFsReadFile,
-        writeFile: mockFsWriteFile,
-    })),
-    WindowAdapter: vi.fn().mockImplementation(() => ({
-        showErrorMessage: mockShowErrorMessage,
-        showTimedInformationMessage: mockShowTimedInformationMessage,
-    })),
-    // ... other adapters
-}))
-```
-
----
-
-## **Core Testing Architecture**
-
-### **Shared Package Testing with Mockly**
-
-**CRITICAL: Shared packages use Mockly for testing, NOT direct VSCode mocking.**
-
-- **Shared packages import VSCode types and values for implementation** (during actual runtime)
-- **Tests import VSCode normally** - the `vscode-test-adapter.ts` redirects to Mockly
-- **Mockly provides comprehensive VSCode API mocks** - no manual mocking needed
-- **Full decoupling** through DI and adapters
-
-### **❌ FORBIDDEN: Direct VSCode Mocking**
-
-**NEVER use `vi.mock('vscode')` in shared package test files. This completely bypasses Mockly and breaks the testing architecture.**
-
-```typescript
-// ❌ WRONG - This breaks Mockly integration
-vi.mock('vscode', () => ({
-    window: { showInformationMessage: vi.fn() },
-}))
-
-// ✅ CORRECT - Import normally, let Mockly handle mocking
-import * as vscode from 'vscode'
-const message = await vscode.window.showInformationMessage('test')
-```
-
-### **⚠️ EXCEPTION: Performance-Critical Test Files**
-
-**ONLY when Mockly is not available or when dealing with performance-critical test files that import VSCode directly:**
-
-- **Use comprehensive VSCode mocks** that include ALL required exports
-- **Measure performance impact** before and after to validate improvements
-- **Apply targeted optimizations** only to specific slow tests, avoiding global changes
-- **Document the exception** with clear rationale for future maintenance
-
-```typescript
-// ⚠️ ALLOWED ONLY for performance-critical tests when Mockly unavailable
-vi.mock('vscode', () => ({
-    TreeItem: vi.fn().mockImplementation((label, collapsibleState) => ({
-        label,
-        collapsibleState,
-        description: undefined,
-        tooltip: undefined,
-        contextValue: undefined,
-        iconPath: undefined,
-        command: undefined,
-    })),
-    ThemeIcon: vi.fn().mockImplementation((id, color) => ({ id, color })),
-    EventEmitter: vi.fn().mockImplementation(() => ({
-        event: vi.fn(),
-        fire: vi.fn(),
-        dispose: vi.fn(),
-    })),
-    TreeItemCollapsibleState: { None: 0, Collapsed: 1, Expanded: 2 },
-    // Include ALL other required exports...
-}))
-```
-
-### **✅ CORRECT: Normal VSCode Imports**
-
-Tests should import VSCode APIs normally:
-
-```typescript
-// ✅ CORRECT - This will use Mockly via the test adapter
-import * as vscode from 'vscode'
-
-describe('Window Tests', () => {
-    it('should show message', async () => {
-        // Mockly provides the mock implementation automatically
-        await vscode.window.showInformationMessage('test')
-        // Test assertions here...
-    })
-})
-```
-
----
-
-## **Core Package Testing Architecture**
-
-### **Architectural Compliance Verification**
-
-Core packages MUST follow strict architectural patterns to maintain separation of concerns:
-
-#### **✅ CORRECT: Core Package Architecture**
-
-```typescript
-// ✅ CORRECT - Core package container accepts dependencies as parameters
-export function createCoreContainer(dependencies: {
-    fileSystem: {
-        access: (path: string) => Promise<void>
-        copyFile: (src: string, dest: string) => Promise<void>
-        stat: (path: string) => Promise<import('vscode').FileStat>
-        readFile: (path: string) => Promise<string>
-        writeFile: (path: string, data: Uint8Array) => Promise<void>
-    }
-    window: {
-        showErrorMessage: (message: string) => Promise<string | undefined>
-        showTimedInformationMessage: (message: string, duration?: number) => void
-    }
-    terminal: {
-        activeTerminal: import('vscode').Terminal | undefined
-        createTerminal: (options?: import('vscode').TerminalOptions) => import('vscode').Terminal
-    }
-}) {
-    const container = createContainer({
-        injectionMode: InjectionMode.PROXY,
-    })
-
-    // Register dependencies as provided
-    container.register({
-        fileSystem: asValue(dependencies.fileSystem),
-        window: asValue(dependencies.window),
-        terminal: asValue(dependencies.terminal),
-    })
-
-    // Register core services
-    container.register({
-        projectButlerService: asClass(ProjectButlerService).singleton(),
-    })
-
-    return container
+// Mock dependencies
+class MockDependency1 implements IDependency1 {
+    process = vi.fn()
 }
-```
 
-#### **❌ FORBIDDEN: Direct Shared Imports**
-
-```typescript
-// ❌ WRONG - Core package importing shared adapters directly
-import { FileSystemAdapter } from '@fux/shared'
-
-export class ProjectButlerService {
-    constructor(private fileSystem: FileSystemAdapter) {}
-    // This creates tight coupling and makes testing difficult
+class MockDependency2 implements IDependency2 {
+    format = vi.fn()
 }
+
+describe('ServiceName', () => {
+    let service: ServiceName
+    let mockDep1: MockDependency1
+    let mockDep2: MockDependency2
+
+    beforeEach(() => {
+        mockDep1 = new MockDependency1()
+        mockDep2 = new MockDependency2()
+        service = new ServiceName(mockDep1, mockDep2)
+    })
+
+    describe('methodName', () => {
+        it('should perform expected behavior', async () => {
+            // Arrange
+            mockDep1.process.mockResolvedValue('processed')
+            mockDep2.format.mockReturnValue('formatted')
+
+            // Act
+            const result = await service.methodName('test')
+
+            // Assert
+            expect(result).toBe('formatted')
+            expect(mockDep1.process).toHaveBeenCalledWith('test')
+            expect(mockDep2.format).toHaveBeenCalledWith('processed')
+        })
+    })
+})
 ```
 
-### **Testing Setup Patterns**
-
-#### **Vitest Wrapper Functions**
-
-Create Vitest-compatible mocks around Mockly methods to enable spying:
+#### Test Setup Pattern
 
 ```typescript
-// ✅ CORRECT - Wrapper functions for spying
-const mockShowErrorMessage = vi.fn().mockImplementation((message: string) => {
-    return mockly.window.showErrorMessage(message)
+// packages/package-name/core/__tests__/_setup.ts
+import { vi, beforeAll, afterAll, afterEach } from 'vitest'
+
+// Mock external dependencies
+vi.mock('js-yaml', () => ({
+    load: vi.fn(),
+}))
+
+// Use fake timers globally
+beforeAll(() => {
+    vi.useFakeTimers()
 })
 
-const mockFsStat = vi.fn().mockImplementation((path: string) => {
-    return mockly.workspace.fs.stat(path)
+afterAll(() => {
+    vi.useRealTimers()
 })
 
-const mockTerminalSendText = vi.fn().mockImplementation((text: string) => {
-    return mockly.window.activeTerminal?.sendText(text)
+// Keep mocks clean between tests
+afterEach(() => {
+    vi.clearAllMocks()
 })
 ```
 
-#### **Mock Clearing Protocol**
+### 2. Extension Package Testing
 
-Prevent test state leakage with `beforeEach` clearing:
+#### Extension Testing Pattern
+
+**Note**: Based on lessons learned from Dynamicons refactoring, extension tests must validate actual runtime behavior, not just mock interactions.
 
 ```typescript
+// packages/package-name/ext/__tests__/functional/extension.test.ts
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { activate, deactivate } from '../../src/extension.js'
+
+describe('Extension', () => {
+    let mockContext: any
+
+    beforeEach(() => {
+        mockContext = {
+            subscriptions: [],
+            globalState: {
+                get: vi.fn(),
+                update: vi.fn(),
+            },
+            workspaceState: {
+                get: vi.fn(),
+                update: vi.fn(),
+            },
+        }
+    })
+
+    describe('activate', () => {
+        it('should activate without errors', () => {
+            expect(() => {
+                activate(mockContext)
+            }).not.toThrow()
+        })
+
+        it('should register commands', () => {
+            activate(mockContext)
+            expect(mockContext.subscriptions).toHaveLength(1)
+        })
+
+        it('should log activation message', () => {
+            const consoleSpy = vi.spyOn(console, 'log')
+
+            activate(mockContext)
+
+            expect(consoleSpy).toHaveBeenCalledWith('[Extension] Activating...')
+            expect(consoleSpy).toHaveBeenCalledWith('[Extension] Activated.')
+        })
+    })
+
+    describe('deactivate', () => {
+        it('should deactivate without errors', () => {
+            expect(() => {
+                deactivate()
+            }).not.toThrow()
+        })
+    })
+
+    describe('integration', () => {
+        it('should activate and deactivate successfully', () => {
+            expect(() => {
+                activate(mockContext)
+                deactivate()
+            }).not.toThrow()
+        })
+    })
+})
+```
+
+#### Adapter Testing Pattern
+
+```typescript
+// packages/package-name/ext/__tests__/functional/adapters/AdapterName.adapter.test.ts
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { AdapterName } from '../../../src/adapters/AdapterName.adapter.js'
+
+describe('AdapterName', () => {
+    let adapter: AdapterName
+
+    beforeEach(() => {
+        vi.clearAllMocks()
+        adapter = new AdapterName()
+    })
+
+    describe('methodName', () => {
+        it('should call VSCode API correctly', () => {
+            // Arrange
+            const mockResult = 'test result'
+            vi.mocked(vscode.someApi).mockReturnValue(mockResult)
+
+            // Act
+            const result = adapter.methodName('test/path')
+
+            // Assert
+            expect(result).toBe(mockResult)
+            expect(vscode.someApi).toHaveBeenCalledWith('test/path')
+        })
+    })
+})
+```
+
+#### Global Test Setup Pattern
+
+```typescript
+// packages/package-name/ext/__tests__/_setup.ts
+import { beforeEach, afterEach } from 'vitest'
+
+// Global test setup for extension package
 beforeEach(() => {
-    // Clear all wrapper mocks to prevent test interference
-    mockShowErrorMessage.mockClear()
-    mockFsStat.mockClear()
-    mockTerminalSendText.mockClear()
-    // ... clear all other mocks
+    // Clear any test state
+})
+
+afterEach(() => {
+    // Cleanup after each test
 })
 ```
 
-#### **Test Service Creation**
+## Vitest Configuration
 
-Create test services with mock dependencies:
+### Functional Test Configuration
 
 ```typescript
-function createTestProjectButlerService() {
-    return createCoreContainer({
-        fileSystem: {
-            access: mockFsAccess,
-            copyFile: mockFsCopyFile,
-            stat: mockFsStat,
-            readFile: mockFsReadFile,
-            writeFile: mockFsWriteFile,
-        },
-        window: {
-            showErrorMessage: mockShowErrorMessage,
-            showTimedInformationMessage: mockShowTimedInformationMessage,
-        },
-        terminal: {
-            activeTerminal: mockly.window.activeTerminal,
-            createTerminal: vi.fn().mockReturnValue({
-                sendText: mockTerminalSendText,
-                show: mockTerminalShow,
-                // ... other terminal methods
-            }),
+// packages/package-name/core/vitest.config.ts
+import { defineConfig, mergeConfig } from 'vitest/config'
+import baseConfig from '../../../vitest.functional.base'
+
+export default mergeConfig(
+    baseConfig,
+    defineConfig({
+        test: {
+            setupFiles: ['./__tests__/_setup.ts'],
         },
     })
-}
-```
-
-### **Verification Checklist**
-
-Before implementing core package testing, verify:
-
-- [ ] **No direct shared imports** in core package source code
-- [ ] **Dependencies accepted as parameters** in container creation
-- [ ] **Mockly used for testing** via DI injection
-- [ ] **Vitest wrapper functions** created for spying capabilities
-- [ ] **Mock clearing** implemented in `beforeEach`
-- [ ] **Test isolation** maintained between test cases
-- [ ] **Architectural compliance** verified against patterns
-
----
-
-## **Extension Package Testing**
-
-### **Thin Wrapper Principle**
-
-Extension packages must act as thin wrappers around core functionality:
-
-#### **✅ CORRECT: Extension Testing**
-
-```typescript
-// ✅ CORRECT - Test only VSCode integration, mock shared adapters
-vi.mock('@fux/shared', () => ({
-    FileSystemAdapter: vi.fn().mockImplementation(() => ({
-        stat: mockFsStat,
-        access: mockFsAccess,
-        copyFile: mockFsCopyFile,
-        readFile: mockFsReadFile,
-        writeFile: mockFsWriteFile,
-    })),
-    WindowAdapter: vi.fn().mockImplementation(() => ({
-        showErrorMessage: mockShowErrorMessage,
-        showTimedInformationMessage: mockShowTimedInformationMessage,
-    })),
-    // ... other adapters
-}))
-
-// Test VSCode integration only
-describe('Extension Activation', () => {
-    it('should register commands', () => {
-        // Test command registration
-        expect(mockExtensionAPI.registerCommand).toHaveBeenCalledWith(
-            'fux.projectButler.updateTerminalPath',
-            expect.any(Function)
-        )
-    })
-})
-```
-
-#### **❌ FORBIDDEN: Business Logic in Extensions**
-
-```typescript
-// ❌ WRONG - Testing business logic in extension
-describe('File System Operations', () => {
-    it('should copy files', async () => {
-        // This belongs in core package tests, not extension tests
-        await fileSystem.copyFile('/src/file.txt', '/dest/file.txt')
-        expect(mockFsCopyFile).toHaveBeenCalledWith('/src/file.txt', '/dest/file.txt')
-    })
-})
-```
-
-### **DI Container Mocking**
-
-Mock the DI container directly to ensure proper test isolation:
-
-```typescript
-vi.mock('../src/injection.js', async () => {
-    const actual = await vi.importActual('../src/injection.js')
-    return {
-        ...actual,
-        createDIContainer: vi.fn().mockImplementation(async () => {
-            const { createContainer, InjectionMode, asValue } = await import('awilix')
-
-            const container = createContainer({
-                injectionMode: InjectionMode.PROXY,
-            })
-
-            // Register mock adapters and services
-            container.register({
-                fileSystem: asValue({
-                    stat: mockFsStat,
-                    access: mockFsAccess,
-                    // ... other methods
-                }),
-                // ... other dependencies
-            })
-
-            return container
-        }),
-    }
-})
-```
-
----
-
-## **Test Lanes**
-
-The monorepo uses two test lanes to balance speed and coverage:
-
-### **Functional Tests (Fast, No Coverage)**
-
-- **Purpose**: Verify functionality works correctly
-- **Coverage**: Disabled for speed
-- **Files**: `**/*.test.ts` only
-- **Command**: `t` (target package only) or `tf` (full dependency chain)
-
-### **Coverage Tests (Slower, With Coverage)**
-
-- **Purpose**: Measure code coverage and run edge cases
-- **Coverage**: Enabled with detailed reporting
-- **Files**: Both `**/*.test.ts` and `**/*.cov.ts`
-- **Command**: `tc` (target package only) or `tfc` (full dependency chain)
-
-**Note**: For detailed alias descriptions, see `.vscode/shell/pnpm_aliases.json`
-
----
-
-## **🚨 CRITICAL TESTING ARCHITECTURE RULE 🚨**
-
-### **Core Packages: NO Shared Imports During Tests**
-
-**Core packages should NEVER import from @fux/shared during tests. EVER.**
-
-This is a fundamental architectural rule that prevents circular dependency issues and ensures proper test isolation. When testing core packages:
-
-- ❌ **NO imports from @fux/shared**
-- ❌ **NO shared library involvement**
-- ❌ **NO shared adapter imports**
-- ✅ **ONLY Mockly shims injected through DI**
-- ✅ **ONLY Mockly services for all dependencies**
-
-**Why This Rule Exists:**
-
-1. **Shared packages import VSCode** - They need VSCode to create adapters
-2. **Core packages import shared types** - They need interfaces for type safety
-3. **Tests don't have VSCode** - VSCode isn't available in test environments
-4. **Importing shared during tests** - Causes VSCode import failures
-
-**The Solution:**
-
-- **Shared packages** test their adapters by mocking VSCode directly with `vi.mock('vscode')`
-- **Core packages** test business logic by injecting Mockly shims directly (no shared imports)
-- **Extension packages** test integration using DI containers with Mockly shims
-
-### **🚨 WHY NOT HARD-CODED MOCKS? 🚨**
-
-**The Problem with Hard-Coded Mocks:**
-
-When you create hard-coded mocks like this:
-
-```typescript
-// ❌ WRONG - Hard-coded mocks
-vi.mock('@fux/shared', () => ({
-    TreeItemAdapter: {
-        create: vi.fn().mockReturnValue({
-            /* hard-coded object */
-        }),
-    },
-    UriAdapter: {
-        file: vi.fn().mockReturnValue({
-            /* hard-coded object */
-        }),
-    },
-}))
-```
-
-**What Happens:**
-
-1. **You're reinventing the wheel** - Mockly already provides comprehensive VSCode API mocks
-2. **Your mocks become stale** - They don't match the real adapter behavior
-3. **Tests become brittle** - Hard-coded values break when adapters change
-4. **You're still importing shared** - Even though you're mocking it, the import still happens
-
-**The Right Approach - Use Mockly:**
-
-```typescript
-// ✅ CORRECT - Use Mockly shims
-import { mockly, mocklyService } from '@fux/mockly'
-
-// Mockly provides real VSCode API mocks that adapters can use
-const service = new FeatureService(
-    mockly.workspace.fs, // Real file system mock
-    mockly.window, // Real window mock
-    mockly.workspace, // Real workspace mock
-    mockly.commands, // Real commands mock
-    mockly.node.path // Real path utilities mock
 )
 ```
 
-**Why Mockly is Better:**
-
-1. **Comprehensive coverage** - Mockly mocks ALL VSCode APIs, not just what you think you need
-2. **Realistic behavior** - Mockly mocks behave like real VSCode APIs
-3. **Maintained** - Mockly is kept up-to-date with VSCode API changes
-4. **Consistent** - All packages use the same mock implementations
-5. **No shared imports** - Tests never see the shared library
-
-**The Golden Rule:**
-
-> **"If you're mocking @fux/shared, you're doing it wrong. Use Mockly instead."**
->
-> - Mockly = ✅ Correct approach
-> - Hard-coded mocks = ❌ Wrong approach
-> - Importing shared during tests = ❌ Never do this
-
-## **VSCode Test Adapter Ownership**
-
-### **Important Rules**
-
-**The `vscode-test-adapter.ts` file belongs exclusively to the shared package and should not be referenced by other packages.**
-
-#### **Correct Location**
+### Coverage Test Configuration
 
 ```typescript
-// ✅ CORRECT - vscode-test-adapter.ts is inside the shared package
-libs/shared/
-├── src/
-├── __tests__/
-├── vscode-test-adapter.ts  // ← This file belongs here
-├── vitest.functional.config.ts
-└── vitest.coverage.config.ts
-```
+// packages/package-name/core/vitest.coverage.config.ts
+import { defineConfig, mergeConfig } from 'vitest/config'
+import baseConfig from '../../../vitest.coverage.base'
 
-#### **Shared Package Configuration**
-
-The shared package's vitest config should reference the adapter locally:
-
-```typescript
-// libs/shared/vitest.functional.config.ts
-export default defineConfig({
-    resolve: {
-        alias: {
-            vscode: path.resolve(__dirname, './vscode-test-adapter.ts'),
+export default mergeConfig(
+    baseConfig,
+    defineConfig({
+        test: {
+            setupFiles: ['./__tests__/_setup.ts'],
+            coverage: {
+                reportsDirectory: './__tests__/coverage',
+            },
         },
+    })
+)
+```
+
+## Nx Configuration
+
+### Core Package Project Configuration
+
+```json
+// packages/package-name/core/project.json
+{
+    "name": "@fux/package-name-core",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/package-name/core/src/index.ts",
+                "outputPath": "packages/package-name/core/dist",
+                "tsConfig": "packages/package-name/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "packages/package-name/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": ["vscode", "js-yaml"]
+            }
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["^build"],
+            "options": {}
+        },
+        "test:full": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ],
+            "options": {}
+        }
+    }
+}
+```
+
+### Extension Package Project Configuration
+
+```json
+// packages/package-name/ext/project.json
+{
+    "name": "@fux/package-name-ext",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
+            "options": {
+                "entryPoints": ["packages/package-name/ext/src/extension.ts"],
+                "outputPath": "packages/package-name/ext/dist",
+                "format": ["cjs"],
+                "metafile": true,
+                "platform": "node",
+                "bundle": true,
+                "external": ["vscode", "js-yaml"],
+                "sourcemap": true,
+                "main": "packages/package-name/ext/src/extension.ts",
+                "tsConfig": "packages/package-name/ext/tsconfig.json",
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/package-name/ext/assets/",
+                        "output": "./assets/"
+                    }
+                ],
+                "thirdParty": true
+            }
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["^build"],
+            "options": {}
+        },
+        "test:full": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ],
+            "options": {}
+        }
+    }
+}
+```
+
+## Testing Best Practices
+
+### 1. Service Testing
+
+- **Test business logic in isolation**: Mock all external dependencies
+- **Use descriptive test names**: Clear what behavior is being tested
+- **Follow AAA pattern**: Arrange, Act, Assert
+- **Test error conditions**: Ensure graceful error handling
+- **Mock external dependencies**: Use consistent mock patterns
+
+### 2. Extension Testing
+
+- **Test command registration**: Verify all commands are registered
+- **Test error handling**: Ensure activation errors are handled gracefully
+- **Test adapter functionality**: Verify VSCode API abstraction
+- **Test integration**: Ensure core services are properly integrated
+
+### 3. Mocking Strategy
+
+- **Consistent mock patterns**: Use similar mock structures across tests
+- **Realistic mock data**: Provide meaningful mock return values
+- **Global vs local mocks**: Use global mocks for common dependencies
+- **Mock cleanup**: Clear mocks between tests
+
+### 4. Test Organization
+
+- **Functional tests**: Main test directory for integration tests
+- **Unit tests**: Specific isolated test cases
+- **Coverage tests**: Separate configuration for coverage reporting
+- **Test documentation**: README files in each test directory
+
+## Command Aliases
+
+### Core Package Commands
+
+```bash
+# Build core package
+{alias}c build
+
+# Test core package (functional)
+{alias}c test
+
+# Test core package (coverage)
+{alias}c test:full
+
+# TypeScript check
+{alias}c tsc
+
+# Lint core package
+{alias}c lint
+```
+
+### Extension Package Commands
+
+```bash
+# Build extension package
+{alias}e build
+
+# Package extension for distribution
+{alias}e package
+
+# Test extension package (functional)
+{alias}e test
+
+# Test extension package (coverage)
+{alias}e test:full
+
+# TypeScript check
+{alias}e tsc
+
+# Lint extension package
+{alias}e lint
+```
+
+### Combined Package Commands
+
+```bash
+# Test both packages
+{alias} test
+
+# Build both packages
+{alias} build
+
+# TypeScript check both packages
+{alias} tsc
+```
+
+## Migration Guide
+
+### From Monolithic to Core/Ext Architecture
+
+1. **Extract Business Logic**
+    - Move business logic to core package
+    - Create service interfaces
+    - Remove VSCode dependencies from core
+
+2. **Create VSCode Adapters**
+    - Abstract VSCode API calls
+    - Create adapter interfaces
+    - Implement adapter classes
+
+3. **Update Extension**
+    - Import core services
+    - Use adapters for VSCode operations
+    - Register commands with core logic
+
+4. **Update Tests**
+    - Move service tests to core package
+    - Create adapter tests in extension package
+    - Update extension tests with new architecture
+
+5. **Update Build Configuration**
+    - Configure Nx targets for both packages
+    - Set up Vitest configurations
+    - Update command aliases
+
+## Quality Gates
+
+### Core Package
+
+- [ ] All services have functional tests
+- [ ] 100% test coverage for business logic
+- [ ] No VSCode dependencies
+- [ ] Clean interfaces defined
+- [ ] TypeScript compilation passes
+
+### Extension Package
+
+- [ ] Extension activation test passes
+- [ ] All adapters have tests
+- [ ] Command registration tested
+- [ ] Error handling tested
+- [ ] TypeScript compilation passes
+
+### Integration
+
+- [ ] Both packages build successfully
+- [ ] All tests pass
+- [ ] No circular dependencies
+- [ ] Clean separation of concerns
+
+## Key Architectural Principles
+
+### 1. No DI Containers
+
+- Core packages use direct service instantiation
+- Extension packages use direct service instantiation
+- Dependencies are passed as constructor parameters
+- Simple and testable architecture
+
+### 2. No Shared Dependencies in Core
+
+- Core packages are self-contained "guinea pig" packages
+- Only external dependencies are minimal utilities (e.g., `js-yaml`)
+- No `@fux/shared` or `@fux/mockly` dependencies
+- Enables independent testing and validation
+
+### 3. Thin Extension Wrappers
+
+- Extension packages contain only VSCode integration code
+- Business logic is in core packages
+- Adapters abstract VSCode API calls
+- Minimal extension code
+
+### 4. Simple Testing
+
+- Core packages test business logic with mock dependencies
+- Extension packages test VSCode integration only
+- No complex DI container mocking
+- Clear separation of concerns
+
+### 5. Individual Exports
+
+- Core packages use individual exports for tree-shaking
+- No barrel exports for better optimization
+- Clear public API surface
+
+## Lessons Learned from Ghost Writer, Project Butler, and Dynamicons
+
+### Critical Testing Lessons from Dynamicons Refactoring
+
+**Problem**: Tests were passing but not validating actual runtime behavior, leading to runtime failures in production.
+
+**Key Lessons**:
+
+1. **Mock Adapter Instantiation Issues**:
+    - **Issue**: Extension tests were not properly intercepting adapter constructor calls
+    - **Solution**: Properly mock adapter modules and ensure mocks are applied before extension activation
+    - **Prevention**: Verify that mocks are actually being used by checking call counts and parameters
+
+2. **Command Registration Validation**:
+    - **Issue**: Tests needed to validate that commands are actually registered with VSCode
+    - **Solution**: Test both command registration and that handlers are proper functions
+    - **Prevention**: Always test end-to-end extension activation and command registration
+
+3. **Service Method Implementation Testing**:
+    - **Issue**: Missing method implementations weren't caught by tests
+    - **Solution**: Write functional tests that call all service methods, not just constructor tests
+    - **Prevention**: Ensure test coverage includes all public methods
+
+4. **Extension Activation State Management**:
+    - **Issue**: Multiple test runs failed due to extension activation state persistence
+    - **Solution**: Properly reset extension state between tests or structure tests to account for state
+    - **Prevention**: Design extension activation to be idempotent or properly resettable
+
+5. **Dynamic Import Violations**:
+    - **Issue**: Test files used `await import()` for mocking, violating auditor rules
+    - **Solution**: Remove all dynamic imports and use static imports with `vi.mocked()`
+    - **Prevention**: Use standard Vitest mocking patterns instead of dynamic imports
+
+6. **Mock Precision Requirements**:
+    - **Issue**: Test mocks didn't match actual API signatures and parameter patterns
+    - **Solution**: Ensure mocks precisely match real method signatures and behavior
+    - **Prevention**: Understand actual implementation details before writing mock expectations
+
+**Enhanced Testing Strategy**:
+
+- [ ] **Real Runtime Validation**: Tests exercise actual service method calls
+- [ ] **Command Registration Testing**: Verify commands are registered and handlers exist
+- [ ] **Mock Interception Verification**: Confirm mocks are actually being used
+- [ ] **Complete Method Coverage**: Test all public methods, not just constructors
+- [ ] **Extension State Management**: Handle activation state properly in tests
+- [ ] **Static Import Usage**: Use static imports with `vi.mocked()` instead of dynamic imports
+- [ ] **Mock Precision**: Ensure mocks match actual API signatures and parameter patterns
+
+### Dependency Management Insights
+
+**Problem**: Ghost Writer had unnecessary dependencies (`awilix`, `js-yaml`, `@fux/mockly`) in the extension package that violated the thin wrapper principle.
+
+**Solution**:
+
+- **Remove DI Container Dependencies**: Extension packages should not use `awilix` or other DI containers - use direct instantiation instead
+- **Remove Unnecessary Dependencies**: Only include dependencies that are actually needed for VSCode integration
+- **Follow Project Butler Pattern**: Use the exact same dependency structure as the reference package:
+    ```json
+    "dependencies": {
+      "@fux/{package}-core": "workspace:*"
     },
-})
-```
-
-#### **Other Packages Must NOT Reference It**
-
-**Core and Extension Packages:**
-
-```typescript
-// ❌ WRONG - Don't reference the shared package's test adapter
-resolve: {
-    alias: {
-        'vscode': path.resolve(__dirname, '../../../vscode-test-adapter.ts'),
+    "devDependencies": {
+      "@types/node": "^24.0.10",
+      "@types/vscode": "^1.99.3",
+      "typescript": "^5.8.3",
+      "vitest": "^3.2.4",
+      "@vitest/coverage-v8": "^3.2.4"
     }
-}
+    ```
 
-// ✅ CORRECT - Only alias shared and mockly
-resolve: {
-    alias: {
-        '@fux/shared': path.resolve(__dirname, '../../../libs/shared/src/index.ts'),
-        '@fux/mockly': path.resolve(__dirname, '../../../libs/mockly/src/index.ts'),
+### Test Configuration Insights
+
+**Problem**: Extension package test configuration was using `extends: "vite:test"` which caused "Cannot find configuration for task" errors.
+
+**Solution**:
+
+- **Use Direct Executor Configuration**: Instead of extending targets, use direct executor configuration:
+    ```json
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "dependsOn": ["^build"]
+    },
+    "test:full": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "dependsOn": [
+        {
+          "dependencies": true,
+          "target": "test",
+          "params": "forward"
+        }
+      ]
     }
-}
+    ```
+- **Remove Mockly Dependencies**: Extension tests should not depend on `@fux/mockly` - use simple mocks instead
+- **Simple Test Setup**: Use basic test setup without complex mocking libraries
+
+### Build Configuration Insights
+
+**Problem**: Build configuration had unnecessary external dependencies that were not actually needed.
+
+**Solution**:
+
+- **Minimal External Dependencies**: Only externalize what's actually needed:
+    ```json
+    "external": ["vscode"]
+    ```
+- **Remove Build Dependencies**: Don't externalize build-time dependencies like `typescript`, `awilix`, `js-yaml`
+
+### Type Import vs Value Import Insights
+
+**Problem**: Position adapter was using `import type` but trying to instantiate the class.
+
+**Solution**:
+
+- **Use Value Imports for Instantiation**: When you need to create instances, use regular imports:
+    ```typescript
+    import { Position as VSCodePosition } from 'vscode' // For instantiation
+    ```
+- **Use Type Imports for Types Only**: Use `import type` only when you need the type, not the value:
+    ```typescript
+    import type { ExtensionContext } from 'vscode' // For types only
+    ```
+
+### Test Mocking Strategy Insights
+
+**Problem**: Extension tests were using complex Mockly setup that wasn't necessary.
+
+**Solution**:
+
+- **Simple Mock Objects**: Use simple mock objects for extension tests:
+    ```typescript
+    mockContext = {
+        subscriptions: [],
+        globalState: {
+            get: vi.fn(),
+            update: vi.fn(),
+        },
+        workspaceState: {
+            get: vi.fn(),
+            update: vi.fn(),
+        },
+    }
+    ```
+- **No Mockly in Extension Tests**: Extension tests don't need Mockly - use Vitest's built-in mocking capabilities
+
+### **Adapter Testing Anti-Patterns and Solutions**
+
+**Critical Problem**: Tests that pass in isolation but fail in real-world runtime scenarios due to oversimplified mocking.
+
+#### **❌ Common Anti-Patterns**
+
+1. **Mocking Masked Reality**: Tests use comprehensive mocks that always return valid objects, but real VSCode API calls can return `undefined` or `null`
+2. **No Integration Testing**: Tests validate adapters in isolation but don't test actual integration with VSCode API in realistic scenarios
+3. **Defensive Programming Not Tested**: While adapters might have null-safe operators, tests never simulate the failure conditions
+4. **Type Safety Issues**: Using `any` types masks potential type mismatches
+
+#### **✅ Required Testing Patterns**
+
+1. **Defensive Programming Tests**: Test scenarios where VSCode API returns unexpected values:
+
+    ```typescript
+    describe('error handling', () => {
+        it('should handle null input gracefully', () => {
+            const result = adapter.create(null as any)
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                '[UriAdapter] Invalid URI provided to create():',
+                null
+            )
+            expect(result.fsPath).toBe('/invalid-uri')
+        })
+
+        it('should handle undefined input gracefully', () => {
+            const result = adapter.create(undefined as any)
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                '[UriAdapter] Invalid URI provided to create():',
+                undefined
+            )
+            expect(result.fsPath).toBe('/invalid-uri')
+        })
+    })
+    ```
+
+2. **Integration Scenarios**: Test real-world usage patterns:
+
+    ```typescript
+    describe('integration scenarios', () => {
+        it('should handle real-world extension URI usage', () => {
+            const extensionUri = mockVscode.Uri.file('/extension/path')
+            const assetsPath = 'assets/themes'
+
+            const createdUri = adapter.create(extensionUri)
+            const joinedUri = adapter.joinPath(createdUri, assetsPath)
+
+            expect(createdUri).toBe(extensionUri)
+            expect(joinedUri.fsPath).toBe('/extension/path/assets/themes')
+        })
+    })
+    ```
+
+3. **Proper Interface Definitions**: Replace `any` types with proper interfaces:
+
+    ```typescript
+    // ❌ WRONG
+    create(uri: any): vscode.Uri
+
+    // ✅ CORRECT
+    create(uri: vscode.Uri | string): vscode.Uri
+    ```
+
+4. **Comprehensive Error Testing**: Test all edge cases and failure modes:
+
+    ```typescript
+    describe('file method', () => {
+        it('should handle empty path gracefully', () => {
+            const result = adapter.file('')
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                '[UriAdapter] Invalid path provided to file():',
+                ''
+            )
+            expect(result.fsPath).toBe('/invalid-path')
+        })
+
+        it('should handle null path gracefully', () => {
+            const result = adapter.file(null as any)
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                '[UriAdapter] Invalid path provided to file():',
+                null
+            )
+            expect(result.fsPath).toBe('/invalid-path')
+        })
+    })
+    ```
+
+#### **🔍 Detection Methods**
+
+1. **Runtime Error Analysis**: Look for errors like `this.uriAdapter.create is not a function`
+2. **Test vs Reality Gap**: If tests pass but runtime fails, suspect oversimplified mocking
+3. **Type Safety Review**: Check for `any` types in adapter interfaces
+4. **Integration Test Coverage**: Verify that real-world usage patterns are tested
+
+#### **🛠️ Systematic Review Process**
+
+1. **Identify Adapter Usage**: Find all `adapter.method()` calls in extension code
+2. **Check Interface Completeness**: Ensure all used methods are defined in interfaces
+3. **Add Defensive Programming**: Implement null-safe operations with proper error handling
+4. **Create Integration Tests**: Test actual VSCode API integration scenarios
+5. **Add Error Handling Tests**: Test all edge cases and failure modes
+6. **Replace `any` Types**: Use proper TypeScript types throughout
+
+#### **📋 Mandatory Test Categories**
+
+For every adapter, ensure tests cover:
+
+- ✅ **Happy Path**: Normal operation with valid inputs
+- ✅ **Error Handling**: Invalid inputs (null, undefined, empty strings)
+- ✅ **Edge Cases**: Boundary conditions and unusual inputs
+- ✅ **Integration Scenarios**: Real-world usage patterns
+- ✅ **Type Safety**: Proper TypeScript types, no `any` types
+- ✅ **Defensive Programming**: Graceful degradation on failures
+
+### VS Code Extension Testing Limitations
+
+**Critical Insight**: While testing coverage is valuable, VS Code extensions have inherent testing limitations that require different approaches.
+
+#### What Testing Coverage CAN Catch ✅
+
+1. **TypeScript/Compilation Errors**:
+    - **Example**: Missing properties in mocks, incorrect types
+    - **How**: TypeScript compiler catches these during build
+    - **Coverage**: Unit tests with proper mocking
+
+2. **Logic Errors**:
+    - **Example**: Incorrect file path construction, wrong method calls
+    - **How**: Unit tests with mocked dependencies
+    - **Coverage**: High - can test individual functions in isolation
+
+3. **API Contract Violations**:
+    - **Example**: Wrong parameter types, missing required properties
+    - **How**: Integration tests with real VS Code API adapters
+    - **Coverage**: Good - can test service interactions
+
+#### What Testing Coverage CANNOT Easily Catch ❌
+
+1. **VS Code Extension-Specific Behaviors**:
+    - **Example**: File explorer focus changes, theme selection prompts
+    - **Why**: These are VS Code UI behaviors that happen outside your code
+    - **Challenge**: Requires full VS Code environment to reproduce
+
+2. **Timing and Race Conditions**:
+    - **Example**: Delays needed for theme switching (25ms)
+    - **Why**: Depends on VS Code's internal timing
+    - **Challenge**: Hard to mock or predict in tests
+
+3. **VS Code's Automatic Refresh Behavior**:
+    - **Example**: When VS Code automatically refreshes vs. when it doesn't
+    - **Why**: This is VS Code's internal implementation detail
+    - **Challenge**: Not part of your extension's API surface
+
+4. **User Experience Issues**:
+    - **Example**: "The explorer view changes to focus on the active editor"
+    - **Why**: These are visual/UX behaviors
+    - **Challenge**: Requires manual testing or complex UI automation
+
+#### Best Practices for VS Code Extension Testing
+
+1. **Unit test your business logic** ✅ (Core package testing)
+2. **Integration test your VS Code API usage** ✅ (Extension package testing)
+3. **Manual test user workflows** ✅ (Essential for UX issues)
+4. **Monitor for VS Code API changes** ✅ (Stay updated)
+5. **Use VS Code's extension development tools** ✅ (Debug in real environment)
+
+#### Testing Strategy for UI/UX Issues
+
+**Problem**: Issues like file explorer focus changes, theme selection prompts, and refresh behavior cannot be easily automated.
+
+**Solution**:
+
+- **Manual Testing Workflows**: Create documented manual testing procedures for UI behaviors
+- **User Feedback Integration**: Establish processes to capture and address user-reported UX issues
+- **VS Code Extension Development Tools**: Use VS Code's built-in debugging and development tools
+- **Real Environment Testing**: Always test in actual VS Code environment, not just mocked tests
+
+**Example Manual Testing Checklist**:
+
+```markdown
+## VS Code Extension UI Testing Checklist
+
+### Icon Assignment Workflow
+
+- [ ] Select file → Icon picker shows only file icons
+- [ ] Select folder → Icon picker shows only folder icons
+- [ ] Assign icon → No file explorer focus changes
+- [ ] Assign icon → No theme selection prompts
+- [ ] Assign icon → Icons refresh automatically
+- [ ] Theme switching → No unwanted side effects
+
+### Extension Installation/Uninstallation
+
+- [ ] Install extension → No errors
+- [ ] Uninstall extension → Clean removal
+- [ ] Reinstall extension → No conflicts
+- [ ] Extension activation → Proper initialization
 ```
 
-#### **Why This Architecture?**
+#### Anti-Patterns for VS Code Extension Testing
 
-1. **Encapsulation:** Shared package contains everything it needs for testing
-2. **Ownership:** Clear ownership of the test adapter
-3. **No Cross-Package Dependencies:** Other packages don't depend on shared's test utilities
-4. **Consistency:** Follows the established pattern of package self-containment
+- **🚫 Over-Reliance on Automated Tests**: Don't assume automated tests catch all issues
+- **🚫 Ignoring UI/UX Testing**: Don't skip manual testing of user workflows
+- **🚫 Mocking VS Code Internal Behaviors**: Don't try to mock VS Code's internal refresh mechanisms
+- **🚫 Ignoring User Feedback**: Don't dismiss user-reported issues as "not testable"
 
-## **Troubleshooting Guide**
+### Architecture Validation Insights
 
-### **🚨 "NO SHARED DURING TESTS" VIOLATIONS 🚨**
+**Problem**: Structure auditor was complaining about adapters being outside shared package, but this was incorrect for the new architecture.
 
-**When You See These Errors, You're Violating the "No Shared During Tests" Rule:**
+**Solution**:
 
-#### **VSCode Import Errors**
+- **Ignore Outdated Auditor Rules**: The structure auditor may have outdated rules that don't match the new architecture
+- **Focus on Functional Validation**: Instead of relying on static analysis, validate that the architecture works functionally
+- **Test Real Behavior**: Ensure that the refactored package actually works correctly rather than just passing static checks
 
-**Symptoms:**
+## Test Configuration Migration Patterns
 
-```
-Error: Cannot find package 'vscode' imported from 'libs/shared/dist/vscode/adapters/Window.adapter.js'
-```
+### Double Execution Elimination
 
-**Root Cause:** Your test is importing from `@fux/shared`, which contains VSCode value imports. The shared library is being loaded during tests.
+**Problem**: Test commands were running twice due to conflicting configurations between global `targetDefaults` and AKA script injection.
 
-**The Fix:**
+**Solution**:
 
-1. **Remove ALL imports from @fux/shared in test files**
-2. **Use Mockly shims instead**
-3. **Ensure your DI container only contains Mockly services**
+- **Pattern Replication Protocol**: When a working solution exists (Project Butler), replicate it exactly rather than trying to improve it
+- **Remove Global Conflicts**: Remove `configFile` options from `nx.json` `targetDefaults` to allow AKA script to handle config injection
+- **Use Proven Executor**: Use `@nx/vite:test` executor with proper configuration instead of complex `nx:run-commands`
+- **Single Execution Verification**: Always use `-s -stream` flags to verify no duplicate test runs before considering a solution complete
 
-#### **Module Resolution Failures**
+### Test Configuration Migration Steps
 
-**Symptoms:**
+1. **Copy Working Pattern**: Use the exact `project.json` test target configuration from Project Butler:
 
-```
-Module not found: Can't resolve '@fux/shared' in 'packages/note-hub/core/__tests__/...'
-```
+    ```json
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "dependsOn": ["^build"]
+    },
+    "test:full": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "dependsOn": [
+        {
+          "dependencies": true,
+          "target": "test",
+          "params": "forward"
+        }
+      ]
+    }
+    ```
 
-**Root Cause:** Your test is trying to import from shared, but the test environment doesn't have access to it.
+2. **Remove Extends**: Replace `extends: "test"` and `extends: "test:full"` with explicit executor configuration
 
-**The Fix:**
+3. **Verify Single Execution**: Test all commands with `-s -stream` flags:
+    - `{alias} t -s -stream` - Should show single execution
+    - `{alias} tf -s -stream` - Should show single execution for each package in dependency chain
 
-1. **Don't import from shared in tests**
-2. **Use Mockly for all dependencies**
-3. **Create test-specific DI containers**
+4. **AKA Script Integration**: Ensure no conflicting `configFile` options in local packages to allow AKA script to handle config injection
 
-#### **Circular Dependency Warnings**
+### Configuration Hierarchy Understanding
 
-**Symptoms:**
+**Key Principle**: Global configurations can conflict with local overrides. The hierarchy is:
 
-```
-Circular dependency detected: packages/note-hub/core -> libs/shared -> packages/note-hub/core
-```
+1. Global `targetDefaults` in `nx.json`
+2. Local package `project.json` targets
+3. AKA script dynamic injection
 
-**Root Cause:** Core package tests are importing from shared, creating a dependency loop.
+**Best Practice**: Remove global `targetDefaults` for test targets and let local packages handle their own configuration with AKA script support.
 
-**The Fix:**
+### Anti-Patterns for Test Configuration
 
-1. **Break the cycle by removing shared imports**
-2. **Use Mockly for all test dependencies**
-3. **Ensure tests are completely isolated**
+- **🚫 Over-Engineering**: Don't use complex executors when simpler ones achieve the same result
+- **🚫 Ignoring Working Patterns**: Don't attempt to improve working test configurations without first understanding why they work
+- **🚫 Incomplete Verification**: Don't assume test configuration is complete without explicit single-execution verification
+- **🚫 Global Configuration Conflicts**: Don't have conflicting `configFile` options in both global `targetDefaults` and local package configurations
 
-#### **Test Environment Crashes**
+## Conclusion
 
-**Symptoms:**
+This testing strategy v2 provides a comprehensive framework for testing the confirmed Core/Extension package architecture. It ensures:
 
-```
-TypeError: Cannot read properties of undefined (reading 'workspace')
-```
+- **Clean separation of concerns** between business logic and VSCode integration
+- **Comprehensive test coverage** for both core services and extension functionality
+- **Consistent testing patterns** across all packages
+- **Maintainable test code** with clear organization and documentation
+- **Quality assurance** through automated testing and quality gates
 
-**Root Cause:** Test is trying to access VSCode APIs that aren't available in the test environment.
+By following this strategy, teams can confidently develop and maintain packages that follow the established architecture patterns while ensuring high code quality and reliability.
 
-**The Fix:**
-
-1. **Mock VSCode at the module level**
-2. **Use Mockly for all VSCode API access**
-3. **Never import shared adapters in tests**
-
-**The Complete Fix Pattern:**
-
-```typescript
-// ❌ WRONG - This will cause VSCode import failures
-import { TreeItemAdapter } from '@fux/shared'
-
-// ✅ CORRECT - Use Mockly directly
-import { mockly } from '@fux/mockly'
-
-// ❌ WRONG - Hard-coded mocks
-vi.mock('@fux/shared', () => ({
-    /* mocks */
-}))
-
-// ✅ CORRECT - Mock VSCode, use Mockly for services
-vi.mock('vscode', () => ({
-    /* VSCode mocks */
-}))
-
-// ❌ WRONG - Importing shared in tests
-const adapter = new TreeItemAdapter()
-
-// ✅ CORRECT - Use Mockly shims
-const service = new FeatureService(mockly.workspace.fs, mockly.window)
-```
-
-### **Common Issues and Solutions**
-
-#### **Tests Not Running**
-
-```bash
-# Check if tests are actually running vs output suppressed
-{alias} t --skip-nx-cache --verbose
-
-# Verify test discovery
-{alias} t --list
-```
-
-#### **Mockly Integration Issues**
-
-```typescript
-// Problem: Tests failing with Mockly methods
-// Solution: Use wrapper functions for spying
-const mockMethod = vi.fn().mockImplementation((...args) => {
-    return mockly.actualMethod(...args)
-})
-```
-
-#### **Performance Issues**
-
-```bash
-# Measure test performance
-{alias} t --reporter=verbose
-
-# Identify slow tests
-{alias} t --reporter=json | jq '.testResults[].duration'
-```
-
-#### **Coverage Issues**
-
-```bash
-# Check coverage configuration
-{alias} tc --coverage
-
-# Verify coverage files are included
-{alias} tc --list
-```
-
-### **Debugging Commands**
-
-| Issue            | Command                               | Purpose                     |
-| ---------------- | ------------------------------------- | --------------------------- |
-| Test discovery   | `{alias} t --list`                    | See which tests are found   |
-| Output debugging | `{alias} t --skip-nx-cache --verbose` | See raw test output         |
-| Performance      | `{alias} t --reporter=verbose`        | Detailed timing information |
-| Coverage         | `{alias} tc --coverage`               | Verify coverage collection  |
-
----
-
-## **Best Practices**
-
-### **Test Organization**
-
-- **Group related tests** in describe blocks
-- **Use descriptive test names** that explain the scenario
-- **Keep tests focused** - one assertion per test when possible
-- **Use setup/teardown** for common test state
-
-### **Mock Management**
-
-- **Create wrapper functions** for Mockly methods when spying needed
-- **Clear mocks in beforeEach** to prevent test interference
-- **Use comprehensive mocks** when direct VSCode mocking is required
-- **Document exceptions** to direct VSCode mocking
-
-### **Performance Optimization**
-
-- **Measure before optimizing** - identify actual bottlenecks
-- **Target specific slow tests** - avoid global optimizations
-- **Use appropriate test lanes** - functional for development, coverage for validation
-- **Monitor for regressions** - ensure optimizations don't break functionality
-
-### **Documentation**
-
-- **Update Actions Log** for significant testing changes
-- **Document new patterns** in this strategy
-- **Include failure documentation** - what was tried and failed
-- **Share learnings** across the team
-
-## **Migration Checklist**
-
-### **When Fixing Injection Patterns in Existing Packages**
-
-- [ ] **Audit Dependencies:** Ensure no circular imports between packages
-- [ ] **Inject Shared Adapters:** All core services should use shared adapters
-- [ ] **Use Factory Functions:** Complex services should use `asFunction` registration
-- [ ] **Remove Shared Imports from Tests:** Ensure NO @fux/shared imports in test files
-- [ ] **Use Mockly in Test Setup:** All test dependencies should come from Mockly
-- [ ] **Verify Test Isolation:** Tests should not execute any shared library code
-- [ ] **Register Everything:** All services must be in the DI container
-- [ ] **Import Interfaces:** Use proper interface imports from core packages
-- [ ] **Test Integration:** Verify DI container resolves all dependencies
-- [ ] **Remove Manual Construction:** No services created outside container
-- [ ] **Validate Hierarchy:** Confirm shared → core → ext dependency flow
-
-### **VSCode Test Adapter Migration Steps**
-
-If you currently have `vscode-test-adapter.ts` at the workspace root:
-
-1. **Move the file** to `libs/shared/vscode-test-adapter.ts`
-2. **Update shared package vitest configs** to reference it locally
-3. **Remove any references** from other package vitest configs
-4. **Delete the root-level file** after confirming shared tests still work
-
----
-
-> **Note**: This strategy applies to all packages in the FocusedUX monorepo. For package-specific guidance, consult individual package documentation.
+The confirmed implementations in Ghost Writer and Project Butler demonstrate that this testing strategy is working, maintainable, and scalable for the FocusedUX monorepo.

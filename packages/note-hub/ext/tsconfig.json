@@ -1,23 +1,18 @@
 {
     "extends": "../../../tsconfig.base.json",
+
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "**/*.test.ts", "__tests__/**/*", "dist/**/*"],
+
     "compilerOptions": {
         "outDir": "./dist",
-        "composite": false,
-        "declaration": false,
-        "declarationMap": false,
-        "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+        "rootDir": "./src",
+        "composite": true
     },
-    "include": ["src/**/*.ts"],
-    "exclude": ["__tests__/**"],
+
     "references": [
         {
-            "path": "../../../libs/mockly"
-        },
-        {
             "path": "../core"
-        },
-        {
-            "path": "../../../libs/shared"
         }
     ]
 }
