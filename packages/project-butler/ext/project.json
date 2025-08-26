@@ -32,6 +32,15 @@
                 ]
             }
         },
+
+        "test:compile": {
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/out-tsc"],
+            "options": {
+                "command": "tsc -p packages/project-butler/ext/tsconfig.test.json"
+            }
+        },
+
         "package": {
             "executor": "nx:run-commands",
             "dependsOn": [
@@ -88,21 +97,34 @@
                 }
             ]
         },
+    
         "test:integration": {
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": ["build", "test:compile"],
             "options": {
-                "command": "tsc -p __tests__/integration/tsconfig.json && tsx __tests__/integration/runTest.ts",
+                "commands": [
+                    "rimraf ./.vscode-test",
+                    "vscode-test --config .vscode-test.mjs --verbose"
+                ],
                 "cwd": "packages/project-butler/ext"
-            }
+            },
+            "description": "Run VS Code extension integration tests using @vscode/test-cli"
         },
+        
         "test:integration:full": {
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": ["build", "test:compile"],
             "options": {
-                "command": "tsx __tests__/integration/runTest.ts --full",
+                "commands": [
+                    // "rimraf ./.vscode-test",
+                    "echo '--- Running glob to find test files ---'",
+                    "glob './out-tsc/suite/**/*.test.js'",
+                    "echo '--- Starting test runner ---'",
+                    "vscode-test --config .vscode-test.mjs --reporter spec --verbose"
+                ],
                 "cwd": "packages/project-butler/ext"
-            }
+            },
+            "description": "Run VS Code extension integration tests with detailed output"
         }
         
     },

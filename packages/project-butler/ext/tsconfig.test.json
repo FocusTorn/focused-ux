@@ -1,0 +1,20 @@
+{
+    "extends": "../../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./out-tsc",
+        "rootDir": "./test",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "types": [
+            "node",
+            "mocha"
+        ],
+        "composite": false,
+        "declaration": false,
+        "sourceMap": true,
+        "tsBuildInfoFile": "./out-tsc/tsconfig.test.tsbuildinfo"
+    },
+    "include": [
+        "test/**/*.ts"
+    ]
+}

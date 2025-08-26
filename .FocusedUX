@@ -2,18 +2,17 @@ FocusedUX:
   info_message_show_seconds: 2
 ContextCherryPicker:
   settings:
-    message_show_seconds:
-      - 3
+    message_show_seconds: 3
   quick_settings_panel:
     project_structure_contents:
       visible: true
-      filter: none
+      filter: all
     default_status_message:
       visible: false
       style: drop
     file_groups:
       config:
-        initially_visible: false
+        initially_visible: true
         items:
           - '**/.FocusedUX'
           - '**/.prettierignore'
@@ -32,7 +31,7 @@ ContextCherryPicker:
           - '**/.nx'
           - '**/tmp'
       test:
-        initially_visible: true
+        initially_visible: false
         items:
           - '**/__tests__'
           - '**/coverage'
@@ -73,7 +72,8 @@ ContextCherryPicker:
     show_if_selected: null
   context_explorer:
     ignore: null
-    hide_children: null
+    hide_children:
+      - '**/tests/integration/test-user-data'
 TerminalButler:
   packageJson-order:
     - displayName

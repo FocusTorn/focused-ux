@@ -1,18 +1,33 @@
-# 1. Ignore everything by default.
-**/*
+# # 1. Ignore everything by default.
+# **/*
 
-# 2. Re-include the bundled extension code.
-!dist/extension.cjs
-!dist/extension.cjs.map
+# # 2. Re-include the bundled extension code.
+# !dist/extension.cjs
+# !dist/extension.cjs.map
 
-# 3. Re-include the assets.
-!assets/**
+# # 3. Re-include the assets.
+# !assets/**
 
-# 4. Re-include the production node_modules.
-!node_modules/**
+# # 4. Re-include the production node_modules.
+# !node_modules/**
 
-# 5. Re-include essential package metadata.
-!package.json
-!README.md
-!LICENSE.txt
-!CHANGELOG.md 
+# # 5. Re-include essential package metadata.
+# !package.json
+# !README.md
+# !LICENSE.txt
+# !CHANGELOG.md 
+
+
+.vscode/**
+.vscode-test/**
+out-tsc/**
+tests/**
+dist/
+node_modules/
+.DS_Store
+*.log
+.nyc_output
+coverage/
+.vitest.config.ts.snap
+vitest.config.ts
+vitest.coverage.config.ts 
