@@ -1,9 +1,0 @@
-{
-  "packageJson": {
-    "format": {
-      "sortKeys": true,
-      "removeEmptyFields": true,
-      "groupScripts": true
-    }
-  }
-}
