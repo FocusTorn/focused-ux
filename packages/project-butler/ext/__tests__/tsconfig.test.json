@@ -1,8 +1,8 @@
 {
-    "extends": "../../../tsconfig.base.json",
+    "extends": "../../../../tsconfig.base.json",
     "compilerOptions": {
-        "outDir": "./out-tsc",
-        "rootDir": "./__tests__/integration",
+        "outDir": "./_out-tsc",
+        "rootDir": "./integration",
         "module": "CommonJS",
         "moduleResolution": "node",
         "types": [
@@ -12,10 +12,10 @@
         "composite": false,
         "declaration": false,
         "sourceMap": true,
-        "tsBuildInfoFile": "./out-tsc/tsconfig.test.tsbuildinfo"
+        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo"
     },
     "include": [
-        "__tests__/integration/**/*.ts"
+        "integration/**/*.ts"
     ]
     
 }

@@ -92,11 +92,11 @@
         
         "test:compile": { //>
             "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/out-tsc"],
+            "outputs": ["{projectRoot}/__tests__/_out-tsc"],
             "options": {
                 "commands": [
-                    // "rimraf ./out-tsc/suite",
-                    "tsc -p packages/project-butler/ext/tsconfig.test.json"
+                    // "rimraf ./__tests__/_out-tsc/suite",
+                    "tsc -p packages/project-butler/ext/__tests__/tsconfig.test.json"
                 ]
             }
         }, //<

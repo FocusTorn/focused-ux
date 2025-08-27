@@ -9,6 +9,8 @@ export default createVscodeTestConfig({
     packageName: 'fux-project-butler',
     extensionDevelopmentPath: __dirname,
     workspaceFolder: './__tests__/integration/test-workspace',
+    files: './__tests__/_out-tsc/**/*.test.js',
+    setupFiles: './__tests__/_out-tsc/index.js',
 })
 
 // import { defineConfig } from '@vscode/test-cli'
