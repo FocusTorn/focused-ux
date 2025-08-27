@@ -107,19 +107,6 @@
             "options": {
                 "commands": [
                     // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
-                    "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
-                ],
-                "cwd": "packages/project-butler/ext"
-            },
-            "description": "Run VS Code extension integration tests using @vscode/test-cli"
-        }, //<
-        
-        "test:integration:full": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": ["build", "test:compile"],
-            "options": {
-                "commands": [
-                    // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
                     "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
                 ],
                 "cwd": "packages/project-butler/ext"
@@ -127,7 +114,7 @@
             "description": "Run VS Code extension integration tests with detailed output"
         }, //<
          
-        "test:integration:full:noisy": { //>
+        "test:integration:noisy": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["build", "test:compile"],
             "options": {

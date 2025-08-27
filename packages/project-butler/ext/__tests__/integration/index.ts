@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-// Import all test suites
+// Import all integration test suites
 import './extension.test.js';
 import './backup.test.js';
 import './package-json-formatting.test.js';
@@ -8,7 +8,7 @@ import './terminal-management.test.js';
 import './poetry-shell.test.js';
 
 /**
- * Mocha root hooks to manage the test suite's lifecycle.
+ * Mocha root hooks to manage the integration test suite's lifecycle.
  */
 export const mochaHooks = {
   /**

@@ -7,9 +7,6 @@
     "include": [],
     "references": [
         {
-            "path": "_scripts/js"
-        },
-        {
             "path": "generators"
         },
         {
@@ -47,18 +44,6 @@
         },
         {
             "path": "libs/shared"
-        },
-        {
-            "path": "libs/tools/aka"
-        },
-        {
-            "path": "libs/tools/cursor-memory-optimizer"
-        },
-        {
-            "path": "libs/tools/prune-nx-cache"
-        },
-        {
-            "path": "libs/tools/structure-auditor"
         },
         {
             "path": "libs/vscode-test-cli-config"

@@ -447,6 +447,78 @@ When implementing new features or refactoring existing code:
     - Conditionally skip UI operations: `if (!IS_TEST_ENVIRONMENT) { await window.showInformationMessage(...) }`
     - Throw errors in test environment for proper test failure reporting
 
+## **Package Analysis Protocol**
+
+### **Systematic Package Analysis Process**
+
+**CRITICAL**: Before making any package-related changes, follow this systematic analysis process:
+
+#### **Step 1: Deep Dive Initial Understanding Audit**
+
+1. **Use `nx_project_details`** to understand package dependencies and build configuration
+2. **Verify package type** (core vs ext vs shared vs tool) and architectural role
+3. **Check build configuration** matches package type requirements
+4. **Identify all affected consumers** and dependent packages
+5. **CRITICAL: Analyze package variations and deviations** from standard patterns:
+    - **Extension dependencies**: Check if extension depends on additional shared packages beyond core
+    - **Build externalization**: Verify what dependencies are externalized (may vary by package)
+    - **Testing complexity**: Identify if package has integration tests, compilation tests, or other special testing
+    - **Entry point patterns**: Check if uses `extension.ts` vs `index.ts` or other variations
+    - **Package.json patterns**: Verify main field, dependencies, and configuration variations
+    - **Additional targets**: Look for custom targets beyond standard build/test/lint patterns
+6. **Document architectural deviations** and understand their rationale before proceeding
+
+#### **Step 2: Architectural Pattern Validation**
+
+1. **Core packages**: Verify self-contained "guinea pig" architecture
+    - No shared dependencies
+    - Type imports only for VSCode
+    - Direct service instantiation (no DI containers)
+2. **Extension packages**: Verify VSCode integration architecture
+    - Depend on core packages
+    - Local adapters for VSCode APIs
+    - Bundle as CommonJS for VSCode compatibility
+3. **Shared packages**: Verify utility consumption patterns
+4. **Tool packages**: Verify standalone execution patterns
+
+#### **Step 3: Build Configuration Verification**
+
+1. **Core packages**: `bundle: false`, `format: ["esm"]`, externalize all dependencies
+2. **Extension packages**: `bundle: true`, `format: ["cjs"]`, externalize only VSCode (or additional dependencies as needed)
+3. **Verify TypeScript configuration** matches package type
+4. **Check external dependencies** are properly listed
+
+#### **Step 4: Testing Architecture Alignment**
+
+1. **Core packages**: Test business logic in isolation
+2. **Extension packages**: Test VSCode integration through adapters
+3. **Verify test dependencies** and mocking strategies
+4. **Check test execution patterns** match package type
+5. **Identify special testing requirements** (integration tests, compilation tests, etc.)
+
+#### **Step 5: Implementation Validation**
+
+1. **Run builds** for affected packages and dependencies
+2. **Run tests** for core packages (fast, isolated)
+3. **Run tests** for extension packages (integration validation)
+4. **Verify no regressions** in dependent packages
+5. **Run full validation** (build, test, lint, audit)
+
+### **Package Analysis Checklist**
+
+**Before any package work, verify:**
+
+- [ ] Package dependencies analyzed via `nx_project_details`
+- [ ] Package type and role confirmed (core/ext/shared/tool)
+- [ ] Build configuration matches package type requirements
+- [ ] VSCode imports follow correct pattern for package type
+- [ ] Testing strategy aligns with package architecture
+- [ ] All dependent packages identified and considered
+- [ ] Implementation plan accounts for architectural constraints
+- [ ] **Package variations and deviations documented and understood**
+- [ ] **Special testing requirements identified and planned for**
+- [ ] **Entry point and dependency patterns verified**
+
 ## **Development Workflow**
 
 ### **Pre-Development Setup**

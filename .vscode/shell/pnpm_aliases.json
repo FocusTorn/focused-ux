@@ -21,6 +21,8 @@
         "tw": "test --watch", // Run functional tests with watch mode
         "tc": "test --coverage", // Run coverage tests for target package only
         
+        "ti": "test:integration", // Run integration tests for target package or target feature
+        
         // Test Full aliases (full dependency chain)
         "tf": "test:full", // Run functional tests for target package AND all dependencies (full chain)
         "tfw": "test:full --watch", // Run full chain tests with watch mode

@@ -2,7 +2,7 @@
     "extends": "../../../tsconfig.base.json",
     "compilerOptions": {
         "outDir": "./out-tsc",
-        "rootDir": "./test",
+        "rootDir": "./__tests__/integration",
         "module": "CommonJS",
         "moduleResolution": "node",
         "types": [
@@ -15,7 +15,7 @@
         "tsBuildInfoFile": "./out-tsc/tsconfig.test.tsbuildinfo"
     },
     "include": [
-        "test/**/*.ts"
+        "__tests__/integration/**/*.ts"
     ]
     
 }

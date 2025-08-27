@@ -34,8 +34,8 @@ export function createVscodeTestConfig(options: FuxVSCodeTestConfigOptions) {
 		packageName,
 		extensionDevelopmentPath,
 		workspaceFolder,
-		files = './out-tsc/suite/**/*.test.js',
-		setupFiles = './out-tsc/suite/index.js',
+		files = './out-tsc/**/*.test.js',
+		setupFiles = './out-tsc/index.js',
 		...restOptions
 	} = options
 

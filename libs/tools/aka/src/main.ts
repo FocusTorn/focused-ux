@@ -42,6 +42,18 @@ function resolveProjectForAlias(value: AliasValue): { project: string, full: boo
 	return { project, full: value.full === true }
 }
 
+function resolveProjectForAliasWithTarget(value: AliasValue, target: string): { project: string, full: boolean } {
+	// Special handling for integration tests: automatically target ext packages
+	if (target === 'test:integration' && typeof value === 'object' && value.name) {
+		// For integration tests, always target the ext package
+		const project = `@fux/${value.name}-ext`
+		return { project, full: value.full === true }
+	}
+
+	// Normal resolution for other targets
+	return resolveProjectForAlias(value)
+}
+
 function expandTargetShortcuts(args: string[], targets: TargetsMap): string[] {
 	if (args.length === 0)
 		return args
@@ -354,16 +366,18 @@ function main() {
 		process.exit(1)
 	}
 
-	const { project, full } = resolveProjectForAlias(aliasVal)
-
 	// Check args length before removing --aka-echo flag
 	if (args.length === 0) {
 		console.error(`Please provide a command for '${alias}'.`)
 		process.exit(1)
 	}
 
-	// Now check if the target is a not-nx-target (workspace-level command)
 	const target = args[0]
+	
+	// Use target-aware resolution for integration tests
+	const { project, full } = resolveProjectForAliasWithTarget(aliasVal, target)
+
+	// Now check if the target is a not-nx-target (workspace-level command)
 	const notNxTarget = notNxTargets[target]
 	
 	if (notNxTarget) {

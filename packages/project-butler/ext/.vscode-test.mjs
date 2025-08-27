@@ -6,11 +6,10 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 export default createVscodeTestConfig({
-	packageName: 'fux-project-butler',
-	extensionDevelopmentPath: __dirname,
-	workspaceFolder: './test/test-workspace',
+    packageName: 'fux-project-butler',
+    extensionDevelopmentPath: __dirname,
+    workspaceFolder: './__tests__/integration/test-workspace',
 })
-
 
 // import { defineConfig } from '@vscode/test-cli'
 // import * as path from 'node:path'
