@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename)
 export default createVscodeTestConfig({
     packageName: 'fux-project-butler',
     extensionDevelopmentPath: __dirname,
-    workspaceFolder: './__tests__/integration/test-workspace',
+    workspaceFolder: './__tests__/integration/mocked-workspace',
     files: './__tests__/_out-tsc/**/*.test.js',
     setupFiles: './__tests__/_out-tsc/index.js',
 })

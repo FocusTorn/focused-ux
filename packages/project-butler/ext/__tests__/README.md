@@ -10,8 +10,8 @@ __tests__/
 ├── helpers.ts              # Common test utilities and mock setup functions
 ├── README.md               # This file
 ├── unit/                   # Unit tests for extension components
-├── functional/             # Functional tests for command execution
-└── coverage/               # Coverage-only tests (if applicable)
+├── functional-tests/       # Functional tests for command execution
+└── coverage-tests/         # Coverage-only tests (if applicable)
 ```
 
 ## Test Setup
