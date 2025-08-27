@@ -1,8 +1,8 @@
-# FocusedUX Testing Strategy v2
+# FocusedUX Testing Strategy v3
 
 ## Overview
 
-This document outlines the testing strategy for the **confirmed final Core/Extension Package Architecture** established in the FocusedUX project, based on the working implementations in Ghost Writer and Project Butler packages. This strategy provides comprehensive testing patterns for packages that follow the separation of business logic (core) from VSCode integration (extension).
+This document outlines the **comprehensive testing strategy** for the FocusedUX project, based on the **confirmed final Core/Extension Package Architecture** established through working implementations in Ghost Writer and Project Butler packages. This strategy provides **failsafe, one-stop-shop guidance** for implementing comprehensive testing patterns that follow the separation of business logic (core) from VSCode integration (extension).
 
 ## Package Architecture Pattern
 
@@ -16,9 +16,10 @@ This document outlines the testing strategy for the **confirmed final Core/Exten
 ### Extension Package (`@fux/package-name-ext`)
 
 - **Purpose**: Lightweight VSCode wrapper for core logic
-- **Dependencies**: Core package + VSCode APIs
+- **Dependencies**: Core package + VSCode APIs + `@fux/vscode-test-cli-config`
 - **No DI Container**: Direct service instantiation
 - **VSCode Adapters**: Abstract VSCode API calls
+- **Dual Testing Strategy**: Standard Vitest tests + VS Code integration tests
 
 ## Directory Structure
 
@@ -46,16 +47,23 @@ packages/package-name/
 │   └── project.json                    # Nx build configuration
 └── ext/
     ├── __tests__/
-    │   ├── _setup.ts                    # Global test setup
+    │   ├── _setup.ts                    # Global test setup + test helpers
     │   ├── README.md                    # Test documentation
-    │   ├── functional/                  # Main test directory
+    │   ├── functional/                  # Standard Vitest tests
     │   │   ├── _readme.md              # Functional test docs
     │   │   ├── extension.test.ts       # Main extension test
     │   │   └── adapters/*.adapter.test.ts # Adapter tests
+    │   ├── integration/                 # VS Code integration tests
+    │   │   ├── test-workspace/         # Test workspace files
+    │   │   ├── *.test.ts               # Integration test files
+    │   │   └── index.ts                # Integration test entry point
     │   ├── unit/                       # Specific isolated tests
     │   │   └── _readme.md              # Unit test docs
-    │   └── coverage/                   # Coverage reports
-    │       └── _readme.md              # Coverage docs
+    │   ├── coverage/                   # Coverage reports
+    │   │   └── _readme.md              # Coverage docs
+    │   ├── _out-tsc/                   # Compiled integration tests
+    │   ├── tsconfig.test.json          # Integration test TypeScript config
+    │   └── .vscode-test.mjs            # VS Code test configuration
     ├── src/
     │   ├── adapters/                   # VSCode API adapters
     │   ├── _interfaces/                # Extension interfaces
@@ -63,9 +71,45 @@ packages/package-name/
     │   ├── services/                   # Extension-specific services
     │   ├── extension.ts                # Main extension entry point
     │   └── index.ts                    # Package exports
-    ├── vitest.config.ts                # Test config
+    ├── vitest.config.ts                # Standard test config
     ├── vitest.coverage.config.ts       # Coverage test config
     └── project.json                    # Nx build configuration
+```
+
+## Dual Testing Strategy for Extension Packages
+
+Extension packages implement a **dual testing strategy** that provides comprehensive coverage:
+
+### **1. Standard Vitest Tests** (`test`, `test:full`)
+
+- **Purpose**: Test extension logic, adapters, and command registration
+- **Environment**: Isolated test environment with mocked VSCode APIs
+- **Speed**: Fast execution, no VS Code instance required
+- **Coverage**: Unit and integration testing of extension components
+
+### **2. VS Code Integration Tests** (`test:integration`)
+
+- **Purpose**: Test actual extension behavior in real VS Code environment
+- **Environment**: Full VS Code instance with extension loaded
+- **Speed**: Slower execution, requires VS Code startup
+- **Coverage**: End-to-end testing of extension functionality
+
+### **Test Separation Strategy**
+
+```typescript
+// vitest.config.ts - Standard tests only
+export default mergeConfig(
+    baseConfig,
+    defineConfig({
+        test: {
+            setupFiles: ['./__tests__/_setup.ts'],
+            exclude: [
+                '**/__tests__/integration/**', // Source files
+                '**/__tests__/_out-tsc/**', // Compiled integration tests
+            ],
+        },
+    })
+)
 ```
 
 ## Testing Patterns
@@ -149,7 +193,7 @@ afterEach(() => {
 
 ### 2. Extension Package Testing
 
-#### Extension Testing Pattern
+#### 2.1 Standard Vitest Testing Pattern
 
 **Note**: Based on lessons learned from Dynamicons refactoring, extension tests must validate actual runtime behavior, not just mock interactions.
 
@@ -252,16 +296,230 @@ describe('AdapterName', () => {
 
 ```typescript
 // packages/package-name/ext/__tests__/_setup.ts
-import { beforeEach, afterEach } from 'vitest'
+import { vi, beforeAll, afterAll, afterEach } from 'vitest'
+import process from 'node:process'
+import { Buffer } from 'node:buffer'
+import type * as vscode from 'vscode'
 
-// Global test setup for extension package
-beforeEach(() => {
-    // Clear any test state
+// 1) Mock external dependencies
+vi.mock('js-yaml', () => ({
+    load: vi.fn(),
+}))
+
+// 2) Mock vscode globally
+vi.mock('vscode', () => ({
+    commands: {
+        registerCommand: vi.fn(),
+    },
+    window: {
+        showInformationMessage: vi.fn(),
+        showWarningMessage: vi.fn(),
+        showErrorMessage: vi.fn(),
+        createTerminal: vi.fn(),
+        activeTextEditor: null,
+        activeTerminal: null,
+    },
+    workspace: {
+        workspaceFolders: [{ uri: { fsPath: '/test/workspace' } }],
+        fs: {
+            readFile: vi.fn(),
+            writeFile: vi.fn(),
+            stat: vi.fn(),
+            copy: vi.fn(),
+        },
+    },
+    Uri: {
+        file: vi.fn((path: string) => ({ fsPath: path })),
+    },
+    FileType: {
+        Directory: 1,
+        File: 2,
+    },
+}))
+
+// 3) Use fake timers globally
+beforeAll(() => {
+    vi.useFakeTimers()
 })
 
+afterAll(() => {
+    vi.useRealTimers()
+})
+
+// 4) Keep mocks clean between tests
 afterEach(() => {
-    // Cleanup after each test
+    vi.clearAllMocks()
 })
+
+// Console output configuration
+const ENABLE_CONSOLE_OUTPUT = process.env.ENABLE_TEST_CONSOLE === 'true'
+
+if (ENABLE_CONSOLE_OUTPUT) {
+    console.log('🔍 Test console output enabled')
+} else {
+    console.log = vi.fn()
+    console.info = vi.fn()
+    console.warn = vi.fn()
+    console.error = vi.fn()
+}
+
+// ============================================================================
+// TEST HELPERS
+// ============================================================================
+
+export interface ExtensionTestMocks {
+    vscode: {
+        commands: {
+            registerCommand: ReturnType<typeof vi.fn>
+        }
+        window: {
+            showInformationMessage: ReturnType<typeof vi.fn>
+            showWarningMessage: ReturnType<typeof vi.fn>
+            showErrorMessage: ReturnType<typeof vi.fn>
+            activeTextEditor: vscode.TextEditor | undefined
+            createTerminal: ReturnType<typeof vi.fn>
+            activeTerminal: vscode.Terminal | undefined
+        }
+        workspace: {
+            fs: {
+                readFile: ReturnType<typeof vi.fn>
+                writeFile: ReturnType<typeof vi.fn>
+                stat: ReturnType<typeof vi.fn>
+                copy: ReturnType<typeof vi.fn>
+            }
+            workspaceFolders: vscode.WorkspaceFolder[] | undefined
+        }
+        Uri: {
+            file: ReturnType<typeof vi.fn>
+        }
+        FileType: {
+            Directory: vscode.FileType.Directory
+            File: vscode.FileType.File
+        }
+    }
+    context: {
+        subscriptions: vscode.Disposable[]
+    }
+}
+
+export function setupTestEnvironment(): ExtensionTestMocks {
+    // Implementation details...
+}
+
+export function resetAllMocks(mocks: ExtensionTestMocks): void {
+    // Implementation details...
+}
+
+export function setupVSCodeMocks(mocks: ExtensionTestMocks): void {
+    // Implementation details...
+}
+
+export function createMockExtensionContext(): vscode.ExtensionContext {
+    // Implementation details...
+}
+
+export function createMockUri(path: string): vscode.Uri {
+    // Implementation details...
+}
+```
+
+#### 2.2 VS Code Integration Testing Pattern
+
+**Purpose**: Test extension behavior in a real VS Code environment with actual file system operations and UI interactions.
+
+##### **Integration Test Structure**
+
+```typescript
+// packages/package-name/ext/__tests__/integration/extension.test.ts
+import * as assert from 'assert'
+import * as vscode from 'vscode'
+
+suite('Extension Integration Test Suite', () => {
+    vscode.window.showInformationMessage('Start all tests.')
+
+    test('Should register commands', async () => {
+        // Test command registration
+        const commands = await vscode.commands.getCommands()
+        assert.ok(commands.includes('fux-package-name.commandName'))
+    })
+
+    test('Should execute command successfully', async () => {
+        // Test actual command execution
+        const result = await vscode.commands.executeCommand('fux-package-name.commandName')
+        assert.ok(result)
+    })
+})
+```
+
+##### **Integration Test Configuration**
+
+```typescript
+// packages/package-name/ext/__tests__/tsconfig.test.json
+{
+    "extends": "../../../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./_out-tsc",
+        "rootDir": "./integration",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "types": [
+            "node",
+            "mocha"
+        ],
+        "composite": false,
+        "declaration": false,
+        "sourceMap": true,
+        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo"
+    },
+    "include": [
+        "integration/**/*.ts"
+    ]
+}
+```
+
+##### **VS Code Test Configuration**
+
+```typescript
+// packages/package-name/ext/__tests__/.vscode-test.mjs
+import { createVscodeTestConfig } from '@fux/vscode-test-cli-config'
+import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+export default createVscodeTestConfig({
+    packageName: 'fux-package-name',
+    extensionDevelopmentPath: __dirname,
+    workspaceFolder: './integration/test-workspace',
+    files: './_out-tsc/**/*.test.js',
+    setupFiles: './_out-tsc/index.js',
+})
+```
+
+##### **Integration Test Entry Point**
+
+```typescript
+// packages/package-name/ext/__tests__/integration/index.ts
+import * as path from 'path'
+import { runTests } from '@vscode/test-electron'
+
+async function main() {
+    try {
+        const extensionDevelopmentPath = path.resolve(__dirname, '../../')
+        const extensionTestsPath = path.resolve(__dirname, './suite/index')
+
+        await runTests({
+            extensionDevelopmentPath,
+            extensionTestsPath,
+        })
+    } catch (err) {
+        console.error('Failed to run tests')
+        process.exit(1)
+    }
+}
+
+main()
 ```
 
 ## Vitest Configuration
@@ -299,6 +557,43 @@ export default mergeConfig(
                 reportsDirectory: './__tests__/coverage',
             },
         },
+    })
+)
+```
+
+### Extension Package Test Configuration
+
+```typescript
+// packages/package-name/ext/vitest.config.ts
+import { defineConfig, mergeConfig } from 'vitest/config'
+import baseConfig from '../../../vitest.functional.base'
+
+export default mergeConfig(
+    baseConfig,
+    defineConfig({
+        test: {
+            setupFiles: ['./__tests__/_setup.ts'],
+            exclude: [
+                '**/__tests__/integration/**', // Source files
+                '**/__tests__/_out-tsc/**', // Compiled integration tests
+            ],
+        },
+    })
+)
+```
+
+### Extension Package Coverage Configuration
+
+```typescript
+// packages/package-name/ext/vitest.coverage.config.ts
+import { defineConfig, mergeConfig } from 'vitest/config'
+import functionalConfig from './vitest.config'
+import baseCoverageConfig from '../../../vitest.coverage.base'
+
+export default mergeConfig(
+    mergeConfig(functionalConfig, baseCoverageConfig),
+    defineConfig({
+        // Any package-specific overrides for coverage can go here
     })
 )
 ```
@@ -359,6 +654,7 @@ export default mergeConfig(
 // packages/package-name/ext/project.json
 {
     "name": "@fux/package-name-ext",
+    "projectType": "application",
     "targets": {
         "build": {
             "executor": "@nx/esbuild:esbuild",
@@ -371,7 +667,7 @@ export default mergeConfig(
                 "metafile": true,
                 "platform": "node",
                 "bundle": true,
-                "external": ["vscode", "js-yaml"],
+                "external": ["vscode"],
                 "sourcemap": true,
                 "main": "packages/package-name/ext/src/extension.ts",
                 "tsConfig": "packages/package-name/ext/tsconfig.json",
@@ -381,15 +677,13 @@ export default mergeConfig(
                         "input": "packages/package-name/ext/assets/",
                         "output": "./assets/"
                     }
-                ],
-                "thirdParty": true
+                ]
             }
         },
         "test": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["^build"],
-            "options": {}
+            "dependsOn": ["^build"]
         },
         "test:full": {
             "executor": "@nx/vite:test",
@@ -400,12 +694,101 @@ export default mergeConfig(
                     "target": "test",
                     "params": "forward"
                 }
-            ],
-            "options": {}
+            ]
+        },
+        "test:compile": {
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/__tests__/_out-tsc"],
+            "options": {
+                "commands": ["tsc -p packages/package-name/ext/__tests__/tsconfig.test.json"]
+            }
+        },
+        "test:integration": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build", "test:compile"],
+            "options": {
+                "commands": [
+                    "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
+                ],
+                "cwd": "packages/package-name/ext"
+            },
+            "description": "Run VS Code extension integration tests with detailed output"
+        },
+        "test:integration:noisy": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build", "test:compile"],
+            "options": {
+                "commands": [
+                    "vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec"
+                ],
+                "cwd": "packages/package-name/ext"
+            },
+            "description": "Run VS Code extension integration tests with full output"
         }
     }
 }
 ```
+
+### Alias Integration
+
+The `aka` tool automatically expands feature aliases to target extension packages for integration tests:
+
+```bash
+# These commands automatically target the extension package
+pb ti          # → test:integration @fux/project-butler-ext
+gw ti          # → test:integration @fux/ghost-writer-ext
+```
+
+{
+"name": "@fux/package-name-ext",
+"targets": {
+"build": {
+"executor": "@nx/esbuild:esbuild",
+"outputs": ["{options.outputPath}"],
+"dependsOn": ["^build"],
+"options": {
+"entryPoints": ["packages/package-name/ext/src/extension.ts"],
+"outputPath": "packages/package-name/ext/dist",
+"format": ["cjs"],
+"metafile": true,
+"platform": "node",
+"bundle": true,
+"external": ["vscode", "js-yaml"],
+"sourcemap": true,
+"main": "packages/package-name/ext/src/extension.ts",
+"tsConfig": "packages/package-name/ext/tsconfig.json",
+"assets": [
+{
+"glob": "**/*",
+"input": "packages/package-name/ext/assets/",
+"output": "./assets/"
+}
+],
+"thirdParty": true
+}
+},
+"test": {
+"executor": "@nx/vite:test",
+"outputs": ["{options.reportsDirectory}"],
+"dependsOn": ["^build"],
+"options": {}
+},
+"test:full": {
+"executor": "@nx/vite:test",
+"outputs": ["{options.reportsDirectory}"],
+"dependsOn": [
+{
+"dependencies": true,
+"target": "test",
+"params": "forward"
+}
+],
+"options": {}
+}
+}
+}
+
+````
 
 ## Testing Best Practices
 
@@ -449,7 +832,7 @@ export default mergeConfig(
 # Test core package (functional)
 {alias}c test
 
-# Test core package (coverage)
+# Test core package (entire dependency chain)
 {alias}c test:full
 
 # TypeScript check
@@ -457,7 +840,7 @@ export default mergeConfig(
 
 # Lint core package
 {alias}c lint
-```
+````
 
 ### Extension Package Commands
 
@@ -471,7 +854,7 @@ export default mergeConfig(
 # Test extension package (functional)
 {alias}e test
 
-# Test extension package (coverage)
+# Test extension package (entire dependency chain)
 {alias}e test:full
 
 # TypeScript check
@@ -1021,3 +1404,426 @@ This testing strategy v2 provides a comprehensive framework for testing the conf
 By following this strategy, teams can confidently develop and maintain packages that follow the established architecture patterns while ensuring high code quality and reliability.
 
 The confirmed implementations in Ghost Writer and Project Butler demonstrate that this testing strategy is working, maintainable, and scalable for the FocusedUX monorepo.
+
+This implementation guide provides a **complete, failsafe approach** to implementing comprehensive testing for extension packages with **no questions left unanswered**.
+
+## Comprehensive Implementation Guide
+
+### Step-by-Step Extension Package Testing Setup
+
+This guide provides a **failsafe, one-stop-shop** approach to implementing comprehensive testing for extension packages based on the Project Butler pattern.
+
+#### **Step 1: Directory Structure Setup**
+
+```bash
+# Create the complete testing directory structure
+mkdir -p packages/package-name/ext/__tests__/{functional,integration,unit,coverage,_out-tsc}
+mkdir -p packages/package-name/ext/__tests__/integration/test-workspace
+```
+
+#### **Step 2: Configuration Files**
+
+**1. Integration Test TypeScript Configuration**
+
+```json
+// packages/package-name/ext/__tests__/tsconfig.test.json
+{
+    "extends": "../../../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./_out-tsc",
+        "rootDir": "./integration",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "types": ["node", "mocha"],
+        "composite": false,
+        "declaration": false,
+        "sourceMap": true,
+        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo"
+    },
+    "include": ["integration/**/*.ts"]
+}
+```
+
+**2. VS Code Test Configuration**
+
+```typescript
+// packages/package-name/ext/__tests__/.vscode-test.mjs
+import { createVscodeTestConfig } from '@fux/vscode-test-cli-config'
+import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+export default createVscodeTestConfig({
+    packageName: 'fux-package-name',
+    extensionDevelopmentPath: __dirname,
+    workspaceFolder: './integration/test-workspace',
+    files: './_out-tsc/**/*.test.js',
+    setupFiles: './_out-tsc/index.js',
+})
+```
+
+**3. Standard Vitest Configuration**
+
+```typescript
+// packages/package-name/ext/vitest.config.ts
+import { defineConfig, mergeConfig } from 'vitest/config'
+import baseConfig from '../../../vitest.functional.base'
+
+export default mergeConfig(
+    baseConfig,
+    defineConfig({
+        test: {
+            setupFiles: ['./__tests__/_setup.ts'],
+            exclude: ['**/__tests__/integration/**', '**/__tests__/_out-tsc/**'],
+        },
+    })
+)
+```
+
+#### **Step 3: Test Setup Files**
+
+**1. Global Test Setup with Helpers**
+
+```typescript
+// packages/package-name/ext/__tests__/_setup.ts
+import { vi, beforeAll, afterAll, afterEach } from 'vitest'
+import process from 'node:process'
+import { Buffer } from 'node:buffer'
+import type * as vscode from 'vscode'
+
+// Mock external dependencies
+vi.mock('js-yaml', () => ({
+    load: vi.fn(),
+}))
+
+// Mock vscode globally
+vi.mock('vscode', () => ({
+    commands: { registerCommand: vi.fn() },
+    window: {
+        showInformationMessage: vi.fn(),
+        showWarningMessage: vi.fn(),
+        showErrorMessage: vi.fn(),
+        createTerminal: vi.fn(),
+        activeTextEditor: null,
+        activeTerminal: null,
+    },
+    workspace: {
+        workspaceFolders: [{ uri: { fsPath: '/test/workspace' } }],
+        fs: {
+            readFile: vi.fn(),
+            writeFile: vi.fn(),
+            stat: vi.fn(),
+            copy: vi.fn(),
+        },
+    },
+    Uri: { file: vi.fn((path: string) => ({ fsPath: path })) },
+    FileType: { Directory: 1, File: 2 },
+}))
+
+// Global test lifecycle
+beforeAll(() => vi.useFakeTimers())
+afterAll(() => vi.useRealTimers())
+afterEach(() => vi.clearAllMocks())
+
+// Console output configuration
+const ENABLE_CONSOLE_OUTPUT = process.env.ENABLE_TEST_CONSOLE === 'true'
+if (!ENABLE_CONSOLE_OUTPUT) {
+    console.log = vi.fn()
+    console.info = vi.fn()
+    console.warn = vi.fn()
+    console.error = vi.fn()
+}
+
+// ============================================================================
+// TEST HELPERS
+// ============================================================================
+
+export interface ExtensionTestMocks {
+    vscode: {
+        commands: { registerCommand: ReturnType<typeof vi.fn> }
+        window: {
+            showInformationMessage: ReturnType<typeof vi.fn>
+            showWarningMessage: ReturnType<typeof vi.fn>
+            showErrorMessage: ReturnType<typeof vi.fn>
+            activeTextEditor: vscode.TextEditor | undefined
+            createTerminal: ReturnType<typeof vi.fn>
+            activeTerminal: vscode.Terminal | undefined
+        }
+        workspace: {
+            fs: {
+                readFile: ReturnType<typeof vi.fn>
+                writeFile: ReturnType<typeof vi.fn>
+                stat: ReturnType<typeof vi.fn>
+                copy: ReturnType<typeof vi.fn>
+            }
+            workspaceFolders: vscode.WorkspaceFolder[] | undefined
+        }
+        Uri: { file: ReturnType<typeof vi.fn> }
+        FileType: { Directory: vscode.FileType.Directory; File: vscode.FileType.File }
+    }
+    context: { subscriptions: vscode.Disposable[] }
+}
+
+export function setupTestEnvironment(): ExtensionTestMocks {
+    const mockTerminal = { sendText: vi.fn(), show: vi.fn() } as any
+    const mockTextEditor = { document: { uri: { fsPath: '/test/file.txt' } } } as any
+    const mockWorkspaceFolder = { uri: { fsPath: '/test' } } as any
+
+    const vscode = {
+        commands: { registerCommand: vi.fn() },
+        window: {
+            showInformationMessage: vi.fn(),
+            showWarningMessage: vi.fn(),
+            showErrorMessage: vi.fn(),
+            activeTextEditor: mockTextEditor,
+            createTerminal: vi.fn().mockReturnValue(mockTerminal),
+            activeTerminal: mockTerminal,
+        },
+        workspace: {
+            fs: {
+                readFile: vi.fn(),
+                writeFile: vi.fn(),
+                stat: vi.fn(),
+                copy: vi.fn(),
+            },
+            workspaceFolders: [mockWorkspaceFolder],
+        },
+        Uri: { file: vi.fn().mockImplementation((path: string) => ({ fsPath: path })) },
+        FileType: { Directory: 1, File: 2 },
+    }
+
+    const context = { subscriptions: [] }
+
+    return { vscode, context }
+}
+
+export function resetAllMocks(mocks: ExtensionTestMocks): void {
+    Object.values(mocks.vscode.commands).forEach((mock) => mock.mockReset())
+    Object.values(mocks.vscode.window).forEach((mock) => {
+        if (typeof mock === 'function') mock.mockReset()
+    })
+    Object.values(mocks.vscode.workspace.fs).forEach((mock) => mock.mockReset())
+    mocks.vscode.Uri.file.mockReset()
+}
+
+export function setupVSCodeMocks(mocks: ExtensionTestMocks): void {
+    mocks.vscode.window.showInformationMessage.mockResolvedValue(undefined)
+    mocks.vscode.window.showWarningMessage.mockResolvedValue(undefined)
+    mocks.vscode.window.showErrorMessage.mockResolvedValue(undefined)
+    mocks.vscode.workspace.fs.readFile.mockResolvedValue(Buffer.from('file content'))
+    mocks.vscode.workspace.fs.writeFile.mockResolvedValue(undefined)
+    mocks.vscode.workspace.fs.stat.mockResolvedValue({ type: mocks.vscode.FileType.File })
+    mocks.vscode.workspace.fs.copy.mockResolvedValue(undefined)
+}
+
+export function createMockExtensionContext(): vscode.ExtensionContext {
+    return {
+        subscriptions: [],
+        workspaceState: {} as any,
+        globalState: {} as any,
+        extensionPath: '/test/extension',
+        globalStoragePath: '/test/global',
+        logPath: '/test/log',
+        extensionUri: { fsPath: '/test/extension' } as any,
+        storageUri: { fsPath: '/test/storage' } as any,
+        globalStorageUri: { fsPath: '/test/global' } as any,
+        logUri: { fsPath: '/test/log' } as any,
+        extensionMode: 1,
+        environmentVariableCollection: {} as any,
+        secrets: {} as any,
+        asAbsolutePath: vi.fn(),
+        storagePath: '/test/storage',
+        extension: {} as any,
+        languageModelAccessInformation: {} as any,
+    }
+}
+
+export function createMockUri(path: string): vscode.Uri {
+    return {
+        fsPath: path,
+        scheme: 'file',
+        authority: '',
+        path,
+        query: '',
+        fragment: '',
+        with: vi.fn(),
+        toJSON: vi.fn(),
+    } as any
+}
+```
+
+#### **Step 4: Project.json Configuration**
+
+```json
+{
+    "name": "@fux/package-name-ext",
+    "projectType": "application",
+    "targets": {
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["^build"]
+        },
+        "test:full": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ]
+        },
+        "test:compile": {
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/__tests__/_out-tsc"],
+            "options": {
+                "commands": ["tsc -p packages/package-name/ext/__tests__/tsconfig.test.json"]
+            }
+        },
+        "test:integration": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build", "test:compile"],
+            "options": {
+                "commands": [
+                    "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
+                ],
+                "cwd": "packages/package-name/ext"
+            },
+            "description": "Run VS Code extension integration tests with detailed output"
+        },
+        "test:integration:noisy": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build", "test:compile"],
+            "options": {
+                "commands": [
+                    "vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec"
+                ],
+                "cwd": "packages/package-name/ext"
+            },
+            "description": "Run VS Code extension integration tests with full output"
+        }
+    }
+}
+```
+
+#### **Step 5: Test Implementation**
+
+**1. Standard Extension Test**
+
+```typescript
+// packages/package-name/ext/__tests__/functional/extension.test.ts
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { activate, deactivate } from '../../src/extension'
+import * as vscode from 'vscode'
+
+// Mock the core package
+vi.mock('@fux/package-name-core', () => ({
+    ServiceName: vi.fn().mockImplementation(() => ({
+        methodName: vi.fn(),
+    })),
+}))
+
+describe('Extension', () => {
+    let context: any
+
+    beforeEach(() => {
+        vi.clearAllMocks()
+        context = { subscriptions: { push: vi.fn() } }
+    })
+
+    describe('activate', () => {
+        it('should register all commands successfully', () => {
+            activate(context as any)
+            expect(vscode.commands.registerCommand).toHaveBeenCalledTimes(1)
+            expect(vscode.commands.registerCommand).toHaveBeenCalledWith(
+                'fux-package-name.commandName',
+                expect.any(Function)
+            )
+        })
+
+        it('should add disposables to context subscriptions', () => {
+            const mockDisposable = { dispose: vi.fn() }
+            vi.mocked(vscode.commands.registerCommand).mockReturnValue(mockDisposable)
+            activate(context as any)
+            expect(context.subscriptions.push).toHaveBeenCalledWith(mockDisposable)
+        })
+    })
+
+    describe('deactivate', () => {
+        it('should log deactivation message', () => {
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+            deactivate()
+            expect(consoleSpy).toHaveBeenCalledWith('F-UX: Package Name is now deactivated!')
+            consoleSpy.mockRestore()
+        })
+    })
+})
+```
+
+**2. Integration Test**
+
+```typescript
+// packages/package-name/ext/__tests__/integration/extension.test.ts
+import * as assert from 'assert'
+import * as vscode from 'vscode'
+
+suite('Extension Integration Test Suite', () => {
+    vscode.window.showInformationMessage('Start all tests.')
+
+    test('Should register commands', async () => {
+        const commands = await vscode.commands.getCommands()
+        assert.ok(commands.includes('fux-package-name.commandName'))
+    })
+
+    test('Should execute command successfully', async () => {
+        const result = await vscode.commands.executeCommand('fux-package-name.commandName')
+        assert.ok(result)
+    })
+})
+```
+
+#### **Step 6: Verification Commands**
+
+```bash
+# Test standard Vitest tests
+nx run @fux/package-name-ext:test
+
+# Test entire dependency chain
+nx run @fux/package-name-ext:test:full
+
+# Test with coverage (via aka aliases)
+pn tc   # → test with coverage for package
+pn tfc  # → test:full with coverage for entire dependency chain
+
+# Compile integration tests
+nx run @fux/package-name-ext:test:compile
+
+# Run integration tests
+nx run @fux/package-name-ext:test:integration
+
+# Test alias integration (if configured)
+pn ti  # Should expand to test:integration @fux/package-name-ext
+```
+
+### **Critical Success Factors**
+
+1. **✅ Proper Test Separation**: Standard tests and integration tests must be completely separate
+2. **✅ Correct Exclude Patterns**: Vitest config must exclude integration tests
+3. **✅ Proper Dependencies**: Integration tests depend on `build` and `test:compile`
+4. **✅ Correct File Organization**: All test files in `__tests__/` directory
+5. **✅ Comprehensive Mocking**: All external dependencies properly mocked
+6. **✅ Test Helper Consolidation**: All helpers in `_setup.ts` with clear section headings
+
+### **Common Pitfalls to Avoid**
+
+- **❌ Mixing Test Types**: Don't run integration tests in standard Vitest
+- **❌ Missing Exclusions**: Don't forget to exclude `_out-tsc/` in Vitest config
+- **❌ Incomplete Mocking**: Don't skip mocking external dependencies
+- **❌ Wrong File Locations**: Don't put integration tests outside `__tests__/`
+- **❌ Missing Dependencies**: Don't forget `test:compile` dependency for integration tests
+
+This implementation guide provides a **complete, failsafe approach** to implementing comprehensive testing for extension packages with **no questions left unanswered**.

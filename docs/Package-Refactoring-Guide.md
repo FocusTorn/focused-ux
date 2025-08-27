@@ -1,8 +1,8 @@
-# Package Refactoring Guide v2
+# Package Refactoring Guide v3
 
 ## **Overview**
 
-This guide provides a systematic approach for refactoring existing packages to align with the **confirmed final architecture** from Ghost Writer and Project Butler packages. The goal is to establish consistent core/extension separation, proper testing strategies, and clean dependency management across all packages.
+This guide provides a systematic approach for refactoring existing packages to align with the **confirmed final architecture** patterns. The goal is to establish consistent core/extension separation, proper testing strategies, and clean dependency management across all packages.
 
 ## **End Goals**
 
@@ -650,11 +650,11 @@ The key is that each dependency should have a clear, justifiable purpose for tha
 - [ ] Tests pass with new architecture
 - [ ] **EXTENSION CONSTRUCTOR PARAMETERS ARE CORRECT** (proper dependency order and types)
 
-## **Lessons Learned from Ghost Writer, Project Butler, and Dynamicons**
+## **Lessons Learned**
 
-### **Critical Implementation Lessons from Dynamicons Refactoring**
+### **Critical Implementation Lessons**
 
-**Problem**: During the Dynamicons refactoring, several critical implementation issues were discovered that went beyond the initial architecture setup.
+**Problem**: During refactoring, several critical implementation issues were discovered that went beyond the initial architecture setup.
 
 **Key Lessons Learned**:
 
@@ -693,13 +693,13 @@ The key is that each dependency should have a clear, justifiable purpose for tha
 
 ### **Dependency Management Insights**
 
-**Problem**: Ghost Writer had unnecessary dependencies (`awilix`, `js-yaml`, `@fux/mockly`) in the extension package that violated the thin wrapper principle.
+**Problem**: Packages had unnecessary dependencies that violated architectural principles.
 
 **Solution**:
 
 - **Remove DI Container Dependencies**: Extension packages should not use `awilix` or other DI containers - use direct instantiation instead
 - **Remove Unnecessary Dependencies**: Only include dependencies that are actually needed for VSCode integration
-- **Follow Project Butler Pattern**: Use the exact same dependency structure as the reference package:
+- **Follow Established Patterns**: Use the exact same dependency structure as working packages:
     ```json
     "dependencies": {
       "@fux/{package}-core": "workspace:*"
@@ -808,14 +808,14 @@ The key is that each dependency should have a clear, justifiable purpose for tha
 
 **Solution**:
 
-- **Pattern Replication Protocol**: When a working solution exists (Project Butler), replicate it exactly rather than trying to improve it
+- **Pattern Replication Protocol**: When a working solution exists, replicate it exactly rather than trying to improve it
 - **Remove Global Conflicts**: Remove `configFile` options from `nx.json` `targetDefaults` to allow AKA script to handle config injection
 - **Use Proven Executor**: Use `@nx/vite:test` executor with proper configuration instead of complex `nx:run-commands`
 - **Single Execution Verification**: Always use `-s -stream` flags to verify no duplicate test runs before considering a solution complete
 
 ### **Test Configuration Migration Steps**
 
-1. **Copy Working Pattern**: Use the exact `project.json` test target configuration from Project Butler:
+1. **Copy Working Pattern**: Use the exact `project.json` test target configuration from working packages:
 
     ```json
     "test": {

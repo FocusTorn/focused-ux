@@ -1,8 +1,8 @@
-# Externalizing Third-Party Packages v2
+# Externalizing Third-Party Packages v3
 
 ## Overview
 
-This document outlines the process and requirements for externalizing third-party packages in VSCode extensions within the FocusedUX workspace, based on the confirmed final architecture from Ghost Writer and Project Butler packages.
+This document outlines the process and requirements for externalizing third-party packages in VSCode extensions within the FocusedUX workspace, based on the confirmed final architecture patterns.
 
 ## Why Externalize?
 
@@ -40,7 +40,7 @@ In the `project.json` file, third-party packages are listed in the `external` ar
     "build": {
         "executor": "@nx/esbuild:esbuild",
         "options": {
-            "external": ["vscode", "js-yaml"]
+            "external": ["vscode", "dependency1", "dependency2"]
         }
     }
 }
@@ -53,7 +53,7 @@ In the `project.json` file, third-party packages are listed in the `external` ar
     "build": {
         "executor": "@nx/esbuild:esbuild",
         "options": {
-            "external": ["vscode", "js-yaml"]
+            "external": ["vscode", "dependency1", "dependency2"]
         }
     }
 }
@@ -95,7 +95,7 @@ The `.vscodeignore` file must be configured to include the `node_modules` folder
 
 ## Package Structure
 
-### Core/Ext Pattern (e.g., Ghost Writer, Project Butler)
+### Core/Ext Pattern
 
 ```
 packages/package-name/
@@ -120,10 +120,10 @@ packages/package-name/
 ```json
 {
     "dependencies": {
-        "js-yaml": "^4.1.0"
+        "essential-dependency": "^1.0.0"
     },
     "devDependencies": {
-        "@types/js-yaml": "^4.0.9",
+        "@types/essential-dependency": "^1.0.0",
         "@types/node": "^20.0.0",
         "typescript": "^5.0.0",
         "vitest": "^3.2.4"
@@ -146,12 +146,12 @@ packages/package-name/
 {
     "dependencies": {
         "@fux/package-name-core": "workspace:*",
-        "js-yaml": "^4.1.0"
+        "essential-dependency": "^1.0.0"
     },
     "devDependencies": {
         "@types/node": "^24.0.10",
         "@types/vscode": "^1.99.3",
-        "@types/js-yaml": "^4.0.9",
+        "@types/essential-dependency": "^1.0.0",
         "typescript": "^5.8.3",
         "vitest": "^3.2.4",
         "@vitest/coverage-v8": "^3.2.4"
@@ -164,7 +164,7 @@ packages/package-name/
 - Only include core package and essential runtime dependencies
 - No DI container dependencies
 - No unnecessary build dependencies
-- Follow Project Butler pattern exactly
+- Follow established patterns exactly
 
 ## Common Issues and Solutions
 
@@ -172,7 +172,7 @@ packages/package-name/
 
 **Cause**: The package is not properly externalized or the `node_modules` folder is not included in the VSIX.
 
-**Solutions**:
+**Solutions:**
 
 1. Ensure the package is listed in the `external` array in `project.json`
 2. Verify the `.vscodeignore` file includes `!node_modules/**`
@@ -214,7 +214,7 @@ pnpm install
 
 **Cause**: Extension packages including DI containers or unnecessary build dependencies.
 
-**Solution**: Follow the Project Butler pattern:
+**Solution**: Follow established patterns:
 
 ```json
 {
@@ -238,7 +238,7 @@ pnpm install
 3. **Keep .vscodeignore Updated**: Ensure it includes all necessary files and folders
 4. **Test Packaging**: Always test the packaged extension to ensure dependencies are available
 5. **Document Dependencies**: Keep the `package.json` dependencies list accurate and minimal
-6. **Follow Project Butler Pattern**: Use the exact same dependency structure as the reference package
+6. **Follow Established Patterns**: Use the exact same dependency structure as working packages
 
 ## Validation Checklist
 
@@ -250,125 +250,8 @@ Before packaging an extension, verify:
 - [ ] No phantom dependencies in `pnpm list`
 - [ ] Extension activates without "Cannot find module" errors
 - [ ] VSIX contains `node_modules` folder with all dependencies
-- [ ] Extension package follows Project Butler dependency pattern
+- [ ] Extension package follows established dependency patterns
 - [ ] Core package has minimal dependencies only
-
-## Examples
-
-### Working Configuration (Project Butler)
-
-**Core Package (`project.json`):**
-
-```json
-{
-    "build": {
-        "options": {
-            "external": ["vscode", "js-yaml"]
-        }
-    }
-}
-```
-
-**Core Package (`package.json`):**
-
-```json
-{
-    "dependencies": {
-        "js-yaml": "^4.1.0"
-    },
-    "devDependencies": {
-        "@types/js-yaml": "^4.0.9",
-        "@types/node": "^20.0.0",
-        "typescript": "^5.0.0",
-        "vitest": "^3.2.4"
-    }
-}
-```
-
-**Extension Package (`project.json`):**
-
-```json
-{
-    "build": {
-        "options": {
-            "external": ["vscode", "js-yaml"]
-        }
-    }
-}
-```
-
-**Extension Package (`package.json`):**
-
-```json
-{
-    "dependencies": {
-        "@fux/project-butler-core": "workspace:*",
-        "js-yaml": "^4.1.0"
-    },
-    "devDependencies": {
-        "@types/node": "^24.0.10",
-        "@types/vscode": "^1.99.3",
-        "@types/js-yaml": "^4.0.9",
-        "typescript": "^5.8.3",
-        "vitest": "^3.2.4",
-        "@vitest/coverage-v8": "^3.2.4"
-    }
-}
-```
-
-### Working Configuration (Ghost Writer)
-
-**Core Package (`project.json`):**
-
-```json
-{
-    "build": {
-        "options": {
-            "external": ["vscode", "typescript", "awilix", "js-yaml"]
-        }
-    }
-}
-```
-
-**Core Package (`package.json`):**
-
-```json
-{
-    "dependencies": {},
-    "devDependencies": {
-        "typescript": "^5.8.3"
-    }
-}
-```
-
-**Extension Package (`project.json`):**
-
-```json
-{
-    "build": {
-        "options": {
-            "external": ["vscode"]
-        }
-    }
-}
-```
-
-**Extension Package (`package.json`):**
-
-```json
-{
-    "dependencies": {
-        "@fux/ghost-writer-core": "workspace:*"
-    },
-    "devDependencies": {
-        "@types/node": "^24.0.10",
-        "@types/vscode": "^1.99.3",
-        "typescript": "^5.8.3",
-        "vitest": "^3.2.4",
-        "@vitest/coverage-v8": "^3.2.4"
-    }
-}
-```
 
 ## Troubleshooting Commands
 
@@ -388,17 +271,17 @@ Expand-Archive -Path vsix_packages/<package-name>-dev.vsix -DestinationPath tmp/
 ls tmp/vsix-test/extension
 ```
 
-## Lessons Learned from Ghost Writer and Project Butler
+## Lessons Learned
 
 ### Dependency Management Insights
 
-**Problem**: Ghost Writer had unnecessary dependencies (`awilix`, `js-yaml`, `@fux/mockly`) in the extension package that violated the thin wrapper principle.
+**Problem**: Packages had unnecessary dependencies that violated architectural principles.
 
 **Solution**:
 
 - **Remove DI Container Dependencies**: Extension packages should not use `awilix` or other DI containers - use direct instantiation instead
 - **Remove Unnecessary Dependencies**: Only include dependencies that are actually needed for VSCode integration
-- **Follow Project Butler Pattern**: Use the exact same dependency structure as the reference package
+- **Follow Established Patterns**: Use the exact same dependency structure as working packages
 
 ### Build Configuration Insights
 
@@ -406,10 +289,7 @@ ls tmp/vsix-test/extension
 
 **Solution**:
 
-- **Minimal External Dependencies**: Only externalize what's actually needed:
-    ```json
-    "external": ["vscode"]
-    ```
+- **Minimal External Dependencies**: Only externalize what's actually needed
 - **Remove Build Dependencies**: Don't externalize build-time dependencies like `typescript`, `awilix`, `js-yaml`
 
 ### Package Structure Insights
@@ -424,11 +304,11 @@ ls tmp/vsix-test/extension
 
 ## Conclusion
 
-The confirmed architecture from Ghost Writer and Project Butler demonstrates that proper externalization of third-party packages is essential for:
+Proper externalization of third-party packages is essential for:
 
 - **Clean separation of concerns** between core and extension packages
 - **Minimal dependency footprints** for better performance
 - **Consistent packaging** across all extensions
 - **Maintainable codebase** with clear dependency boundaries
 
-By following the patterns established in these working packages, teams can ensure that their extensions are properly packaged and distributed with all necessary dependencies.
+By following the established patterns, teams can ensure that their extensions are properly packaged and distributed with all necessary dependencies.
