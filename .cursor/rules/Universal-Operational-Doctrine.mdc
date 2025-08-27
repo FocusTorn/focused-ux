@@ -1,6 +1,7 @@
 ---
 alwaysApply: true
 ---
+
 ## **Workflow: Reconnaissance → Plan → Execute → Verify → Report**
 
 ### **1. Reconnaissance**
@@ -89,6 +90,9 @@ alwaysApply: true
 - **FORBIDDEN**: Implement solutions before understanding the actual problem scope
 - **FORBIDDEN**: Ignore performance implications of large test files (750+ lines) - split proactively
 - **FORBIDDEN**: Over-engineer solutions when simpler approaches exist
+- **FORBIDDEN**: Skip environment variable verification when UI operations hang in tests
+- **FORBIDDEN**: Use command-line parameters for module loading when configuration file options exist
+- **FORBIDDEN**: Ignore user feedback about environment-specific behavior differences
 
 ### **❌ FORBIDDEN: Poor Template Management**
 
@@ -104,6 +108,12 @@ alwaysApply: true
 - **Skipping Verification Commands**: NEVER skip file timestamp verification steps
 - **Ignoring Date Guidelines**: NEVER ignore explicit date handling requirements in documentation protocols
 - **Failing to Correct**: If you violate date verification, you MUST correct the entry immediately
+
+### **❌ FORBIDDEN: Environment Configuration Violations**
+
+- **Environment Variable Neglect**: NEVER skip environment variable verification when behavior differs between environments
+- **Configuration Over Command-Line**: NEVER use command-line parameters when configuration file options provide better reliability
+- **User Feedback Dismissal**: NEVER ignore user observations about environment-specific behavior differences
 
 ---
 

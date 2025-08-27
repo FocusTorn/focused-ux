@@ -44,16 +44,48 @@ export function activate(context: vscode.ExtensionContext) {
 		// Register all commands
 		const disposables = [
 			vscode.commands.registerCommand('fux-project-butler.formatPackageJson', async (uri?: vscode.Uri) => {
-				await formatPackageJson(uri, projectButlerManager, window, workspace)
+				try {
+					await formatPackageJson(uri, projectButlerManager, window, workspace)
+				}
+				catch (error: any) {
+					if (IS_TEST_ENVIRONMENT) {
+						throw error
+					}
+					await window.showErrorMessage(`Failed to format package.json: ${error.message}`)
+				}
 			}),
 			vscode.commands.registerCommand('fux-project-butler.updateTerminalPath', async (uri?: vscode.Uri) => {
-				await updateTerminalPath(uri, terminalManagementService, window)
+				try {
+					await updateTerminalPath(uri, terminalManagementService, window)
+				}
+				catch (error: any) {
+					if (IS_TEST_ENVIRONMENT) {
+						throw error
+					}
+					await window.showErrorMessage(`Error updating terminal path: ${error.message}`)
+				}
 			}),
 			vscode.commands.registerCommand('fux-project-butler.createBackup', async (uri?: vscode.Uri) => {
-				await createBackup(uri, backupManagementService, window)
+				try {
+					await createBackup(uri, backupManagementService, window)
+				}
+				catch (error: any) {
+					if (IS_TEST_ENVIRONMENT) {
+						throw error
+					}
+					await window.showErrorMessage(`Error creating backup: ${error.message}`)
+				}
 			}),
 			vscode.commands.registerCommand('fux-project-butler.enterPoetryShell', async (uri?: vscode.Uri) => {
-				await enterPoetryShell(uri, poetryShellService, window)
+				try {
+					await enterPoetryShell(uri, poetryShellService, window)
+				}
+				catch (error: any) {
+					if (IS_TEST_ENVIRONMENT) {
+						throw error
+					}
+					await window.showErrorMessage(`Error entering poetry shell: ${error.message}`)
+				}
 			}),
 		]
 
@@ -85,48 +117,25 @@ async function formatPackageJson(
 	window: WindowAdapter,
 	workspace: WorkspaceAdapter,
 ): Promise<void> {
-	try {
-		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
+	const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
 
-		if (!finalUri) {
-			const message = 'No package.json file selected or active.'
-
-			if (IS_TEST_ENVIRONMENT)
-				throw new Error(message)
-			await window.showErrorMessage(message)
-			return
-		}
-		if (!finalUri.endsWith('package.json')) {
-			const message = 'This command can only be run on a package.json file.'
-
-			if (IS_TEST_ENVIRONMENT)
-				throw new Error(message)
-			await window.showErrorMessage(message)
-			return
-		}
-
-		const workspaceRoot = workspace.getWorkspaceRoot()
-
-		if (!workspaceRoot) {
-			const message = 'Could not find workspace root. Cannot format package.json.'
-
-			if (IS_TEST_ENVIRONMENT)
-				throw new Error(message)
-			await window.showErrorMessage(message)
-			return
-		}
-
-		await projectButlerManager.formatPackageJson(finalUri, workspaceRoot)
-
-		if (!IS_TEST_ENVIRONMENT) {
-			await window.showInformationMessage('Successfully formatted package.json')
-		}
+	if (!finalUri) {
+		throw new Error('No package.json file selected or active.')
 	}
-	catch (error: any) {
-		if (IS_TEST_ENVIRONMENT) {
-			throw error
-		}
-		await window.showErrorMessage(`Failed to format package.json: ${error.message}`)
+	if (!finalUri.endsWith('package.json')) {
+		throw new Error('This command can only be run on a package.json file.')
+	}
+
+	const workspaceRoot = workspace.getWorkspaceRoot()
+
+	if (!workspaceRoot) {
+		throw new Error('Could not find workspace root. Cannot format package.json.')
+	}
+
+	await projectButlerManager.formatPackageJson(finalUri, workspaceRoot)
+
+	if (!IS_TEST_ENVIRONMENT) {
+		await window.showInformationMessage('Successfully formatted package.json')
 	}
 }
 
@@ -138,32 +147,19 @@ async function updateTerminalPath(
 	terminalManagementService: TerminalManagementService,
 	window: WindowAdapter,
 ): Promise<void> {
-	try {
-		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
+	const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
 
-		if (!finalUri) {
-			const message = 'No file or folder context to update terminal path.'
-
-			if (IS_TEST_ENVIRONMENT)
-				throw new Error(message)
-			await window.showErrorMessage(message)
-			return
-		}
-
-		const terminalCommand = await terminalManagementService.updateTerminalPath(finalUri)
-
-		if (!IS_TEST_ENVIRONMENT) {
-			const terminal = window.getActiveTerminal() || window.createTerminal('F-UX Terminal')
-
-			terminal.sendText(terminalCommand.command)
-			terminal.show()
-		}
+	if (!finalUri) {
+		throw new Error('No file or folder context to update terminal path.')
 	}
-	catch (error: any) {
-		if (IS_TEST_ENVIRONMENT) {
-			throw error
-		}
-		await window.showErrorMessage(`Error updating terminal path: ${error.message}`)
+
+	const terminalCommand = await terminalManagementService.updateTerminalPath(finalUri)
+
+	if (!IS_TEST_ENVIRONMENT) {
+		const terminal = window.getActiveTerminal() || window.createTerminal('F-UX Terminal')
+
+		terminal.sendText(terminalCommand.command)
+		terminal.show()
 	}
 }
 
@@ -175,31 +171,17 @@ async function createBackup(
 	backupManagementService: BackupManagementService,
 	window: WindowAdapter,
 ): Promise<void> {
-	try {
-		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
+	const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
 
-		if (!finalUri) {
-			const message = 'No file selected or open to back up.'
-
-			if (IS_TEST_ENVIRONMENT)
-				throw new Error(message)
-			await window.showErrorMessage(message)
-			return
-		}
-
-		const backupPath = await backupManagementService.createBackup(finalUri)
-
-		if (!IS_TEST_ENVIRONMENT) {
-			const backupFileName = backupPath.split('/').pop() || backupPath.split('\\').pop()
-
-			await window.showInformationMessage(`Backup created: ${backupFileName}`)
-		}
+	if (!finalUri) {
+		throw new Error('No file selected or open to back up.')
 	}
-	catch (error: any) {
-		if (IS_TEST_ENVIRONMENT) {
-			throw error
-		}
-		await window.showErrorMessage(`Error creating backup: ${error.message}`)
+
+	const backupPath = await backupManagementService.createBackup(finalUri)
+
+	if (!IS_TEST_ENVIRONMENT) {
+		const backupFileName = backupPath.split('/').pop() || backupPath.split('\\').pop()
+		await window.showInformationMessage(`Backup created: ${backupFileName}`)
 	}
 }
 
@@ -211,21 +193,13 @@ async function enterPoetryShell(
 	poetryShellService: PoetryShellService,
 	window: WindowAdapter,
 ): Promise<void> {
-	try {
-		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
-		const terminalCommand = await poetryShellService.enterPoetryShell(finalUri)
+	const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
+	const terminalCommand = await poetryShellService.enterPoetryShell(finalUri)
 
-		if (!IS_TEST_ENVIRONMENT) {
-			const terminal = window.createTerminal('Poetry Shell')
+	if (!IS_TEST_ENVIRONMENT) {
+		const terminal = window.createTerminal('Poetry Shell')
 
-			terminal.sendText(terminalCommand.command)
-			terminal.show()
-		}
-	}
-	catch (error: any) {
-		if (IS_TEST_ENVIRONMENT) {
-			throw error
-		}
-		await window.showErrorMessage(`Error entering poetry shell: ${error.message}`)
+		terminal.sendText(terminalCommand.command)
+		terminal.show()
 	}
 }

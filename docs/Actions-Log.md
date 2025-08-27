@@ -1572,6 +1572,106 @@ console.log('🔍 Debug output now visible!')
 
 ---
 
+### [2025-08-27 04:53:14] Project Butler Integration Test Debugging and Strategy Documentation
+
+### Summary
+
+Resolved critical hanging issue in project-butler integration tests and created comprehensive integration testing strategy documentation. The root cause was missing `VSCODE_TEST='1'` environment variable in test configuration, causing UI operations to hang indefinitely.
+
+### Key Implementations
+
+#### **Critical Configuration Fixes**
+
+- **Environment Variable Setup**: Added `env: { VSCODE_TEST: '1' }` to `.vscode-test.mjs` configuration
+- **Setup Files Configuration**: Replaced `--require` parameter with `setupFiles: ['./out-tsc/suite/index.js']` for reliable module loading
+- **Extension Environment Detection**: Verified `process.env.VSCODE_TEST === '1'` detection in extension code
+- **UI Operation Handling**: Ensured UI operations are skipped in test environment
+
+#### **Project Configuration Updates**
+
+- **project.json**: Removed `--require` parameter from all integration test targets
+- **TypeScript Configuration**: Verified proper test compilation setup with `tsconfig.test.json`
+- **Build Dependencies**: Ensured proper dependency ordering with `dependsOn: ["build", "test:compile"]`
+
+#### **Documentation Creation**
+
+- **Integration Testing Strategy**: Created comprehensive `docs/integration-testing-strategy.md` with:
+    - Critical configuration requirements
+    - Test implementation patterns
+    - Common issues and solutions
+    - Debugging strategies
+    - Best practices for VS Code extension testing
+
+### What Was Tried and Failed
+
+1. **Initial Module Resolution Approach**: Attempted to fix "Cannot find module" error by adjusting paths, but the real issue was configuration method
+2. **Command-Line Parameter Debugging**: Focused on `--require` parameter issues when `setupFiles` configuration was the correct approach
+3. **Extensive Logging Strategy**: Added comprehensive logging throughout multiple layers when the issue was a simple environment variable
+4. **Timeout Wrapper Debugging**: Used `Promise.race` with timeouts to identify hanging operations, but didn't address root cause
+5. **Build Error Chasing**: Attempted to build from subdirectory instead of monorepo root, causing TypeScript configuration errors
+
+### Lessons Learned
+
+#### **Critical Environment Configuration**
+
+- **VSCODE_TEST Environment Variable**: Absolutely critical for VS Code extension integration tests - without it, UI operations hang indefinitely
+- **Test Environment Detection**: Extensions must properly detect test environments and conditionally skip UI operations
+- **Configuration Over Command-Line**: `setupFiles` configuration is more reliable than `--require` parameters for module resolution
+
+#### **Debugging Strategy Insights**
+
+- **User Feedback Integration**: User's observation that "command completes in devhost" was crucial diagnostic clue indicating environment-specific issue
+- **Systematic Problem Isolation**: Step-by-step verification with comprehensive logging was essential for identifying hanging operations
+- **Root Cause vs Symptom Focus**: Initial focus on module resolution was addressing symptoms rather than the underlying environment configuration issue
+
+#### **Testing Architecture Patterns**
+
+- **Environment-Specific Behavior**: Test environments require different handling than production environments
+- **UI Operation Isolation**: UI operations must be conditionally executed based on environment detection
+- **Configuration Reliability**: Configuration file settings are more reliable than command-line parameters for complex tool integration
+
+### Technical Details
+
+#### **Files Modified**
+
+- `packages/project-butler/ext/project.json`: Removed `--require` parameter from test targets
+- `packages/project-butler/ext/.vscode-test.mjs`: Added environment variable and setup files configuration
+- `packages/project-butler/ext/test/suite/backup.test.ts`: Restored clean test implementation after debugging
+- `packages/project-butler/ext/src/extension.ts`: Verified environment detection implementation
+- `packages/project-butler/core/src/services/BackupManagement.service.ts`: Cleaned up debugging code
+- `packages/project-butler/ext/src/adapters/FileSystem.adapter.ts`: Fixed TypeScript type issues
+- `docs/integration-testing-strategy.md`: Created comprehensive testing strategy documentation
+
+#### **Configuration Patterns Established**
+
+```javascript
+// .vscode-test.mjs
+export default defineConfig({
+    env: { VSCODE_TEST: '1' },
+    setupFiles: ['./out-tsc/suite/index.js'],
+    // ... other configuration
+})
+```
+
+```typescript
+// Extension environment detection
+const IS_TEST_ENVIRONMENT = process.env.VSCODE_TEST === '1'
+
+// Conditional UI operations
+if (!IS_TEST_ENVIRONMENT) {
+    await window.showInformationMessage('Operation completed')
+}
+```
+
+### Impact
+
+- **Test Reliability**: Integration tests now pass consistently without hanging
+- **Documentation**: Comprehensive testing strategy provides reusable patterns for future extensions
+- **Debugging Efficiency**: Established patterns for identifying and resolving similar issues
+- **Architecture Compliance**: Ensures proper test environment isolation and UI operation handling
+
+---
+
 **Footnotes**:
 
 _This log serves as a living document of successful implementation patterns and solutions._
