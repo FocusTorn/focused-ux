@@ -186,6 +186,19 @@ importers:
         specifier: 5.8.3
         version: 5.8.3
 
+  libs/vscode-test-cli-config:
+    dependencies:
+      '@vscode/test-cli':
+        specifier: ^0.0.11
+        version: 0.0.11
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.10
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
   packages/context-cherry-picker/core:
     dependencies:
       '@fux/shared':
@@ -401,6 +414,9 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
     devDependencies:
+      '@fux/vscode-test-cli-config':
+        specifier: workspace:*
+        version: link:../../../libs/vscode-test-cli-config
       '@types/js-yaml':
         specifier: ^4.0.9
         version: 4.0.9

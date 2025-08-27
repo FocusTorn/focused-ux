@@ -1,59 +1,67 @@
 {
     "extends": "./tsconfig.base.json",
     "compilerOptions": {
-        "paths": {
-            "@fux/context-cherry-picker-core": ["packages/context-cherry-picker/core/src"],
-            "@fux/dynamicons-core": ["packages/dynamicons/core/src"],
-            "@fux/ghost-writer-core": ["packages/ghost-writer/core/src"],
-            "@fux/note-hub-core": ["packages/note-hub/core/src"],
-            "@fux/project-butler-core": ["packages/project-butler/core/src"],
-            
-            "@fux/mockly": ["libs/mockly/src"],
-        }
+        "tsBuildInfoFile": "./out-tsc/tsconfig.tsbuildinfo"
     },
-    "compileOnSave": false,
     "files": [],
-    "exclude": [
-        "_scripts/**/*",
-        "node_modules",
-        "dist",
-        "**/dist/**/*",
-        "libs/tools/structure-auditor/**/*"
-    ],
+    "include": [],
     "references": [
         {
-            "path": "./packages/ghost-writer/core"
+            "path": "_scripts/js"
         },
         {
-            "path": "./packages/context-cherry-picker/core"
+            "path": "generators"
         },
         {
-            "path": "./packages/project-butler/core"
+            "path": "packages/context-cherry-picker/core"
         },
         {
-            "path": "./packages/dynamicons/core"
+            "path": "packages/context-cherry-picker/ext"
         },
         {
-            "path": "./packages/note-hub/core"
-        },
-        
-        {
-            "path": "./generators"
+            "path": "packages/dynamicons/core"
         },
         {
-            "path": "./libs/tools/aka"
+            "path": "packages/dynamicons/ext"
         },
         {
-            "path": "./libs/mockly"
+            "path": "packages/ghost-writer/core"
         },
         {
-            "path": "./packages/project-butler/ext"
+            "path": "packages/ghost-writer/ext"
         },
         {
-            "path": "./packages/ghost-writer/ext"
+            "path": "packages/note-hub/core"
         },
         {
-            "path": "./packages/dynamicons/ext"
+            "path": "packages/note-hub/ext"
+        },
+        {
+            "path": "packages/project-butler/core"
+        },
+        {
+            "path": "packages/project-butler/ext"
+        },
+        {
+            "path": "libs/mockly"
+        },
+        {
+            "path": "libs/shared"
+        },
+        {
+            "path": "libs/tools/aka"
+        },
+        {
+            "path": "libs/tools/cursor-memory-optimizer"
+        },
+        {
+            "path": "libs/tools/prune-nx-cache"
+        },
+        {
+            "path": "libs/tools/structure-auditor"
+        },
+        {
+            "path": "libs/vscode-test-cli-config"
         }
     ]
 }

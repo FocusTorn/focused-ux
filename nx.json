@@ -214,7 +214,8 @@
                 "packages/note-hub/core/**/*",
                 "packages/note-hub/ext/**/*",
                 "libs/tools/prune-nx-cache/**/*",
-                "libs/mockly/**/*"
+                "libs/mockly/**/*",
+                "libs/vscode-test-cli-config/**/*"
             ]
         } //<
 
@@ -286,7 +287,8 @@
             "@fux/dynamicons-ext",
             "@fux/libs/shared",
             "@fux/prune-nx-cache",
-            "@fux/mockly"
+            "@fux/mockly",
+            "@fux/vscode-test-cli-config"
         ], //<
         "version": { //>
             "preVersionCommand": "pnpm dlx nx run-many -t build",

@@ -1,13 +1,13 @@
 packages:
-    - 'packages/*/*'
-    - 'libs/*'
+  - "packages/*/*"
+  - "libs/*"
 
 onlyBuiltDependencies:
-    - '@swc/core'
-    - '@vscode/vsce-sign'
-    - esbuild
-    - keytar
-    - nx
-    - oxc-resolver
-    - puppeteer
-    - sharp
+  - "@swc/core"
+  - "@vscode/vsce-sign"
+  - esbuild
+  - keytar
+  - nx
+  - oxc-resolver
+  - puppeteer
+  - sharp

@@ -95,7 +95,7 @@
             "outputs": ["{projectRoot}/out-tsc"],
             "options": {
                 "commands": [
-                    "rimraf ./out-tsc/suite",
+                    // "rimraf ./out-tsc/suite",
                     "tsc -p packages/project-butler/ext/tsconfig.test.json"
                 ]
             }
@@ -106,7 +106,7 @@
             "dependsOn": ["build", "test:compile"],
             "options": {
                 "commands": [
-                    "rimraf ./.vscode-test/user-data",
+                    // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
                     "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
                 ],
                 "cwd": "packages/project-butler/ext"
@@ -119,7 +119,7 @@
             "dependsOn": ["build", "test:compile"],
             "options": {
                 "commands": [
-                    "rimraf ./.vscode-test/user-data",
+                    // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
                     "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
                 ],
                 "cwd": "packages/project-butler/ext"
@@ -132,7 +132,7 @@
             "dependsOn": ["build", "test:compile"],
             "options": {
                 "commands": [
-                    "rimraf ./.vscode-test/user-data",
+                    // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
                     "vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec"
                 ],
                 "cwd": "packages/project-butler/ext"
