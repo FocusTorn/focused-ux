@@ -1,4 +1,11 @@
 import { defineConfig } from '@vscode/test-cli'
+import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// const extensionDevelopmentPath = __dirname
 
 export default defineConfig({
     // Use the Insiders build of VS Code to avoid conflicts with the stable build.
@@ -13,22 +20,33 @@ export default defineConfig({
 
     // A list of launch arguments passed to VS Code.
     launchArgs: [
-        './test/test-workspace',
         // Use a dedicated user data directory for an isolated testing environment.
         '--user-data-dir',
         './.vscode-test/user-data',
+        
+        // Disable all extensions except for the one being tested.
+        // This is the key to a clean and stable test environment.
+        '--disable-extensions',
+        
         // Disable the workspace trust feature to prevent popups that can block tests.
-        '--disable-workspace-trust',
+        // '--disable-workspace-trust',
+        
         // Explicitly disable noisy built-in extensions.
-        '--disable-extension',
-        'ms-vsliveshare.vsliveshare',
-        '--disable-extension',
-        'ms-python.gather',
+        // Explicitly disable all non-essential extensions for a clean test run.
+        '--disable-extension', 'ms-vsliveshare.vsliveshare',
+        '--disable-extension', 'ms-python.python',
+        '--disable-extension', 'ms-python.gather',
+        '--disable-extension', 'vscode.git',
+        '--disable-extension', 'vscode.github-authentication',
+        '--disable-extension', 'GitHub.copilot',
+        '--disable-extension', 'GitHub.copilot-chat',
+        
         // Load our extension for testing
-        '--extensionDevelopmentPath',
-        '.',
+        // '--extensionDevelopmentPath',
+        // extensionDevelopmentPath,
+        
         // Use Clean profile for testing
-        '--profile',
-        'Clean',
+        // '--profile',
+        // 'Clean',
     ],
 })

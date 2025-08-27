@@ -86,7 +86,7 @@ describe('YourService', () => {
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createDIContainer } from '../src/injection'
 
-describe('ProjectMaidManager Integration', () => {
+describe('ProjectButlerManager Integration', () => {
     let container: ReturnType<typeof createDIContainer>
 
     beforeEach(() => {

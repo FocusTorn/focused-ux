@@ -1,12 +1,12 @@
-# Project Maid Core - Architecture Plan
+# Project Butler Core - Architecture Plan
 
 ## Goal
 
-Transform the monolithic Project Maid All package into a proper core/ext architecture where the core package contains all business logic in separate, maintainable services, following the established FocusedUX patterns.
+Transform the monolithic Project Butler All package into a proper core/ext architecture where the core package contains all business logic in separate, maintainable services, following the established FocusedUX patterns.
 
 ## Current State
 
-- **Source**: `packages/project-maid/all/src/extension.ts` contains all logic (282 lines)
+- **Source**: `packages/project-butler/all/src/extension.ts` contains all logic (282 lines)
 - **Pattern**: Direct VSCode integration with business logic mixed in
 - **Dependencies**: Only `js-yaml` for configuration parsing
 
@@ -71,7 +71,7 @@ services/
 ├── TerminalManagement.service.ts
 ├── BackupManagement.service.ts
 ├── PoetryShell.service.ts
-└── ProjectMaidManager.service.ts  # Orchestrator service
+└── ProjectButlerManager.service.ts  # Orchestrator service
 ```
 
 ### Interfaces
@@ -82,7 +82,7 @@ _interfaces/
 ├── ITerminalManagementService.ts
 ├── IBackupManagementService.ts
 ├── IPoetryShellService.ts
-└── IProjectMaidManagerService.ts
+└── IProjectButlerManagerService.ts
 ```
 
 ### Models
@@ -110,7 +110,7 @@ models/
 - **TerminalManagement**: File system adapter, terminal adapter
 - **BackupManagement**: File system adapter
 - **PoetryShell**: File system adapter, terminal adapter
-- **ProjectMaidManager**: All above services
+- **ProjectButlerManager**: All above services
 
 ## Testing Strategy
 
@@ -132,7 +132,7 @@ __tests__/
 │   ├── BackupManagement.service.test.ts
 │   └── PoetryShell.service.test.ts
 └── integration/
-    └── ProjectMaidManager.service.test.ts
+    └── ProjectButlerManager.service.test.ts
 ```
 
 ## TODO List
@@ -152,7 +152,7 @@ __tests__/
 - [ ] Extract TerminalManagement service
 - [ ] Extract BackupManagement service
 - [ ] Extract PoetryShell service
-- [ ] Create ProjectMaidManager orchestrator service
+- [ ] Create ProjectButlerManager orchestrator service
 
 ### Phase 3: Testing & Validation
 

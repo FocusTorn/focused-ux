@@ -79,10 +79,10 @@ packages/context-cherry-picker/
 └── all/            # Combined package (optional)
 ```
 
-### All-in-One Pattern (e.g., Project Maid All)
+### All-in-One Pattern (e.g., Project Butler All)
 
 ```
-packages/project-maid/
+packages/project-butler/
 └── all/            # Single package with direct VSCode integration
     ├── package.json
     ├── project.json
@@ -90,9 +90,9 @@ packages/project-maid/
     └── src/
 ```
 
-## Project Maid All - Expanded Functionality
+## Project Butler All - Expanded Functionality
 
-The Project Maid All package demonstrates a simplified, all-in-one approach that includes all Project Butler functionality:
+The Project Butler All package demonstrates a simplified, all-in-one approach that includes all Project Butler functionality:
 
 ### Features
 
@@ -103,7 +103,7 @@ The Project Maid All package demonstrates a simplified, all-in-one approach that
 
 ### Context Menu Integration
 
-All commands are organized in a flyout submenu called "Project Maid All" in the explorer context menu, keeping the interface clean and organized.
+All commands are organized in a flyout submenu called "Project Butler All" in the explorer context menu, keeping the interface clean and organized.
 
 ### Activation
 
@@ -201,7 +201,7 @@ Before packaging an extension, verify:
 }
 ```
 
-### Working Configuration (Project Maid All)
+### Working Configuration (Project Butler All)
 
 ```json
 // project.json

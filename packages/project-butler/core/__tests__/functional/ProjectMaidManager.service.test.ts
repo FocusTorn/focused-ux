@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { ProjectMaidManagerService } from '../../src/services/ProjectMaidManager.service'
+import { ProjectButlerManagerService } from '../../src/services/ProjectButlerManager.service'
 import { PackageJsonFormattingService } from '../../src/services/PackageJsonFormatting.service'
 import { TerminalManagementService } from '../../src/services/TerminalManagement.service'
 import { BackupManagementService } from '../../src/services/BackupManagement.service'
 import { PoetryShellService } from '../../src/services/PoetryShell.service'
 import { setupTestEnvironment, resetAllMocks, setupFileSystemMocks, setupPathMocks, setupYamlMocks } from '../_setup'
 
-describe('ProjectMaidManager Integration', () => {
-	let projectMaidManager: ProjectMaidManagerService
+describe('ProjectButlerManager Integration', () => {
+	let projectButlerManager: ProjectButlerManagerService
 	let mocks: ReturnType<typeof setupTestEnvironment>
 
 	beforeEach(() => {
@@ -23,7 +23,7 @@ describe('ProjectMaidManager Integration', () => {
 		const poetryShell = new PoetryShellService(mocks.fileSystem, mocks.path)
 		
 		// Create the manager service with all dependencies
-		projectMaidManager = new ProjectMaidManagerService({
+		projectButlerManager = new ProjectButlerManagerService({
 			packageJsonFormatting,
 			terminalManagement,
 			backupManagement,
@@ -56,7 +56,7 @@ describe('ProjectMaidManager Integration', () => {
 			})
 
 			// Act
-			await projectMaidManager.formatPackageJson(packageJsonPath, workspaceRoot)
+			await projectButlerManager.formatPackageJson(packageJsonPath, workspaceRoot)
 
 			// Assert
 			expect(mocks.fileSystem.writeFile).toHaveBeenCalledWith(
@@ -76,7 +76,7 @@ describe('ProjectMaidManager Integration', () => {
 			mocks.path.dirname.mockReturnValue(directoryPath)
 
 			// Act
-			await projectMaidManager.updateTerminalPath(filePath)
+			await projectButlerManager.updateTerminalPath(filePath)
 
 			// Assert
 			expect(mocks.fileSystem.stat).toHaveBeenCalledWith(filePath)
@@ -96,7 +96,7 @@ describe('ProjectMaidManager Integration', () => {
 			mocks.fileSystem.stat.mockRejectedValue(new Error('File not found'))
 
 			// Act
-			await projectMaidManager.createBackup(sourcePath)
+			await projectButlerManager.createBackup(sourcePath)
 
 			// Assert
 			expect(mocks.fileSystem.copyFile).toHaveBeenCalledWith(sourcePath, backupPath)
@@ -113,7 +113,7 @@ describe('ProjectMaidManager Integration', () => {
 			mocks.path.dirname.mockReturnValue(directoryPath)
 
 			// Act
-			await projectMaidManager.enterPoetryShell(filePath)
+			await projectButlerManager.enterPoetryShell(filePath)
 
 			// Assert
 			expect(mocks.fileSystem.stat).toHaveBeenCalledWith(filePath)

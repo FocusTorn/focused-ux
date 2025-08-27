@@ -1,8 +1,8 @@
-import type { IProjectMaidManagerService, IProjectMaidDependencies } from '../_interfaces/IProjectMaidManagerService.js'
+import type { IProjectButlerManagerService, IProjectButlerDependencies } from '../_interfaces/IProjectButlerManagerService.js'
 
-export class ProjectMaidManagerService implements IProjectMaidManagerService {
+export class ProjectButlerManagerService implements IProjectButlerManagerService {
 
-	constructor(private readonly dependencies: IProjectMaidDependencies) {}
+	constructor(private readonly dependencies: IProjectButlerDependencies) {}
 
 	async formatPackageJson(packageJsonPath: string, workspaceRoot: string): Promise<void> {
 		await this.dependencies.packageJsonFormatting.formatPackageJson(packageJsonPath, workspaceRoot)

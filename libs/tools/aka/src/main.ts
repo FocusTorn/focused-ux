@@ -142,7 +142,7 @@ function injectVitestConfig(project: string, target: string, args: string[]): st
 
 			projectPath = `packages/${baseName}/${suffix}`
 		}
-		// Handle other packages (like project-maid-all)
+		// Handle other packages (like project-butler-all)
 		else {
 			projectPath = `packages/${projectName}`
 		}
@@ -385,7 +385,7 @@ function main() {
 		// Special handling for esbuild-visualizer
 		if (notNxTarget.includes('esbuild-visualizer')) {
 			// Convert project name to metadata file path
-			// project format: @fux/project-maid-all -> packages/project-maid/all/dist/meta.json
+			// project format: @fux/project-butler-all -> packages/project-butler/all/dist/meta.json
 			const projectParts = project.replace('@fux/', '').split('-')
 			const packageName = projectParts.slice(0, -1).join('-')
 			const suffix = projectParts[projectParts.length - 1]

@@ -21,6 +21,7 @@ ContextCherryPicker:
           - '**/knip*'
           - '**/prettier.config.cjs'
           - '**/.cursor-rules*'
+          - '**/.vscode-test.mjs'
       build:
         initially_visible: false
         items:
@@ -35,7 +36,6 @@ ContextCherryPicker:
         items:
           - '**/__tests__'
           - '**/coverage'
-          - '**/.vscode-test.mjs'
       ignore:
         initially_visible: false
         items:

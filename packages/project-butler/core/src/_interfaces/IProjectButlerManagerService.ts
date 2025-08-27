@@ -3,7 +3,7 @@ import type { ITerminalManagementService } from './ITerminalManagementService.js
 import type { IBackupManagementService } from './IBackupManagementService.js'
 import type { IPoetryShellService } from './IPoetryShellService.js'
 
-export interface IProjectMaidManagerService {
+export interface IProjectButlerManagerService {
 	/**
 	 * Format package.json using .FocusedUX configuration
 	 * @param packageJsonPath - Path to the package.json file
@@ -30,7 +30,7 @@ export interface IProjectMaidManagerService {
 	enterPoetryShell: (filePath?: string) => Promise<void>
 }
 
-export interface IProjectMaidDependencies {
+export interface IProjectButlerDependencies {
 	packageJsonFormatting: IPackageJsonFormattingService
 	terminalManagement: ITerminalManagementService
 	backupManagement: IBackupManagementService

@@ -16,7 +16,7 @@ vi.mock('@fux/project-butler-core', () => ({
 	PoetryShellService: vi.fn().mockImplementation(() => ({
 		enterPoetryShell: vi.fn().mockResolvedValue({ command: 'poetry shell', shouldShowTerminal: true }),
 	})),
-	ProjectMaidManagerService: vi.fn().mockImplementation(() => ({
+	ProjectButlerManagerService: vi.fn().mockImplementation(() => ({
 		formatPackageJson: vi.fn(),
 	})),
 }))
@@ -88,7 +88,7 @@ describe('Extension', () => {
 
 			// Assert
 			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
-				'Failed to activate Project Maid: Registration failed',
+				'Failed to activate Project Butler: Registration failed',
 			)
 		})
 	})
@@ -102,7 +102,7 @@ describe('Extension', () => {
 			deactivate()
 
 			// Assert
-			expect(consoleSpy).toHaveBeenCalledWith('F-UX: Project Maid is now deactivated!')
+			expect(consoleSpy).toHaveBeenCalledWith('F-UX: Project Butler is now deactivated!')
 
 			// Cleanup
 			consoleSpy.mockRestore()

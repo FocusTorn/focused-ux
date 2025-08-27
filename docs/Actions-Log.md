@@ -716,11 +716,11 @@
     - Created `packages/project-butler/ext/` as lightweight VSCode wrapper with direct service instantiation
     - Implemented adapter pattern for VSCode API abstraction (FileSystem, Path, Yaml, Window, Workspace adapters)
     - Used direct service instantiation instead of DI containers per guinea pig package principles
-- **Systematic Renaming Protocol**: Executed comprehensive renaming from "Project Maid" to "Project Butler":
-    - Renamed directory: `packages/project-maid/` → `packages/project-butler/`
-    - Updated package names: `@fux/project-maid-core` → `@fux/project-butler-core`, `@fux/project-maid-ext` → `@fux/project-butler-ext`
-    - Updated command IDs: `fux-project-maid.*` → `fux-project-butler.*`
-    - Updated display names: "F-UX: Project Maid" → "F-UX: Project Butler"
+- **Systematic Renaming Protocol**: Executed comprehensive renaming from "Project Butler" to "Project Butler":
+    - Renamed directory: `packages/project-butler/` → `packages/project-butler/`
+    - Updated package names: `@fux/project-butler-core` → `@fux/project-butler-core`, `@fux/project-butler-ext` → `@fux/project-butler-ext`
+    - Updated command IDs: `fux-project-butler.*` → `fux-project-butler.*`
+    - Updated display names: "F-UX: Project Butler" → "F-UX: Project Butler"
     - Updated all configuration files, documentation, and test references
 - **Testing Strategy Alignment**: Properly aligned test structure with established Mockly patterns:
     - Used functional tests for main logic in `__tests__/functional/` directory
@@ -757,7 +757,7 @@
 **Outcomes**:
 
 - **✅ Complete Architecture Separation**: Clean core/extension separation with all business logic in core package
-- **✅ Comprehensive Renaming**: All references successfully updated from "Project Maid" to "Project Butler"
+- **✅ Comprehensive Renaming**: All references successfully updated from "Project Butler" to "Project Butler"
 - **✅ Full Test Coverage**: All functionality covered by testing with proper Mockly integration
 - **✅ Architectural Compliance**: Project Butler now acts as proper guinea pig package with self-contained core logic
 - **✅ Definitive Refactoring Patterns**: Established systematic protocols for future package refactoring work
@@ -770,14 +770,14 @@
 - **🚫 Surface-Level Problem Fixing**: Don't fix individual test failures without considering systemic architectural issues
 - **🚫 Custom Test Organization**: Don't create custom test structures when established patterns exist
 
-### [2025-08-19 16:30:00] Project Maid All Expansion & Packaging Fixes
+### [2025-08-19 16:30:00] Project Butler All Expansion & Packaging Fixes
 
-**Summary**: Successfully expanded Project Maid All to include all Project Butler commands while fixing critical packaging issues and improving user experience through better validation and context menu organization.
+**Summary**: Successfully expanded Project Butler All to include all Project Butler commands while fixing critical packaging issues and improving user experience through better validation and context menu organization.
 
 **Implementations**:
 
-- **Expanded Command Set**: Added `updateTerminalPath`, `createBackup`, and `enterPoetryShell` commands to Project Maid All
-- **Context Menu Organization**: Implemented flyout submenu "Project Maid All" to organize all commands cleanly
+- **Expanded Command Set**: Added `updateTerminalPath`, `createBackup`, and `enterPoetryShell` commands to Project Butler All
+- **Context Menu Organization**: Implemented flyout submenu "Project Butler All" to organize all commands cleanly
 - **Startup Activation**: Changed activation events to `"*"` for immediate startup due to small package size
 - **User-Friendly Validation**: Changed package.json validation from errors to warnings for unknown keys
 - **Packaging Fix**: Added missing `.vscodeignore` file to ensure `node_modules` inclusion in VSIX
@@ -802,7 +802,7 @@
 
 **Outcomes**:
 
-- **Complete Functionality**: All Project Butler commands now available in simplified Project Maid All package
+- **Complete Functionality**: All Project Butler commands now available in simplified Project Butler All package
 - **Proper Packaging**: VSIX now includes `node_modules` with all dependencies (522.9 KB vs 7.29 KB)
 - **Better UX**: Context menu organized in submenu, validation uses warnings instead of errors
 - **Documentation**: Comprehensive reference document for third-party package externalization
@@ -822,7 +822,7 @@
 - **pb** = project-butler (general reference)
 - **pbc** = project-butler-core (core logic)
 - **pbe** = project-butler-ext (extension wrapper)
-- **pma** = project-maid-all (combined codebase - core + ext in one package)
+- **pma** = project-butler-all (combined codebase - core + ext in one package)
 
 ### Package Alias Pattern
 
@@ -833,12 +833,12 @@ Each package can potentially have the following aliases:
 - `<featureName>e` = extension package
 - `<featureName>a` = all-in-one package
 
-### Project Maid All (pma) Implementation
+### Project Butler All (pma) Implementation
 
 - **Simplified**: Contains only `formatPackageJson` functionality
 - **Direct VSCode APIs**: No adapters, no shared dependencies
 - **Configuration**: Uses `ProjectButler.packageJson-order` instead of `TerminalButler.packageJson-order`
-- **Size**: 7.07 KB VSIX (vs 65.66 KB for full project-maid-ext)
+- **Size**: 7.07 KB VSIX (vs 65.66 KB for full project-butler-ext)
 - **Dependencies**: Only `awilix` and `js-yaml`
 
 ---

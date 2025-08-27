@@ -4,7 +4,7 @@ import {
 	TerminalManagementService,
 	BackupManagementService,
 	PoetryShellService,
-	ProjectMaidManagerService,
+	ProjectButlerManagerService,
 } from '@fux/project-butler-core'
 import { FileSystemAdapter } from './adapters/FileSystem.adapter.js'
 import { PathAdapter } from './adapters/Path.adapter.js'
@@ -12,8 +12,6 @@ import { YamlAdapter } from './adapters/Yaml.adapter.js'
 import { WindowAdapter } from './adapters/Window.adapter.js'
 import { WorkspaceAdapter } from './adapters/Workspace.adapter.js'
 import process from 'node:process'
-
-
 
 // --- Environment Check ---
 // VS Code's test runner sets this environment variable.
@@ -23,8 +21,6 @@ const IS_TEST_ENVIRONMENT = process.env.VSCODE_TEST === '1'
  * Called when the extension is activated
  */
 export function activate(context: vscode.ExtensionContext) {
-	console.log('F-UX: Project Maid is now active!')
-
 	try {
 		// Create adapters
 		const fileSystem = new FileSystemAdapter()
@@ -38,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const terminalManagementService = new TerminalManagementService(fileSystem, path)
 		const backupManagementService = new BackupManagementService(fileSystem, path)
 		const poetryShellService = new PoetryShellService(fileSystem, path)
-		const projectMaidManager = new ProjectMaidManagerService({
+		const projectButlerManager = new ProjectButlerManagerService({
 			packageJsonFormatting: packageJsonFormattingService,
 			terminalManagement: terminalManagementService,
 			backupManagement: backupManagementService,
@@ -48,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// Register all commands
 		const disposables = [
 			vscode.commands.registerCommand('fux-project-butler.formatPackageJson', async (uri?: vscode.Uri) => {
-				await formatPackageJson(uri, projectMaidManager, window, workspace)
+				await formatPackageJson(uri, projectButlerManager, window, workspace)
 			}),
 			vscode.commands.registerCommand('fux-project-butler.updateTerminalPath', async (uri?: vscode.Uri) => {
 				await updateTerminalPath(uri, terminalManagementService, window)
@@ -62,12 +58,12 @@ export function activate(context: vscode.ExtensionContext) {
 		]
 
 		context.subscriptions.push(...disposables)
-
-		console.log('F-UX: Project Maid commands registered successfully')
 	}
 	catch (error: any) {
-		console.error('F-UX: Project Maid failed to activate:', error.message)
-		vscode.window.showErrorMessage(`Failed to activate Project Maid: ${error.message}`)
+		if (!IS_TEST_ENVIRONMENT) {
+			vscode.window.showErrorMessage(`Failed to activate Project Butler: ${error.message}`)
+		}
+		console.error('F-UX: Project Butler failed to activate:', error.message)
 	}
 }
 
@@ -75,7 +71,9 @@ export function activate(context: vscode.ExtensionContext) {
  * Called when the extension is deactivated
  */
 export function deactivate() {
-	console.log('F-UX: Project Maid is now deactivated!')
+	if (!IS_TEST_ENVIRONMENT) {
+		console.log('F-UX: Project Butler is now deactivated!')
+	}
 }
 
 /**
@@ -83,45 +81,51 @@ export function deactivate() {
  */
 async function formatPackageJson(
 	uri: vscode.Uri | undefined,
-	projectMaidManager: ProjectMaidManagerService,
+	projectButlerManager: ProjectButlerManagerService,
 	window: WindowAdapter,
 	workspace: WorkspaceAdapter,
 ): Promise<void> {
 	try {
-		// Get the URI from context menu or active editor
-		let finalUri: string | undefined
-		
-		if (uri) {
-			// Called from context menu
-			finalUri = uri.fsPath
-		}
-		else {
-			// Called from command palette
-			finalUri = window.getActiveTextEditor()?.document.uri.fsPath
-		}
+		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
 
 		if (!finalUri) {
-			await window.showErrorMessage('No package.json file selected or active.')
+			const message = 'No package.json file selected or active.'
+
+			if (IS_TEST_ENVIRONMENT)
+				throw new Error(message)
+			await window.showErrorMessage(message)
 			return
 		}
 		if (!finalUri.endsWith('package.json')) {
-			await window.showErrorMessage('This command can only be run on a package.json file.')
+			const message = 'This command can only be run on a package.json file.'
+
+			if (IS_TEST_ENVIRONMENT)
+				throw new Error(message)
+			await window.showErrorMessage(message)
 			return
 		}
 
 		const workspaceRoot = workspace.getWorkspaceRoot()
 
 		if (!workspaceRoot) {
-			await window.showErrorMessage('Could not find workspace root. Cannot format package.json.')
+			const message = 'Could not find workspace root. Cannot format package.json.'
+
+			if (IS_TEST_ENVIRONMENT)
+				throw new Error(message)
+			await window.showErrorMessage(message)
 			return
 		}
 
-		await projectMaidManager.formatPackageJson(finalUri, workspaceRoot)
+		await projectButlerManager.formatPackageJson(finalUri, workspaceRoot)
+
 		if (!IS_TEST_ENVIRONMENT) {
 			await window.showInformationMessage('Successfully formatted package.json')
 		}
 	}
 	catch (error: any) {
+		if (IS_TEST_ENVIRONMENT) {
+			throw error
+		}
 		await window.showErrorMessage(`Failed to format package.json: ${error.message}`)
 	}
 }
@@ -138,31 +142,27 @@ async function updateTerminalPath(
 		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
 
 		if (!finalUri) {
-			await window.showErrorMessage('No file or folder context to update terminal path.')
+			const message = 'No file or folder context to update terminal path.'
+
+			if (IS_TEST_ENVIRONMENT)
+				throw new Error(message)
+			await window.showErrorMessage(message)
 			return
 		}
 
 		const terminalCommand = await terminalManagementService.updateTerminalPath(finalUri)
 
-		// If in a test environment, do not attempt to create a terminal.
-		if (IS_TEST_ENVIRONMENT) {
-			console.log(`TEST RUN: Would send command to terminal: ${terminalCommand.command}`)
-			return
-		}
-
-		try {
+		if (!IS_TEST_ENVIRONMENT) {
 			const terminal = window.getActiveTerminal() || window.createTerminal('F-UX Terminal')
 
 			terminal.sendText(terminalCommand.command)
 			terminal.show()
 		}
-		catch (_terminalError: any) {
-			// In test environment, terminal creation might fail
-			// Just show the command that would be executed
-			await window.showInformationMessage(`Terminal command: ${terminalCommand.command}`)
-		}
 	}
 	catch (error: any) {
+		if (IS_TEST_ENVIRONMENT) {
+			throw error
+		}
 		await window.showErrorMessage(`Error updating terminal path: ${error.message}`)
 	}
 }
@@ -179,12 +179,16 @@ async function createBackup(
 		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
 
 		if (!finalUri) {
-			await window.showErrorMessage('No file selected or open to back up.')
+			const message = 'No file selected or open to back up.'
+
+			if (IS_TEST_ENVIRONMENT)
+				throw new Error(message)
+			await window.showErrorMessage(message)
 			return
 		}
 
 		const backupPath = await backupManagementService.createBackup(finalUri)
-		
+
 		if (!IS_TEST_ENVIRONMENT) {
 			const backupFileName = backupPath.split('/').pop() || backupPath.split('\\').pop()
 
@@ -192,6 +196,9 @@ async function createBackup(
 		}
 	}
 	catch (error: any) {
+		if (IS_TEST_ENVIRONMENT) {
+			throw error
+		}
 		await window.showErrorMessage(`Error creating backup: ${error.message}`)
 	}
 }
@@ -206,28 +213,19 @@ async function enterPoetryShell(
 ): Promise<void> {
 	try {
 		const finalUri = uri?.fsPath || window.getActiveTextEditor()?.document.uri.fsPath
-
 		const terminalCommand = await poetryShellService.enterPoetryShell(finalUri)
 
-		// If in a test environment, do not attempt to create a terminal.
-		if (IS_TEST_ENVIRONMENT) {
-			console.log(`TEST RUN: Would send command to terminal: ${terminalCommand.command}`)
-			return
-		}
-
-		try {
+		if (!IS_TEST_ENVIRONMENT) {
 			const terminal = window.createTerminal('Poetry Shell')
 
 			terminal.sendText(terminalCommand.command)
 			terminal.show()
 		}
-		catch (_terminalError: any) {
-			// In test environment, terminal creation might fail
-			// Just show the command that would be executed
-			await window.showInformationMessage(`Poetry shell command: ${terminalCommand.command}`)
-		}
 	}
 	catch (error: any) {
+		if (IS_TEST_ENVIRONMENT) {
+			throw error
+		}
 		await window.showErrorMessage(`Error entering poetry shell: ${error.message}`)
 	}
 }

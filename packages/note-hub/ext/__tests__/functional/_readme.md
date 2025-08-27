@@ -4,7 +4,7 @@ This directory contains functional tests that validate the complete service orch
 
 ## Test Files
 
-- **ProjectMaidManager.service.test.ts** - Tests the main orchestrator service with real DI container integration
+- **ProjectButlerManager.service.test.ts** - Tests the main orchestrator service with real DI container integration
 
 ## Test Patterns
 
@@ -13,7 +13,7 @@ This directory contains functional tests that validate the complete service orch
 These tests validate that the dependency injection container properly wires all services together and that the complete service chain works correctly.
 
 ```typescript
-describe('ProjectMaidManager Integration', () => {
+describe('ProjectButlerManager Integration', () => {
     let container: ReturnType<typeof createDIContainer>
     let mocks: ReturnType<typeof setupTestEnvironment>
 
@@ -50,7 +50,7 @@ describe('ProjectMaidManager Integration', () => {
 
 These tests validate:
 
-- Service orchestration through the ProjectMaidManager
+- Service orchestration through the ProjectButlerManager
 - Complete workflow execution
 - Error handling across service boundaries
 - DI container configuration and wiring
