@@ -49,17 +49,17 @@ packages/package-name/
     ├── __tests__/
     │   ├── _setup.ts                    # Global test setup + test helpers
     │   ├── README.md                    # Test documentation
-    │   ├── functional/                  # Standard Vitest tests
+    │   ├── functional-tests/           # Standard Vitest tests
     │   │   ├── _readme.md              # Functional test docs
     │   │   ├── extension.test.ts       # Main extension test
     │   │   └── adapters/*.adapter.test.ts # Adapter tests
     │   ├── integration/                 # VS Code integration tests
-    │   │   ├── test-workspace/         # Test workspace files
+    │   │   ├── mocked-workspace/       # Test workspace files
     │   │   ├── *.test.ts               # Integration test files
     │   │   └── index.ts                # Integration test entry point
     │   ├── unit/                       # Specific isolated tests
     │   │   └── _readme.md              # Unit test docs
-    │   ├── coverage/                   # Coverage reports
+    │   ├── coverage-tests/             # Coverage reports
     │   │   └── _readme.md              # Coverage docs
     │   ├── _out-tsc/                   # Compiled integration tests
     │   ├── tsconfig.test.json          # Integration test TypeScript config
@@ -491,7 +491,7 @@ const __dirname = path.dirname(__filename)
 export default createVscodeTestConfig({
     packageName: 'fux-package-name',
     extensionDevelopmentPath: __dirname,
-    workspaceFolder: './integration/test-workspace',
+    workspaceFolder: './integration/mocked-workspace',
     files: './_out-tsc/**/*.test.js',
     setupFiles: './_out-tsc/index.js',
 })
@@ -1418,7 +1418,7 @@ This guide provides a **failsafe, one-stop-shop** approach to implementing compr
 ```bash
 # Create the complete testing directory structure
 mkdir -p packages/package-name/ext/__tests__/{functional,integration,unit,coverage,_out-tsc}
-mkdir -p packages/package-name/ext/__tests__/integration/test-workspace
+mkdir -p packages/package-name/ext/__tests__/integration/mocked-workspace
 ```
 
 #### **Step 2: Configuration Files**
@@ -1458,7 +1458,7 @@ const __dirname = path.dirname(__filename)
 export default createVscodeTestConfig({
     packageName: 'fux-package-name',
     extensionDevelopmentPath: __dirname,
-    workspaceFolder: './integration/test-workspace',
+    workspaceFolder: './integration/mocked-workspace',
     files: './_out-tsc/**/*.test.js',
     setupFiles: './_out-tsc/index.js',
 })

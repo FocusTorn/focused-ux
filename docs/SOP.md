@@ -79,12 +79,12 @@ packages/package-name/core/
 │   └── index.ts              # Package exports
 ├── __tests__/
 │   ├── _setup.ts             # Global test setup
-│   ├── functional/           # Main test directory
+│   ├── functional-tests/     # Main test directory
 │   │   ├── _readme.md        # Functional test docs
 │   │   └── *.service.test.ts # Service tests
 │   ├── unit/                 # Specific isolated tests
 │   │   └── _readme.md        # Unit test docs
-│   └── coverage/             # Coverage reports
+│   └── coverage-tests/       # Coverage reports
 │       └── _readme.md        # Coverage docs
 ├── package.json              # Core package config
 ├── project.json              # Nx build config
@@ -107,13 +107,13 @@ packages/package-name/ext/
 │   └── index.ts              # Package exports
 ├── __tests__/
 │   ├── _setup.ts             # Global test setup
-│   ├── functional/           # Main test directory
+│   ├── functional-tests/     # Main test directory
 │   │   ├── _readme.md        # Functional test docs
 │   │   ├── extension.test.ts # Main extension test
 │   │   └── adapters/         # Adapter tests
 │   ├── unit/                 # Specific isolated tests
 │   │   └── _readme.md        # Unit test docs
-│   └── coverage/             # Coverage reports
+│   └── coverage-tests/       # Coverage reports
 │       └── _readme.md        # Coverage docs
 ├── assets/                   # Extension assets
 ├── package.json              # Extension config

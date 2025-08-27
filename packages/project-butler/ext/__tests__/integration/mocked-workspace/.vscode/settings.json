@@ -1,0 +1,9 @@
+{
+    "git.enabled": false,
+    "git.autorefresh": false,
+    "git.autofetch": false,
+    "git.detectSubmodules": false,
+    "git.detectSubmodulesLimit": 0,
+    "git.autoRepositoryDetection": false,
+    "git.openRepositoryInParentFolders": "never"
+}

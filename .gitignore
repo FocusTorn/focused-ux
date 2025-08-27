@@ -41,7 +41,9 @@ stats
 *.pem
 
 **/*.notesHub*
-**/*removed*
+**/*removed
+
+
 *.bak*
 
 Thumbs.db

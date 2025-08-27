@@ -17,7 +17,7 @@ This guide provides a systematic approach for refactoring existing packages to a
 ### **Testing Strategy Alignment**
 
 - **Simple Mock Dependencies**: Use direct mock classes for dependencies
-- **Functional Test Focus**: Main tests in `__tests__/functional/` directory
+- **Functional Test Focus**: Main tests in `__tests__/functional-tests/` directory
 - **Real Pattern Validation**: Test actual runtime behavior, not just mock replacements
 - **Clean Test Setup**: Global dependency mocking with proper test isolation
 
@@ -42,7 +42,7 @@ Before beginning refactoring, assess the current package:
 
 2. **Testing Assessment**:
     - [ ] Are tests using simple mock dependencies?
-    - [ ] Are tests organized in functional/unit/coverage structure?
+    - [ ] Are tests organized in functional-tests/unit/coverage-tests structure?
     - [ ] Are there complex mock hierarchies?
     - [ ] Are tests validating real runtime behavior?
 
@@ -97,9 +97,9 @@ Rate the package complexity to plan effort:
     │   └── index.ts              # Package exports
     ├── __tests__/
     │   ├── _setup.ts             # Global test setup
-    │   ├── functional/           # Main tests
-    │   ├── unit/                 # Isolated tests
-    │   └── coverage/             # Coverage-only tests
+    │   ├── functional-tests/     # Main tests
+│   ├── unit/                 # Isolated tests
+│   └── coverage-tests/       # Coverage-only tests
     ├── package.json              # Core package config
     ├── project.json              # Nx build config
     ├── tsconfig.json             # TypeScript config
@@ -134,8 +134,8 @@ Rate the package complexity to plan effort:
     │   └── index.ts              # Package exports
     ├── __tests__/
     │   ├── _setup.ts             # Global test setup
-    │   ├── functional/           # Extension tests
-    │   └── coverage/             # Coverage tests
+    │   ├── functional-tests/     # Extension tests
+│   └── coverage-tests/       # Coverage tests
     ├── assets/                   # Extension assets
     ├── package.json              # Extension config
     ├── project.json              # Nx build config
@@ -260,7 +260,7 @@ Rate the package complexity to plan effort:
 - [ ] **Global Dependency Mocking**: Comprehensive dependency mocking
 - [ ] **Core Tests**: All core services tested with real behavior validation
 - [ ] **Extension Tests**: All extension functionality tested
-- [ ] **Test Organization**: Tests properly organized in functional/unit/coverage
+- [ ] **Test Organization**: Tests properly organized in functional-tests/unit/coverage-tests
 - [ ] **Test Performance**: Tests run efficiently without performance issues
 
 #### **Build System Configuration**
@@ -375,7 +375,7 @@ Rate the package complexity to plan effort:
 ### **Testing Compliance**
 
 - [ ] Tests use simple mock classes for dependencies
-- [ ] Tests are organized in functional/unit/coverage structure
+- [ ] Tests are organized in functional-tests/unit/coverage-tests structure
 - [ ] Tests validate real runtime behavior
 - [ ] Tests have proper isolation and cleanup
 - [ ] Test performance is acceptable

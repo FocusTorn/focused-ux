@@ -79,7 +79,7 @@ packages/{feature}/core/
 │   ├── services/             # Business logic
 │   └── index.ts
 ├── __tests__/
-│   └── functional/           # Test business logic in isolation
+│   └── functional-tests/     # Test business logic in isolation
 └── package.json              # No shared dependencies
 ```
 
@@ -92,7 +92,7 @@ packages/{feature}/ext/
 │   ├── extension.ts          # VSCode integration
 │   └── index.ts
 ├── __tests__/
-│   └── functional/           # Test VSCode integration
+│   └── functional-tests/     # Test VSCode integration
 └── package.json              # Dependencies on core package only
 ```
 
