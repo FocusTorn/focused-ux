@@ -95,10 +95,6 @@ suite('Backup Test Suite', () => {
 				await vscode.commands.executeCommand('fux-project-butler.createBackup', invalidUri)
 			},
 			(err: any) => {
-				// Log the actual error for debugging
-				// console.log('Actual error:', err)
-				// console.log('Error message:', err.message)
-				// console.log('Error code:', err.code)
 				
 				// Check if it's a file system error
 				assert.ok(err.code === 'FileNotFound' || err.message.includes('does not exist'), 
