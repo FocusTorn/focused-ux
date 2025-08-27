@@ -1,0 +1,61 @@
+{
+    "name": "@fux/ghost-writer-core",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/ghost-writer/core/src",
+    "projectType": "library",
+    "targets": {
+        "build": { //>
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "packages/ghost-writer/core/src/index.ts",
+                "outputPath": "packages/ghost-writer/core/dist",
+                "tsConfig": "packages/ghost-writer/core/tsconfig.lib.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "declarationRootDir": "packages/ghost-writer/core/src",
+                "thirdParty": false,
+                "deleteOutputPath": true,
+                "external": ["vscode", "typescript", "js-yaml"]
+            }
+        }, //<
+        
+        "check-types": { "extends": "check-types" },
+        
+        "lint": { "extends": "lint" },
+        "lint:full": { "extends": "lint:full" },
+        
+        "validate": { "extends": "validate" },
+        "validate:full": { "extends": "validate:full" },
+        
+        "audit": { "extends": "audit" },
+        "audit:full": { "extends": "audit:full" },
+        
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+        
+        "test": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["build", "^build"]
+        }, //<
+        "test:full": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ]
+        } //<
+    
+    },
+    "tags": ["core"]
+}

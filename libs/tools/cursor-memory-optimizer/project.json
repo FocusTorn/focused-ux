@@ -1,0 +1,42 @@
+{
+    "name": "@fux/cursor-memory-optimizer",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/tools/cursor-memory-optimizer/src",
+    "projectType": "library",
+    "targets": {
+        "optimize": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsx --expose-gc libs/tools/cursor-memory-optimizer/src/index.ts optimize"
+            }
+        },
+        "monitor": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsx --expose-gc libs/tools/cursor-memory-optimizer/src/index.ts monitor"
+            }
+        },
+        "launch": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsx --expose-gc libs/tools/cursor-memory-optimizer/src/index.ts launch"
+            }
+        },
+        "status": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsx --expose-gc libs/tools/cursor-memory-optimizer/src/index.ts status"
+            }
+        },
+        "gc": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsx --expose-gc libs/tools/cursor-memory-optimizer/src/index.ts gc"
+            }
+        },
+        "lint": {
+            "executor": "@nx/eslint:lint"
+        }
+    },
+    "tags": ["tool"]
+}

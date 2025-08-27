@@ -1,0 +1,18 @@
+{
+    "name": "@fux/aka",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/tools/aka/src",
+    "projectType": "library",
+    "targets": {
+        "run": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsx libs/tools/aka/src/main.ts"
+            }
+        },
+        "lint": {
+            "executor": "@nx/eslint:lint"
+        }
+    },
+    "tags": ["tool"]
+}

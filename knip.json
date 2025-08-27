@@ -1,0 +1,35 @@
+{
+    "$schema": "https://unpkg.com/knip@latest/schema.json",
+    "entry": [],
+    "project": [],
+    "ignoreDependencies": ["strip-json-comments", "rimraf", "@nx/devkit", "ora"],
+    "ignoreBinaries": ["vsce"],
+    "ignore": [
+        
+        "**/_scripts/**/*",
+        
+        
+        "**/*removed*/**/*",
+        "**/X_*/**/*",
+        "**/*X_*.*",
+        "**/*.bak*",
+
+        "node_modules/**",
+        "dist/**",
+        "out/**",
+        "build/**",
+        ".vscode-test/**",
+        "coverage/**",
+        "assets/**",
+
+        "packages/project-butler/core/src/_interfaces/IFileSystem.ts",
+        "packages/project-butler/core/src/_interfaces/IProcess.ts",
+        "libs/shared/src/_interfaces/ICommonUtilsService.ts",
+        "libs/shared/src/_interfaces/IPathUtilsService.ts",
+        "libs/shared/src/_interfaces/IWindow.ts",
+        "libs/shared/src/_interfaces/IWorkspace.ts"
+    ]
+
+    // --reporter
+    // symbols, compact, codeowners, json, codeclimate, markdown, disclosure, can be repeated (default: symbols)
+}

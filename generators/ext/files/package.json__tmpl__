@@ -1,0 +1,51 @@
+{
+  "name": "fux-<%= name %>",
+  "displayName": "F-UX: <%= displayName %>",
+  "description": "<%= description %>",
+  "publisher": "NewRealityDesigns",
+  "repository": "https://github.com/FocusTorn/focused-ux",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/extension.cjs",
+  "dependencies": {
+    "typescript": "^5.8.3",
+    "awilix": "^12.0.5",
+    "js-yaml": "^4.1.0",
+    "@fux/<%= name %>-core": "workspace:*",
+    "@fux/shared": "workspace:*"
+  },
+  "devDependencies": {},
+  "contributes": {
+    "commands": [
+      {
+        "command": "fux-<%= name %>.example",
+        "title": "[F-UX] <%= displayName %>: Example Command",
+        "category": "F-UX: <%= displayName %>"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "fux-<%= name %>.example",
+          "group": "1_modification"
+        }
+      ]
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:fux-<%= name %>.example"
+  ],
+  "icon": "assets/icon.png",
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "focused ux",
+    "f-ux"
+  ],
+  "engines": {
+    "vscode": "^1.99.3"
+  },
+  "license": "MIT"
+}

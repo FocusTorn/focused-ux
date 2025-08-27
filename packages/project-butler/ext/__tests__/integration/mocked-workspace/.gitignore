@@ -1,0 +1,20 @@
+# Test workspace - ignore temporary files but allow test infrastructure
+# Ignore temporary files that might be created during testing
+*.tmp
+*.temp
+*.log
+*.cache
+node_modules/
+dist/
+out/
+.vscode-test/
+test-results/
+coverage/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE files (but keep .vscode/settings.json for test configuration)
+.vscode/*
+!.vscode/settings.json

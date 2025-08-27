@@ -1,0 +1,10 @@
+// ESLint & Imports -->>
+
+//= IMPLEMENTATION TYPES ======================================================================================
+// Add your exports here
+
+//--------------------------------------------------------------------------------------------------------------<<
+
+// Example exports:
+// export type { IExampleService } from './services/Example.service.js'
+// export { ExampleService } from './services/Example.service.js' 

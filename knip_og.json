@@ -1,0 +1,94 @@
+
+{
+    "$schema": "https://unpkg.com/knip@latest/schema.json",
+    "entry": [
+        // "src/extension.ts",
+        // "gulpfile.mjs"
+    ],
+    "project": [
+        // "src/**/*.ts",
+        // "src/**/*.mts",
+        // "src/**/*.js",
+        // "src/**/*.mjs"
+    ],
+    "ignore": [
+        
+        "**/*removed*/**/*",
+        "**/X_*/**/*",
+        "**/*X_*.*",
+        "**/*.bak*",
+        
+        "node_modules/**",
+        "dist/**",
+        "out/**",
+        "build/**",
+        ".vscode-test/**",
+        "coverage/**",
+        "assets/**"
+
+        
+        
+        
+        // "packages/utilities-core/src/_vscode_abstractions/index.ts",
+        
+        //= UTILITY SCRIPTS ========================================================================= 
+        // "packages/tools/src/scripts/version_bump.ts",
+        // "packages/shared/tools/src/scripts/node/aggregate-eslint-errors.ts",
+        // "packages/shared/tools/src/scripts/node/aggregate-tsc-errors.ts",
+        // "packages/shared/config-esbuild/plugins/createTsPathsPlugin.js"
+        
+        
+        
+        
+ 
+        
+    ],
+    "ignoreDependencies": [
+        
+        
+        
+        //= BUILD TOOLS ============================================================================= 
+        // "@types/puppeteer",
+        // "@types/sharp",
+       
+        //= LINTING ================================================================================= 
+        // "@typescript-eslint/utils",
+        // "@typescript-eslint/visitor-keys",
+        // "@typescript-eslint/eslint-plugin",
+        // "@typescript-eslint/parser",
+        // "typescript-eslint",
+        // "remark-lint",
+        //= NODE RELATED ============================================================================ 
+        // "npm-run-all",
+        // "yalc",
+        //= TESTING ================================================================================= 
+        // "@vitest/coverage-istanbul",
+        // "@vitest/coverage-v8",
+        // "vitest",
+        //= VSCODE ==================================================================================
+        // "@vscode/test-cli",      // Native VSCode testing
+        // "@vscode/test-electron"  // Native VSCode testing
+        
+        
+        
+        // "gray-matter"   // Front matter parser for notesHub
+        
+        
+    ],
+    "ignoreBinaries": [
+        //= BUILD TOOLS ============================================================================= 
+        // "tsx",
+        //= VSCODE ==================================================================================
+        // "vsce"
+    ],
+    
+    "typescript": {
+        "config": "tsconfig.json"
+    }
+    
+    // --reporter
+    // symbols, compact, codeowners, json, codeclimate, markdown, disclosure, can be repeated (default: symbols)
+    
+    
+}
+

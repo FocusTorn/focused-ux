@@ -1,0 +1,40 @@
+{
+    "name": "@fux/vscode-test-cli-config",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/vscode-test-cli-config/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "options": {
+                "main": "libs/vscode-test-cli-config/src/index.ts",
+                "outputPath": "libs/vscode-test-cli-config/dist",
+                "tsConfig": "libs/vscode-test-cli-config/tsconfig.lib.json",
+                "platform": "node",
+                "format": [
+                    "esm"
+                ],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "thirdParty": false,
+                "deleteOutputPath": true
+            }
+        },
+        "lint": {
+            "extends": "lint"
+        },
+        "clean": {
+            "extends": "clean"
+        }
+    },
+    "tags": [
+        "lib",
+        "util",
+        "tools"
+    ]
+}

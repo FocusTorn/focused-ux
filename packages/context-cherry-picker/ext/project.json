@@ -1,0 +1,190 @@
+{
+    "name": "@fux/context-cherry-picker-ext",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/context-cherry-picker/ext/src",
+    "projectType": "application",
+    "targets": {
+
+        "build": { //>
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "dependsOn": [
+                "^build"
+            ],
+            "options": {
+                "entryPoints": [
+                    "packages/context-cherry-picker/ext/src/extension.ts"
+                ],
+                "outputPath": "packages/context-cherry-picker/ext/dist",
+                "format": [
+                    "cjs"
+                ],
+                "metafile": true,
+                "platform": "node",
+                "bundle": true,
+                "external": [
+                    "vscode",
+                    "awilix",
+                    "gpt-tokenizer",
+                    "js-yaml",
+                    "micromatch"
+                ],
+                "sourcemap": true,
+                "main": "packages/context-cherry-picker/ext/src/extension.ts",
+                "tsConfig": "packages/context-cherry-picker/ext/tsconfig.json",
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/context-cherry-picker/ext/assets/",
+                        "output": "./assets/"
+                    }
+                ]
+            }
+        }, //<
+        "package": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": [
+                "build"
+            ],
+            "options": {
+                "command": "node scripts/create-vsix.js packages/context-cherry-picker/ext vsix_packages"
+            }
+        }, //<
+        "package:dev": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": [
+                "build"
+            ],
+            "options": {
+                "command": "node scripts/create-vsix.js packages/context-cherry-picker/ext vsix_packages --dev",
+                "outputPath": "vsix_packages"
+            }
+        }, //<
+        "publish": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": ["package"],
+            "options": {
+                "command": "vsce publish",
+                "cwd": "{projectRoot}"
+            }
+        }, //<
+        
+        "check-types": { "extends": "check-types" },
+        "lint": { "extends": "lint" },
+        "lint:full": { "extends": "lint:full" },
+        "validate": { "extends": "validate" },
+        "validate:full": { "extends": "validate:full" },
+        "audit": { "extends": "audit" },
+        "audit:full": { "extends": "audit:full" },
+        
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+
+        "test": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^build"]
+        }, //<
+        "test:full": { //>
+            "extends": "vite:test",
+            "dependsOn": ["^test"]
+        } //<
+        
+    },
+    "tags": [
+        "ext"
+    ]
+}
+
+// "lint": {
+//     "executor": "@nx/eslint:lint",
+//     "dependsOn": [
+//         "^build"
+//     ],
+//     "inputs": [
+//         "lint"
+//     ]
+// },
+// "lint:full": {
+//     "executor": "nx:run-commands",
+//     "dependsOn": [
+//         "^lint",
+//         "lint"
+//     ],
+//     "options": {
+//         "commands": [],
+//         "parallel": false
+//     }
+// },
+// "check-types": {
+//     "executor": "@nx/js:tsc",
+//     "outputs": [
+//         "{options.outputPath}"
+//     ],
+//     "dependsOn": [
+//         "^build"
+//     ],
+//     "options": {
+//         "tsConfig": "{projectRoot}/tsconfig.json",
+//         "main": "{projectRoot}/src/index.ts",
+//         "outputPath": "{projectRoot}/dist"
+//     }
+// },
+// "check-types:full": {
+//     "executor": "nx:run-commands",
+//     "dependsOn": [
+//         "^check-types",
+//         "check-types"
+//     ],
+//     "options": {
+//         "commands": [],
+//         "parallel": false
+//     }
+// },
+// "validate": {
+//     "executor": "nx:run-commands",
+//     "dependsOn": [
+//         "lint",
+//         "check-types"
+//     ],
+//     "options": {
+//         "commands": [],
+//         "parallel": false
+//     }
+// },
+// "validate:full": {
+//     "executor": "nx:run-commands",
+//     "dependsOn": [
+//         "lint:full",
+//         "check-types:full"
+//     ],
+//     "options": {
+//         "commands": [],
+//         "parallel": false
+//     }
+// },
+// "test": {
+//     "executor": "@nx/vite:test",
+//     "outputs": [
+//         "{options.reportsDirectory}"
+//     ],
+//     "options": {
+//         "passWithNoTests": true,
+//         "reportsDirectory": "packages/context-cherry-picker/ext/test-output/vitest/coverage"
+//     }
+// },
+// "test:full": {
+//     "executor": "@nx/vite:test",
+//     "outputs": [
+//         "{options.reportsDirectory}"
+//     ],
+//     "dependsOn": [
+//         "^build"
+//     ],
+//     "options": {
+//         "passWithNoTests": true,
+//         "reportsDirectory": "packages/context-cherry-picker/ext/test-output/vitest/coverage"
+//     }
+// },

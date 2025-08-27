@@ -1,0 +1,16 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "tsBuildInfoFile": "dist/tsconfig.typeCheck.tsbuildinfo",
+
+        "types": ["vitest/globals", "node"],
+        "paths": {
+            "@fux/shared": ["libs/shared/src"],
+            "@fux/shared/*": ["libs/shared/src/*"],
+            "@fux/mockly": ["libs/mockly/src"],
+            "@fux/mockly/*": ["libs/mockly/src/*"]
+        }
+    },
+    "include": ["src/**/*.ts", "__tests__/**/*.ts"]
+}

@@ -1,0 +1,39 @@
+import { defineConfig } from 'vitest/config'
+import base from '<%= relativePaths.vitestBase %>'
+import path from 'node:path'
+
+export default defineConfig({
+	...base,
+	root: __dirname,
+	test: {
+		...base.test,
+		include: ['__tests__/**/*.{test}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+		exclude: [
+			'__tests__/**/*.cov.*',
+			'**/*.d.ts',
+			'**/*.config.*',
+			'**/setup.*',
+			'**/helpers.*',
+		],
+		setupFiles: ['./__tests__/_setup.ts'],
+		// Functional tests focus on behavior, not coverage
+		coverage: {
+			enabled: false,
+		},
+		// Environment setup for VSCode extension testing
+		environment: 'node',
+		globals: true,
+	},
+	resolve: {
+		alias: {
+			'@fux/<%= fileName %>': path.resolve(__dirname, './src/index.ts'),
+			'@fux/shared': path.resolve(__dirname, '<%= relativePaths.sharedSrc %>'),
+			'vscode': path.resolve(__dirname, '<%= relativePaths.sharedVscodeAdapter %>'),
+		},
+	},
+	// Ensure proper module resolution for VSCode extension testing
+	define: {
+		'process.env.NODE_ENV': '"test"',
+	},
+	optimizeDeps: { exclude: ['vscode'] },
+}) 

@@ -1,0 +1,20 @@
+# 1. Ignore everything by default.
+**/*
+
+# 2. Re-include the bundled extension code.
+!dist/extension.cjs
+!dist/extension.cjs.map
+
+# 3. Re-include the assets.
+!assets/**
+
+# 4. Re-include the production node_modules.
+# Note: We intentionally include node_modules for self-contained extensions.
+# This may trigger VS Code bundling warnings, but they can be safely ignored.
+!node_modules/**
+
+# 5. Re-include essential package metadata.
+!package.json
+!README.md
+!LICENSE.txt
+!CHANGELOG.md

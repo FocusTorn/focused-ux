@@ -1,0 +1,9 @@
+// Individual exports for manual tree-shaking
+// Add your exports here
+
+// Example:
+// export type { IExampleService } from './services/Example.service.js'
+// export { ExampleService } from './services/Example.service.js'
+
+// Legacy barrel exports (for backward compatibility)
+// export * from './services/Example.service.js' 

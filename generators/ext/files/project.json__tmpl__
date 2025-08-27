@@ -1,0 +1,49 @@
+{
+  "name": "<%= projectName %>",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "<%= packageRoot %>/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": ["^build"],
+      "options": {
+        "entryPoints": ["<%= packageRoot %>/src/extension.ts"],
+        "outputPath": "<%= packageRoot %>/dist",
+        "format": ["cjs"],
+        "metafile": true,
+        "platform": "node",
+        "bundle": true,
+        "external": ["vscode", "typescript", "awilix", "js-yaml"],
+        "sourcemap": true,
+        "main": "<%= packageRoot %>/src/extension.ts",
+        "tsConfig": "<%= packageRoot %>/tsconfig.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "<%= packageRoot %>/assets/",
+            "output": "./assets/"
+          }
+        ]
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node scripts/create-vsix.js <%= packageRoot %> vsix_packages"
+      }
+    },
+    "package:dev": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node scripts/create-vsix.js <%= packageRoot %> vsix_packages --dev",
+        "outputPath": "vsix_packages"
+      }
+    },
+    "lint": {}
+  },
+  "tags": ["ext"]
+} 

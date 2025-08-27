@@ -1,21 +1,89 @@
 {
-  "name": "@org/source",
-  "version": "0.0.0",
-  "license": "MIT",
-  "scripts": {},
-  "private": true,
-  "dependencies": {},
-  "devDependencies": {
-    "@nx/js": "21.2.1",
-    "@swc-node/register": "~1.9.1",
-    "@swc/core": "~1.5.7",
-    "@swc/helpers": "~0.5.11",
-    "nx": "21.2.1",
-    "prettier": "^2.6.2",
-    "tslib": "^2.3.0",
-    "typescript": "~5.8.2"
-  },
-  "workspaces": [
-    "packages/*"
-  ]
+    "name": "@fux/source",
+    "version": "0.0.0",
+    "scripts": {
+        "prune-cache": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1",
+        "prune-cache:dry-run": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1 -DryRun",
+        "prune-cache:keep-5": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1 -KeepCount 5",
+        "prune-cache:list": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1 -ListOnly",
+        "visualize-bundle": "nx analyze-bundle:open"
+    },
+    "dependencies": {
+        "chalk": "^5.5.0",
+        "commander": "^14.0.0"
+    },
+    "devDependencies": {
+        "@antfu/eslint-config": "^4.16.2",
+        "@nx/devkit": "21.4.0",
+        "@nx/esbuild": "21.4.0",
+        "@nx/eslint": "21.4.0",
+        "@nx/js": "21.4.0",
+        "@nx/vite": "21.4.0",
+        "@nx/web": "21.4.0",
+        "@nx/workspace": "21.4.0",
+        "@seahax/eslint-plugin-wrap": "^0.6.7",
+        "@swc-node/register": "~1.9.1",
+        "@swc/core": "~1.5.7",
+        "@swc/helpers": "~0.5.11",
+        "@types/glob": "^8.1.0",
+        "@types/mocha": "^10.0.7",
+        "@types/node": "^24.0.10",
+        "@types/vscode": "^1.99.3",
+        "@typescript-eslint/parser": "^8.35.1",
+        "@vitest/coverage-v8": "^3.2.4",
+        "@vitest/ui": "^3.2.4",
+        "@vscode/test-cli": "^0.0.11",
+        "@vscode/test-electron": "^2.5.2",
+        "cli-progress": "^3.12.0",
+        "esbuild": "^0.25.5",
+        "esbuild-visualizer": "^0.4.0",
+        "eslint": "^9.30.1",
+        "eslint-plugin-unused-imports": "^4.1.4",
+        "glob": "^10.4.2",
+        "jiti": "2.4.2",
+        "jsdom": "~22.1.0",
+        "knip": "^5.62.0",
+        "mocha": "^10.2.0",
+        "nx": "21.4.0",
+        "ora": "^8.2.0",
+        "prettier": "^3.6.2",
+        "progress": "^2.0.3",
+        "rimraf": "^6.0.1",
+        "strip-json-comments": "^5.0.3",
+        "ts-node": "^10.9.2",
+        "tslib": "^2.8.1",
+        "typescript": "^5.8.3",
+        "verdaccio": "^6.0.5",
+        "vite": "^6.0.0",
+        "vite-tsconfig-paths": "^5.1.4",
+        "vitest": "^3.2.4"
+    },
+    "license": "MIT",
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "packages/*/*",
+        "libs/*"
+    ],
+    "nx": {
+        "includedScripts": [],
+        "targets": {
+            "local-registry": {
+                "executor": "@nx/js:verdaccio",
+                "options": {
+                    "port": 4873,
+                    "config": ".verdaccio/config.yml",
+                    "storage": "tmp/local-registry/storage"
+                }
+            }
+        }
+    },
+    "pnpm": {
+        "overrides": {
+            "vitest": "^3.2.4",
+            "@vitest/ui": "^3.2.4",
+            "@vitest/coverage-v8": "^3.2.4",
+            "typescript@*": "5.8.3"
+        }
+    }
 }

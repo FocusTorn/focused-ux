@@ -1,0 +1,96 @@
+{
+    "name": "@fux/ghost-writer-ext",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/ghost-writer/ext/src",
+    "projectType": "application",
+    "targets": {
+        "build": { //>
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "dependsOn": ["^build"],
+            "options": {
+                "main": "packages/ghost-writer/ext/src/index.ts",
+                "entryPoints": ["packages/ghost-writer/ext/src/index.ts"],
+                "outputPath": "packages/ghost-writer/ext/dist",
+                
+                "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
+                
+                "format": ["cjs"],
+                "metafile": true,
+                "platform": "node",
+                "bundle": true,
+                "sourcemap": true,
+                
+                "external": [
+                    "vscode"
+                ],
+                
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/ghost-writer/ext/assets/",
+                        "output": "./assets/"
+                    }
+                ]
+            }
+        }, //<
+        
+        "package": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages"
+            }
+        }, //<
+        "package:dev": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages --dev",
+                "outputPath": "vsix_packages"
+            }
+        }, //<
+        "publish": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": ["package"],
+            "options": {
+                "command": "vsce publish",
+                "cwd": "{projectRoot}"
+            }
+        }, //<
+        
+        "check-types": { "extends": "check-types" },
+        
+        "lint": { "extends": "lint" },
+        "lint:full": { "extends": "lint:full" },
+        
+        "validate": { "extends": "validate" },
+        "validate:full": { "extends": "validate:full" },
+        
+        "audit": { "extends": "audit" },
+        "audit:full": { "extends": "audit:full" },
+        
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+        
+        "test": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["^build"]
+        }, //<
+        "test:full": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ]
+        } //<
+    
+    },
+    "tags": ["ext"]
+}

@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "$id": "CorePackage",
+    "title": "Create a core package",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "The name of the core package (e.g., 'ghost-writer', 'project-butler')",
+            "$default": {
+                "$source": "argv",
+                "index": 0
+            },
+            "x-prompt": "What is the name of the core package?"
+        },
+        "description": {
+            "type": "string",
+            "description": "Description of the core package",
+            "x-prompt": "What is the description of this core package?"
+        },
+        "directory": {
+            "type": "string",
+            "description": "The directory where the package should be created",
+            "default": "packages"
+        }
+    },
+    "required": ["name", "description"]
+}

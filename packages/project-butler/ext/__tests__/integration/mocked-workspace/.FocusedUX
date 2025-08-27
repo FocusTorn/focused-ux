@@ -1,0 +1,10 @@
+ProjectButler:
+    packageJson-order:
+        - name
+        - version
+        - description
+        - main
+        - scripts
+        - keywords
+        - author
+        - license
