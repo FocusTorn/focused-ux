@@ -1,6 +1,6 @@
-# Unit Tests
+# Isolated Tests
 
-This directory contains unit tests for isolated components of the Dynamicons extension package.
+This directory contains isolated tests for isolated components of the Dynamicons extension package.
 
 ## Test Organization
 

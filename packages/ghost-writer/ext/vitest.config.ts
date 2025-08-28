@@ -6,6 +6,10 @@ export default mergeConfig(
 	defineConfig({
 		test: {
 			setupFiles: ['./__tests__/_setup.ts'],
+			exclude: [
+				'**/__tests__/integration-tests/**',
+				'**/__tests__/_out-tsc/**',
+			],
 		},
 	}),
 )

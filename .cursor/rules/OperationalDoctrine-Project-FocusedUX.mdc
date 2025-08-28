@@ -6,6 +6,8 @@ alwaysApply: true
 
 # Project Level Operational Doctrine for the FocusedUX Workspace
 
+This document contains specific operational guidelines for the FocusedUX workspace. For universal AI behavior protocols, refer to OperationalDoctrine-Universal.mdc. 
+
 ## Architecture Reference
 
 - **Location**: `./docs/Architecture.md` for detailed project architecture, package structure, build configurations, and implementation patterns
@@ -134,7 +136,3 @@ alwaysApply: true
 - **Interface-First Violations**: Never implement services before defining complete interface contracts
 - **Complex Component Refactoring**: Never refactor complex, interdependent components before establishing patterns with simple components
 - **Build-Before-Interface**: Never attempt to build before completing interface definitions and architectural refactoring
-
----
-
-> **Note:** This document contains FocusedUX-specific operational guidelines. For universal AI behavior protocols, refer to OperationalDoctrine-Universal.mdc. For detailed build system and architectural patterns, refer to docs/SOP.md.

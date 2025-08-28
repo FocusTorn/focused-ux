@@ -295,6 +295,12 @@ importers:
         specifier: ^5.0.2
         version: 5.0.3
     devDependencies:
+      '@fux/vscode-test-cli-config':
+        specifier: workspace:*
+        version: link:../../../libs/vscode-test-cli-config
+      '@types/mocha':
+        specifier: ^10.0.6
+        version: 10.0.10
       '@types/node':
         specifier: ^24.0.10
         version: 24.3.0
@@ -304,6 +310,18 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
+      '@vscode/test-cli':
+        specifier: ^0.0.11
+        version: 0.0.11
+      '@vscode/test-electron':
+        specifier: ^2.5.2
+        version: 2.5.2
+      glob:
+        specifier: ^10.3.10
+        version: 10.4.5
+      mocha:
+        specifier: ^10.3.0
+        version: 10.8.2
       typescript:
         specifier: 5.8.3
         version: 5.8.3

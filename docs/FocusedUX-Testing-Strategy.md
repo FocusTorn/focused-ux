@@ -29,14 +29,23 @@ packages/package-name/
 │   ├── __tests__/
 │   │   ├── _setup.ts                    # Global test setup
 │   │   ├── README.md                    # Test documentation
-│   │   ├── functional/                  # Main test directory
+│   │   ├── functional-tests/            # Main test directory
 │   │   │   ├── _readme.md              # Functional test docs
-│   │   │   └── *.service.test.ts       # Service tests
-│   │   ├── unit/                       # Specific isolated tests
-│   │   │   ├── _readme.md              # Unit test docs
-│   │   │   └── *.test.ts               # Unit tests
-│   │   └── coverage/                   # Coverage reports
-│   │       └── _readme.md              # Coverage docs
+│   │   │   ├── *.service.test.ts       # Service tests
+│   │   │   ├── *.adapter.test.ts       # Adapter tests
+│   │   │   └── *.test.ts               # Other functional tests
+│   │   ├── isolated-tests/             # Specific isolated tests
+│   │   │   ├── _readme.md              # Isolated test docs
+│   │   │   └── *.test.ts               # Isolated tests
+│   │   ├── integration-tests/          # VS Code integration tests
+│   │   │   ├── _readme.md              # Integration test docs
+│   │   │   ├── suite/                  # Test suites
+│   │   │   ├── mocked-workspace/       # Mock workspace files
+│   │   │   └── index.ts                # Test runner entry point
+│   │   ├── coverage-tests/             # Coverage reports
+│   │   │   └── _readme.md              # Coverage docs
+│   │   └── _reports/                   # Test reports and coverage output
+│   │       └── coverage/               # Coverage reports
 │   ├── src/
 │   │   ├── _interfaces/                # Service interfaces
 │   │   ├── _config/                    # Configuration constants
@@ -57,11 +66,13 @@ packages/package-name/
     │   │   ├── mocked-workspace/       # Test workspace files
     │   │   ├── *.test.ts               # Integration test files
     │   │   └── index.ts                # Integration test entry point
-    │   ├── unit/                       # Specific isolated tests
-    │   │   └── _readme.md              # Unit test docs
+    │   ├── isolated-tests/             # Specific isolated tests
+│   │   └── _readme.md              # Isolated test docs
     │   ├── coverage-tests/             # Coverage reports
     │   │   └── _readme.md              # Coverage docs
     │   ├── _out-tsc/                   # Compiled integration tests
+    │   ├── _reports/                   # Test reports and coverage output
+    │   │   └── coverage/               # Coverage reports
     │   ├── tsconfig.test.json          # Integration test TypeScript config
     │   └── .vscode-test.mjs            # VS Code test configuration
     ├── src/
@@ -74,6 +85,50 @@ packages/package-name/
     ├── vitest.config.ts                # Standard test config
     ├── vitest.coverage.config.ts       # Coverage test config
     └── project.json                    # Nx build configuration
+```
+
+## Required Dependencies for Extension Packages
+
+### **VS Code Integration Testing Dependencies**
+
+Extension packages require specific dependencies for VS Code integration testing:
+
+```json
+{
+    "devDependencies": {
+        "@fux/vscode-test-cli-config": "workspace:*",
+        "@types/mocha": "^10.0.6",
+        "@vscode/test-cli": "^0.0.11",
+        "@vscode/test-electron": "^2.5.2",
+        "glob": "^10.3.10",
+        "mocha": "^10.3.0"
+    }
+}
+```
+
+**Purpose of Each Dependency:**
+
+- **`@fux/vscode-test-cli-config`**: Custom VS Code test CLI configuration package
+- **`@vscode/test-cli`**: VS Code test CLI tool for running integration tests
+- **`@vscode/test-electron`**: VS Code test electron runner for end-to-end testing
+- **`@types/mocha`**: TypeScript types for Mocha test framework
+- **`mocha`**: Test framework for VS Code integration tests
+- **`glob`**: File pattern matching for test discovery
+
+### **Standard Testing Dependencies**
+
+All packages require these standard testing dependencies:
+
+```json
+{
+    "devDependencies": {
+        "@types/node": "^24.0.10",
+        "@types/vscode": "^1.99.3",
+        "@vitest/coverage-v8": "^3.2.4",
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4"
+    }
+}
 ```
 
 ## Dual Testing Strategy for Extension Packages
@@ -111,6 +166,45 @@ export default mergeConfig(
     })
 )
 ```
+
+### **Integration Test Configuration**
+
+#### **TypeScript Configuration for Integration Tests**
+
+```json
+// packages/package-name/ext/__tests__/tsconfig.test.json
+{
+    "extends": "../../../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./_out-tsc",
+        "rootDir": "./integration-tests",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "types": ["node", "mocha"],
+        "composite": false,
+        "declaration": false,
+        "sourceMap": true,
+        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo"
+    },
+    "include": ["integration/**/*.ts"]
+}
+```
+
+#### **Integration Test Compilation**
+
+Integration tests are compiled to JavaScript for VS Code test runner compatibility:
+
+- **Source**: `integration/*.ts` files
+- **Output**: `_out-tsc/*.js` files with source maps
+- **Purpose**: VS Code test runner requires compiled JavaScript
+- **Configuration**: Uses `tsconfig.test.json` for compilation
+
+#### **Test Reports and Coverage**
+
+- **Reports Directory**: `_reports/` for all test outputs
+- **Coverage Reports**: `_reports/coverage/` for coverage data
+- **Integration Test Outputs**: `_out-tsc/` for compiled tests
+- **Source Maps**: `.js.map` files for debugging compiled tests
 
 ## Testing Patterns
 
@@ -459,7 +553,7 @@ suite('Extension Integration Test Suite', () => {
     "extends": "../../../../tsconfig.base.json",
     "compilerOptions": {
         "outDir": "./_out-tsc",
-        "rootDir": "./integration",
+        "rootDir": "./integration-tests",
         "module": "CommonJS",
         "moduleResolution": "node",
         "types": [
@@ -491,16 +585,16 @@ const __dirname = path.dirname(__filename)
 export default createVscodeTestConfig({
     packageName: 'fux-package-name',
     extensionDevelopmentPath: __dirname,
-    workspaceFolder: './integration/mocked-workspace',
-    files: './_out-tsc/**/*.test.js',
-    setupFiles: './_out-tsc/index.js',
+    workspaceFolder: './__tests__/integration-tests/mocked-workspace',
+    files: './__tests__/_out-tsc/**/*.test.js',
+    setupFiles: './__tests__/_out-tsc/index.js',
 })
 ```
 
 ##### **Integration Test Entry Point**
 
 ```typescript
-// packages/package-name/ext/__tests__/integration/index.ts
+// packages/package-name/ext/__tests__/integration-tests/index.ts
 import * as path from 'path'
 import { runTests } from '@vscode/test-electron'
 
@@ -1417,8 +1511,9 @@ This guide provides a **failsafe, one-stop-shop** approach to implementing compr
 
 ```bash
 # Create the complete testing directory structure
-mkdir -p packages/package-name/ext/__tests__/{functional,integration,unit,coverage,_out-tsc}
-mkdir -p packages/package-name/ext/__tests__/integration/mocked-workspace
+mkdir -p packages/package-name/ext/__tests__/{functional,isolated-tests,integration-tests,coverage,_out-tsc}
+mkdir -p packages/package-name/ext/__tests__/integration-tests/suite
+mkdir -p packages/package-name/ext/__tests__/integration-tests/mocked-workspace
 ```
 
 #### **Step 2: Configuration Files**
@@ -1431,7 +1526,7 @@ mkdir -p packages/package-name/ext/__tests__/integration/mocked-workspace
     "extends": "../../../../tsconfig.base.json",
     "compilerOptions": {
         "outDir": "./_out-tsc",
-        "rootDir": "./integration",
+        "rootDir": "./integration-tests",
         "module": "CommonJS",
         "moduleResolution": "node",
         "types": ["node", "mocha"],
@@ -1458,7 +1553,7 @@ const __dirname = path.dirname(__filename)
 export default createVscodeTestConfig({
     packageName: 'fux-package-name',
     extensionDevelopmentPath: __dirname,
-    workspaceFolder: './integration/mocked-workspace',
+    workspaceFolder: './integration-tests/mocked-workspace',
     files: './_out-tsc/**/*.test.js',
     setupFiles: './_out-tsc/index.js',
 })
