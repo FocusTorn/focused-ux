@@ -4,6 +4,70 @@
 
 This document outlines the **confirmed final architecture** for the FocusedUX monorepo, based on the working implementations in Ghost Writer and Project Butler packages. This architecture provides a clean separation between business logic (core) and VSCode integration (extension) while maintaining simplicity and testability.
 
+## **Command Execution Protocol**
+
+### **AKA Alias Mandate**
+
+**CRITICAL RULE**: ALWAYS use `aka` aliases for all project operations.
+
+#### **Pre-Execution Requirements**
+```bash
+# ALWAYS run this first to discover available commands
+aka help
+```
+
+#### **Command Execution Patterns**
+```bash
+# ❌ NEVER do this
+nx test @fux/package-name-core
+nx build @fux/package-name-ext
+pnpm run build --filter=@fux/package-name
+
+# ✅ ALWAYS do this
+{package-alias} t      # Test package (full)
+{package-alias}c t     # Test package core
+{package-alias}e t     # Test package extension
+{package-alias} b      # Build package
+{package-alias} tc     # Test with coverage
+{package-alias} ti     # Test integration
+```
+
+#### **Package-Specific Aliases**
+- **Dynamicons**: `dc`, `dcc`, `dce`
+- **Ghost Writer**: `gw`, `gwc`, `gwe`
+- **Project Butler**: `pb`, `pbc`, `pbe`
+- **Note Hub**: `nh`, `nhc`, `nhe`
+- **Context Cherry Picker**: `ccp`, `ccpc`, `ccpe`
+
+#### **Target Aliases**
+- **Build**: `b`
+- **Test**: `t`, `tc` (with coverage), `ti` (integration), `tf` (full)
+- **Package**: `p`, `pd` (dev)
+- **Lint**: `l`, `lf` (full)
+- **Validate**: `v`, `vf` (full)
+- **Audit**: `a`, `af` (full)
+
+#### **Verification Steps**
+- [ ] **AKA aliases discovered** via `aka help`
+- [ ] **Package-specific aliases identified** for target package
+- [ ] **Command patterns verified** before execution
+- [ ] **No raw nx commands used** unless explicitly required
+
+### **Workspace Analysis Protocol**
+
+#### **Pre-Package Analysis Requirements**
+```bash
+# ALWAYS understand workspace before focusing on specific packages
+nx_workspace
+```
+
+#### **Workspace Mapping Checklist**
+- [ ] **All package dependencies** and relationships identified
+- [ ] **Package types** (core/ext/shared/tool) and roles understood
+- [ ] **Build configurations** and variations mapped
+- [ ] **Testing strategies** across packages analyzed
+- [ ] **Target package context** within overall system established
+
 ## **Confirmed Architecture Pattern**
 
 ### **Core Package (`@fux/package-name-core`)**
