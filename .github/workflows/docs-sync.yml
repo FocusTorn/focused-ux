@@ -1,112 +1,140 @@
 name: Sync Docs to Main
 
 on:
-  push:
-    branches:
-      - '**/docs-sync'  # Trigger on any branch ending with -docs-sync
-    paths:
-      - 'docs/**'
-      - '.cursor/**'
-  workflow_dispatch:
-    inputs:
-      commit_message:
-        description: 'Commit message for docs changes'
-        required: false
-        default: 'docs: updated project documentation'
-        type: string
-      source_branch:
-        description: 'Source branch to sync from (defaults to current branch)'
-        required: false
-        type: string
+    push:
+        branches:
+            - '**/docs-sync' # Trigger on any branch ending with -docs-sync
+        paths:
+            - 'docs/**'
+            - '.cursor/**'
+    workflow_dispatch:
+        inputs:
+            commit_message:
+                description: 'Commit message for docs changes'
+                required: false
+                default: 'docs: updated project documentation'
+                type: string
+            source_branch:
+                description: 'Source branch to sync from (defaults to current branch)'
+                required: false
+                type: string
 
 jobs:
-  sync-docs:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Fetch all history for proper git operations
-        
-    - name: Configure Git
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        
-    - name: Determine source branch
-      id: source-branch
-      run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.source_branch }}" ]; then
-          echo "branch=${{ github.event.inputs.source_branch }}" >> $GITHUB_OUTPUT
-        else
-          echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-        fi
-        
-    - name: Check for docs changes
-      id: check-changes
-      run: |
-        SOURCE_BRANCH="${{ steps.source-branch.outputs.branch }}"
-        
-        # If we're on main, check against the previous commit
-        if [ "$SOURCE_BRANCH" = "main" ]; then
-          if git diff --name-only HEAD~1 | grep -E '^(docs/|\.cursor/)' > /dev/null; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          fi
-        else
-          # Check for differences between current branch and main
-          if git diff --name-only main...$SOURCE_BRANCH | grep -E '^(docs/|\.cursor/)' > /dev/null; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          fi
-        fi
-        
-    - name: Commit and push docs changes to main
-      if: steps.check-changes.outputs.has_changes == 'true'
-      run: |
-        SOURCE_BRANCH="${{ steps.source-branch.outputs.branch }}"
-        
-        # Get the commit message from input or use default
-        COMMIT_MSG="${{ github.event.inputs.commit_message }}"
-        if [ -z "$COMMIT_MSG" ]; then
-          COMMIT_MSG="docs: updated project documentation"
-        fi
-        
-        # Switch to main branch
-        git checkout main
-        
-        # If we're not already on main, cherry-pick docs changes from source branch
-        if [ "$SOURCE_BRANCH" != "main" ]; then
-          # Get list of commits that modified docs/ or .cursor/
-          DOCS_COMMITS=$(git log --oneline main..$SOURCE_BRANCH -- docs/ .cursor/ | awk '{print $1}')
-          
-          if [ -n "$DOCS_COMMITS" ]; then
-            echo "Cherry-picking docs commits from $SOURCE_BRANCH..."
-            echo "$DOCS_COMMITS" | tac | while read commit; do
-              git cherry-pick $commit || git cherry-pick --skip
-            done
-          fi
-        fi
-        
-        # Add any remaining docs changes
-        git add docs/ .cursor/
-        
-        # Commit if there are changes
-        if git diff --cached --quiet; then
-          echo "No staged changes to commit"
-        else
-          git commit -m "$COMMIT_MSG"
-        fi
-        
-        # Push to main
-        git push origin main
-        
-        echo "Successfully synced docs changes to main with message: $COMMIT_MSG"
-        
-    - name: No changes found
-      if: steps.check-changes.outputs.has_changes == 'false'
-      run: |
-        echo "No docs changes found to sync"
+    sync-docs:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # Fetch all history for proper git operations
+
+            - name: Configure Git
+              run: |
+                  git config --global user.name 'github-actions[bot]'
+                  git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+            - name: Determine source branch
+              id: source-branch
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.source_branch }}" ]; then
+                    echo "branch=${{ github.event.inputs.source_branch }}" >> $GITHUB_OUTPUT
+                  else
+                    echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Check for docs changes
+              id: check-changes
+              run: |
+                  SOURCE_BRANCH="${{ steps.source-branch.outputs.branch }}"
+
+                  # If we're on main, check against the previous commit
+                  if [ "$SOURCE_BRANCH" = "main" ]; then
+                    if git diff --name-only HEAD~1 | grep -E '^(docs/|\.cursor/)' > /dev/null; then
+                      echo "has_changes=true" >> $GITHUB_OUTPUT
+                    else
+                      echo "has_changes=false" >> $GITHUB_OUTPUT
+                    fi
+                  else
+                    # Check for differences between current branch and main
+                    # Use origin/ prefix to ensure we're comparing with remote branches
+                    if git diff --name-only origin/main...origin/$SOURCE_BRANCH | grep -E '^(docs/|\.cursor/)' > /dev/null; then
+                      echo "has_changes=true" >> $GITHUB_OUTPUT
+                    else
+                      echo "has_changes=false" >> $GITHUB_OUTPUT
+                    fi
+                  fi
+
+            - name: Commit and push docs changes to main
+              if: steps.check-changes.outputs.has_changes == 'true'
+              run: |
+                  SOURCE_BRANCH="${{ steps.source-branch.outputs.branch }}"
+
+                  # Get the commit message from input or use default
+                  COMMIT_MSG="${{ github.event.inputs.commit_message }}"
+                  if [ -z "$COMMIT_MSG" ]; then
+                    COMMIT_MSG="docs: updated project documentation"
+                  fi
+
+                  # Switch to main branch
+                  git checkout main
+
+                  # If we're not already on main, cherry-pick docs changes from source branch
+                  if [ "$SOURCE_BRANCH" != "main" ]; then
+                    # Get list of commits that modified docs/ or .cursor/
+                    DOCS_COMMITS=$(git log --oneline main..$SOURCE_BRANCH -- docs/ .cursor/ | awk '{print $1}')
+                    
+                    if [ -n "$DOCS_COMMITS" ]; then
+                      echo "Cherry-picking docs commits from $SOURCE_BRANCH..."
+                      echo "$DOCS_COMMITS" | tac | while read commit; do
+                        git cherry-pick $commit || git cherry-pick --skip
+                      done
+                    fi
+                  fi
+
+                  # Add any remaining docs changes
+                  git add docs/ .cursor/
+
+                  # Commit if there are changes
+                  if git diff --cached --quiet; then
+                    echo "No staged changes to commit"
+                  else
+                    git commit -m "$COMMIT_MSG"
+                  fi
+
+                  # Push to main
+                  git push origin main
+
+                  echo "Successfully synced docs changes to main with message: $COMMIT_MSG"
+
+            - name: Update source branch with synced docs
+              if: steps.check-changes.outputs.has_changes == 'true' && github.event_name == 'workflow_dispatch'
+              run: |
+                  SOURCE_BRANCH="${{ steps.source-branch.outputs.branch }}"
+
+                  # Configure git for the source branch
+                  git config --global user.name 'github-actions[bot]'
+                  git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+                  # Switch back to source branch
+                  git checkout $SOURCE_BRANCH
+
+                  # Fetch the updated main branch
+                  git fetch origin main
+
+                  # Update docs/ and .cursor/ to match main (this makes them appear "synced")
+                  git checkout origin/main -- docs/ .cursor/
+
+                  # Commit the synced state
+                  git add docs/ .cursor/
+                  git commit -m "docs: synced with main" || echo "No changes to commit"
+
+                  # Push the updated source branch
+                  git push origin $SOURCE_BRANCH
+
+                  echo "Updated source branch $SOURCE_BRANCH with synced docs"
+
+            - name: No changes found
+              if: steps.check-changes.outputs.has_changes == 'false'
+              run: |
+                  echo "No docs changes found to sync"
