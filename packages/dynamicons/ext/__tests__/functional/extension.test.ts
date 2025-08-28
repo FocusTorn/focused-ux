@@ -243,16 +243,16 @@ describe('Extension', () => {
 
 	describe('activate', () => {
 		it('should register commands', async () => {
-			console.log('Before activate call')
+			// console.log('Before activate call')
 
 			const { activate } = extensionModule
 
 			await activate(mockContext)
-			console.log('After activate call')
+			// console.log('After activate call')
 
 			const mockCommandsAdapter = vi.mocked(adaptersModule.CommandsAdapter).mock.results[0].value
 
-			console.log('Mock calls:', mockCommandsAdapter.registerCommand.mock.calls.length)
+			// console.log('Mock calls:', mockCommandsAdapter.registerCommand.mock.calls.length)
 			expect(mockCommandsAdapter.registerCommand).toHaveBeenCalled()
 		})
 
@@ -290,8 +290,8 @@ describe('Extension', () => {
 
 			const mockCommandsAdapter = vi.mocked(adaptersModule.CommandsAdapter).mock.results[0].value
 
-			console.log('Command handlers count:', mockCommandsAdapter.registerCommand.mock.calls.length)
-			console.log('Mock calls:', mockCommandsAdapter.registerCommand.mock.calls.length)
+			// console.log('Command handlers count:', mockCommandsAdapter.registerCommand.mock.calls.length)
+			// console.log('Mock calls:', mockCommandsAdapter.registerCommand.mock.calls.length)
 
 			const expectedCommands = [
 				'dynamicons.activateIconTheme',

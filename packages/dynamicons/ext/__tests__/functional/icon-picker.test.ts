@@ -292,6 +292,10 @@ describe('Icon Picker Functional Tests', () => {
 				showWarningMessage: vi.fn(),
 			}
 
+			const mockUriFactory = {
+				file: vi.fn().mockImplementation((path: string) => ({ fsPath: path })),
+			}
+
 			const testIconPicker = new IconPickerService(
 				mockWindow as any,
 				{} as any,
@@ -299,7 +303,7 @@ describe('Icon Picker Functional Tests', () => {
 				mockCommonUtils as any,
 				mockIconDiscovery as any,
 				mockConfigService as any,
-				{} as any, // uriFactory
+				mockUriFactory as any,
 			)
 
 			const mockQuickPick = {

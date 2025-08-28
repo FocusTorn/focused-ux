@@ -41,41 +41,41 @@ export class IconPickerService implements IIconPickerService {
 		assignableToType?: 'file' | 'folder',
 		currentFilter?: (iconName: string) => boolean,
 	): Promise<string | undefined> {
-		console.log(`[IconPickerService] showAvailableIconsQuickPick - Starting`)
-		console.log(`[IconPickerService] showAvailableIconsQuickPick - assignableToType:`, assignableToType)
+		// console.log(`[IconPickerService] showAvailableIconsQuickPick - Starting`)
+		// console.log(`[IconPickerService] showAvailableIconsQuickPick - assignableToType:`, assignableToType)
 		
 		const { fileIconsDir, folderIconsDir } = await this.iconDiscovery.getBuiltInIconDirectories()
 
-		console.log(`[IconPickerService] showAvailableIconsQuickPick - Icon directories:`, { fileIconsDir, folderIconsDir })
+		// console.log(`[IconPickerService] showAvailableIconsQuickPick - Icon directories:`, { fileIconsDir, folderIconsDir })
 
 		const userIconsDirSetting = await this.configService.getUserIconsDirectory()
 
-		console.log(`[IconPickerService] showAvailableIconsQuickPick - User icons dir setting:`, userIconsDirSetting)
+		// console.log(`[IconPickerService] showAvailableIconsQuickPick - User icons dir setting:`, userIconsDirSetting)
 
 		let fileIconOptions: ICoreQuickPickItem[] = []
 		let folderIconOptions: ICoreQuickPickItem[] = []
 		let userIconOptions: ICoreQuickPickItem[] = []
 
 		if (assignableToType === 'file' || !assignableToType) {
-			console.log(`[IconPickerService] showAvailableIconsQuickPick - Loading file icons...`)
+			// console.log(`[IconPickerService] showAvailableIconsQuickPick - Loading file icons...`)
 			fileIconOptions = await this.iconDiscovery.getIconOptionsFromDirectory(fileIconsDir, 'file')
-			console.log(`[IconPickerService] showAvailableIconsQuickPick - File icons loaded:`, fileIconOptions.length)
+			// console.log(`[IconPickerService] showAvailableIconsQuickPick - File icons loaded:`, fileIconOptions.length)
 		}
 		if (assignableToType === 'folder' || !assignableToType) {
-			console.log(`[IconPickerService] showAvailableIconsQuickPick - Loading folder icons...`)
+			// console.log(`[IconPickerService] showAvailableIconsQuickPick - Loading folder icons...`)
 
 			const folderFilter = (name: string) => !name.endsWith(`${dynamiconsConstants.defaults.openFolderIconSuffix}.svg`)
 
 			folderIconOptions = await this.iconDiscovery.getIconOptionsFromDirectory(folderIconsDir, 'folder', folderFilter)
-			console.log(`[IconPickerService] showAvailableIconsQuickPick - Folder icons loaded:`, folderIconOptions.length)
+			// console.log(`[IconPickerService] showAvailableIconsQuickPick - Folder icons loaded:`, folderIconOptions.length)
 		}
 
 		if (userIconsDirSetting) {
 			try {
 				await this.fileSystem.access(this.uriFactory.file(userIconsDirSetting))
-				console.log(`[IconPickerService] showAvailableIconsQuickPick - Loading user icons...`)
+				// console.log(`[IconPickerService] showAvailableIconsQuickPick - Loading user icons...`)
 				userIconOptions = await this.iconDiscovery.getIconOptionsFromDirectory(userIconsDirSetting, 'user')
-				console.log(`[IconPickerService] showAvailableIconsQuickPick - User icons loaded:`, userIconOptions.length)
+				// console.log(`[IconPickerService] showAvailableIconsQuickPick - User icons loaded:`, userIconOptions.length)
 			}
 			catch (error: any) {
 				if (error.code === 'ENOENT') {
@@ -93,7 +93,7 @@ export class IconPickerService implements IIconPickerService {
 		folderIconOptions = folderIconOptions.filter(item => filterFn(item.iconNameInDefinitions))
 		userIconOptions = userIconOptions.filter(item => filterFn(item.iconNameInDefinitions))
 
-		console.log(`[IconPickerService] showAvailableIconsQuickPick - After filtering:`, { fileIconOptions: fileIconOptions.length, folderIconOptions: folderIconOptions.length, userIconOptions: userIconOptions.length })
+		// console.log(`[IconPickerService] showAvailableIconsQuickPick - After filtering:`, { fileIconOptions: fileIconOptions.length, folderIconOptions: folderIconOptions.length, userIconOptions: userIconOptions.length })
 
 		const combinedIconOptions: DataOrSeparator<ICoreQuickPickItem>[] = []
 
@@ -110,19 +110,19 @@ export class IconPickerService implements IIconPickerService {
 			combinedIconOptions.push(...folderIconOptions)
 		}
 
-		console.log(`[IconPickerService] showAvailableIconsQuickPick - Combined options:`, combinedIconOptions.length)
+		// console.log(`[IconPickerService] showAvailableIconsQuickPick - Combined options:`, combinedIconOptions.length)
 
 		const dataItems = combinedIconOptions.filter(item => 'iconNameInDefinitions' in item) as ICoreQuickPickItem[]
 
-		console.log(`[IconPickerService] showAvailableIconsQuickPick - Data items:`, dataItems.length)
+		// console.log(`[IconPickerService] showAvailableIconsQuickPick - Data items:`, dataItems.length)
 
 		if (dataItems.length === 0) {
-			console.log(`[IconPickerService] showAvailableIconsQuickPick - No items found, showing message`)
+			// console.log(`[IconPickerService] showAvailableIconsQuickPick - No items found, showing message`)
 			this.window.showInformationMessage('No available icons match the criteria.')
 			return undefined
 		}
 
-		console.log(`[IconPickerService] showAvailableIconsQuickPick - Showing quick pick with`, dataItems.length, `items`)
+		// console.log(`[IconPickerService] showAvailableIconsQuickPick - Showing quick pick with`, dataItems.length, `items`)
 		return this.quickPick.showQuickPickSingle<ICoreQuickPickItem, 'iconNameInDefinitions'>(
 			dataItems,
 			{
