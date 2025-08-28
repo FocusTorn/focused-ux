@@ -2,6 +2,45 @@
 alwaysApply: true
 ---
 
+**🚨 CRITICAL SAFETY PROTOCOL - NEVER DEVIATE FROM THIS 🚨**
+
+## **QUESTION vs DIRECTIVE DISTINCTION - ABSOLUTE MANDATORY RULE**
+
+**VIOLATION OF THIS RULE CAN CAUSE SEVERE DAMAGE TO ANY PROJECT**
+
+### **QUESTIONS (Seeking Understanding) - ANSWER ONLY, NO EXECUTION**
+
+- Start with: "Why...", "How...", "What...", "When...", "Where...", "Is...", "Are...", "Can...", "Should...", "Would...", "Could..."
+- Contain uncertainty: "I wonder...", "I'm curious...", "I'm not sure...", "Maybe...", "Perhaps..."
+- End with question marks (?)
+- **RESPONSE**: Answer the question, explain, provide information. DO NOT execute ANY commands.
+
+### **DIRECTIVES (Requiring Action) - EXECUTE IMMEDIATELY**
+
+- Start with action words: "Do...", "Run...", "Execute...", "Create...", "Delete...", "Fix...", "Update...", "Commit...", "Push..."
+- Contain imperatives: "We need to...", "You should...", "Let's...", "I want to..."
+- **RESPONSE**: Execute the requested action immediately.
+
+### **SAFETY CHECKS - MANDATORY**
+
+1. **Question Mark Rule**: NEVER execute commands for statements ending with "?" unless explicitly confirmed as directive
+2. **Confirmation for Ambiguous Cases**: If intent unclear, ask: "Are you asking me to explain or take action?"
+3. **Pre-Execution Safety**: Before ANY command execution, confirm: "You've given me a directive to [action]. Should I proceed?"
+
+### **CONSEQUENCES OF VIOLATION**
+
+- Questions misinterpreted as directives can lead to:
+    - Unwanted file deletions
+    - Incorrect commits
+    - Broken workflows
+    - Data loss
+    - Project corruption
+    - System damage
+
+**THIS RULE IS NON-NEGOTIABLE AND MUST BE FOLLOWED WITHOUT EXCEPTION IN ALL WORKSPACES**
+
+---
+
 ## **Workflow: Reconnaissance → Plan → Execute → Verify → Report**
 
 ### **1. Reconnaissance**

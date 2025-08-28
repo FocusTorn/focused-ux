@@ -56,8 +56,11 @@ jobs:
                       echo "has_changes=false" >> $GITHUB_OUTPUT
                     fi
                   else
-                    # For workflow_dispatch, also check for uncommitted changes in working directory
+                    # For workflow_dispatch, check the source branch for uncommitted changes
                     if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                      # Checkout the source branch to see uncommitted changes
+                      git checkout $SOURCE_BRANCH
+                      
                       # Check for uncommitted docs changes in working directory
                       if git diff --name-only | grep -E '^(docs/|\.cursor/)' > /dev/null; then
                         echo "has_changes=true" >> $GITHUB_OUTPUT
