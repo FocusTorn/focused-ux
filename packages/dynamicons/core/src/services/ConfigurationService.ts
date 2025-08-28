@@ -49,7 +49,7 @@ export class ConfigurationService implements IConfigurationService {
 	public async updateCustomMappings(
 		updateFn: (mappings: Record<string, string>) => Promise<boolean | Record<string, string>>,
 	): Promise<void> {
-		console.log(`[ConfigurationService] updateCustomMappings - Starting`)
+		// console.log(`[ConfigurationService] updateCustomMappings - Starting`)
 
 		const config = this.workspace.getConfiguration(this.EXTENSION_CONFIG_PREFIX) as {
 			get: <T>(key: string) => T | undefined
@@ -57,35 +57,35 @@ export class ConfigurationService implements IConfigurationService {
 		}
 		const originalMappingsFromConfig = config.get<Record<string, string>>(this.CUSTOM_MAPPINGS_KEY) || {}
 
-		console.log(`[ConfigurationService] updateCustomMappings - Original mappings:`, JSON.stringify(originalMappingsFromConfig, null, 2))
+		// console.log(`[ConfigurationService] updateCustomMappings - Original mappings:`, JSON.stringify(originalMappingsFromConfig, null, 2))
 		
 		const mutableMappingsCopy = { ...originalMappingsFromConfig }
 		const newMappingsResult = await updateFn(mutableMappingsCopy)
 
 		if (typeof newMappingsResult === 'boolean' && !newMappingsResult) {
-			console.log(`[ConfigurationService] updateCustomMappings - Update function returned false, aborting`)
+			// console.log(`[ConfigurationService] updateCustomMappings - Update function returned false, aborting`)
 			return
 		}
 
 		const finalMappings = typeof newMappingsResult === 'boolean' ? mutableMappingsCopy : newMappingsResult
 
-		console.log(`[ConfigurationService] updateCustomMappings - Final mappings:`, JSON.stringify(finalMappings, null, 2))
+		// console.log(`[ConfigurationService] updateCustomMappings - Final mappings:`, JSON.stringify(finalMappings, null, 2))
 
 		if (JSON.stringify(originalMappingsFromConfig) !== JSON.stringify(finalMappings)) {
-			console.log(`[ConfigurationService] updateCustomMappings - Mappings changed, updating config...`)
+			// console.log(`[ConfigurationService] updateCustomMappings - Mappings changed, updating config...`)
 			try {
 				await config.update(this.CUSTOM_MAPPINGS_KEY, finalMappings, true) // true for global
-				console.log(`[ConfigurationService] updateCustomMappings - Config updated successfully`)
+				// console.log(`[ConfigurationService] updateCustomMappings - Config updated successfully`)
 			}
 			catch (error: any) {
-				console.log(`[ConfigurationService] updateCustomMappings - Config update failed:`, error)
+				// console.log(`[ConfigurationService] updateCustomMappings - Config update failed:`, error)
 				throw new Error(`Failed to update icon mappings: ${error.message || 'Unknown error'}`)
 			}
 		}
 		else {
-			console.log(`[ConfigurationService] updateCustomMappings - No changes detected, skipping config update`)
+			// console.log(`[ConfigurationService] updateCustomMappings - No changes detected, skipping config update`)
 		}
-		console.log(`[ConfigurationService] updateCustomMappings - Completed`)
+		// console.log(`[ConfigurationService] updateCustomMappings - Completed`)
 	}
 
 	public async updateHideArrowsSetting(value: boolean): Promise<void> {
