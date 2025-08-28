@@ -1,4 +1,4 @@
-# Retrospective Protocol
+# Protocol Retrospective
 
 ## **Purpose**
 
@@ -12,9 +12,10 @@ This protocol enables systematic learning and continuous improvement by analyzin
 retro command issued
 ├─ Phase 1: Session Analysis (chat only)
 ├─ Phase 2: Lesson Distillation
-├─ Phase 3: Doctrine Integration
-├─ Phase 4: Documentation Updates
-└─ Phase 5: Final Report
+├─ Phase 3: Project-Specific Distillation
+├─ Phase 4: Preflight Documentation Review
+├─ Phase 5: Doctrine Integration
+└─ Phase 6: Final Report
 ```
 
 ### **Key Outputs**
@@ -75,7 +76,70 @@ Filter and abstract only the most valuable insights into **durable, universal pr
 
 ---
 
-## **Phase 3: Doctrine Integration**
+## **Phase 3: Project-Specific Distillation**
+
+### **Directive**
+
+Extract project-specific lessons that apply specifically to the FocusedUX project architecture, workflows, and patterns.
+
+### **Keep (Project-Specific Principles)**
+
+- ✅ **FocusedUX Architectural Patterns**: Lessons about core/ext patterns, VSCode import rules, package structure
+- ✅ **Project Workflow Insights**: Nx-specific patterns, build system configurations, testing strategies
+- ✅ **Documentation Organization**: Project-specific documentation routing and categorization patterns
+- ✅ **Protocol Design Patterns**: How protocols should work within the FocusedUX ecosystem
+- ✅ **Tool-Specific Lessons**: Insights about project-specific tools, scripts, and utilities
+
+### **Discard (Generic Details)**
+
+- ❌ **Universal Principles**: These go to Universal Doctrine
+- ❌ **One-Off Implementation Details**: Specific file changes, exact commands run
+- ❌ **Temporary Workarounds**: Solutions that don't represent lasting patterns
+
+### **Project-Specific Integration**
+
+Route project-specific lessons to the appropriate FocusedUX doctrine sections:
+
+1. **Architecture Patterns**: Package structure, build configurations, VSCode integration patterns
+2. **Workflow Patterns**: Nx workflows, testing patterns, documentation practices
+3. **Protocol Patterns**: How protocols should be designed and integrated
+4. **Tool Patterns**: Project-specific tool usage and configuration
+
+---
+
+## **Phase 4: Preflight Documentation Review**
+
+### **Proposed Documentation Updates**
+
+**MANDATORY**: Present proposed updates for user review before proceeding:
+
+## **Preflight Documentation Review**
+
+### **Architecture Updates** (`docs/Architecture.md`)
+
+- **Protocol vs Documentation distinction** - Clear separation between reference docs and actionable rules
+- **Documentation routing framework** - Systematic categorization prevents content bloat
+
+### **SOP Updates** (`docs/SOP.md`)
+
+- **Protocol refinement workflow** - How to systematically improve protocols based on user feedback
+- **Documentation organization principles** - When to use docs vs rules for different types of content
+
+### **Actions Log Entry**
+
+- **Session summary** - Document successful refactoring and protocol improvements with key implementations and lessons learned
+
+### **Uncategorized Findings**
+
+- **No uncategorized findings** - all lessons fit existing documentation categories
+
+---
+
+Please review the proposed documentation updates above. Suggest alterations, confirm the plan, or request changes before I proceed with integration.
+
+---
+
+## **Phase 5: Doctrine Integration**
 
 ### **Directive**
 
@@ -83,8 +147,8 @@ Route lessons to the correct rule file based on scope and update accordingly.
 
 ### **Rule File Selection**
 
-1. **Universal Target** (`.cursor/rules/Universal-Operational-Doctrine.mdc`): Universal AI behavior, operational workflows, cross-project principles
-2. **Project-Specific Target** (`.cursor/rules/FocusedUX-Operational-Doctrine.mdc`): Repo workflows, testing patterns, architectural rules, project conventions
+1. **Universal Target** (`.cursor/rules/OperationalDoctrine-Universal.mdc`): Universal AI behavior, operational workflows, cross-project principles
+2. **Project-Specific Target** (`.cursor/rules/OperationalDoctrine-Project-FocusedUX.mdc`): Repo workflows, testing patterns, architectural rules, project conventions
 3. **Non-Duplication**: If both could apply, prefer project-specific; update universal only if it adds non-duplicative value
 
 ### **Integration Protocol**
@@ -103,7 +167,7 @@ Route lessons to the correct rule file based on scope and update accordingly.
 
 ---
 
-## **Phase 4: Documentation Updates**
+## **Phase 6: Documentation Updates**
 
 ### **Actions Log Documentation**
 
@@ -172,6 +236,33 @@ Route lessons to the correct rule file based on scope and update accordingly.
 - Architectural or technical changes
 ```
 
+#### **Documentation Standards**
+
+**Actions Log Requirements**:
+
+- **Entry gating**: Only add entries when:
+    - `retro` command issued
+    - Issue explicitly resolved
+    - Explicit request to add entry
+- **MANDATORY sections**: "What Was Tried and Failed" documenting all failed attempts
+- **Post-change documentation**: Update in same session as implementation
+
+**Date Verification Priority Protocol**:
+
+**Priority Order for Date Retrieval:**
+
+1. **Modified Files Only**: Start by running `.\scripts\Get-FileStats.ps1 -FilePaths @("file1.ts", "file2.js", "file3.json")` on only the files that were actually modified
+2. **Project Directory**: If specific files unknown, run `.\scripts\Get-FileStats.ps1 -Directories @("path/to/project")` on the project directory
+3. **Workspace Root**: As last resort, run on entire workspace
+
+**MANDATORY**: Always use actual file modification timestamps, never estimate or guess dates.
+
+### **Architecture Documentation**
+
+- **Location**: `docs/Architecture.md` for project architecture, package structure, build configurations, and implementation patterns
+- **Triggers**: Architectural changes, build system modifications, new package patterns, configuration updates
+- **Format**: Detailed technical documentation with examples, configurations, and step-by-step procedures
+
 ### **Testing Strategy Documentation**
 
 - **Location**: `docs/FocusedUX-Testing-Strategy.md` for project-specific patterns
@@ -181,12 +272,14 @@ Route lessons to the correct rule file based on scope and update accordingly.
 
 ### **SOP Documentation**
 
-- **Location**: `docs/SOP.md` for comprehensive build system and architectural reference
-- **Triggers**: Architectural changes, build system modifications, new package patterns, troubleshooting discoveries
-- **Format**: Detailed technical documentation with examples, configurations, and step-by-step procedures
+- **Location**: `docs/SOP.md` for comprehensive operational procedures and workflows
+- **Triggers**: Operational procedures, troubleshooting discoveries, development workflows
+- **Format**: Step-by-step procedures, troubleshooting guides, operational workflows
 - **Cross-Reference**: Ensure consistency with doctrine files and testing strategy
 
-### **Documentation Consistency Verification**
+---
+
+## **Phase 6: Documentation Updates**
 
 - **Before Implementation**: Consult `docs/SOP.md` and `docs/FocusedUX-Testing-Strategy.md`
 - **During Implementation**: Reference documents to prevent deviations
@@ -195,7 +288,7 @@ Route lessons to the correct rule file based on scope and update accordingly.
 
 ---
 
-## **Phase 5: Final Report**
+## **Phase 7: Final Report**
 
 ### **Directive**
 
@@ -229,6 +322,4 @@ Present a clear, structured report concluding the retrospective.
 
 **Begin your retrospective now.**
 
-> **REMINDER:** This protocol is the most critical part of your lifecycle. It is how you evolve. Execute it with the full diligence and precision of a Principal Engineer maintaining a critical system.
-
-**Begin your retrospective now.**
+---

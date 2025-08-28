@@ -1,0 +1,421 @@
+# FocusedUX Architecture
+
+## **Project Architecture**
+
+### **File Organization**
+
+- **Packages**: `packages/` directory (extensions, core packages)
+- **Libraries**: `libs/` directory (shared, mockly, tools)
+- **Documentation**: `docs/` directory (strategies, logs, SOPs)
+- **Configuration**: Root-level configs (`.cursor/rules/`, `nx.json`, etc.)
+
+### **Package Archetypes**
+
+- **`shared` (Library)**: Located in `libs/shared/`, contains shared services and abstractions for runtime use by other packages
+- **`core` (Library)**: Located in `packages/{feature}/core/`, contains feature's abstract business logic, built to be tree-shakeable
+- **`ext` (Application)**: Located in `packages/{feature}/ext/`, contains VSCode extension implementation, depends on core package
+- **`tool` (Utility)**: Located in `libs/tools/{tool-name}/`, contains standalone utilities that run directly with tsx (no build step)
+
+### **Package Structure Decision Tree**
+
+```
+Is the package intended to be a VS Code extension?
+├─ YES → Use core/ext pattern (packages/{feature}/core + packages/{feature}/ext)
+│   ├─ core: Library with business logic, built with @nx/esbuild:esbuild (bundle: false)
+│   └─ ext: Application bundle, built with @nx/esbuild:esbuild (bundle: true)
+│
+├─ NO → Is the package a shared library consumed by other packages?
+│   ├─ YES → Use shared pattern (libs/shared)
+│   │   └─ Built with @nx/esbuild:esbuild (bundle: false), generates declarations
+│   │
+│   └─ NO → Is the package a standalone tool/utility that runs directly?
+│       ├─ YES → Use tool pattern (libs/tools/{tool-name})
+│       │   ├─ Runs directly with tsx (no build step)
+│       │   ├─ Uses nx:run-commands executor for execution
+│       │   ├─ No declaration generation (composite: false, declaration: false)
+│       │   ├─ Dependencies in devDependencies (not dependencies)
+│       │   └─ **Guinea Pig Package**: Self-contained without shared dependencies, uses direct instantiation
+│       │
+│       └─ NO → Reconsider package purpose or consult team
+```
+
+## **VSCode Import Patterns**
+
+### **Core Packages**
+
+- **Pattern**: Use type imports only
+- **Implementation**: `import type { Uri } from 'vscode'`
+- **Rationale**: Core packages remain pure business logic without VSCode dependencies
+- **Testing**: Test business logic in complete isolation without VSCode mocking
+- **Local Interface Pattern**: Define local interfaces (e.g., `IUri`, `IUriFactory`) to replace VSCode value usage
+
+**Important Distinction**:
+
+- ✅ **Type imports are fine**: `import type { Uri } from 'vscode'` - These don't violate decoupling
+- ❌ **Value imports are forbidden**: `import { Uri } from 'vscode'` - These violate decoupling
+- ❌ **Direct API calls are forbidden**: `Uri.file(path)` - These violate decoupling
+
+### **Extension Packages**
+
+- **Pattern**: Create local adapters with VSCode value imports
+- **Implementation**:
+
+    ```typescript
+    // src/adapters/Window.adapter.ts
+    import * as vscode from 'vscode'
+
+    export interface IWindowAdapter {
+        showInformationMessage: (message: string) => Promise<void>
+    }
+
+    export class WindowAdapter implements IWindowAdapter {
+        async showInformationMessage(message: string): Promise<void> {
+            await vscode.window.showInformationMessage(message)
+        }
+    }
+    ```
+
+- **Rationale**: Extension packages handle VSCode integration through local adapters
+- **Testing**: Test VSCode integration through local adapters with API mocks
+
+### **No Shared Package Usage**
+
+- **Rule**: Each package is completely self-contained
+- **Rationale**: Enables independent testing and validation
+- **Implementation**: No dependencies on `@fux/shared` or other shared packages
+
+## **Build System Architecture**
+
+### **Core Package Build Configuration**
+
+- **Executor**: `@nx/esbuild:esbuild`
+- **Bundle**: `false` (library mode)
+- **Format**: `["esm"]` (ES modules)
+- **Declaration**: `true` with `declarationMap: true`
+- **External Dependencies**: All runtime dependencies must be externalized
+- **TypeScript Config**: Uses `tsconfig.lib.json` for build, `tsconfig.json` for IDE support
+
+### **Extension Package Build Configuration**
+
+- **Executor**: `@nx/esbuild:esbuild`
+- **Bundle**: `true` (application mode)
+- **Format**: `["cjs"]` (CommonJS for VSCode)
+- **External Dependencies**: `vscode` and core package dependencies
+- **TypeScript Config**: Single `tsconfig.json` with cross-project references
+
+## **Critical Architectural Rules**
+
+### **Adapter Architecture**
+
+- **Rule**:
+    - **Core packages**: Define interfaces only, no adapters
+    - **Extension packages**: Create local adapters in `src/adapters/` that implement core interfaces
+    - **No shared package usage**: Each package is self-contained
+- **Rationale**:
+    - Core packages remain pure business logic without VSCode dependencies
+    - Extension packages handle VSCode integration through local adapters
+    - Self-contained packages enable comprehensive testing and independent validation
+- **Implementation**:
+    - Core packages: Define interfaces in `src/_interfaces/`
+    - Extension packages: Create adapters in `src/adapters/` with VSCode value imports
+    - No dependencies on `@fux/shared` or other shared packages
+
+### **VSCode Value Import Restrictions**
+
+- **Rule**:
+    - **Core packages**: NO VSCode value imports allowed, use `import type { Api } from 'vscode'` only
+    - **Extension packages**: Create local adapters with VSCode value imports, no shared package usage
+- **Rationale**:
+    - Core packages maintain decoupling from VSCode API for comprehensive testing
+    - Extension packages handle VSCode integration through local adapters
+    - Self-contained packages enable independent testing and validation
+- **Implementation**:
+    - Core packages: `import type { Uri } from 'vscode'`
+    - Extension packages: Create adapters in `src/adapters/` with VSCode value imports
+    - No dependencies on `@fux/shared` or other shared packages
+
+### **Dependency Management**
+
+- **Rule**: Build-only dependencies must be in `devDependencies`
+- **Rationale**: Prevents extraneous dependencies in production packages, reduces VSIX package size
+- **Implementation**: Runtime dependencies in `dependencies`, build/development dependencies in `devDependencies`
+
+### **Externalization Strategy**
+
+- **Rule**: All third-party dependencies must be properly externalized
+- **Rationale**: Ensures clean dependency management, prevents bundling issues
+- **Implementation**: List all runtime dependencies in `external` array in build configuration
+
+### **Node.js Module Import Restrictions**
+
+- **Rule**: NO direct Node.js module imports in extension code
+- **Rationale**: VSCode extensions should not include Node.js built-in modules as dependencies
+- **Implementation**: Use VSCode's built-in file system API through workspace adapters
+
+### **Shared Path Alias Resolution**
+
+- **Rule**: TypeScript path alias for `@fux/shared` must point to package root (`libs/shared`), not `libs/shared/src`
+- **Rationale**: Ensures consumers use referenced project's declaration output instead of inlining sources
+- **Implementation**: Set path mapping to package root in consumer `tsconfig.lib.json`
+
+### **Guinea Pig Package Architecture**
+
+- **Rule**: Core packages must be self-contained without shared dependencies
+- **Rationale**: Enables independent testing and validation of core logic
+- **Implementation**: Use direct service instantiation, not DI containers; mock all external dependencies in tests
+- **Local Interface Pattern**: Core packages define their own interfaces (e.g., `IUri`, `IUriFactory`) to replace VSCode value usage
+- **Reasonable Dependencies**: Services should have reasonable dependencies based on functionality, not excessive dependencies (9+)
+
+### **VSCode Extension Configuration Preservation**
+
+- **Rule**: ALWAYS preserve all VSCode extension configuration when refactoring extension packages
+- **Rationale**: VSCode extension functionality depends on `contributes`, `activationEvents`, `engines`, and other metadata
+- **Implementation**: Only remove business logic dependencies, never remove VSCode-specific configuration sections
+- **CRITICAL**: This is non-negotiable - removing VSCode configuration breaks extension functionality
+
+### **TypeScript Project References**
+
+- **Rule**: Core packages must use proper project references with unique output directories
+- **Rationale**: Prevents build info conflicts and enables proper incremental builds
+- **Implementation**:
+    - `tsconfig.json`: `./out-tsc/tsconfig.tsbuildinfo`
+    - `tsconfig.lib.json`: `./out-tsc/lib/tsconfig.lib.tsbuildinfo`
+
+### **Test Configuration Consistency**
+
+- **Rule**: All packages must use direct `@nx/vite:test` executor, not extends
+- **Rationale**: Ensures consistent test execution and prevents configuration conflicts
+- **Implementation**: Explicit executor configuration in project.json test targets
+
+### **Comprehensive Testing Architecture**
+
+- **Rule**:
+    - **Core packages**: Test business logic in complete isolation without VSCode dependencies
+    - **Extension packages**: Test VSCode integration through local adapters
+    - **No shared package testing**: Each package tests its own functionality independently
+- **Rationale**:
+    - Core packages can be tested without complex VSCode mocking
+    - Extension packages test real VSCode integration patterns
+    - Self-contained testing enables deep validation and fast execution
+- **Implementation**:
+    - Core packages: Mock all external dependencies, test pure business logic
+    - Extension packages: Test adapters with VSCode API mocks, validate integration flows
+    - Independent test suites enable comprehensive coverage and regression prevention
+- **Mock Precision**: Test mocks must precisely match actual API signatures and parameter handling patterns
+- **Real Behavior Validation**: Tests must validate actual runtime behavior, not just mock replacements
+- **Performance-Aware Testing**: Split large test files (500+ lines) proactively to prevent hanging and performance issues
+
+### **VS Code Extension Integration Testing**
+
+- **Rule**: VS Code extension integration tests require specific environment configuration to prevent UI operations from hanging
+- **Critical Requirements**:
+    - **Environment Variable**: Always set `VSCODE_TEST: '1'` in `.vscode-test.mjs` configuration
+    - **Setup Files**: Use `setupFiles` configuration option instead of `--require` parameter for module loading
+    - **Environment Detection**: Extensions must detect test environment with `process.env.VSCODE_TEST === '1'`
+    - **UI Operation Handling**: Skip UI operations (like `window.showInformationMessage()`) in test environment
+- **Rationale**:
+    - Missing `VSCODE_TEST` environment variable causes UI operations to hang indefinitely in test context
+    - `--require` parameter can cause module resolution issues in extension host context
+    - Test environment detection prevents extension from attempting UI operations that block test execution
+- **Implementation**:
+    - Configure `.vscode-test.mjs` with `env: { VSCODE_TEST: '1' }` and `setupFiles: ['./out-tsc/suite/index.js']`
+    - Use `const IS_TEST_ENVIRONMENT = process.env.VSCODE_TEST === '1'` in extension code
+    - Conditionally skip UI operations: `if (!IS_TEST_ENVIRONMENT) { await window.showInformationMessage(...) }`
+    - Throw errors in test environment for proper test failure reporting
+
+### **Package.json Configuration**
+
+#### **Core Package Package.json**
+
+- **Type**: `"module"` (ES modules)
+- **Main/Module**: Point to built output
+- **Types**: Point to declaration files
+- **Exports**: Proper module resolution
+- **Dependencies**: Only runtime dependencies
+- **DevDependencies**: Build and development tools
+
+#### **Extension Package Package.json**
+
+- **Type**: No `"type"` field (CommonJS)
+- **Main**: Point to bundled output
+- **Dependencies**: Core package and minimal runtime dependencies
+- **DevDependencies**: Build tools and types
+- **VSCode Configuration**: Complete extension manifest
+
+## **Project.json Configuration Patterns**
+
+### **Core Package Project.json**
+
+```json
+{
+    "name": "@fux/{feature}-core",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "options": {
+                "main": "packages/{feature}/core/src/index.ts",
+                "outputPath": "packages/{feature}/core/dist",
+                "tsConfig": "packages/{feature}/core/tsconfig.lib.json",
+                "format": ["esm"],
+                "bundle": false,
+                "external": ["vscode", "dependency1", "dependency2"]
+            }
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "dependsOn": ["^build"]
+        }
+    },
+    "tags": ["core"]
+}
+```
+
+### **Extension Package Project.json**
+
+```json
+{
+    "name": "@fux/{feature}-ext",
+    "projectType": "application",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "dependsOn": ["^build"],
+            "options": {
+                "entryPoints": ["packages/{feature}/ext/src/extension.ts"],
+                "outputPath": "packages/{feature}/ext/dist",
+                "format": ["cjs"],
+                "bundle": true,
+                "external": ["vscode"],
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/{feature}/ext/assets/",
+                        "output": "./assets/"
+                    }
+                ]
+            }
+        },
+        "package": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node scripts/create-vsix.js packages/{feature}/ext vsix_packages"
+            }
+        },
+        "package:dev": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "node scripts/create-vsix.js packages/{feature}/ext vsix_packages --dev"
+            }
+        }
+    },
+    "tags": ["ext"]
+}
+```
+
+## **Package Structure**
+
+### **Core Package Structure**
+
+```
+packages/{feature}/core/
+├── src/
+│   ├── _interfaces/          # Define interfaces only
+│   ├── services/             # Business logic
+│   └── index.ts
+├── __tests__/
+│   └── functional-tests/     # Test business logic in isolation
+└── package.json              # No shared dependencies
+```
+
+### **Extension Package Structure**
+
+```
+packages/{feature}/ext/
+├── src/
+│   ├── adapters/             # Local VSCode adapters
+│   ├── extension.ts          # VSCode integration
+│   └── index.ts
+├── __tests__/
+│   └── functional-tests/     # Test VSCode integration
+└── package.json              # Dependencies on core package only
+```
+
+## **Migration Guide**
+
+### **From Shared Adapters to Local Adapters**
+
+1. **Core packages**: Change VSCode imports to type imports
+2. **Extension packages**: Create local adapters in `src/adapters/`
+3. **Remove shared dependencies**: No more `@fux/shared` imports
+4. **Update tests**: Test core logic in isolation, test adapters separately
+
+### **Example Migration**
+
+```typescript
+// Before (incorrect)
+// Core package
+import { Uri } from 'vscode' // ❌ Value import
+
+// After (correct)
+// Core package
+import type { Uri } from 'vscode' // ✅ Type import
+
+// Create local interface
+export interface IUri {
+    fsPath: string
+    scheme: string
+    authority: string
+    path: string
+    query: string
+    fragment: string
+    toString: () => string
+    with: (change: {
+        /* ... */
+    }) => IUri
+}
+
+export interface IUriFactory {
+    file: (path: string) => IUri
+    parse: (value: string) => IUri
+    create: (uri: any) => IUri
+    joinPath: (base: IUri, ...paths: string[]) => IUri
+}
+
+// Extension package
+import * as vscode from 'vscode' // ✅ Value import for adapters
+export class UriAdapter implements IUriFactory {
+    constructor(private vscodeUri: typeof vscode.Uri) {}
+
+    file(path: string): IUri {
+        const uri = this.vscodeUri.file(path)
+        return this._toIUri(uri)
+    }
+
+    private _toIUri(uri: vscode.Uri): IUri {
+        return {
+            fsPath: uri.fsPath,
+            scheme: uri.scheme,
+            // ... other properties
+        }
+    }
+}
+```
+
+## **Benefits**
+
+### **Testing Benefits**
+
+- **Core packages**: Test business logic without VSCode complexity
+- **Extension packages**: Test VSCode integration patterns
+- **Independent validation**: Each package can be tested separately
+- **Fast execution**: Core tests run without VSCode context
+
+### **Architectural Benefits**
+
+- **Self-contained**: Each package is independent
+- **Clear separation**: Business logic vs VSCode integration
+- **Maintainable**: Changes in one package don't affect others
+- **Scalable**: Easy to add new packages following the same pattern

@@ -1,0 +1,269 @@
+# Protocol Completion Documentation
+
+## **User-Initiated Documentation Protocol**
+
+### **Core Principle**
+
+Documentation of successfully completed requests is **user-initiated only**. The AI assistant must never assume a request is complete or automatically initiate documentation updates.
+
+### **Documentation Triggers**
+
+Documentation updates are **ONLY** performed when explicitly requested by the user through:
+
+- **Success acknowledgments**: "The test was fixed, document it", "The feature works great, log it"
+- **Completion confirmations**: "This is done, please document it", "Document this completion"
+- **Direct documentation requests**: "Update the Actions Log", "Write up what we accomplished"
+- **Implementation logging**: "Log this session", "Record this implementation"
+
+**CRITICAL**: Only document conversation elements that **directly or indirectly contributed to the successful outcome** being referenced.
+
+### **Documentation Scope**
+
+When explicitly requested, documentation should focus on:
+
+- **Successful outcome**: The specific result that was achieved
+- **What was tried and failed**: All failed attempts that led to the successful solution (MANDATORY)
+- **Direct contributors**: Conversation elements that directly enabled the success
+- **Indirect contributors**: Background work, research, or context that supported the success
+- **Key implementations**: The actual solutions that led to the successful outcome
+- **Lessons learned**: Insights gained during the successful implementation process
+
+**CRITICAL**: Focus documentation on the **successful outcome** and the conversation elements that **directly enabled that success**. Include failed attempts that were part of the path to success, but exclude unrelated conversation elements or tangential discussions that didn't contribute to the final successful result.
+
+### **Forbidden Automatic Documentation**
+
+**❌ NEVER assume completion** and automatically:
+
+- Write Actions Log entries
+- Update changelogs
+- Modify testing strategy documents
+- Update SOP documentation
+
+**❌ NEVER initiate documentation** without explicit user directive
+
+### **Documentation Types and Locations**
+
+When explicitly requested, documentation may include:
+
+#### **Actions Log Documentation**
+
+- **Location**: `./docs/Actions-Log.md`
+- **Format**: Date and descriptive title, high-level summary, key implementations, lessons learned
+- **Placement**: Add to TOP of document
+- **Purpose**: Living reference for successful patterns and solutions
+- **Focus**: Document the successful outcome and the conversation elements that directly contributed to that success
+
+#### **Date/Time Protocol**
+
+**MANDATORY**: Always use PowerShell to get the actual last modified time of files worked on during the session:
+
+**For Entire Project Analysis**:
+
+```powershell
+# Get file statistics for entire project directory
+.\scripts\Get-FileStats.ps1 -Directories @("path/to/project")
+```
+
+**For Specific Files Worked On**:
+
+```powershell
+# Get file statistics for specific modified files
+.\scripts\Get-FileStats.ps1 -FilePaths @("path/to/file1.ts", "path/to/file2.js", "path/to/file3.json")
+```
+
+**Format**: Use the output format `[YYYY-MM-DD HH:MM:SS]` for all Actions Log entry titles.
+
+**Example**: `### [2025-08-22 13:11:06] Dynamicons Test Performance Optimization`
+
+**Note**: Use the Maximum field from the output as the timestamp for the Actions Log entry. Use actual file modification times, not the current system time.
+
+#### **Changelog Update Protocol**
+
+**AUTOMATIC TRIGGER**: After completing any Actions Log entry, if the changes affected one or more packages specifically:
+
+1. **Identify Affected Packages**: Determine which packages were modified during the session
+2. **Update Package Changelogs**: For each affected package, update its `CHANGELOG.md` file
+3. **Changelog Format**: Follow the established format with sections for Added, Changed, Fixed, Technical Improvements
+4. **Version Tracking**: Use the same date format as the Actions Log entry for consistency
+
+**Changelog Locations**:
+
+- `packages/{package-name}/core/CHANGELOG.md`
+- `packages/{package-name}/ext/CHANGELOG.md`
+
+**Example Changelog Entry**:
+
+```markdown
+## [2025-08-22] - Session Title
+
+### Added
+
+- New feature description
+
+### Changed
+
+- Modified behavior description
+
+### Fixed
+
+- Bug fix description
+
+### Technical Improvements
+
+- Architectural or technical changes
+```
+
+## **Documentation Standards**
+
+**Reference**: See `Protocol-Retrospective.mdc` for complete documentation standards including:
+
+- Actions Log Requirements
+- Date Verification Priority Protocol
+- Entry gating rules
+- Mandatory sections requirements
+
+**CRITICAL**: Follow the same documentation standards when writing Actions Log entries in completion protocol.
+
+---
+
+## **Execution Trigger**
+
+#### **Testing Strategy Documentation**
+
+- **Location**: `docs/FocusedUX-Testing-Strategy.md` for project-specific patterns
+- **Package-Specific**: `packages/{package}/__tests__/TESTING_STRATEGY.md` for unique requirements
+- **Triggers**: Test failures, mock issues, debugging challenges, new anti-patterns
+- **Format**: Problem description, root cause, solution, best practices, library coverage
+
+#### **SOP Documentation**
+
+- **Location**: `docs/SOP.md` for comprehensive build system and architectural reference
+- **Triggers**: Architectural changes, build system modifications, new package patterns, troubleshooting discoveries
+- **Format**: Detailed technical documentation with examples, configurations, and step-by-step procedures
+- **Cross-Reference**: Ensure consistency with doctrine files and testing strategy
+
+### **Documentation Quality Requirements**
+
+#### **MANDATORY Sections for Actions Log**
+
+- **"What Was Tried and Failed"**: Documenting all failed attempts (MANDATORY)
+- **Key Implementations**: What was actually accomplished
+- **Lessons Learned**: Patterns and anti-patterns discovered
+- **Next Steps**: Any remaining work or follow-up actions
+
+#### **Date Verification Protocol**
+
+**CRITICAL**: Before writing any log entry, you MUST:
+
+1. Identify the relevant project directory
+2. Run appropriate file timestamp verification command for the system
+3. Use the exact timestamp returned
+4. If you fail to do this, you must correct the entry immediately
+
+**❌ FORBIDDEN**:
+
+- Never use placeholders ("today", "recently", estimated dates)
+- Never create random dates
+- Never skip verification
+- Never use current system time instead of file timestamps
+
+### **Documentation Consistency Verification**
+
+- **Before Implementation**: Consult `docs/SOP.md` and `docs/FocusedUX-Testing-Strategy.md`
+- **During Implementation**: Reference documents to prevent deviations
+- **After Implementation**: Verify alignment with documented patterns
+- **Critical Rule**: Obtain explicit user verification before deviating from global strategies
+
+### **User Control Protocol**
+
+#### **Completion Acknowledgment**
+
+The user must explicitly acknowledge completion before any documentation is initiated:
+
+- "This is complete"
+- "We're done with this"
+- "Document this work"
+- "Create an entry for this session"
+
+#### **Documentation Scope Control**
+
+The user controls what gets documented:
+
+- Which files to include
+- What level of detail
+- Which documentation types to update
+- Whether to include specific sections
+
+#### **No Assumption Rule**
+
+**NEVER assume** that:
+
+- A request is complete
+- Documentation is needed
+- Specific details should be included
+- Any particular format is required
+
+### **Communication Protocol**
+
+When documentation is requested:
+
+1. **Confirm scope**: Clarify what should be documented
+2. **Verify completion**: Ensure the user confirms the work is actually complete
+3. **Get file information**: Use appropriate timestamp verification
+4. **Propose structure**: Suggest what sections to include
+5. **Execute documentation**: Only after explicit user approval
+
+### **Quality Assurance**
+
+#### **Before Documentation**
+
+- [ ] User has explicitly requested documentation
+- [ ] User has confirmed completion
+- [ ] File timestamps have been verified
+- [ ] Documentation scope is clear
+
+#### **After Documentation**
+
+- [ ] All mandatory sections included
+- [ ] Timestamps are accurate and verified
+- [ ] Content aligns with established patterns
+- [ ] User has reviewed and approved the documentation
+
+---
+
+> **Core Principle**: Documentation is a user-controlled process. The AI assistant facilitates and executes documentation requests but never initiates them independently.
+> description:
+> globs:
+
+## alwaysApply: true
+
+## **Documentation Standards**
+
+### **Actions Log Requirements**
+
+- **Entry gating**: Only add entries when:
+    - `retro` command issued
+    - Issue explicitly resolved
+    - Explicit request to add entry
+- **MANDATORY sections**: "What Was Tried and Failed" documenting all failed attempts
+- **Post-change documentation**: Update in same session as implementation
+
+### **Date Verification Priority Protocol**
+
+**Priority Order for Date Retrieval:**
+
+1. **Modified Files Only**: Start by running .\scripts\Get-FileStats.ps1 -FilePaths @("file1.ts", "file2.js", "file3.json") on only the files that were actually modified during the session
+2. **Project Directory**: If modified files cannot be determined, run .\scripts\Get-FileStats.ps1 -Directories @("packages/project-name") on the specific project(s) worked on
+3. **User Input**: If neither modified files nor project scope can be determined systematically, **ASK THE USER** for the date and time to be used
+
+**❌ FORBIDDEN Actions:**
+
+- **NEVER use placeholders**: No "today", "recently", or estimated dates
+- **NEVER create random dates**: No guessing or making up timestamps
+- **NEVER skip verification**: Always attempt systematic date retrieval first
+- **NEVER use current system time**: Use actual file modification times, not when the script runs
+
+**CRITICAL**: If systematic date retrieval fails, the user must provide the exact date and time to be used as the final fallback.
+
+- **CRITICAL**: If you skip this verification step, you are violating the protocol and must correct immediately
+- **Date Format**: Use exact timestamp returned: `YYYY-MM-DD HH:MM:SS`
