@@ -56,12 +56,27 @@ jobs:
                       echo "has_changes=false" >> $GITHUB_OUTPUT
                     fi
                   else
-                    # Check for differences between current branch and main
-                    # Use origin/ prefix to ensure we're comparing with remote branches
-                    if git diff --name-only origin/main...origin/$SOURCE_BRANCH | grep -E '^(docs/|\.cursor/)' > /dev/null; then
-                      echo "has_changes=true" >> $GITHUB_OUTPUT
+                    # For workflow_dispatch, also check for uncommitted changes in working directory
+                    if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                      # Check for uncommitted docs changes in working directory
+                      if git diff --name-only | grep -E '^(docs/|\.cursor/)' > /dev/null; then
+                        echo "has_changes=true" >> $GITHUB_OUTPUT
+                        echo "uncommitted_changes=true" >> $GITHUB_OUTPUT
+                      else
+                        # Also check for differences between current branch and main
+                        if git diff --name-only origin/main...origin/$SOURCE_BRANCH | grep -E '^(docs/|\.cursor/)' > /dev/null; then
+                          echo "has_changes=true" >> $GITHUB_OUTPUT
+                        else
+                          echo "has_changes=false" >> $GITHUB_OUTPUT
+                        fi
+                      fi
                     else
-                      echo "has_changes=false" >> $GITHUB_OUTPUT
+                      # Check for differences between current branch and main
+                      if git diff --name-only origin/main...origin/$SOURCE_BRANCH | grep -E '^(docs/|\.cursor/)' > /dev/null; then
+                        echo "has_changes=true" >> $GITHUB_OUTPUT
+                      else
+                        echo "has_changes=false" >> $GITHUB_OUTPUT
+                      fi
                     fi
                   fi
 
@@ -76,36 +91,56 @@ jobs:
                     COMMIT_MSG="docs: updated project documentation"
                   fi
 
-                  # Switch to main branch
-                  git checkout main
-
-                  # If we're not already on main, cherry-pick docs changes from source branch
-                  if [ "$SOURCE_BRANCH" != "main" ]; then
-                    # Get list of commits that modified docs/ or .cursor/
-                    DOCS_COMMITS=$(git log --oneline main..$SOURCE_BRANCH -- docs/ .cursor/ | awk '{print $1}')
+                  # Handle uncommitted changes from workflow_dispatch
+                  if [ "${{ steps.check-changes.outputs.uncommitted_changes }}" = "true" ]; then
+                    echo "Processing uncommitted docs changes..."
                     
-                    if [ -n "$DOCS_COMMITS" ]; then
-                      echo "Cherry-picking docs commits from $SOURCE_BRANCH..."
-                      echo "$DOCS_COMMITS" | tac | while read commit; do
-                        git cherry-pick $commit || git cherry-pick --skip
-                      done
-                    fi
-                  fi
-
-                  # Add any remaining docs changes
-                  git add docs/ .cursor/
-
-                  # Commit if there are changes
-                  if git diff --cached --quiet; then
-                    echo "No staged changes to commit"
-                  else
+                    # Switch to main branch
+                    git checkout main
+                    
+                    # Copy the uncommitted changes from the source branch
+                    git checkout $SOURCE_BRANCH -- docs/ .cursor/
+                    
+                    # Add and commit the changes
+                    git add docs/ .cursor/
                     git commit -m "$COMMIT_MSG"
+                    
+                    # Push to main
+                    git push origin main
+                    
+                    echo "Successfully synced uncommitted docs changes to main with message: $COMMIT_MSG"
+                  else
+                    # Switch to main branch
+                    git checkout main
+                    
+                    # If we're not already on main, cherry-pick docs changes from source branch
+                    if [ "$SOURCE_BRANCH" != "main" ]; then
+                      # Get list of commits that modified docs/ or .cursor/
+                      DOCS_COMMITS=$(git log --oneline main..$SOURCE_BRANCH -- docs/ .cursor/ | awk '{print $1}')
+                      
+                      if [ -n "$DOCS_COMMITS" ]; then
+                        echo "Cherry-picking docs commits from $SOURCE_BRANCH..."
+                        echo "$DOCS_COMMITS" | tac | while read commit; do
+                          git cherry-pick $commit || git cherry-pick --skip
+                        done
+                      fi
+                    fi
+                    
+                    # Add any remaining docs changes
+                    git add docs/ .cursor/
+                    
+                    # Commit if there are changes
+                    if git diff --cached --quiet; then
+                      echo "No staged changes to commit"
+                    else
+                      git commit -m "$COMMIT_MSG"
+                    fi
+                    
+                    # Push to main
+                    git push origin main
+                    
+                    echo "Successfully synced docs changes to main with message: $COMMIT_MSG"
                   fi
-
-                  # Push to main
-                  git push origin main
-
-                  echo "Successfully synced docs changes to main with message: $COMMIT_MSG"
 
             - name: Update source branch with synced docs
               if: steps.check-changes.outputs.has_changes == 'true' && github.event_name == 'workflow_dispatch'
