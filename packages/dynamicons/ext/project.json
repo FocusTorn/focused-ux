@@ -26,11 +26,15 @@
                 "assets": [
                     {
                         "glob": "**/*",
-                        "input": "packages/dynamicons/ext/assets/",
+                        "input": "packages/dynamicons/core/dist/assets/",
                         "output": "./assets/"
                     }
                 ],
-                "thirdParty": true
+                "thirdParty": true,
+                "esbuildOptions": {
+                    "logLevel": "silent"
+                }
+
             }
         }, //<
         "package": { //>

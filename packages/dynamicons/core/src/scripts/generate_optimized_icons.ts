@@ -37,7 +37,7 @@ const SOURCE_ROOT = path.resolve(MONOREPO_ROOT, 'packages/dynamicons/core/src')
 const SOURCE_ICONS_DIR_NAME = 'icons'
 const SOURCE_ICONS_DIR_ABS = path.join(SOURCE_ROOT, SOURCE_ICONS_DIR_NAME)
 
-const ASSETS_DIR_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/ext/assets')
+const ASSETS_DIR_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/core/dist/assets')
 const FILE_ICONS_OUTPUT_DIR_ABS = path.join(ASSETS_DIR_ABS, 'icons/file_icons')
 const FOLDER_ICONS_OUTPUT_DIR_ABS = path.join(ASSETS_DIR_ABS, 'icons/folder_icons')
 
