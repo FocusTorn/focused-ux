@@ -1,0 +1,76 @@
+{
+    "name": "@fux/project-alias-expander",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/project-alias-expander/src",
+    "projectType": "library",
+    "targets": {
+        "build:compile": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "inputs": [
+                "production",
+                "^production",
+                "{projectRoot}/config.json"
+            ],
+            "options": {
+                "outputPath": "libs/project-alias-expander/dist",
+                "main": "libs/project-alias-expander/src/cli.ts",
+                "tsConfig": "libs/project-alias-expander/tsconfig.json",
+                "platform": "node",
+                "bundle": true,
+                "external": ["vscode"],
+                "thirdParty": true,
+                "assets": [
+                    {
+                        "glob": "config.json",
+                        "input": "libs/project-alias-expander",
+                        "output": "."
+                    }
+                ]
+            }
+        },
+        "build": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build:compile"],
+            "outputs": [
+                "{projectRoot}/dist/pae-functions.psm1"
+            ],
+            "inputs": [
+                "production",
+                "^production",
+                "{projectRoot}/config.json"
+            ],
+            "options": {
+                "commands": ["node libs/project-alias-expander/dist/cli.js install-aliases"],
+                "parallel": false
+            }
+        },
+        "lint": {
+            "executor": "@nx/eslint:lint"
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "options": {
+                "reportsDirectory": "libs/project-alias-expander/_reports/coverage",
+                "passWithNoTests": true
+            }
+        },
+        "test:full": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ],
+            "options": {
+                "reportsDirectory": "libs/project-alias-expander/_reports/coverage",
+                "passWithNoTests": true
+            }
+        }
+    },
+    "tags": ["tool"]
+}

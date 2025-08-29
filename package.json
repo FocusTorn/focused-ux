@@ -1,6 +1,7 @@
 {
     "name": "@fux/source",
     "version": "0.0.0",
+    "bin": {},
     "scripts": {
         "prune-cache": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1",
         "prune-cache:dry-run": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1 -DryRun",
@@ -18,6 +19,7 @@
         "@nx/esbuild": "21.4.0",
         "@nx/eslint": "21.4.0",
         "@nx/js": "21.4.0",
+        "@nx/node": "21.4.0",
         "@nx/vite": "21.4.0",
         "@nx/web": "21.4.0",
         "@nx/workspace": "21.4.0",

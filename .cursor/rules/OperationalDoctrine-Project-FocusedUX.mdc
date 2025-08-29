@@ -14,11 +14,11 @@ This document contains specific operational guidelines for the FocusedUX workspa
 
 ### **FocusedUX Protocol Compliance Check**
 
-- [ ] **AKA Alias Usage**: If directive involves commands, will I use AKA aliases?
-    - **Step 1**: Always attempt `aka help` or `aka list` first to discover available aliases
-    - **Step 2**: Use the appropriate alias for the operation (e.g., `aka dyn b` for dynamicons build)
+- [ ] **PAX Alias Usage**: If directive involves commands, will I use PAX aliases?
+    - **Step 1**: Always attempt `pax help` first to discover available aliases
+    - **Step 2**: Use the appropriate alias for the operation (e.g., `pax dc b` for dynamicons build)
     - **Step 3**: Only use direct nx commands if no appropriate alias exists or the alias fails
-    - **Step 4**: Document any missing aliases that should be added to the AKA system
+    - **Step 4**: Document any missing aliases that should be added to the PAX system
 - [ ] **Build-Before-Test**: If directive involves testing, will I run builds first?
     - **Always run `{alias} b` first** - ensure clean builds before testing
     - **Fix build errors immediately** - don't proceed with broken builds
@@ -68,22 +68,22 @@ This document contains specific operational guidelines for the FocusedUX workspa
 
 ## Command Execution & Tooling
 
-### Aka Alias Mandate
+### PAX Alias Mandate
 
-- **ALWAYS use `aka` aliases** for all project operations
+- **ALWAYS use `pax` aliases** for all project operations
 - **NEVER fall back to npm/nx directly** unless explicitly requested
-- **Primary discovery**: `aka help` or `aka list`
+- **Primary discovery**: `pax help`
 - **Deviation prevention**: Any deviation constitutes a critical failure
 
 #### **Fallback Protocol**
 
-- **Step 1**: Always attempt `aka help` or `aka list` first to discover available aliases
-- **Step 2**: Use the appropriate alias for the operation (e.g., `aka dyn b` for dynamicons build)
+- **Step 1**: Always attempt `pax help` first to discover available aliases
+- **Step 2**: Use the appropriate alias for the operation (e.g., `pax dc b` for dynamicons build)
 - **Step 3**: Only use direct nx commands if:
     - No appropriate alias exists for the operation
     - The alias command fails and direct nx command is the only alternative
     - Explicitly requested by the user
-- **Step 4**: Document any missing aliases that should be added to the AKA system
+- **Step 4**: Document any missing aliases that should be added to the PAX system
 
 ### Build Tool Preferences
 

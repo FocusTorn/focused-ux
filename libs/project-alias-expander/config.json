@@ -1,0 +1,130 @@
+{
+    "targets": {
+        "b": "build",
+        "p": "package",
+        "pd": "package:dev",
+        "pub": "publish",
+
+        "l": "lint",
+        "lf": "lint:full",
+
+        "tsc": "check-types",
+
+        "v": "validate",
+        "vf": "validate:full",
+        
+        "a": "audit",
+        "af": "audit:full",
+
+        "t": "test",
+        "tw": "test --watch",
+        "tc": "test --coverage",
+        
+        "ti": "test:integration",
+        
+        "tf": "test:full",
+        "tfw": "test:full --watch",
+        "tfc": "test:full --coverage",
+
+        "c": "clean",
+        "cc": "clean:cache",
+        "cd": "clean:dist",
+        
+        "s": "status",
+        "o": "optimize",
+        "m": "monitor"
+    },
+
+    "not-nx-targets": {
+        "esv": "npx esbuild-visualizer --metadata"
+    },
+
+    "expandables": {
+        "f": "fix",
+        "s": "skip-nx-cache",
+        "v": "verbose",
+        "d": "debug",
+        
+        "watch": "watch",
+        "stream": "output-style=stream",
+        "echo": "pax-echo"
+    },
+    
+    "packages": {
+        "ccp": {
+            "name": "context-cherry-picker",
+            "suffix": "ext",
+            "full": true
+        },
+        "ccpc": {
+            "name": "context-cherry-picker",
+            "suffix": "core"
+        },
+        "ccpe": {
+            "name": "context-cherry-picker",
+            "suffix": "ext"
+        },
+        "dc": {
+            "name": "dynamicons",
+            "suffix": "ext",
+            "full": true
+        },
+        "dcc": {
+            "name": "dynamicons",
+            "suffix": "core"
+        },
+        "dce": {
+            "name": "dynamicons",
+            "suffix": "ext"
+        },
+        "gw": {
+            "name": "ghost-writer",
+            "suffix": "ext",
+            "full": true
+        },
+        "gwc": {
+            "name": "ghost-writer",
+            "suffix": "core"
+        },
+        "gwe": {
+            "name": "ghost-writer",
+            "suffix": "ext"
+        },
+        "pb": {
+            "name": "project-butler",
+            "suffix": "ext",
+            "full": true
+        },
+        "pbc": {
+            "name": "project-butler",
+            "suffix": "core"
+        },
+        "pbe": {
+            "name": "project-butler",
+            "suffix": "ext"
+        },
+        "nh": {
+            "name": "note-hub",
+            "suffix": "ext",
+            "full": true
+        },
+        "nhc": {
+            "name": "note-hub",
+            "suffix": "core"
+        },
+        "nhe": {
+            "name": "note-hub",
+            "suffix": "ext"
+        },
+        "mockly": "@fux/mockly",
+        "shared": "@fux/shared",
+        "audit": "@fux/structure-auditor",
+        "cmo": "@fux/cursor-memory-optimizer",
+        "aka": "@fux/project-alias-expander"
+        
+        
+    }
+}
+// Test comment
+// Another test comment
+// Test comment for new build structasdure
