@@ -32,16 +32,16 @@ const stripJsonComments = (stripJsonCommentsModule as any).default || stripJsonC
  * 
  * PREQUISITES:
  *   1. Optimized SVG Icons: (Assumes optimize_icons.ts has run)
- *      - File Icons: 'packages/dynamicons/ext/assets/icons/file_icons/'
- *      - Folder Icons: 'packages/dynamicons/ext/assets/icons/folder_icons/'
+ *      - File Icons: 'packages/dynamicons/core/dist/assets/icons/file_icons/'
+ *      - Folder Icons: 'packages/dynamicons/core/dist/assets/icons/folder_icons/'
  *   2. Model Files:
  *      - '../models/file_icons.model.json'
  *      - '../models/folder_icons.model.json'
  *   3. Helper Function: readJsonFileSync (local version included).
  * 
  * OUTPUT (relative to project root):
- *   - 'packages/dynamicons/ext/assets/themes/base.theme.json'
- *   - 'packages/dynamicons/ext/assets/themes/dynamicons.theme.json'
+ *   - 'packages/dynamicons/core/dist/assets/themes/base.theme.json'
+ *   - 'packages/dynamicons/core/dist/assets/themes/dynamicons.theme.json'
  * 
  * IMPORTANT:
  *   - This script DELETES and RECREATES the output theme files on each run.
@@ -62,11 +62,11 @@ const __dirname = path.dirname(__filename)
 const MONOREPO_ROOT = path.resolve(__dirname, '../../../../../')
 const FILE_ICONS_MODEL_PATH = path.resolve(__dirname, '../models/file_icons.model.json')
 const FOLDER_ICONS_MODEL_PATH = path.resolve(__dirname, '../models/folder_icons.model.json')
-const EXT_ASSETS_DIR_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/ext/assets')
-const OPTIMIZED_ICONS_ROOT_DIR_ABS_POSIX = path.join(EXT_ASSETS_DIR_ABS, 'icons').replace(/\\/g, '/')
+const CORE_ASSETS_DIR_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/core/dist/assets')
+const OPTIMIZED_ICONS_ROOT_DIR_ABS_POSIX = path.join(CORE_ASSETS_DIR_ABS, 'icons').replace(/\\/g, '/')
 const OPTIMIZED_FILE_ICONS_DIR_ABS_POSIX = path.join(OPTIMIZED_ICONS_ROOT_DIR_ABS_POSIX, 'file_icons').replace(/\\/g, '/')
 const OPTIMIZED_FOLDER_ICONS_DIR_ABS_POSIX = path.join(OPTIMIZED_ICONS_ROOT_DIR_ABS_POSIX, 'folder_icons').replace(/\\/g, '/')
-const THEMES_OUTPUT_DIR_ABS_POSIX = path.join(EXT_ASSETS_DIR_ABS, 'themes').replace(/\\/g, '/')
+const THEMES_OUTPUT_DIR_ABS_POSIX = path.join(CORE_ASSETS_DIR_ABS, 'themes').replace(/\\/g, '/')
 
 const BASE_THEME_FILENAME = dynamiconsConstants.defaults.baseThemeFilenameDefault
 const OUTPUT_THEME_FILENAME = dynamiconsConstants.defaults.generatedThemeFilenameDefault

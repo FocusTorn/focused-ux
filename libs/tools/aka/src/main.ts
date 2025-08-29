@@ -269,7 +269,24 @@ function runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: stri
 }
 
 function main() {
-	const [, , alias, ...rest] = process.argv
+	const [, , ...args] = process.argv
+	
+	// Handle both direct execution (pbc b) and aka-prefixed execution (aka pbc b)
+	let alias: string
+	let rest: string[]
+	
+	// Check if this is being called as 'aka' command (bin execution)
+	const isAkaCommand = process.argv[1]?.endsWith('aka') || process.argv[1]?.includes('aka')
+	
+	if (isAkaCommand && args.length > 0) {
+		// Called as: aka pbc b
+		alias = args[0]
+		rest = args.slice(1)
+	} else {
+		// Called as: pbc b (direct execution)
+		alias = args[0]
+		rest = args.slice(1)
+	}
 
 	if (!alias || alias === '-h' || alias === '--help' || alias === 'help') {
 		const config = loadAliasConfig()
@@ -280,6 +297,8 @@ function main() {
 		console.log('aka <alias> <target> [flags]')
 		console.log('')
 		console.log('USAGE:')
+		console.log('  <alias> <target> [flags]              # Direct execution (e.g., pbc b)')
+		console.log('  aka <alias> <target> [flags]          # Aka-prefixed execution')
 		console.log('  aka <package-alias> <target> [flags]  # Run target for specific package')
 		console.log('  aka <ext|core|all> <target> [flags]   # Run target for all packages of type')
 		console.log('')
@@ -322,21 +341,21 @@ function main() {
 	const targets = config.targets ?? { b: 'build', l: 'lint', t: 'test' }
 	const notNxTargets = (config as any)['not-nx-targets'] ?? {}
 	const expandMap = config.expandables ?? { f: 'fix', s: 'skip-nx-cache' }
-	let args = expandTargetShortcuts(rest, targets)
+	let processedArgs = expandTargetShortcuts(rest, targets)
 
-	args = expandFlags(args, expandMap)
+	processedArgs = expandFlags(processedArgs, expandMap)
 
 	// Handle ephemeral echo flag: "-echo" -> "--aka-echo"
-	const akaEchoEnabled = args.includes('--aka-echo')
+	const akaEchoEnabled = processedArgs.includes('--aka-echo')
 
 	// Remove control flag from downstream Nx args
 	if (akaEchoEnabled) {
-		args = args.filter(a => a !== '--aka-echo')
+		processedArgs = processedArgs.filter(a => a !== '--aka-echo')
 	}
 
 	if (alias === 'ext' || alias === 'core' || alias === 'all') {
-		const target = args[0]
-		const flags = args.filter(a => a.startsWith('--'))
+		const target = processedArgs[0]
+		const flags = processedArgs.filter(a => a.startsWith('--'))
 
 		const previousEcho = process.env.AKA_ECHO
 
@@ -366,13 +385,13 @@ function main() {
 		process.exit(1)
 	}
 
-	// Check args length before removing --aka-echo flag
-	if (args.length === 0) {
+	// Check processedArgs length before removing --aka-echo flag
+	if (processedArgs.length === 0) {
 		console.error(`Please provide a command for '${alias}'.`)
 		process.exit(1)
 	}
 
-	const target = args[0]
+	const target = processedArgs[0]
 	
 	// Use target-aware resolution for integration tests
 	const { project, full } = resolveProjectForAliasWithTarget(aliasVal, target)
@@ -382,7 +401,7 @@ function main() {
 	
 	if (notNxTarget) {
 		// For not-nx-targets, we run the workspace-level command with the project name
-		const additionalArgs = args.slice(1)
+		const additionalArgs = processedArgs.slice(1)
 		
 		// Run the workspace-level command with the project name
 		const previousEcho = process.env.AKA_ECHO
@@ -430,14 +449,14 @@ function main() {
 	}
 
 	// For regular Nx targets, continue with normal processing
-	args[0] = normalizeFullSemantics(full, args[0])
+	processedArgs[0] = normalizeFullSemantics(full, processedArgs[0])
 
-	const normalizedTarget = args[0]
+	const normalizedTarget = processedArgs[0]
 
 	// Ensure visible logs by default
-	const _hasFix = args.includes('--fix')
-	const flagArgs = args.filter(a => a.startsWith('--'))
-	const restArgs = args.slice(1).filter(a => !a.startsWith('--'))
+	const _hasFix = processedArgs.includes('--fix')
+	const flagArgs = processedArgs.filter(a => a.startsWith('--'))
+	const restArgs = processedArgs.slice(1).filter(a => !a.startsWith('--'))
 
 	// Inject Vitest config if needed
 	let injectedArgs = injectVitestConfig(project, normalizedTarget, flagArgs)

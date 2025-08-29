@@ -4,32 +4,34 @@
     "sourceRoot": "packages/dynamicons/core/src",
     "projectType": "library",
     "targets": {
-        "build-assets": { //>
+        "process-assets": { //>
             "executor": "nx:run-commands",
             "options": {
                 "command": "tsx ./src/scripts/build_dynamicon_assets.ts",
-                "cwd": "packages/dynamicons/core",
-                "forwardAllArgs": true
+                "cwd": "packages/dynamicons/core"
             },
-            "configurations": {
-                "development": {
-                    "command": "tsx ./src/scripts/build_dynamicon_assets.ts"
-                }
-            }
+            "inputs": [
+                "{projectRoot}/src/scripts/**/*",
+                "{projectRoot}/src/icons/**/*",
+                "{projectRoot}/src/models/**/*"
+            ],
+            "outputs": ["{projectRoot}/dist/assets/**/*"],
+            "cache": true
+        }, //<
+        "build-assets": { //>
+            "dependsOn": ["process-assets"],
+            "executor": "nx:noop"
         }, //<
         "build": { //>
             "dependsOn": [
-                "build-assets"
+                "process-assets"
             ],
             "executor": "@nx/esbuild:esbuild",
             "outputs": [
                 "{options.outputPath}"
             ],
             "inputs": [
-                "{projectRoot}/src/**/*",
-                "{projectRoot}/src/icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/ext/assets/icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/ext/assets/themes/*.json"
+                "{projectRoot}/src/**/*"
             ],
             "options": {
                 "main": "packages/dynamicons/core/src/index.ts",

@@ -17,12 +17,12 @@ ARGUMENTS (Standalone):
 
 PREQUISITES:
   1. Optimized SVG Icons: (Assumes optimize_icons.ts has run)
-     - File Icons: 'packages/dynamicons/ext/assets/icons/file_icons/'
-     - Folder Icons: 'packages/dynamicons/ext/assets/icons/folder_icons/'
+     - File Icons: 'packages/dynamicons/core/dist/assets/icons/file_icons/'
+- Folder Icons: 'packages/dynamicons/core/dist/assets/icons/folder_icons/'
   2. Dependencies: Puppeteer for headless browser, Sharp for image manipulation.
 
 OUTPUT:
-  - PNG preview images in 'packages/dynamicons/ext/assets/images/':
+  - PNG preview images in 'packages/dynamicons/core/dist/assets/images/':
     - 'File_icons_preview.png'
     - 'Folder_icons_preview.png'
     - 'Folder_Open_icons_preview.png'
@@ -51,16 +51,16 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const MONOREPO_ROOT = path.resolve(__dirname, '../../../../../')
-const EXT_PACKAGE_ROOT_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/ext')
-const EXT_ASSETS_DIR_ABS = path.join(EXT_PACKAGE_ROOT_ABS, 'assets')
-const FILE_ICONS_SVG_DIR_ABS = path.join(EXT_ASSETS_DIR_ABS, 'icons/file_icons')
-const FOLDER_ICONS_SVG_DIR_ABS = path.join(EXT_ASSETS_DIR_ABS, 'icons/folder_icons')
-const PNG_TEMP_ROOT_DIR_ABS = path.join(EXT_PACKAGE_ROOT_ABS, 'dist/temp_previews') // Changed from 'packages/assets'
+const CORE_PACKAGE_ROOT_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/core')
+const CORE_ASSETS_DIR_ABS = path.join(CORE_PACKAGE_ROOT_ABS, 'dist/assets')
+const FILE_ICONS_SVG_DIR_ABS = path.join(CORE_ASSETS_DIR_ABS, 'icons/file_icons')
+const FOLDER_ICONS_SVG_DIR_ABS = path.join(CORE_ASSETS_DIR_ABS, 'icons/folder_icons')
+const PNG_TEMP_ROOT_DIR_ABS = path.join(CORE_PACKAGE_ROOT_ABS, 'dist/temp_previews') // Changed from 'packages/assets'
 const FILE_ICONS_PNG_DIR_ABS = path.join(PNG_TEMP_ROOT_DIR_ABS, 'file_icons_png')
 const FOLDER_ICONS_PNG_DIR_ABS = path.join(PNG_TEMP_ROOT_DIR_ABS, 'folder_icons_png')
 const FOLDER_OPEN_ICONS_PNG_DIR_ABS = path.join(PNG_TEMP_ROOT_DIR_ABS, 'folder_open_icons_png')
 const HTML_OUTPUT_DIR_ABS = PNG_TEMP_ROOT_DIR_ABS
-const FINAL_IMAGE_OUTPUT_DIR_ABS = path.join(EXT_ASSETS_DIR_ABS, 'images')
+const FINAL_IMAGE_OUTPUT_DIR_ABS = path.join(CORE_ASSETS_DIR_ABS, 'images')
 
 const ICON_SIZE_FOR_PNG_CONVERSION = 16
 const HTML_COLUMNS = 5

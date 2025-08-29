@@ -804,12 +804,12 @@ The key is that each dependency should have a clear, justifiable purpose for tha
 
 ### **Double Execution Elimination**
 
-**Problem**: Test commands were running twice due to conflicting configurations between global `targetDefaults` and AKA script injection.
+**Problem**: Test commands were running twice due to conflicting configurations between global `targetDefaults` and PAX script injection.
 
 **Solution**:
 
 - **Pattern Replication Protocol**: When a working solution exists, replicate it exactly rather than trying to improve it
-- **Remove Global Conflicts**: Remove `configFile` options from `nx.json` `targetDefaults` to allow AKA script to handle config injection
+- **Remove Global Conflicts**: Remove `configFile` options from `nx.json` `targetDefaults` to allow PAX script to handle config injection
 - **Use Proven Executor**: Use `@nx/vite:test` executor with proper configuration instead of complex `nx:run-commands`
 - **Single Execution Verification**: Always use `-s -stream` flags to verify no duplicate test runs before considering a solution complete
 
@@ -842,7 +842,7 @@ The key is that each dependency should have a clear, justifiable purpose for tha
     - `{alias} t -s -stream` - Should show single execution
     - `{alias} tf -s -stream` - Should show single execution for each package in dependency chain
 
-4. **AKA Script Integration**: Ensure no conflicting `configFile` options in local packages to allow AKA script to handle config injection
+4. **PAX Script Integration**: Ensure no conflicting `configFile` options in local packages to allow PAX script to handle config injection
 
 ### **Configuration Hierarchy Understanding**
 
@@ -850,9 +850,9 @@ The key is that each dependency should have a clear, justifiable purpose for tha
 
 1. Global `targetDefaults` in `nx.json`
 2. Local package `project.json` targets
-3. AKA script dynamic injection
+3. PAX script dynamic injection
 
-**Best Practice**: Remove global `targetDefaults` for test targets and let local packages handle their own configuration with AKA script support.
+**Best Practice**: Remove global `targetDefaults` for test targets and let local packages handle their own configuration with PAX script support.
 
 ### **Anti-Patterns for Test Configuration**
 

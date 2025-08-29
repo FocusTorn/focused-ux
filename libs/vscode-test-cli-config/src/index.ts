@@ -71,24 +71,16 @@ export function createVscodeTestConfig(options: FuxVSCodeTestConfigOptions) {
 			'--disable-workspace-trust',
 			
 			// Disable Settings Sync to prevent authentication provider timeouts.
-			'--sync',
-			'off',
+			'--sync', 'off',
 
 			// Explicitly disable noisy or conflicting built-in and common extensions.
-			'--disable-extension',
-			'ms-vsliveshare.vsliveshare',
-			'--disable-extension',
-			'ms-python.python',
-			'--disable-extension',
-			'ms-python.gather',
-			'--disable-extension',
-			'vscode.git',
-			'--disable-extension',
-			'vscode.github-authentication',
-			'--disable-extension',
-			'GitHub.copilot',
-			'--disable-extension',
-			'GitHub.copilot-chat',
+			'--disable-extension', 'ms-vsliveshare.vsliveshare',
+			'--disable-extension', 'ms-python.python',
+			'--disable-extension', 'ms-python.gather',
+			'--disable-extension', 'vscode.git',
+			'--disable-extension', 'vscode.github-authentication',
+			'--disable-extension', 'GitHub.copilot',
+			'--disable-extension', 'GitHub.copilot-chat',
 
 			// Load our extension for testing.
 			'--extensionDevelopmentPath',

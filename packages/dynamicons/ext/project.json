@@ -26,11 +26,15 @@
                 "assets": [
                     {
                         "glob": "**/*",
-                        "input": "packages/dynamicons/ext/assets/",
+                        "input": "packages/dynamicons/core/dist/assets/",
                         "output": "./assets/"
                     }
                 ],
-                "thirdParty": true
+                "thirdParty": true,
+                "esbuildOptions": {
+                    "logLevel": "silent"
+                }
+
             }
         }, //<
         "package": { //>
@@ -75,9 +79,11 @@
             "dependsOn": ["^build"],
             "options": {}
         }, //<
-        "test:full": { //>
+        "test:full": {
             "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
+            "outputs": [
+                "{options.reportsDirectory}"
+            ],
             "dependsOn": [
                 {
                     "dependencies": true,
@@ -85,8 +91,37 @@
                     "params": "forward"
                 }
             ],
-            "options": {}
-        } //<
+            "options": {},
+            "configurations": {},
+            "parallelism": true
+        },
+        "test:compile": {
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/__tests__/_out-tsc"],
+            "options": {
+                "commands": ["tsc -p packages/dynamicons/ext/__tests__/tsconfig.test.json"]
+            }
+        },
+        "test:integration": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build", "test:compile"],
+            "options": {
+                "command": "vscode-test --config .vscode-test.mjs",
+                "cwd": "packages/dynamicons/ext"
+            },
+            "configurations": {},
+            "parallelism": true
+        },
+        "test:integration:full": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build", "test:compile"],
+            "options": {
+                "command": "vscode-test --config .vscode-test.mjs --coverage",
+                "cwd": "packages/dynamicons/ext"
+            },
+            "configurations": {},
+            "parallelism": true
+        }
         
     },
     "tags": ["ext"]

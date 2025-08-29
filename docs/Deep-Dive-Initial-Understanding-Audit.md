@@ -1,191 +1,322 @@
 # Deep Dive Initial Understanding Audit
 
-## **Overview**
+## **DOCUMENT PURPOSE**
 
-This document outlines the **critical systematic process** that must be followed before making any package-related changes in the FocusedUX monorepo. This process prevents assumptions and ensures all architectural variations are properly understood and accounted for.
+**Primary Consumer**: AI Agent performing package analysis
+**Objective**: Systematic package analysis to prevent architectural assumptions
+**Scope**: FocusedUX monorepo package variations and deviations
 
-## **Why This Process is Critical**
+## **CRITICAL CONTEXT**
 
-### **The Problem**
+### **PROBLEM STATEMENT**
 
-- Packages in this monorepo have **significant variations** in their architecture
-- **Assuming all packages follow the same pattern** leads to incorrect implementations
-- **Missing architectural deviations** can cause build failures, test issues, and integration problems
+- **Issue**: Packages have significant architectural variations
+- **Risk**: Assuming uniform patterns leads to implementation failures
+- **Impact**: Build failures, test issues, integration problems
 
-### **Real Example: Project Butler vs Ghost Writer**
+### **SOLUTION APPROACH**
 
-- **Ghost Writer Extension**: Depends only on `@fux/ghost-writer-core`
-- **Project Butler Extension**: Depends on `@fux/vscode-test-cli-config` AND `@fux/project-butler-core`
-- **Build Configuration**: Project Butler externalizes `js-yaml` in addition to `vscode`
-- **Testing**: Project Butler has integration tests, compilation tests, and special test targets
-- **Entry Points**: Project Butler uses `extension.ts`, Ghost Writer uses `index.ts`
+**REFERENCE DOCUMENTS:**
 
-**Without systematic analysis, these critical differences would be missed!**
+- **Primary**: `docs/Package-Specific-Details.md` - Complete pattern reference
+- **Secondary**: `docs/Architecture.md` - Overall architecture context
+- **Tertiary**: `docs/FocusedUX-Testing-Strategy.md` - Testing patterns
 
-## **The 6-Step Systematic Analysis Process**
+**PATTERN CLASSIFICATION:**
 
-### **Step 0: AKA Alias Discovery and Workspace Analysis**
+- **Intentional Patterns**: Documented architectural decisions (e.g., integration testing frameworks)
+- **Feature-Specific Requirements**: Package-specific needs (e.g., asset processing)
+- **Actual Deviations**: Real issues requiring correction
 
-**CRITICAL**: Before any package analysis, discover available aliases and understand the entire workspace architecture.
+**CRITICAL RULE**: Without systematic analysis, intentional patterns cannot be distinguished from actual problems.
 
-#### **0.1 AKA Alias Discovery**
+## **SYSTEMATIC ANALYSIS PROCESS**
 
-```bash
-# ALWAYS run this first to discover available commands
-aka help
-```
+### **STEP 0: Workspace Context Awareness**
 
-**Check for:**
+**VALIDATION STEP 0.1: Workspace Overview**
 
-- **Package-specific aliases**: `dc`, `gw`, `pb`, `nh`, etc.
-- **Target aliases**: `b`, `t`, `tc`, `ti`, `tf`, etc.
-- **Expandable flags**: `s`, `v`, `stream`, etc.
+- **Input Command**: `nx_workspace`
+- **Output**: Complete workspace project graph and configuration
+- **Process**: Understand overall workspace architecture and package relationships
 
-#### **0.2 Workspace Architecture Analysis**
+**CRITICAL CHECKLIST:**
 
-```bash
-# Understand the entire workspace structure
-nx_workspace
-```
+- [ ] **Project Graph**: All packages and their dependencies identified
+- [ ] **Configuration**: Nx configuration and target defaults understood
+- [ ] **Errors**: Any project graph errors or configuration issues detected
+- [ ] **Dependency Chain**: Build order and dependency relationships mapped
+- [ ] **Package Types**: Core, extension, shared, and tool packages identified
 
-**Map the workspace to understand:**
+**VALIDATION CRITERIA:**
+✅ **Complete Graph**: All packages visible in project graph
+✅ **No Errors**: No project graph or configuration errors
+✅ **Dependency Clarity**: Clear understanding of package relationships
+✅ **Architecture Alignment**: Package types match expected patterns
 
-- **All package dependencies** and relationships
-- **Package types** (core/ext/shared/tool) and their roles
-- **Build configurations** and variations
-- **Testing strategies** across packages
-- **How the target package fits** into the overall system
+**VALIDATION STEP 0.2: Package Discovery and Classification**
 
-#### **0.3 Command Execution Protocol**
+- **Input Command**: `nx_workspace` with package type filters
+- **Process**: Identify and classify all packages by type and role
+- **Output**: Complete package inventory with classifications
 
-**ALWAYS use AKA aliases instead of raw nx commands:**
+**PACKAGE DISCOVERY PROCESS:**
 
-```bash
-# ❌ NEVER do this
-nx test @fux/package-name-core
-nx build @fux/package-name-ext
+1. **Core Packages**: `packages/{feature}/core/` - Business logic packages
+2. **Extension Packages**: `packages/{feature}/ext/` - VSCode integration packages
+3. **Shared Packages**: `libs/shared/` - Utility packages for other packages
+4. **Tool Packages**: `libs/tools/{tool-name}/` - Standalone utility packages
 
-# ✅ ALWAYS do this
-{package-alias} t      # Test package (full)
-{package-alias}c t     # Test package core
-{package-alias}e t     # Test package extension
-```
+**VALIDATION CRITERIA:**
+✅ **Complete Inventory**: All packages discovered and classified
+✅ **Type Accuracy**: Package types match location patterns
+✅ **Dependency Mapping**: All package dependencies identified
+✅ **Relationship Understanding**: Clear picture of package interactions
 
-### **Step 1: Deep Dive Initial Understanding Audit**
+**VALIDATION STEP 0.3: Workspace Health Assessment**
 
-**CRITICAL**: Use `nx_project_details` to analyze the package before making any changes.
+- **Input**: Workspace configuration and project graph
+- **Process**: Assess overall workspace health and identify potential issues
+- **Output**: Workspace health status and any concerns
 
-#### **1.1 Package Dependencies Analysis**
+**HEALTH ASSESSMENT CRITERIA:**
+✅ **Configuration Valid**: No configuration errors or warnings
+✅ **Dependency Integrity**: All dependencies properly resolved
+✅ **Build Order Valid**: No circular dependencies or build issues
+✅ **Package Consistency**: Packages follow established patterns
 
-```bash
-# Always run this first
-nx_project_details @fux/package-name
-```
+**VALIDATION STEP 0.4: Additional Context Tools (Optional)**
 
-**Check for:**
+- **Input**: Specific context needs for the analysis
+- **Process**: Use additional nx-mcp tools for enhanced context awareness
+- **Output**: Enhanced understanding of workspace and package context
 
-- **Core packages**: Should have minimal external dependencies
-- **Extension packages**: Should depend on their core package
-- **Shared packages**: May be consumed by multiple packages
-- **Tool packages**: Should be standalone utilities
+**CONTEXT ENHANCEMENT TOOLS:**
 
-#### **1.2 Package Type and Role Verification**
+- **`nx_workspace_path`**: Get workspace root path for file operations
+- **`nx_generators`**: Discover available generators for package creation/modification
+- **`nx_generator_schema`**: Get detailed schema for specific generators
+- **`nx_docs`**: Access Nx documentation for specific topics or configurations
 
-- **Core packages**: `packages/{feature}/core/` - Pure business logic
-- **Extension packages**: `packages/{feature}/ext/` - VSCode integration
-- **Shared packages**: `libs/shared/` - Utilities for other packages
-- **Tool packages**: `libs/tools/{tool-name}/` - Standalone utilities
+**USAGE SCENARIOS:**
 
-#### **1.3 Build Configuration Analysis**
+- **Path Context**: Use `nx_workspace_path` when working with file paths
+- **Generator Context**: Use `nx_generators` when creating new packages or components
+- **Schema Context**: Use `nx_generator_schema` when configuring generators
+- **Documentation Context**: Use `nx_docs` when needing Nx-specific guidance
 
-**Core packages should have:**
+**DECISION POINT:**
 
-- `bundle: false` (library mode)
-- `format: ["esm"]` (ES modules)
-- `external: ["vscode", "dependency1", "dependency2"]` (all dependencies externalized)
+- **IF** workspace is healthy **THEN** proceed to package-specific analysis
+- **IF** workspace has errors **THEN** resolve before proceeding
+- **IF** workspace has warnings **THEN** assess impact before proceeding
+- **IF** additional context needed **THEN** use appropriate nx-mcp tools
 
-**Extension packages should have:**
+### **STEP 1: Deep Dive Initial Understanding Audit**
 
-- `bundle: true` (application mode)
-- `format: ["cjs"]` (CommonJS for VSCode)
-- `external: ["vscode"]` (or additional dependencies as needed)
+**VALIDATION STEP 1.1: Package Dependencies Analysis**
 
-#### **1.4 CRITICAL: Package Variations and Deviations Analysis**
+- **Input Command**: `nx_project_details @fux/package-name`
+- **Output**: Package configuration and dependency information
+- **Process**: Analyze dependencies against package type requirements
 
-**This is the most important step!** Check for deviations from standard patterns:
+**CRITICAL CHECKLIST:**
 
-##### **Extension Dependencies**
+- [ ] **Core Packages**: Minimal external dependencies, no shared dependencies
+- [ ] **Extension Packages**: Primary dependency on core package, optional integration testing framework
+- [ ] **Shared Packages**: Consumed by multiple packages, utility functions
+- [ ] **Tool Packages**: Standalone utilities, minimal dependencies
 
-- **Standard**: Extension depends only on its core package
-- **Variation**: Extension depends on additional shared packages
-    - Example: `@fux/project-butler-ext` depends on `@fux/vscode-test-cli-config`
+**VALIDATION CRITERIA:**
+✅ **Core Package**: Self-contained with minimal external dependencies
+✅ **Extension Package**: Depends on core package + optional integration testing
+✅ **Shared Package**: Used by other packages, no VSCode dependencies
+✅ **Tool Package**: Standalone execution, minimal dependencies
 
-##### **Build Externalization**
+**VALIDATION STEP 1.2: Package Type and Role Verification**
 
-- **Standard**: Only `vscode` externalized
-- **Variation**: Additional dependencies externalized
-    - Example: `external: ["vscode", "js-yaml"]`
+- **Input**: Package location and structure from `nx_project_details`
+- **Process**: Verify package type matches location and role
+- **Output**: Confirmed package type and architectural role
 
-##### **Testing Complexity**
+**PACKAGE TYPE MATRIX:**
+| Package Type | Location Pattern | Role | Architecture |
+|-------------|------------------|------|--------------|
+| Core | `packages/{feature}/core/` | Pure business logic | Self-contained, type imports only |
+| Extension | `packages/{feature}/ext/` | VSCode integration | Local adapters, CommonJS bundle |
+| Shared | `libs/shared/` | Utilities for other packages | Pure functions, clear exports |
+| Tool | `libs/tools/{tool-name}/` | Standalone utilities | Direct execution, minimal deps |
 
-- **Standard**: Basic `test` and `test:full` targets
-- **Variation**: Integration tests, compilation tests, special test targets
-    - Example: `test:compile`, `test:integration`, `test:integration:full`
+**VALIDATION CRITERIA:**
+✅ **Location Matches Type**: Package location follows documented pattern
+✅ **Role Alignment**: Package purpose matches type classification
+✅ **Architecture Consistency**: Implementation follows type requirements
 
-##### **Entry Point Patterns**
+**VALIDATION STEP 1.3: Build Configuration Analysis**
 
-- **Standard**: Uses `index.ts` as main entry point
-- **Variation**: Uses `extension.ts` or other entry points
-    - Example: `main: "packages/project-butler/ext/src/extension.ts"`
+- **Input**: Build configuration from `nx_project_details` output
+- **Process**: Verify build settings match package type requirements
+- **Output**: Validated build configuration or identified issues
 
-##### **Package.json Patterns**
+**BUILD CONFIGURATION MATRIX:**
+| Package Type | Bundle | Format | External | Entry Point |
+|-------------|--------|--------|----------|-------------|
+| Core | `false` | `["esm"]` | `["vscode", "deps..."]` | `index.ts` |
+| Extension | `true` | `["cjs"]` | `["vscode", "deps..."]` | `extension.ts` |
 
-- **Standard**: `packageMain: "./dist/index.cjs"`
-- **Variation**: Different main field patterns
-    - Example: `packageMain: "./dist/extension.cjs"`
+**CRITICAL CHECKLIST:**
 
-##### **Additional Targets**
+- [ ] **Bundle Setting**: Matches package type (false for core, true for extension)
+- [ ] **Format Setting**: ES modules for core, CommonJS for extension
+- [ ] **External Dependencies**: All dependencies properly externalized
+- [ ] **Entry Point**: Correct entry point for package type
 
-- **Standard**: `build`, `test`, `lint`, `audit`
-- **Variation**: Custom targets beyond standard patterns
-    - Example: `test:compile`, `test:integration`, `package:dev`
+**VALIDATION CRITERIA:**
+✅ **Core Package**: `bundle: false`, `format: ["esm"]`, all deps externalized
+✅ **Extension Package**: `bundle: true`, `format: ["cjs"]`, VSCode + deps externalized
 
-#### **1.5 Document Architectural Deviations**
+**VALIDATION STEP 1.4: CRITICAL - Package Variations and Deviations Analysis**
 
-**For each deviation found:**
+**INPUT:**
 
-- **Document the variation** and its purpose
-- **Understand the rationale** behind the deviation
-- **Plan how to handle** the variation in your implementation
-- **Verify the deviation** doesn't break your assumptions
+- Package configuration from `nx_project_details`
+- Reference: `docs/Package-Specific-Details.md` - Complete pattern reference
 
-### **Step 2: Architectural Pattern Validation**
+**PROCESS:**
 
-#### **2.1 Core Package Validation**
+1. **Compare** package configuration against documented standards
+2. **Identify** deviations from documented patterns
+3. **Classify** deviations as intentional or actual issues
+4. **Document** findings for implementation planning
 
-- ✅ **No shared dependencies** - Self-contained "guinea pig" packages
-- ✅ **Type imports only** - `import type { Uri } from 'vscode'`
-- ✅ **Direct service instantiation** - No DI containers
-- ✅ **Pure business logic** - No VSCode integration code
+**CRITICAL CHECKLIST:**
 
-#### **2.2 Extension Package Validation**
+- [ ] **Extension Dependencies**: Follow documented dependency patterns
+- [ ] **Build Externalization**: Dependencies externalized per documented standards
+- [ ] **Testing Complexity**: Testing setup matches documented patterns
+- [ ] **Entry Point Patterns**: Entry points follow documented conventions
+- [ ] **Package.json Patterns**: Package.json configurations align with standards
+- [ ] **Additional Targets**: Custom targets documented and justified
 
-- ✅ **Depends on core package** - Primary dependency
-- ✅ **Local adapters** - VSCode integration through local adapters
-- ✅ **CommonJS bundle** - For VSCode compatibility
-- ✅ **Minimal dependencies** - Beyond core package
+**CONDITIONAL PROCESSING:**
 
-#### **2.3 Shared Package Validation**
+- **IF** deviation matches documented pattern **THEN** mark as intentional variation
+- **IF** deviation not documented **THEN** mark as actual issue requiring correction
+- **IF** actual issue found **THEN** document for implementation planning
 
-- ✅ **Utility consumption** - Used by other packages
-- ✅ **No VSCode dependencies** - Pure utility functions
-- ✅ **Proper exports** - Clear public API
+**VALIDATION CRITERIA:**
+✅ **Intentional Pattern**: Deviation documented in Package-Specific-Details.md as feature-specific variation
+✅ **Actual Issue**: Deviation not documented and represents configuration problem
+✅ **Standard Compliance**: Package follows documented patterns for its type
 
-#### **2.4 Tool Package Validation**
+**DECISION POINT:**
 
-- ✅ **Standalone execution** - Runs directly with tsx
-- ✅ **No build step** - Direct execution
-- ✅ **Self-contained** - Minimal dependencies
+- **IF** all deviations are intentional **THEN** proceed to Step 1.5
+- **IF** actual issues found **THEN** document for correction before proceeding
+- **IF** unclear whether intentional **THEN** consult Package-Specific-Details.md for clarification
+
+**VALIDATION STEP 1.5: Document Architectural Deviations**
+
+**INPUT:** Deviations identified in Step 1.4
+**PROCESS:** Document and classify each deviation for implementation planning
+**OUTPUT:** Categorized deviations with implementation plans
+
+**DEVIATION DOCUMENTATION PROCESS:**
+
+1. **Check Reference**: Consult Package-Specific-Details.md for intentional patterns
+2. **Classify Deviation**: Mark as intentional variation or actual issue
+3. **Document Purpose**: Record rationale and purpose of deviation
+4. **Plan Implementation**: Determine how to handle in implementation
+5. **Verify Assumptions**: Ensure deviation doesn't break architectural assumptions
+6. **Update Reference**: Add to Package-Specific-Details.md if new intentional pattern
+
+**CRITICAL CHECKLIST:**
+
+- [ ] **Reference Checked**: Package-Specific-Details.md consulted for each deviation
+- [ ] **Classification Complete**: All deviations marked as intentional or actual
+- [ ] **Purpose Documented**: Rationale recorded for each deviation
+- [ ] **Implementation Planned**: Handling strategy determined
+- [ ] **Assumptions Verified**: Deviation doesn't break architectural assumptions
+- [ ] **Reference Updated**: New intentional patterns added to documentation
+
+**VALIDATION CRITERIA:**
+✅ **Complete Documentation**: All deviations documented with purpose and handling plan
+✅ **Reference Alignment**: Intentional patterns match Package-Specific-Details.md
+✅ **Implementation Ready**: Clear handling strategy for each deviation
+
+### **STEP 2: Architectural Pattern Validation**
+
+**VALIDATION STEP 2.1: Core Package Validation**
+
+- **Input**: Core package configuration and source code
+- **Process**: Verify self-contained "guinea pig" architecture
+- **Output**: Validated core package architecture
+
+**CRITICAL CHECKLIST:**
+
+- [ ] **No Shared Dependencies**: Self-contained with minimal external dependencies
+- [ ] **Type Imports Only**: `import type { Uri } from 'vscode'` pattern
+- [ ] **Direct Service Instantiation**: No DI containers used
+- [ ] **Pure Business Logic**: No VSCode integration code
+
+**VALIDATION CRITERIA:**
+✅ **Self-Contained**: No shared package dependencies
+✅ **Type-Safe**: Only VSCode type imports, no value imports
+✅ **Direct Architecture**: Services instantiated directly, no DI containers
+✅ **Pure Logic**: Business logic without VSCode integration
+
+**VALIDATION STEP 2.2: Extension Package Validation**
+
+- **Input**: Extension package configuration and source code
+- **Process**: Verify VSCode integration architecture
+- **Output**: Validated extension package architecture
+
+**CRITICAL CHECKLIST:**
+
+- [ ] **Core Package Dependency**: Primary dependency on core package
+- [ ] **Local Adapters**: VSCode integration through local adapters
+- [ ] **CommonJS Bundle**: Bundle format for VSCode compatibility
+- [ ] **Minimal Dependencies**: Minimal dependencies beyond core package
+
+**VALIDATION CRITERIA:**
+✅ **Core Dependency**: Depends on core package as primary dependency
+✅ **Adapter Pattern**: Uses local adapters for VSCode API integration
+✅ **VSCode Compatible**: CommonJS bundle for VSCode compatibility
+✅ **Minimal Dependencies**: Minimal dependencies beyond core package
+
+**VALIDATION STEP 2.3: Shared Package Validation**
+
+- **Input**: Shared package configuration and source code
+- **Process**: Verify utility consumption patterns
+- **Output**: Validated shared package architecture
+
+**CRITICAL CHECKLIST:**
+
+- [ ] **Utility Consumption**: Used by other packages
+- [ ] **No VSCode Dependencies**: Pure utility functions
+- [ ] **Proper Exports**: Clear public API
+
+**VALIDATION CRITERIA:**
+✅ **Utility Focus**: Consumed by other packages for utility functions
+✅ **Platform Independent**: No VSCode dependencies
+✅ **Clear API**: Proper exports with clear public interface
+
+**VALIDATION STEP 2.4: Tool Package Validation**
+
+- **Input**: Tool package configuration and source code
+- **Process**: Verify standalone execution patterns
+- **Output**: Validated tool package architecture
+
+**CRITICAL CHECKLIST:**
+
+- [ ] **Standalone Execution**: Runs directly with tsx
+- [ ] **No Build Step**: Direct execution without build process
+- [ ] **Self-Contained**: Minimal dependencies
+
+**VALIDATION CRITERIA:**
+✅ **Direct Execution**: Runs directly with tsx command
+✅ **No Build Required**: Direct execution without build step
+✅ **Self-Contained**: Minimal dependencies for standalone operation
 
 ### **Step 3: Build Configuration Verification**
 
@@ -300,19 +431,7 @@ nx run @fux/package-name:audit
 
 ## **Common Pitfalls to Avoid**
 
-### **1. Ignoring AKA Alias Mandate**
-
-- **Problem**: Using raw `nx` commands instead of `aka` aliases
-- **Solution**: Always run `aka help` first and use package-specific aliases
-- **Prevention**: Make AKA alias discovery Step 0 of the analysis process
-
-### **2. Focusing on Individual Packages Without Workspace Analysis**
-
-- **Problem**: Diving into specific packages without understanding the broader context
-- **Solution**: Always start with workspace-level analysis using `nx_workspace`
-- **Prevention**: Make workspace analysis mandatory before package-specific work
-
-### **3. Assuming All Packages Follow the Same Pattern**
+### **1. Assuming All Packages Follow the Same Pattern**
 
 - **Problem**: Treating all extensions as identical
 - **Solution**: Always check for variations and deviations
@@ -320,11 +439,15 @@ nx run @fux/package-name:audit
 
 ### **4. Missing Additional Dependencies**
 
+### **2. Missing Additional Dependencies**
+
 - **Problem**: Not checking for shared package dependencies
 - **Solution**: Analyze all dependencies, not just core packages
 - **Prevention**: Complete dependency mapping in workspace analysis
 
 ### **5. Ignoring Testing Complexity**
+
+### **3. Ignoring Testing Complexity**
 
 - **Problem**: Assuming all packages have the same testing needs
 - **Solution**: Check for integration tests, compilation tests, etc.
@@ -332,43 +455,103 @@ nx run @fux/package-name:audit
 
 ### **6. Overlooking Entry Point Variations**
 
+### **4. Overlooking Entry Point Variations**
+
 - **Problem**: Assuming all packages use the same entry point
 - **Solution**: Verify main field and entry point patterns
 - **Prevention**: Entry point pattern analysis in systematic review
 
 ### **7. Not Checking Build Externalization**
 
+### **5. Not Checking Build Externalization**
+
 - **Problem**: Assuming all packages externalize the same dependencies
 - **Solution**: Verify what's in the external array
 - **Prevention**: Build configuration analysis in systematic review
 
-## **Examples of Package Variations**
+## **Package-Specific Details**
 
-### **Ghost Writer (Standard Pattern)**
+**For detailed information about package variations, patterns, and specific implementations, see:**
 
-```json
-{
-    "dependencies": ["@fux/ghost-writer-core"],
-    "external": ["vscode"],
-    "main": "./dist/index.cjs",
-    "entryPoints": ["packages/ghost-writer/ext/src/index.ts"]
-}
-```
-
-### **Project Butler (Variation Pattern)**
-
-```json
-{
-    "dependencies": ["@fux/vscode-test-cli-config", "@fux/project-butler-core"],
-    "external": ["vscode", "js-yaml"],
-    "main": "./dist/extension.cjs",
-    "entryPoints": ["packages/project-butler/ext/src/extension.ts"],
-    "targets": ["test:compile", "test:integration", "test:integration:full"]
-}
-```
+- **Package-Specific-Details.md**: Complete reference for all package variations and architectural patterns
+- **Feature-specific variations**: Dynamicons, Project Butler, Ghost Writer, and other packages
+- **Standard patterns**: Entry points, dependencies, testing complexity, and build configurations
+- **Intentional vs. actual deviations**: Distinguishes between intended patterns and real issues
 
 ## **Conclusion**
 
 **Always follow this systematic process before making package changes.** The variations between packages are significant and can cause serious issues if not properly understood and accounted for. This process ensures you have complete understanding of the package architecture before making any modifications.
 
 **Remember**: The time spent on systematic analysis is always less than the time spent fixing problems caused by incorrect assumptions!
+
+## **Package Analysis Protocol**
+
+### **Systematic Package Analysis Process**
+
+**CRITICAL**: Before making any package-related changes, follow this systematic analysis process:
+
+#### **Step 1: Deep Dive Initial Understanding Audit**
+
+1. **Use `nx_project_details`** to understand package dependencies and build configuration
+2. **Verify package type** (core vs ext vs shared vs tool) and architectural role
+3. **Check build configuration** matches package type requirements
+4. **Identify all affected consumers** and dependent packages
+5. **CRITICAL: Analyze package variations and deviations** from standard patterns:
+    - **Extension dependencies**: Check if extension depends on additional shared packages beyond core
+    - **Build externalization**: Verify what dependencies are externalized (may vary by package)
+    - **Testing complexity**: Identify if package has integration tests, compilation tests, or other special testing
+    - **Entry point patterns**: Check if uses `extension.ts` vs `index.ts` or other variations
+    - **Package.json patterns**: Verify main field, dependencies, and configuration variations
+    - **Additional targets**: Look for custom targets beyond standard build/test/lint patterns
+6. **Document architectural deviations** and understand their rationale before proceeding
+
+#### **Step 2: Architectural Pattern Validation**
+
+1. **Core packages**: Verify self-contained "guinea pig" architecture
+    - No shared dependencies
+    - Type imports only for VSCode
+    - Direct service instantiation (no DI containers)
+2. **Extension packages**: Verify VSCode integration architecture
+    - Depend on core packages
+    - Local adapters for VSCode APIs
+    - Bundle as CommonJS for VSCode compatibility
+3. **Shared packages**: Verify utility consumption patterns
+4. **Tool packages**: Verify standalone execution patterns
+
+#### **Step 3: Build Configuration Verification**
+
+1. **Core packages**: `bundle: false`, `format: ["esm"]`, externalize all dependencies
+2. **Extension packages**: `bundle: true`, `format: ["cjs"]`, externalize only VSCode (or additional dependencies as needed)
+3. **Verify TypeScript configuration** matches package type
+4. **Check external dependencies** are properly listed
+
+#### **Step 4: Testing Architecture Alignment**
+
+1. **Core packages**: Test business logic in isolation
+2. **Extension packages**: Test VSCode integration through adapters
+3. **Verify test dependencies** and mocking strategies
+4. **Check test execution patterns** match package type
+5. **Identify special testing requirements** (integration tests, compilation tests, etc.)
+
+#### **Step 5: Implementation Validation**
+
+1. **Run builds** for affected packages and dependencies
+2. **Run tests** for core packages (fast, isolated)
+3. **Run tests** for extension packages (integration validation)
+4. **Verify no regressions** in dependent packages
+5. **Run full validation** (build, test, lint, audit)
+
+### **Package Analysis Checklist**
+
+**Before any package work, verify:**
+
+- [ ] Package dependencies analyzed via `nx_project_details`
+- [ ] Package type and role confirmed (core/ext/shared/tool)
+- [ ] Build configuration matches package type requirements
+- [ ] VSCode imports follow correct pattern for package type
+- [ ] Testing strategy aligns with package architecture
+- [ ] All dependent packages identified and considered
+- [ ] Implementation plan accounts for architectural constraints
+- [ ] **Package variations and deviations documented and understood**
+- [ ] **Special testing requirements identified and planned for**
+- [ ] **Entry point and dependency patterns verified**
