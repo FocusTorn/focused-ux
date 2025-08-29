@@ -22,7 +22,7 @@ const __dirname = path.dirname(__filename)
 // const EXTERNAL_ICONS_SOURCE_DIR = 'D:/_dev/!Projects/focused-ux/icons'
 const EXTERNAL_ICONS_SOURCE_DIR = 'D:/_dev/!Projects/_fux/icons'
 
-const INTERNAL_ICONS_DEST_DIR = path.resolve(__dirname, '../icons')
+const INTERNAL_ICONS_DEST_DIR = path.resolve(__dirname, '../assets/icons')
 
 const ansii = { //>
 	none: '\x1B[0m',

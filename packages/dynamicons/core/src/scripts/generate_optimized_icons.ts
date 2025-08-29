@@ -34,7 +34,7 @@ const __dirname = path.dirname(__filename)
 const MONOREPO_ROOT = path.resolve(__dirname, '../../../../../')
 // const SOURCE_ROOT = path.resolve(MONOREPO_ROOT, '..')
 const SOURCE_ROOT = path.resolve(MONOREPO_ROOT, 'packages/dynamicons/core/src')
-const SOURCE_ICONS_DIR_NAME = 'icons'
+const SOURCE_ICONS_DIR_NAME = 'assets/icons'
 const SOURCE_ICONS_DIR_ABS = path.join(SOURCE_ROOT, SOURCE_ICONS_DIR_NAME)
 
 const ASSETS_DIR_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/core/dist/assets')
