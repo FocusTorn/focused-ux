@@ -2,9 +2,11 @@
 
 This document outlines the complete workflow for adding new icons to the Dynamicons theme, from initial file placement to final association in the theme manifest. Following these steps ensures that icons are correctly processed, optimized, and integrated into the extension.
 
+**Architectural Principle**: The core package contains all business logic including asset generation, while the extension package is a pure VSCode adapter that copies generated assets.
+
 The process is divided into three main stages:
 1.  **Placement & Naming:** The developer places new SVG files with specific names in a designated source directory.
-2.  **Build & Optimization:** An automated script processes these files, optimizing them and placing them in the final asset directory.
+2.  **Build & Optimization:** An automated script processes these files, optimizing them and placing them in the core package's asset directory.
 3.  **Association:** The developer manually updates a model file to link the new icon to specific file types, filenames, or folder names.
 
 ---
@@ -45,24 +47,29 @@ This command executes the following sequence of scripts:
 
 1.  **Localization (`build_dynamicon_assets.ts`):**
     *   **Source:** `D:/_dev/!Projects/focused-ux/icons/`
-    *   **Action:** Moves all `.svg` files from the source directory to the package's internal staging area.
+    *   **Action:** Moves all `.svg` files from the source directory to the core package's internal staging area.
     *   **Destination:** `packages/dynamicons/core/src/icons/`
 
 2.  **Optimization (`generate_optimized_icons.ts`):**
     *   **Source:** `packages/dynamicons/core/src/icons/`
     *   **Action:** Optimizes the SVGs and sorts them based on their name.
-    *   **Destination (Files):** `packages/dynamicons/ext/assets/icons/file_icons/`
-    *   **Destination (Folders):** `packages/dynamicons/ext/assets/icons/folder_icons/`
+    *   **Destination (Files):** `packages/dynamicons/core/dist/assets/icons/file_icons/`
+    *   **Destination (Folders):** `packages/dynamicons/core/dist/assets/icons/folder_icons/`
 
 3.  **Manifest Generation (`generate_icon_manifests.ts`):**
-    *   **Action:** Scans the final asset directories and the association models to generate the theme files.
-    *   **Destination:** `packages/dynamicons/ext/assets/themes/` (updates `base.theme.json` and `dynamicons.theme.json`)
+    *   **Action:** Scans the core package's asset directories and the association models to generate the theme files.
+    *   **Destination:** `packages/dynamicons/core/dist/assets/themes/` (updates `base.theme.json` and `dynamicons.theme.json`)
+
+4.  **Extension Asset Copy (Extension Build):**
+    *   **Source:** `packages/dynamicons/core/dist/assets/`
+    *   **Action:** Extension build process copies generated assets from core package.
+    *   **Destination:** `packages/dynamicons/ext/dist/assets/` (for VSCode packaging)
 
 ---
 
 ### Step 3: Associating Icons with File/Folder Names (Developer Action)
 
-After the build process has successfully placed the optimized icon in the `ext/assets` directory, you must manually create an association rule for it.
+After the build process has successfully placed the optimized icon in the core package's asset directory, you must manually create an association rule for it.
 
 *   **Location:**
     *   For **file** icons, edit: `packages/dynamicons/core/src/models/file_icons.model.json`
@@ -87,7 +94,7 @@ After the build process has successfully placed the optimized icon in the `ext/a
     *   Execute `pnpm nx run @fux/dynamicons-core:build-assets` in your terminal.
 
 3.  **Verify the Output (Optional):**
-    *   Check that `toml.svg` now exists in `packages/dynamicons/ext/assets/icons/file_icons/`.
+    *   Check that `toml.svg` now exists in `packages/dynamicons/core/dist/assets/icons/file_icons/`.
 
 4.  **Associate the Icon:**
     *   Open `packages/dynamicons/core/src/models/file_icons.model.json`.

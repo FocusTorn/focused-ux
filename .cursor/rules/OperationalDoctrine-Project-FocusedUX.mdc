@@ -6,7 +6,33 @@ alwaysApply: true
 
 # Project Level Operational Doctrine for the FocusedUX Workspace
 
-This document contains specific operational guidelines for the FocusedUX workspace. For universal AI behavior protocols, refer to OperationalDoctrine-Universal.mdc. 
+This document contains specific operational guidelines for the FocusedUX workspace. For universal AI behavior protocols, refer to OperationalDoctrine-Universal.mdc.
+
+## **PROJECT-LEVEL PRE-RESPONSE VALIDATION**
+
+**CRITICAL**: Before ANY response involving FocusedUX project operations, you MUST complete this checklist:
+
+### **FocusedUX Protocol Compliance Check**
+
+- [ ] **AKA Alias Usage**: If directive involves commands, will I use AKA aliases?
+    - **Step 1**: Always attempt `aka help` or `aka list` first to discover available aliases
+    - **Step 2**: Use the appropriate alias for the operation (e.g., `aka dyn b` for dynamicons build)
+    - **Step 3**: Only use direct nx commands if no appropriate alias exists or the alias fails
+    - **Step 4**: Document any missing aliases that should be added to the AKA system
+- [ ] **Build-Before-Test**: If directive involves testing, will I run builds first?
+    - **Always run `{alias} b` first** - ensure clean builds before testing
+    - **Fix build errors immediately** - don't proceed with broken builds
+- [ ] **Documentation First**: If directive involves architectural changes, have I checked project documentation?
+    - **Architecture**: `./docs/Architecture.md` for package structure and patterns
+    - **Testing**: `./docs/FocusedUX-Testing-Strategy.md` for testing patterns
+    - **Previous Solutions**: `./docs/Actions-Log.md` for existing implementations
+- [ ] **Package Analysis**: If directive involves package changes, will I perform systematic analysis?
+    - **Use `nx_project_details`** to understand package dependencies and build configuration
+    - **Check for architectural deviations** from standard patterns
+    - **Verify package type** (core vs ext vs shared vs tool) and role
+- [ ] **Self-Correction**: If I detect any protocol violation, will I acknowledge immediately?
+
+**VIOLATION PENALTY**: Any failure to complete this checklist constitutes a critical failure requiring immediate acknowledgment and correction.
 
 ## Architecture Reference
 
@@ -48,6 +74,16 @@ This document contains specific operational guidelines for the FocusedUX workspa
 - **NEVER fall back to npm/nx directly** unless explicitly requested
 - **Primary discovery**: `aka help` or `aka list`
 - **Deviation prevention**: Any deviation constitutes a critical failure
+
+#### **Fallback Protocol**
+
+- **Step 1**: Always attempt `aka help` or `aka list` first to discover available aliases
+- **Step 2**: Use the appropriate alias for the operation (e.g., `aka dyn b` for dynamicons build)
+- **Step 3**: Only use direct nx commands if:
+    - No appropriate alias exists for the operation
+    - The alias command fails and direct nx command is the only alternative
+    - Explicitly requested by the user
+- **Step 4**: Document any missing aliases that should be added to the AKA system
 
 ### Build Tool Preferences
 

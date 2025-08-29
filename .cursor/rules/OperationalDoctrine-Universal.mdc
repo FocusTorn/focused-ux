@@ -12,15 +12,20 @@ This document contains universal AI behavior protocols that apply to ALL AI agen
 
 **CRITICAL**: Before ANY response, you MUST complete this checklist:
 
-### **Protocol Compliance Check**
+### **Universal Protocol Compliance Check**
 
 - [ ] **Question vs Directive**: Is this a question (explain only) or directive (take action)?
     - **For details**: See "Question vs Directive Distinction" section below
-- [ ] **AKA Alias Usage**: If directive involves commands, will I use AKA aliases?
-    - **For details**: See "AKA Alias Mandate" in Project-FocusedUX doctrine
 - [ ] **Documentation First**: If directive, have I checked relevant documentation?
     - **For details**: See "Documentation-First Directive Protocol" section below
 - [ ] **Self-Correction**: If I detect any protocol violation, will I acknowledge immediately?
+
+### **Project-Level Protocol Compliance Check**
+
+- [ ] **Command Tool Usage**: If directive involves commands, will I use project-specific command tools?
+    - **For details**: See project-specific doctrine for command tool requirements
+- [ ] **Project Patterns**: If directive involves code changes, will I follow project-specific patterns?
+    - **For details**: See project-specific doctrine for architectural patterns
 
 ### **Response Validation**
 

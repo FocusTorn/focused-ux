@@ -158,6 +158,33 @@ Is the package intended to be a VS Code extension?
 - **Rationale**: Ensures consumers use referenced project's declaration output instead of inlining sources
 - **Implementation**: Set path mapping to package root in consumer `tsconfig.lib.json`
 
+### **Core Package = Complete Business Logic Architecture**
+
+- **Rule**: Core packages must contain **complete business logic** for their feature, including any asset generation or processing that is part of the feature's functionality
+- **Rationale**:
+    - Core packages must be **self-sufficient** and **orchestrator-ready**
+    - When the orchestrator extension is implemented, it will consume core packages directly
+    - Business logic should not be split between core and extension packages
+- **Implementation**:
+    - Include all feature functionality in core package (business logic, asset generation, data processing)
+    - Core package should be **consumable by any consumer** (extension, orchestrator, or other tools)
+    - Use direct service instantiation, not DI containers; mock all external dependencies in tests
+- **Local Interface Pattern**: Core packages define their own interfaces (e.g., `IUri`, `IUriFactory`) to replace VSCode value usage
+- **Reasonable Dependencies**: Services should have reasonable dependencies based on functionality, not excessive dependencies (9+)
+
+### **Extension Package = VSCode Adapter Architecture**
+
+- **Rule**: Extension packages are **pure VSCode adapters** that wrap core package functionality for VSCode consumption
+- **Rationale**:
+    - Extension packages should **NOT duplicate or replace** core business logic
+    - Extension packages provide **VSCode-specific integration** through local adapters
+    - This enables **orchestrator extension** to consume core packages directly without VSCode dependencies
+- **Implementation**:
+    - Extension packages depend on core packages and provide VSCode adapters
+    - Extension packages handle VSCode-specific concerns (activation, commands, UI integration)
+    - Extension packages may copy or reference core-generated assets for VSCode packaging
+    - **NO business logic duplication** - all business logic remains in core packages
+
 ### **Guinea Pig Package Architecture**
 
 - **Rule**: Core packages must be self-contained without shared dependencies
@@ -189,6 +216,7 @@ Is the package intended to be a VS Code extension?
 
 ### **Comprehensive Testing Architecture**
 
+- **Authority**: The `docs/FocusedUX-Testing-Strategy.md` is the authoritative source for all testing dependencies and patterns
 - **Rule**:
     - **Core packages**: Test business logic in complete isolation without VSCode dependencies
     - **Extension packages**: Test VSCode integration through local adapters

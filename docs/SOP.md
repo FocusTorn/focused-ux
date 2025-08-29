@@ -438,6 +438,28 @@ export function activate(context: vscode.ExtensionContext): void {
 export function deactivate(): void {}
 ```
 
+## **Testing Strategy Alignment Workflow**
+
+### **Testing Strategy as Authority**
+
+- **Authority Document**: The `docs/FocusedUX-Testing-Strategy.md` is the authoritative source for all testing dependencies and patterns
+- **Alignment Process**: When aligning packages, reference the testing strategy document rather than comparing packages
+- **Documentation-First**: Check existing documentation before implementing solutions to prevent reinvention
+
+### **Testing Strategy Alignment Steps**
+
+1. **Reference Testing Strategy**: Check `docs/FocusedUX-Testing-Strategy.md` for required dependencies and patterns
+2. **Identify Missing Elements**: Compare package implementation against strategy document requirements
+3. **Update Implementation**: Add missing dependencies or configurations to align with strategy
+4. **Update Documentation**: Ensure strategy document is complete and current
+5. **Verify Alignment**: Run tests to confirm proper alignment
+
+### **Strategy Document Maintenance**
+
+- **Completeness**: Keep testing strategy documentation complete with all required dependencies
+- **Current State**: Update strategy document when new patterns or dependencies are identified
+- **Authority**: Use strategy document as single source of truth for all testing implementations
+
 ## **Testing Patterns**
 
 ### **Core Package Testing**
