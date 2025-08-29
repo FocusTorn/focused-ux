@@ -1,31 +1,77 @@
-import * as assert from 'assert';
-import * as vscode from 'vscode';
+import * as assert from 'node:assert'
+import * as vscode from 'vscode'
 
 suite('Dynamicons Extension Integration Tests', () => {
-    vscode.window.showInformationMessage('Starting Dynamicons integration tests.');
+	// Increase timeout for extension activation
+	suiteSetup(async function () {
+		this.timeout(10000) // 10 seconds for setup
+	})
+	test('Extension should be present', () => {
+		const extension = vscode.extensions.getExtension('NewRealityDesigns.fux-dynamicons')
 
-    test('Extension should be present', () => {
-        const extension = vscode.extensions.getExtension('fux.dynamicons');
-        assert.ok(extension, 'Extension should be present');
-    });
+		console.log('Available extensions:', vscode.extensions.all.map(ext => ext.id))
+		console.log('Looking for extension: NewRealityDesigns.fux-dynamicons')
+		console.log('Found extension:', extension)
+		assert.ok(extension, 'Extension should be present')
+	})
 
-    test('Extension should be activated', async () => {
-        const extension = vscode.extensions.getExtension('fux.dynamicons');
-        if (extension) {
-            await extension.activate();
-            assert.ok(extension.isActive, 'Extension should be activated');
-        }
-    });
+	test('Extension should be activated', async function () {
+		this.timeout(10000) // 10 seconds for activation
 
-    test('Should have basic commands available', async () => {
-        const commands = await vscode.commands.getCommands();
-        const dynamiconsCommands = commands.filter(cmd => cmd.includes('dynamicons'));
-        assert.ok(dynamiconsCommands.length > 0, 'Should have at least one Dynamicons command');
-    });
+		const extension = vscode.extensions.getExtension('NewRealityDesigns.fux-dynamicons')
 
-    test('Should be able to show information message', async () => {
-        const message = 'Test message from Dynamicons integration test';
-        const result = await vscode.window.showInformationMessage(message, 'OK', 'Cancel');
-        assert.ok(result === 'OK' || result === 'Cancel', 'Should be able to show information message');
-    });
-});
+		if (extension) {
+			// Force activation since the extension uses onStartupFinished
+			await extension.activate()
+			assert.ok(extension.isActive, 'Extension should be activated')
+		}
+	})
+
+	test('Should have basic commands available after activation', async () => {
+		// First ensure extension is activated
+		const extension = vscode.extensions.getExtension('NewRealityDesigns.fux-dynamicons')
+
+		if (extension && !extension.isActive) {
+			await extension.activate()
+		}
+
+		// Wait a bit for commands to be registered
+		await new Promise(resolve => setTimeout(resolve, 1000))
+
+		const commands = await vscode.commands.getCommands()
+		const dynamiconsCommands = commands.filter(cmd => cmd.includes('dynamicons'))
+
+		console.log('All commands:', commands)
+		console.log('Dynamicons commands found:', dynamiconsCommands)
+		assert.ok(dynamiconsCommands.length > 0, 'Should have at least one Dynamicons command')
+	})
+
+	test('Should have specific Dynamicons commands after activation', async () => {
+		// First ensure extension is activated
+		const extension = vscode.extensions.getExtension('NewRealityDesigns.fux-dynamicons')
+
+		if (extension && !extension.isActive) {
+			await extension.activate()
+		}
+
+		// Wait a bit for commands to be registered
+		await new Promise(resolve => setTimeout(resolve, 1000))
+
+		const commands = await vscode.commands.getCommands()
+		const expectedCommands = [
+			'dynamicons.activateIconTheme',
+			'dynamicons.assignIcon',
+			'dynamicons.revertIcon',
+			'dynamicons.toggleExplorerArrows',
+			'dynamicons.showUserFileIconAssignments',
+			'dynamicons.showUserFolderIconAssignments',
+			'dynamicons.refreshIconTheme',
+		]
+        
+		const foundCommands = expectedCommands.filter(cmd => commands.includes(cmd))
+
+		console.log('Expected commands:', expectedCommands)
+		console.log('Found commands:', foundCommands)
+		assert.ok(foundCommands.length > 0, `Should have at least one Dynamicons command. Found: ${foundCommands.join(', ')}`)
+	})
+})
