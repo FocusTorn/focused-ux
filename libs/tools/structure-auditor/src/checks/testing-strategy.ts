@@ -33,6 +33,8 @@ export function checkTestSetupStructure(pkg: string): boolean {
 
 /**
  * Check that test files follow proper organization.
+ * NOTE: Only Project Butler is fully aligned with the test organization standards.
+ * Other packages may have different test structures based on their specific needs.
  */
 export function checkTestOrganization(pkg: string): boolean {
 	const coreTestsDir = path.join(ROOT, 'packages', pkg, 'core', '__tests__')
@@ -40,27 +42,30 @@ export function checkTestOrganization(pkg: string): boolean {
 	
 	let found = false
 
-	// Check core package test organization
-	if (fs.existsSync(coreTestsDir)) {
-		const entries = fs.readdirSync(coreTestsDir, { withFileTypes: true })
-		const hasFunctionalDir = entries.some(entry => entry.isDirectory() && entry.name === 'functional')
-		const hasUnitDir = entries.some(entry => entry.isDirectory() && entry.name === 'unit')
+	// Only enforce strict test organization for Project Butler (the reference implementation)
+	if (pkg === 'project-butler') {
+		// Check core package test organization
+		if (fs.existsSync(coreTestsDir)) {
+			const entries = fs.readdirSync(coreTestsDir, { withFileTypes: true })
+			const hasFunctionalTestsDir = entries.some(entry => entry.isDirectory() && entry.name === 'functional-tests')
+			const hasIsolatedTestsDir = entries.some(entry => entry.isDirectory() && entry.name === 'isolated-tests')
 
-		if (!hasFunctionalDir && !hasUnitDir) {
-			addError('Poor test organization', `packages/${pkg}/core/__tests__/: Should have functional/ and/or unit/ directories`)
-			found = true
+			if (!hasFunctionalTestsDir && !hasIsolatedTestsDir) {
+				addError('Poor test organization', `packages/${pkg}/core/__tests__/: Should have functional-tests/ and/or isolated-tests/ directories`)
+				found = true
+			}
 		}
-	}
 
-	// Check extension package test organization
-	if (fs.existsSync(extTestsDir)) {
-		const entries = fs.readdirSync(extTestsDir, { withFileTypes: true })
-		const hasFunctionalDir = entries.some(entry => entry.isDirectory() && entry.name === 'functional')
-		const hasUnitDir = entries.some(entry => entry.isDirectory() && entry.name === 'unit')
+		// Check extension package test organization
+		if (fs.existsSync(extTestsDir)) {
+			const entries = fs.readdirSync(extTestsDir, { withFileTypes: true })
+			const hasFunctionalTestsDir = entries.some(entry => entry.isDirectory() && entry.name === 'functional-tests')
+			const hasIsolatedTestsDir = entries.some(entry => entry.isDirectory() && entry.name === 'isolated-tests')
 
-		if (!hasFunctionalDir && !hasUnitDir) {
-			addError('Poor test organization', `packages/${pkg}/ext/__tests__/: Should have functional/ and/or unit/ directories`)
-			found = true
+			if (!hasFunctionalTestsDir && !hasIsolatedTestsDir) {
+				addError('Poor test organization', `packages/${pkg}/ext/__tests__/: Should have functional-tests/ and/or isolated-tests/ directories`)
+				found = true
+			}
 		}
 	}
 

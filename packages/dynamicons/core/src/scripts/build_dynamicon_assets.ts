@@ -135,16 +135,20 @@ async function run(): Promise<void> { //>
 	stepCounter++
 
 	// Check for any icons to process for optimization/previews
-	let internalIcons: string[] = []
+	let hasIconsToProcess = false
 
 	try {
-		internalIcons = await fs.readdir(INTERNAL_ICONS_DEST_DIR) as string[]
+		const fileIconsDir = path.join(INTERNAL_ICONS_DEST_DIR, 'file_icons')
+		const folderIconsDir = path.join(INTERNAL_ICONS_DEST_DIR, 'folder_icons')
+		
+		const fileIcons = await fs.readdir(fileIconsDir) as string[]
+		const folderIcons = await fs.readdir(folderIconsDir) as string[]
+		
+		hasIconsToProcess = fileIcons.some(file => file.endsWith('.svg')) || folderIcons.some(file => file.endsWith('.svg'))
 	}
 	catch (_e) {
-		internalIcons = []
+		hasIconsToProcess = false
 	}
-
-	const hasIconsToProcess = internalIcons.some(file => file.endsWith('.svg'))
 
 	// --- Step 2: Optimize Icons & Generate Previews (if icons exist) ---
 	if (hasIconsToProcess) {
@@ -203,7 +207,7 @@ async function run(): Promise<void> { //>
 	// --- Step 3: Generate Icon Manifests (always run) ---
 	console.log(`\n${ansii.blueLight}[Step ${stepCounter++}: Generating Icon Manifests...]${ansii.none}`)
 
-	const manifestsSuccess = await generateManifestsMain(true)
+	const manifestsSuccess = await generateManifestsMain(false)
 
 	if (manifestsSuccess) {
 		console.log(`  ${ansii.green}✓ Icon manifests generated successfully.${ansii.none}`)

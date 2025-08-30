@@ -36,6 +36,11 @@ export function checkNoDynamicImports(pkg: string): boolean {
 			const content = fs.readFileSync(full, 'utf-8')
 			const lines = content.split('\n')
 
+			// Skip integration test files - they are allowed to use dynamic imports for VSCode testing
+			if (full.includes('/integration-tests/') || entry.name === 'runTest.ts') {
+				continue
+			}
+
 			// Check for dynamic imports
 			const dynamicImportPatterns = [
 				/import\s*\(/,
@@ -108,7 +113,9 @@ export function checkNoVSCodeValueImports(pkg: string): boolean {
 			  || entry.name.endsWith('.test.ts')
 			  || entry.name.endsWith('.spec.ts')
 			  || entry.name === 'helpers.ts'
-			  || entry.name === '_setup.ts') {
+			  || entry.name === '_setup.ts'
+			  || entry.name === 'runTest.ts'
+			  || full.includes('/integration-tests/')) {
 				continue
 			}
 

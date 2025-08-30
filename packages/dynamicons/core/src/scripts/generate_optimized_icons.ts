@@ -26,18 +26,18 @@ import process from 'node:process'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-const KEEP_ORIGINAL_FILES = false
+const KEEP_ORIGINAL_FILES = true
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const MONOREPO_ROOT = path.resolve(__dirname, '../../../../../')
 // const SOURCE_ROOT = path.resolve(MONOREPO_ROOT, '..')
-const SOURCE_ROOT = path.resolve(MONOREPO_ROOT, 'packages/dynamicons/core/src')
+const SOURCE_ROOT = path.resolve(MONOREPO_ROOT, 'packages/dynamicons/core')
 const SOURCE_ICONS_DIR_NAME = 'assets/icons'
 const SOURCE_ICONS_DIR_ABS = path.join(SOURCE_ROOT, SOURCE_ICONS_DIR_NAME)
 
-const ASSETS_DIR_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/core/dist/assets')
+const ASSETS_DIR_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/core/assets')
 const FILE_ICONS_OUTPUT_DIR_ABS = path.join(ASSETS_DIR_ABS, 'icons/file_icons')
 const FOLDER_ICONS_OUTPUT_DIR_ABS = path.join(ASSETS_DIR_ABS, 'icons/folder_icons')
 
@@ -272,25 +272,12 @@ export async function main( //>
 	if (!silent) {
 		console.log(`\n┌─ ${ansii.bold}${ansii.blueLight}OPTIMIZE ICONS (${iconType.toUpperCase()})${ansii.none}`)
 		console.log(
-			`├─── ${ansii.gold}Cleaning Source Directory (${path.relative(MONOREPO_ROOT, SOURCE_ICONS_DIR_ABS)})${ansii.none}`,
+			`├─── ${ansii.gold}Processing Source Icons (${path.relative(MONOREPO_ROOT, SOURCE_ICONS_DIR_ABS)})${ansii.none}`,
 		)
 	}
 
-	const removedCounts = await removeUnwantedFilesFromSource(SOURCE_ICONS_DIR_ABS, silent)
-
-	if (!silent) {
-		const totalRemoved = removedCounts.artboardFilesRemoved + removedCounts.pngFilesRemoved
-
-		if (totalRemoved > 0) {
-			if (removedCounts.artboardFilesRemoved > 0)
-				console.log(`│    └── ${removedCounts.artboardFilesRemoved} Artboard SVG files removed from source.`)
-			if (removedCounts.pngFilesRemoved > 0)
-				console.log(`│    └── ${removedCounts.pngFilesRemoved} PNG files removed from source.`)
-		}
-		else {
-			console.log(`│    └── No unwanted Artboard SVGs or PNGs found in source to remove.`)
-		}
-	}
+	// Source directories are static - no cleanup needed
+	const removedCounts = { artboardFilesRemoved: 0, pngFilesRemoved: 0 }
 
 	// Explicitly type the 'details' property
 	let fileResults: { count: number, details: OptimizationDetail[], attempted: boolean, foundAnySvgs: boolean } = {
@@ -306,10 +293,13 @@ export async function main( //>
 		foundAnySvgs: false,
 	}
 
+	const FILE_ICONS_SOURCE_DIR_ABS = path.join(SOURCE_ICONS_DIR_ABS, 'file_icons')
+	const FOLDER_ICONS_SOURCE_DIR_ABS = path.join(SOURCE_ICONS_DIR_ABS, 'folder_icons')
+
 	if (iconType === 'all' || iconType === 'file') {
 		if (!silent)
 			console.log(`├─── ${ansii.gold}Optimizing File Icons${ansii.none}`)
-		fileResults = await optimizeIconsInDirectory(SOURCE_ICONS_DIR_ABS, FILE_ICONS_OUTPUT_DIR_ABS, 'file', KEEP_ORIGINAL_FILES, iconType, silent)
+		fileResults = await optimizeIconsInDirectory(FILE_ICONS_SOURCE_DIR_ABS, FILE_ICONS_OUTPUT_DIR_ABS, 'file', KEEP_ORIGINAL_FILES, iconType, silent)
 	}
 
 	if (iconType === 'all' || iconType === 'folder') {
@@ -318,7 +308,7 @@ export async function main( //>
 
 			console.log(`${targetHeader} ${ansii.gold}Optimizing Folder Icons${ansii.none}`)
 		}
-		folderResults = await optimizeIconsInDirectory(SOURCE_ICONS_DIR_ABS, FOLDER_ICONS_OUTPUT_DIR_ABS, 'folder', KEEP_ORIGINAL_FILES, iconType, silent)
+		folderResults = await optimizeIconsInDirectory(FOLDER_ICONS_SOURCE_DIR_ABS, FOLDER_ICONS_OUTPUT_DIR_ABS, 'folder', KEEP_ORIGINAL_FILES, iconType, silent)
 	}
 
 	if (!silent) {

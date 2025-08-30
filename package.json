@@ -55,7 +55,6 @@
         "ts-node": "^10.9.2",
         "tslib": "^2.8.1",
         "typescript": "^5.8.3",
-        "verdaccio": "^6.0.5",
         "vite": "^6.0.0",
         "vite-tsconfig-paths": "^5.1.4",
         "vitest": "^3.2.4"
@@ -68,17 +67,7 @@
         "libs/*"
     ],
     "nx": {
-        "includedScripts": [],
-        "targets": {
-            "local-registry": {
-                "executor": "@nx/js:verdaccio",
-                "options": {
-                    "port": 4873,
-                    "config": ".verdaccio/config.yml",
-                    "storage": "tmp/local-registry/storage"
-                }
-            }
-        }
+        "includedScripts": []
     },
     "pnpm": {
         "overrides": {

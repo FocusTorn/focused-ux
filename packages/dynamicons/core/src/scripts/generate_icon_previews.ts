@@ -52,7 +52,7 @@ const __dirname = path.dirname(__filename)
 
 const MONOREPO_ROOT = path.resolve(__dirname, '../../../../../')
 const CORE_PACKAGE_ROOT_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/core')
-const CORE_ASSETS_DIR_ABS = path.join(CORE_PACKAGE_ROOT_ABS, 'dist/assets')
+const CORE_ASSETS_DIR_ABS = path.join(CORE_PACKAGE_ROOT_ABS, 'assets')
 const FILE_ICONS_SVG_DIR_ABS = path.join(CORE_ASSETS_DIR_ABS, 'icons/file_icons')
 const FOLDER_ICONS_SVG_DIR_ABS = path.join(CORE_ASSETS_DIR_ABS, 'icons/folder_icons')
 const PNG_TEMP_ROOT_DIR_ABS = path.join(CORE_PACKAGE_ROOT_ABS, 'dist/temp_previews') // Changed from 'packages/assets'

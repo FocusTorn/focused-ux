@@ -53,5 +53,17 @@
         { "name": "vscode", "folderNames": [".vscode"] },
         { "name": "webpack", "folderNames": [".devcontainer"] },
         { "name": "yarn", "folderNames": [".yarn"] }
+    ],
+    "orphans": [
+        
+        "action-arrows",
+        "component",
+        "core",
+        "dict",
+        "klipper",
+        // "luggage",
+        "pypack",
+        "pyproj",
+        "share"
     ]
 }

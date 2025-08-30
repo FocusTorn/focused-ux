@@ -2,6 +2,34 @@
 
 All notable changes to the Dynamicons core package will be documented in this file.
 
+## [2025-08-30] - Deep-Dive Audit and Asset Pipeline Refinement
+
+### Fixed
+
+- **Cross-contamination in orphan detection**: Resolved issue where file and folder icon orphan detection was sharing state, causing false positives when icon names appeared in both orphans arrays
+- **Orphan detection accuracy**: Fixed orphan detection to properly respect commented entries in model files without interference from other orphan arrays
+- **Asset path inconsistencies**: Corrected asset generation paths to ensure all assets are generated to `core/assets` directory
+- **Console output readability**: Improved asset generation status messages for better user experience and debugging
+
+### Changed
+
+- **Orphan detection architecture**: Refactored orphan detection into separate functions (`checkOrphanedFileIcons` and `checkOrphanedFolderIcons`) with distinct orphan arrays
+- **State management**: Changed from shared Set-based to separate array-based orphan processing to ensure proper isolation
+- **Asset generation workflow**: Enhanced all asset generation scripts with improved error handling and status verification
+- **Console output format**: Streamlined asset generation status messages for cleaner, more readable output
+- **Naming conventions**: Aligned folder icon naming conventions with assignment array patterns for consistent orphan detection
+
+### Technical Improvements
+
+- **Separation of concerns**: Implemented proper separation between file and folder icon processing to prevent state contamination
+- **Debug output enhancement**: Added systematic debug output to trace data flow and identify state contamination issues
+- **Code maintainability**: Improved asset pipeline reliability and maintainability through better state isolation
+- **Error handling**: Enhanced build failure detection and status verification throughout asset generation pipeline
+- **User experience**: Improved console output readability and debugging effectiveness
+- **Architectural alignment**: Ensured asset pipeline follows core package self-sufficiency principles
+
+---
+
 ## [2025-08-22] - TypeScript Configuration and Build System Improvements
 
 ### Added

@@ -54,6 +54,7 @@ const ansii = { //>
 	gold: '\x1B[38;5;179m',
 	red: '\x1B[38;5;9m',
 	yellow: '\x1B[38;5;226m',
+	green: '\x1B[38;5;35m',
 } //<
 
 const __filename = fileURLToPath(import.meta.url)
@@ -62,7 +63,7 @@ const __dirname = path.dirname(__filename)
 const MONOREPO_ROOT = path.resolve(__dirname, '../../../../../')
 const FILE_ICONS_MODEL_PATH = path.resolve(__dirname, '../models/file_icons.model.json')
 const FOLDER_ICONS_MODEL_PATH = path.resolve(__dirname, '../models/folder_icons.model.json')
-const CORE_ASSETS_DIR_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/core/dist/assets')
+const CORE_ASSETS_DIR_ABS = path.join(MONOREPO_ROOT, 'packages/dynamicons/core/assets')
 const OPTIMIZED_ICONS_ROOT_DIR_ABS_POSIX = path.join(CORE_ASSETS_DIR_ABS, 'icons').replace(/\\/g, '/')
 const OPTIMIZED_FILE_ICONS_DIR_ABS_POSIX = path.join(OPTIMIZED_ICONS_ROOT_DIR_ABS_POSIX, 'file_icons').replace(/\\/g, '/')
 const OPTIMIZED_FOLDER_ICONS_DIR_ABS_POSIX = path.join(OPTIMIZED_ICONS_ROOT_DIR_ABS_POSIX, 'folder_icons').replace(/\\/g, '/')
@@ -82,11 +83,13 @@ interface IconDefinition { //>
 interface FileIconsModel { //>
 	file: { name: string }
 	icons: IconEntry[]
+	orphans?: string[]
 } //<
 interface FolderIconsModel { //>
 	folder: { name: string }
 	rootFolder: { name: string }
 	icons: IconEntry[]
+	orphans?: string[]
 } //<
 interface IconEntry { //>
 	name: string
@@ -304,31 +307,92 @@ function transformIcons( //>
 	}
 
 	if (!silent) {
-		let reportedAnyDuplicates = false
-
 		if (duplicateFileIconNames.size > 0) {
-			console.log(`│  ├─ ${ansii.red}WARNING:${ansii.none} Duplicated File icon model names (skipped after first):`)
+			console.log(`\n    ${ansii.red}WARNING:${ansii.none} Duplicated File icon model names (skipped after first):`)
 			Array.from(duplicateFileIconNames).forEach((name, index, array) => {
-				console.log(`${index === array.length - 1 ? '│  │  └─ ' : '│  │  ├─ '}${name}`)
+				console.log(`${index === array.length - 1 ? '    └─ ' : '    ├─ '}${name}`)
 			})
-			reportedAnyDuplicates = true
 		}
 		if (duplicateFolderIconNames.size > 0) {
-			const headerPrefix = reportedAnyDuplicates ? '│  └─ ' : '│  ├─ '
-
-			console.log(`${headerPrefix}${ansii.red}WARNING:${ansii.none} Duplicated Folder icon model names (skipped after first):`)
+			console.log(`\n    ${ansii.red}WARNING:${ansii.none} Duplicated Folder icon model names (skipped after first):`)
 			Array.from(duplicateFolderIconNames).forEach((name, index, array) => {
-				const listPrefix = reportedAnyDuplicates ? '│     ' : '│  │  '
-
-				console.log(`${listPrefix}${index === array.length - 1 ? '└─ ' : '├─ '}${name}`)
+				console.log(`${index === array.length - 1 ? '    └─ ' : '    ├─ '}${name}`)
 			})
-			reportedAnyDuplicates = true
 		}
-		if (reportedAnyDuplicates)
-			console.log('│')
 	}
 
 	return result
+} //<
+
+function checkOrphanedFileIcons( //>
+	modelIconNames: Set<string>,
+	knownOrphanNames: string[],
+	iconsDirPath: string,
+): string[] {
+	const orphanedIcons: string[] = []
+
+	if (!fs.existsSync(iconsDirPath.replace(/\//g, path.sep))) {
+		return orphanedIcons
+	}
+
+	const assetFiles = fs.readdirSync(iconsDirPath.replace(/\//g, path.sep))
+
+	for (const assetFile of assetFiles) {
+		if (!assetFile.endsWith('.svg'))
+			continue
+		if (assetFile.endsWith('-alt.svg'))
+			continue // Ignore alternate icons
+
+		const baseName = assetFile.replace(/\.svg$/, '')
+
+		// Debug output for dict.svg
+		if (assetFile === 'dict.svg') {
+			console.log(`DEBUG: dict.svg - baseName: ${baseName}, in models: ${modelIconNames.has(baseName)}, in orphans: ${knownOrphanNames.includes(baseName)}`)
+		}
+
+		// Only warn about icons that are not in models AND not in known orphans
+		if (!modelIconNames.has(baseName) && !knownOrphanNames.includes(baseName)) {
+			const orphanPath = path.join(path.basename(iconsDirPath), assetFile)
+
+			orphanedIcons.push(orphanPath)
+		}
+	}
+
+	return orphanedIcons
+} //<
+
+function checkOrphanedFolderIcons( //>
+	modelIconNames: Set<string>,
+	knownOrphanNames: string[],
+	iconsDirPath: string,
+): string[] {
+	const orphanedIcons: string[] = []
+
+	if (!fs.existsSync(iconsDirPath.replace(/\//g, path.sep))) {
+		return orphanedIcons
+	}
+
+	const assetFiles = fs.readdirSync(iconsDirPath.replace(/\//g, path.sep))
+
+	for (const assetFile of assetFiles) {
+		if (!assetFile.endsWith('.svg'))
+			continue
+		if (assetFile.endsWith('-alt.svg'))
+			continue // Ignore alternate icons
+
+		let baseName = assetFile.replace(/\.svg$/, '')
+
+		baseName = baseName.replace(/^folder-/, '').replace(/-open$/, '')
+
+		// Only warn about icons that are not in models AND not in known orphans
+		if (!modelIconNames.has(baseName) && !knownOrphanNames.includes(baseName)) {
+			const orphanPath = path.join(path.basename(iconsDirPath), assetFile)
+
+			orphanedIcons.push(orphanPath)
+		}
+	}
+
+	return orphanedIcons
 } //<
 
 function checkForOrphanedIcons( //>
@@ -355,50 +419,31 @@ function checkForOrphanedIcons( //>
 	if (folderIconsModel.rootFolder.name)
 		modelIconNames.add(folderIconsModel.rootFolder.name)
 
-	const orphanedIcons: string[] = []
-	const iconDirs = [
-		{ path: OPTIMIZED_FILE_ICONS_DIR_ABS_POSIX, type: 'file' as const },
-		{ path: OPTIMIZED_FOLDER_ICONS_DIR_ABS_POSIX, type: 'folder' as const },
-	]
+	// Generate orphan warnings using separate functions for each concern
+	const orphanedFileIcons = checkOrphanedFileIcons(modelIconNames, fileIconsModel.orphans || [], OPTIMIZED_FILE_ICONS_DIR_ABS_POSIX)
+	const orphanedFolderIcons = checkOrphanedFolderIcons(modelIconNames, folderIconsModel.orphans || [], OPTIMIZED_FOLDER_ICONS_DIR_ABS_POSIX)
 
-	for (const dirInfo of iconDirs) {
-		if (!fs.existsSync(dirInfo.path.replace(/\//g, path.sep))) {
-			continue
-		}
-
-		const assetFiles = fs.readdirSync(dirInfo.path.replace(/\//g, path.sep))
-
-		for (const assetFile of assetFiles) {
-			if (!assetFile.endsWith('.svg'))
-				continue
-			if (assetFile.endsWith('-alt.svg'))
-				continue // Ignore alternate icons
-
-			let baseName = assetFile.replace(/\.svg$/, '')
-
-			if (dirInfo.type === 'folder') {
-				baseName = baseName.replace(/^folder-/, '').replace(/-open$/, '')
-			}
-
-			if (!modelIconNames.has(baseName)) {
-				orphanedIcons.push(path.join(path.basename(dirInfo.path), assetFile))
-			}
-		}
+	// Report file icon orphans separately
+	if (orphanedFileIcons.length > 0 && !silent) {
+		console.log(`\n    ${ansii.red}WARNING:${ansii.none} Found ${orphanedFileIcons.length} orphaned file icon(s) in assets not defined in any model:`)
+		orphanedFileIcons.forEach((orphan, index, array) => {
+			console.log(`${index === array.length - 1 ? '    └─ ' : '    ├─ '}${orphan}`)
+		})
 	}
 
-	if (orphanedIcons.length > 0 && !silent) {
-		console.log(`│  ├─ ${ansii.red}WARNING:${ansii.none} Found ${orphanedIcons.length} orphaned icon(s) in assets not defined in any model:`)
-		orphanedIcons.forEach((orphan, index, array) => {
-			console.log(`${index === array.length - 1 ? '│  │  └─ ' : '│  │  ├─ '}${orphan}`)
+	// Report folder icon orphans separately
+	if (orphanedFolderIcons.length > 0 && !silent) {
+		console.log(`\n    ${ansii.red}WARNING:${ansii.none} Found ${orphanedFolderIcons.length} orphaned folder icon(s) in assets not defined in any model:`)
+		orphanedFolderIcons.forEach((orphan, index, array) => {
+			console.log(`${index === array.length - 1 ? '    └─ ' : '    ├─ '}${orphan}`)
 		})
-		console.log('│')
 	}
 } //<
 
 export async function main(silent: boolean = false): Promise<boolean> { //>
 	if (!silent) {
 		console.log(
-			`\n┌─ ${ansii.bold}${ansii.blueLight}GENERATING ICON MANIFESTS FOR ${dynamiconsConstants.featureName.toUpperCase()}${ansii.none}`,
+			`\n${ansii.bold}${ansii.blueLight}GENERATING ICON MANIFESTS FOR ${dynamiconsConstants.featureName.toUpperCase()}${ansii.none}`,
 		)
 	}
 
@@ -422,7 +467,15 @@ export async function main(silent: boolean = false): Promise<boolean> { //>
 		}
 	}
 
-	for (const file of [BASE_THEME_FILE_ABS, OUTPUT_THEME_FILE_ABS]) {
+	// Step 1: Delete existing theme files and verify deletion
+	if (!silent) {
+		console.log(`\n    ${ansii.gold}Deleting existing theme files...${ansii.none}`)
+	}
+
+	let deletionSuccess = true
+	const filesToDelete = [BASE_THEME_FILE_ABS, OUTPUT_THEME_FILE_ABS]
+
+	for (const file of filesToDelete) {
 		const platformSpecificFile = file.replace(/\//g, path.sep)
 
 		if (fs.existsSync(platformSpecificFile)) {
@@ -430,15 +483,43 @@ export async function main(silent: boolean = false): Promise<boolean> { //>
 				fs.unlinkSync(platformSpecificFile)
 			}
 			catch (e) {
+				deletionSuccess = false
 				if (!silent) {
-					console.warn(
-						`│  ├─ ${ansii.yellow}WARN:${ansii.none} Could not delete existing file '${path.basename(
+					console.error(
+						`│  │  └─ ${ansii.red}ERROR:${ansii.none} Could not delete existing file '${path.basename(
 							platformSpecificFile,
 						)}'. Error: ${(e as Error).message}`,
 					)
 				}
 			}
 		}
+	}
+
+	// Verify deletion was successful
+	for (const file of filesToDelete) {
+		const platformSpecificFile = file.replace(/\//g, path.sep)
+
+		if (fs.existsSync(platformSpecificFile)) {
+			deletionSuccess = false
+			if (!silent) {
+				console.error(
+					`│  │  └─ ${ansii.red}ERROR:${ansii.none} File still exists after deletion attempt: ${path.basename(
+						platformSpecificFile,
+					)}`,
+				)
+			}
+		}
+	}
+
+	if (!deletionSuccess) {
+		if (!silent) {
+			console.error(`│  └─ ${ansii.red}ERROR:${ansii.none} Theme file deletion failed. Stopping build.`)
+		}
+		return false
+	}
+
+	if (!silent) {
+		console.log(`    └─ ${ansii.green}Success:${ansii.none} Existing theme files deleted and verified.`)
 	}
 
 	let fileIconsData: FileIconsModel
@@ -459,38 +540,66 @@ export async function main(silent: boolean = false): Promise<boolean> { //>
 
 	const combinedIconsData = transformIcons(fileIconsData, folderIconsData, silent)
 
+	// Step 2: Generate theme files and verify creation
+	if (!silent) {
+		console.log(`\n    ${ansii.gold}Generating theme files...${ansii.none}`)
+	}
+
+	let generationSuccess = true
+
 	try {
 		fs.writeFileSync(BASE_THEME_FILE_ABS.replace(/\//g, path.sep), `${JSON.stringify(combinedIconsData, null, 4)}\n`)
-		if (!silent) {
-			console.log(
-				`│  ├─ ${ansii.gold}Generated Manifest:${ansii.none} ${path.relative(MONOREPO_ROOT, BASE_THEME_FILE_ABS)}`,
-			)
-		}
 	}
 	catch (e) {
+		generationSuccess = false
 		if (!silent) {
-			console.error(`│  └─ ${ansii.red}ERROR:${ansii.none} Could not write ${path.basename(BASE_THEME_FILE_ABS)}: ${(e as Error).message}`)
+			console.error(`│  │  └─ ${ansii.red}ERROR:${ansii.none} Could not write ${path.basename(BASE_THEME_FILE_ABS)}: ${(e as Error).message}`)
 		}
-		return false
 	}
 
 	try {
 		fs.writeFileSync(OUTPUT_THEME_FILE_ABS.replace(/\//g, path.sep), `${JSON.stringify(combinedIconsData, null, 4)}\n`)
-		if (!silent) {
-			console.log(
-				`│  └─ ${ansii.gold}Generated Manifest:${ansii.none} ${path.relative(MONOREPO_ROOT, OUTPUT_THEME_FILE_ABS)}`,
-			)
-		}
 	}
 	catch (e) {
+		generationSuccess = false
 		if (!silent) {
-			console.error(`│  └─ ${ansii.red}ERROR:${ansii.none} Could not write ${path.basename(OUTPUT_THEME_FILE_ABS)}: ${(e as Error).message}`)
+			console.error(`│  │  └─ ${ansii.red}ERROR:${ansii.none} Could not write ${path.basename(OUTPUT_THEME_FILE_ABS)}: ${(e as Error).message}`)
+		}
+	}
+
+	// Verify generation was successful
+	const filesToVerify = [BASE_THEME_FILE_ABS, OUTPUT_THEME_FILE_ABS]
+
+	for (const file of filesToVerify) {
+		const platformSpecificFile = file.replace(/\//g, path.sep)
+
+		if (!fs.existsSync(platformSpecificFile)) {
+			generationSuccess = false
+			if (!silent) {
+				console.error(
+					`│  │  └─ ${ansii.red}ERROR:${ansii.none} Generated file not found: ${path.basename(
+						platformSpecificFile,
+					)}`,
+				)
+			}
+		}
+	}
+
+	if (!generationSuccess) {
+		if (!silent) {
+			console.error(`│  └─ ${ansii.red}ERROR:${ansii.none} Theme file generation failed. Stopping build.`)
 		}
 		return false
 	}
 
 	if (!silent) {
-		console.log(`└─ ${ansii.bold}${ansii.blueLight}MANIFEST GENERATION COMPLETE${ansii.none}\n`)
+		console.log(`    └─ ${ansii.green}Success:${ansii.none} Theme files generated and verified:`)
+		console.log(`       ├─ ${path.relative(MONOREPO_ROOT, BASE_THEME_FILE_ABS)}`)
+		console.log(`       └─ ${path.relative(MONOREPO_ROOT, OUTPUT_THEME_FILE_ABS)}`)
+	}
+
+	if (!silent) {
+		console.log(`\n`)
 	}
 	return true
 } //<
