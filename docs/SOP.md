@@ -6,17 +6,19 @@ This document outlines the **confirmed final architecture** for the FocusedUX mo
 
 ## **Command Execution Protocol**
 
-### **AKA Alias Mandate**
+### **PAE Alias Mandate**
 
-**CRITICAL RULE**: ALWAYS use `aka` aliases for all project operations.
+**CRITICAL RULE**: ALWAYS use PAE aliases for all project operations.
 
 #### **Pre-Execution Requirements**
+
 ```bash
 # ALWAYS run this first to discover available commands
-aka help
+pae help
 ```
 
 #### **Command Execution Patterns**
+
 ```bash
 # ❌ NEVER do this
 nx test @fux/package-name-core
@@ -33,6 +35,7 @@ pnpm run build --filter=@fux/package-name
 ```
 
 #### **Package-Specific Aliases**
+
 - **Dynamicons**: `dc`, `dcc`, `dce`
 - **Ghost Writer**: `gw`, `gwc`, `gwe`
 - **Project Butler**: `pb`, `pbc`, `pbe`
@@ -40,6 +43,7 @@ pnpm run build --filter=@fux/package-name
 - **Context Cherry Picker**: `ccp`, `ccpc`, `ccpe`
 
 #### **Target Aliases**
+
 - **Build**: `b`
 - **Test**: `t`, `tc` (with coverage), `ti` (integration), `tf` (full)
 - **Package**: `p`, `pd` (dev)
@@ -48,7 +52,8 @@ pnpm run build --filter=@fux/package-name
 - **Audit**: `a`, `af` (full)
 
 #### **Verification Steps**
-- [ ] **AKA aliases discovered** via `aka help`
+
+- [ ] **PAE aliases discovered** via `pae help`
 - [ ] **Package-specific aliases identified** for target package
 - [ ] **Command patterns verified** before execution
 - [ ] **No raw nx commands used** unless explicitly required
@@ -56,12 +61,14 @@ pnpm run build --filter=@fux/package-name
 ### **Workspace Analysis Protocol**
 
 #### **Pre-Package Analysis Requirements**
+
 ```bash
 # ALWAYS understand workspace before focusing on specific packages
 nx_workspace
 ```
 
 #### **Workspace Mapping Checklist**
+
 - [ ] **All package dependencies** and relationships identified
 - [ ] **Package types** (core/ext/shared/tool) and roles understood
 - [ ] **Build configurations** and variations mapped

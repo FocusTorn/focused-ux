@@ -64,14 +64,6 @@ This document serves as the **source of truth** for package-specific variations,
 - **Entry Point**: Uses `extension.ts` as main entry point
 - **Rationale**: Project configuration management requires additional dependencies
 
-### **Ghost Writer Package**
-
-- **Dependencies**: Extension depends only on `@fux/ghost-writer-core`
-- **Externalization**: Externalizes only `["vscode"]`
-- **Testing**: Basic testing targets only
-- **Entry Point**: Uses `index.ts` as main entry point
-- **Rationale**: Simple extension with minimal dependencies
-
 ## **Package Type Classifications**
 
 ### **Core Packages** (`packages/{feature}/core/`)

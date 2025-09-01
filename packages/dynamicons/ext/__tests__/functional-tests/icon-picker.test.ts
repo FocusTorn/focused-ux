@@ -314,10 +314,7 @@ describe('Icon Picker Functional Tests', () => {
 
 			const result = await testIconPicker.showAvailableIconsQuickPick()
 
-			expect(mockIconDiscovery.getIconOptionsFromDirectory).toHaveBeenNthCalledWith(3,
-				'/test/user-icons',
-				'user',
-			)
+			expect(mockIconDiscovery.getIconOptionsFromDirectory).toHaveBeenNthCalledWith(3, '/test/user-icons', 'user')
 			expect(result).toBe('_user_custom-icon')
 		})
 

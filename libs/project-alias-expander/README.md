@@ -1,10 +1,10 @@
-# Project Alias Expander (PAX)
+# Project Alias Expander (PAE)
 
 A powerful, cross-platform CLI tool for expanding project aliases and running Nx commands with intelligent target resolution and flag expansion.
 
 ## Overview
 
-PAX (Project Alias Expander) is a global CLI tool that provides seamless project management for Nx workspaces. It transforms short aliases into full Nx project names and expands target shortcuts, making project operations faster and more intuitive.
+PAE (Project Alias Expander) is a global CLI tool that provides seamless project management for Nx workspaces. It transforms short aliases into full Nx project names and expands target shortcuts, making project operations faster and more intuitive.
 
 ## Features
 
@@ -41,11 +41,11 @@ npm install -g ./libs/project-alias-expander/dist
 
 ## Setting Up Shorthand Execution
 
-PAX supports two execution modes: direct shorthand execution (`pbc b`) and pax-prefixed execution (`pax pbc b`). To enable shorthand execution, you need to import the PowerShell module.
+PAE supports two execution modes: direct shorthand execution (`pbc b`) and pae-prefixed execution (`pae pbc b`). To enable shorthand execution, you need to import the PowerShell module.
 
 ### PowerShell Module Approach
 
-PAX now uses a **self-contained PowerShell module** approach that eliminates the need for manual script generation and installation.
+PAE now uses a **self-contained PowerShell module** approach that eliminates the need for manual script generation and installation.
 
 #### Automatic Module Generation
 
@@ -59,12 +59,14 @@ The PowerShell module (`pae-functions.psm1`) is automatically generated during t
 #### Importing the Module
 
 **Option 1: Import in current session**
+
 ```powershell
 Import-Module .\libs\project-alias-expander\dist\pae-functions.psm1
 ```
 
 **Option 2: Add to PowerShell profile (recommended)**
 Add this line to your PowerShell profile (`$PROFILE`):
+
 ```powershell
 Import-Module libs/project-alias-expander/dist/pae-functions.psm1
 ```
@@ -75,9 +77,10 @@ The PowerShell module is automatically regenerated in these scenarios:
 
 - **After building the package**: `nx build project-alias-expander` → Module regenerated
 - **After alias configuration changes**: When you modify `config.json` and rebuild
-- **After package updates**: When you update the PAX package
+- **After package updates**: When you update the PAE package
 
 **You do NOT need to manually regenerate it:**
+
 - The build process handles module generation automatically
 - Functions are immediately available after import
 - No manual script management required
@@ -87,41 +90,41 @@ The PowerShell module is automatically regenerated in these scenarios:
 ### Basic Syntax
 
 ```bash
-pax <alias> <target> [flags]
+pae <alias> <target> [flags]
 ```
 
 ### Execution Modes
 
-PAX supports two execution modes:
+PAE supports two execution modes:
 
 1. **Direct Execution**: `pbc b` (requires PowerShell functions - see "Setting Up Shorthand Execution")
-2. **Pax-Prefixed Execution**: `pax pbc b` (works everywhere)
+2. **Pae-Prefixed Execution**: `pae pbc b` (works everywhere)
 
 ### Examples
 
 ```bash
 # Build project-butler-core
-pax pbc b
+pae pbc b
 
 # Test with coverage
-pax pbc tc
+pae pbc tc
 
 # Lint with fix
-pax pbc l -f
+pae pbc l -f
 
 # Build all extension packages
-pax ext b
+pae ext b
 
 # Test all packages
-pax all t
+pae all t
 
 # Preview command without execution
-pax pbc b --pax-echo
+pae pbc b --pae-echo
 ```
 
 ## Configuration
 
-PAX uses a JSON configuration file located at `libs/project-alias-expander/config.json`. This file defines:
+PAE uses a JSON configuration file located at `libs/project-alias-expander/config.json`. This file defines:
 
 - **Package Aliases**: Short names for projects
 - **Target Shortcuts**: Abbreviated target names
@@ -148,7 +151,7 @@ PAX uses a JSON configuration file located at `libs/project-alias-expander/confi
     "expandables": {
         "f": "fix",
         "s": "skip-nx-cache",
-        "echo": "pax-echo"
+        "echo": "pae-echo"
     },
     "not-nx-targets": {
         "esv": "npx esbuild-visualizer --metadata"
@@ -237,7 +240,7 @@ PAX uses a JSON configuration file located at `libs/project-alias-expander/confi
 | ---------- | ----------------- | --------------------------------- |
 | `-f`       | `--fix`           | Auto-fix linting issues           |
 | `-s`       | `--skip-nx-cache` | Skip Nx cache                     |
-| `-echo`    | `--pax-echo`      | Preview command without execution |
+| `-echo`    | `--pae-echo`      | Preview command without execution |
 
 ### Combined Flags
 
@@ -245,10 +248,10 @@ You can combine multiple short flags:
 
 ```bash
 # Equivalent to: --fix --skip-nx-cache
-pax pbc l -fs
+pae pbc l -fs
 
 # Equivalent to: --skip-nx-cache --fix
-pax pbc l -sf
+pae pbc l -sf
 ```
 
 ## Not-Nx Targets
@@ -261,15 +264,15 @@ These are workspace-level commands that operate on project metadata:
 
 ## PowerShell Integration
 
-For seamless local development, PAX integrates with PowerShell profiles to provide direct alias execution.
+For seamless local development, PAE integrates with PowerShell profiles to provide direct alias execution.
 
 ### PowerShell Functions
 
 The following functions are automatically created in your PowerShell profile:
 
 ```powershell
-function pbc { [CmdletBinding()] param([Parameter(Position=0,ValueFromRemainingArguments=$true)][string[]]$Arguments) Invoke-PaxAlias -Alias 'pbc' -Args $Arguments }
-function pbe { [CmdletBinding()] param([Parameter(Position=0,ValueFromRemainingArguments=$true)][string[]]$Arguments) Invoke-PaxAlias -Alias 'pbe' -Args $Arguments }
+function pbc { [CmdletBinding()] param([Parameter(Position=0,ValueFromRemainingArguments=$true)][string[]]$Arguments) Invoke-PaeAlias -Alias 'pbc' -Args $Arguments }
+function pbe { [CmdletBinding()] param([Parameter(Position=0,ValueFromRemainingArguments=$true)][string[]]$Arguments) Invoke-PaeAlias -Alias 'pbe' -Args $Arguments }
 # ... and so on for all aliases
 ```
 
@@ -288,17 +291,17 @@ core l
 
 ### Performance Monitoring
 
-PAX includes built-in performance monitoring for test operations:
+PAE includes built-in performance monitoring for test operations:
 
 ```bash
 # Create performance baseline
-pax pbc t --performance-baseline
+pae pbc t --performance-baseline
 
 # Check performance against baseline
-pax pbc t --performance-check
+pae pbc t --performance-check
 
 # Validate performance metrics
-pax pbc t --performance-validate
+pae pbc t --performance-validate
 ```
 
 ### Echo Mode
@@ -307,22 +310,22 @@ Preview commands before execution:
 
 ```bash
 # Show what command would be executed
-pax pbc b --pax-echo
+pae pbc b --pae-echo
 # Output: NX_CALL -> build @fux/project-butler-core
 ```
 
 ### Integration Test Handling
 
-PAX automatically targets extension packages for integration tests:
+PAE automatically targets extension packages for integration tests:
 
 ```bash
 # Automatically targets @fux/project-butler-ext
-pax pb test:integration
+pae pb test:integration
 ```
 
 ### Auto-Injection Features
 
-PAX automatically injects helpful flags for certain operations:
+PAE automatically injects helpful flags for certain operations:
 
 - **Stream Output**: Auto-injects `--output-style=stream` for `test:full`, `validate:full`, and `lint:full`
 - **Sequential Execution**: Auto-injects `--parallel=false` for `validate:full`
@@ -341,7 +344,7 @@ PAX automatically injects helpful flags for certain operations:
 Use echo mode to debug command resolution:
 
 ```bash
-pax pbc b --pax-echo
+pae pbc b --pae-echo
 ```
 
 ## Development
@@ -405,27 +408,11 @@ libs/project-alias-expander/
 - **strip-json-comments**: Parse JSON with comments
 - **Node.js built-ins**: fs, path, process, child_process
 
-## Migration from AKA
-
-PAX is designed to replace the existing AKA tool. Key differences:
-
-1. **Global Installation**: PAX is installed globally, AKA was project-local
-2. **Cross-Platform**: PAX works on all platforms, AKA was PowerShell-dependent
-3. **Simplified Configuration**: Single config file vs. multiple sources
-4. **Enhanced Features**: Performance monitoring, better error handling
-
-### Migration Steps
-
-1. Install PAX globally
-2. Update PowerShell profile to use PAX functions
-3. Test all existing workflows
-4. Remove AKA dependencies when ready
-
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Command Not Found**: Ensure PAX is installed globally
+1. **Command Not Found**: Ensure PAE is installed globally
 2. **Config File Errors**: Verify `config.json` exists and is valid JSON
 3. **Permission Errors**: Run with appropriate permissions for global installation
 
@@ -433,10 +420,10 @@ PAX is designed to replace the existing AKA tool. Key differences:
 
 ```bash
 # Show help
-pax --help
+pae --help
 
 # Show available aliases
-pax help
+pae help
 ```
 
 ## Contributing

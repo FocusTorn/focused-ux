@@ -47,7 +47,7 @@
         
         "watch": "watch",
         "stream": "output-style=stream",
-        "echo": "pax-echo"
+        "echo": "pae-echo"
     },
     
     "packages": {
@@ -120,8 +120,9 @@
         "shared": "@fux/shared",
         "audit": "@fux/structure-auditor",
         "cmo": "@fux/cursor-memory-optimizer",
-        "aka": "@fux/project-alias-expander"
-        
+        "alias": "@fux/project-alias-expander",
+        "obs": "@fux/observability",
+        "vsct": "@fux/vscode-test-cli-config"
         
     }
 }

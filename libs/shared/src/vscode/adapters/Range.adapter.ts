@@ -26,6 +26,7 @@ export class RangeAdapter implements IRange {
 		
 		// Create VSCode Range - during tests this will be Mockly via the test adapter
 		const vscodeRange = new Range(startLine, startCharacter, endLine, endCharacter)
+
 		return new RangeAdapter(vscodeRange)
 	}
 
@@ -33,4 +34,5 @@ export class RangeAdapter implements IRange {
 	static fromVSCode(vscodeRange: any): RangeAdapter {
 		return new RangeAdapter(vscodeRange)
 	}
+
 }

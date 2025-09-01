@@ -329,11 +329,13 @@ export class MocklyService implements IMocklyService {
 		path: {
 			join: (...paths: string[]): string => {
 				const joinedPath = path.join(...paths)
+
 				// Normalize path to use forward slashes for consistency across platforms
 				return joinedPath.replace(/\\/g, '/')
 			},
 			normalize: (pathStr: string): string => {
 				const normalizedPath = path.normalize(pathStr)
+
 				// Normalize path to use forward slashes for consistency across platforms
 				return normalizedPath.replace(/\\/g, '/')
 			},
@@ -371,6 +373,7 @@ export class MocklyService implements IMocklyService {
 				// Route through Mockly's in-memory file system for deterministic tests
 				const from = this.Uri.file(oldPath)
 				const to = this.Uri.file(newPath)
+
 				await this.workspace.fs.rename(from as any, to as any, { overwrite: true })
 			},
 			copyFile: async (src: string, dest: string): Promise<void> => {

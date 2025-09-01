@@ -32,6 +32,7 @@ suite('Package.json Formatting Test Suite', () => {
 		// Verify the command is registered
 		const commands = await vscode.commands.getCommands()
 		const formatCommand = commands.find(cmd => cmd.includes('formatPackageJson'))
+
 		assert.ok(formatCommand, 'Format package.json command should be registered')
 		
 		// Execute the format command
@@ -42,6 +43,7 @@ suite('Package.json Formatting Test Suite', () => {
 		
 		const formattedContent = fs.readFileSync(packageJsonPath, 'utf8')
 		const parsed = JSON.parse(formattedContent)
+
 		assert.ok(parsed.name, 'Formatted package.json should be valid JSON with name field')
 	}) //<
 
@@ -59,6 +61,7 @@ suite('Package.json Formatting Test Suite', () => {
 		
 		const formattedContent = fs.readFileSync(packageJsonPath, 'utf8')
 		const parsed = JSON.parse(formattedContent)
+
 		assert.ok(parsed.name, 'Formatted package.json should be valid JSON with name field')
 	}) //<
 
@@ -102,8 +105,7 @@ suite('Package.json Formatting Test Suite', () => {
 			},
 			(err: any) => {
 				// Should fail with a file system error when trying to read the package.json
-				assert.ok(err.message.includes('Failed to read package.json') || err.code === 'ENOENT' || err.message.includes('does not exist') || err.message.includes('ENOENT'), 
-					`Expected file system error but got: ${err.message} (code: ${err.code})`)
+				assert.ok(err.message.includes('Failed to read package.json') || err.code === 'ENOENT' || err.message.includes('does not exist') || err.message.includes('ENOENT'), `Expected file system error but got: ${err.message} (code: ${err.code})`)
 				return true
 			},
 			'Command should have rejected with a file system error.',

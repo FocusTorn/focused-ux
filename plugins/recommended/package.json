@@ -1,0 +1,55 @@
+{
+    "name": "@fux/recommended",
+    "version": "0.0.1",
+    "private": true,
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        }
+    },
+    "nx": {
+        "targets": {
+            "build": {
+                "executor": "@nx/js:tsc",
+                "outputs": [
+                    "{options.outputPath}"
+                ],
+                "options": {
+                    "outputPath": "plugins/recommended/dist",
+                    "main": "plugins/recommended/src/index.ts",
+                    "tsConfig": "plugins/recommended/tsconfig.lib.json",
+                    "rootDir": "plugins/recommended/src",
+                    "generatePackageJson": false,
+                    "assets": [
+                        {
+                            "input": "./plugins/recommended/src",
+                            "glob": "**/!(*.ts)",
+                            "output": "."
+                        },
+                        {
+                            "input": "./plugins/recommended/src",
+                            "glob": "**/*.d.ts",
+                            "output": "."
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "dependencies": {
+        "@nx/devkit": "21.4.1",
+        "tslib": "^2.3.0"
+    },
+    "generators": "./generators.json",
+    "files": [
+        "dist",
+        "!**/*.tsbuildinfo",
+        "generators.json"
+    ]
+}

@@ -213,57 +213,57 @@ async function optimizeIconsInDirectory( //>
 	return { count: filesOptimizedCount, details: optimizationDetails, attempted: operationAttempted, foundAnySvgs: filesOptimizedCount > 0 }
 } //<
 
-async function removeUnwantedFilesFromSource( //>
-	sourceDirAbs: string,
-	silent: boolean = false,
-): Promise<{ artboardFilesRemoved: number, pngFilesRemoved: number }> {
-	let artboardFilesRemoved = 0
-	let pngFilesRemoved = 0
+// async function removeUnwantedFilesFromSource( //>
+// 	sourceDirAbs: string,
+// 	silent: boolean = false,
+// ): Promise<{ artboardFilesRemoved: number, pngFilesRemoved: number }> {
+// 	let artboardFilesRemoved = 0
+// 	let pngFilesRemoved = 0
 
-	try {
-		if (!fs.existsSync(sourceDirAbs)) {
-			if (!silent) {
-				console.log(
-					`│    └── Source directory for cleanup not found: ${path.relative(
-						MONOREPO_ROOT,
-						sourceDirAbs,
-					)}. Skipping cleanup.`,
-				)
-			}
-			return { artboardFilesRemoved, pngFilesRemoved }
-		}
+// 	try {
+// 		if (!fs.existsSync(sourceDirAbs)) {
+// 			if (!silent) {
+// 				console.log(
+// 					`│    └── Source directory for cleanup not found: ${path.relative(
+// 						MONOREPO_ROOT,
+// 						sourceDirAbs,
+// 					)}. Skipping cleanup.`,
+// 				)
+// 			}
+// 			return { artboardFilesRemoved, pngFilesRemoved }
+// 		}
 
-		const files = fs.readdirSync(sourceDirAbs)
+// 		const files = fs.readdirSync(sourceDirAbs)
 
-		for (const file of files) {
-			const filePath = path.join(sourceDirAbs, file)
+// 		for (const file of files) {
+// 			const filePath = path.join(sourceDirAbs, file)
 
-			if (file.startsWith('Artboard') && file.endsWith('.svg')) {
-				try {
-					await fsPromises.unlink(filePath); artboardFilesRemoved++
-				}
-				catch (err) {
-					if (!silent)
-						console.error(`Error removing ${file}:`, err)
-				}
-			}
-			else if (file.endsWith('.png')) {
-				try {
-					await fsPromises.unlink(filePath); pngFilesRemoved++
-				}
-				catch (err) {
-					if (!silent)
-						console.error(`Error removing ${file}:`, err)
-				}
-			}
-		}
-	}
-	catch (err) {
-		if (!silent)
-			console.error(`Error reading directory for cleanup: ${path.relative(MONOREPO_ROOT, sourceDirAbs)}`, err)
-	}
-	return { artboardFilesRemoved, pngFilesRemoved }
-} //<
+// 			if (file.startsWith('Artboard') && file.endsWith('.svg')) {
+// 				try {
+// 					await fsPromises.unlink(filePath); artboardFilesRemoved++
+// 				}
+// 				catch (err) {
+// 					if (!silent)
+// 						console.error(`Error removing ${file}:`, err)
+// 				}
+// 			}
+// 			else if (file.endsWith('.png')) {
+// 				try {
+// 					await fsPromises.unlink(filePath); pngFilesRemoved++
+// 				}
+// 				catch (err) {
+// 					if (!silent)
+// 						console.error(`Error removing ${file}:`, err)
+// 				}
+// 			}
+// 		}
+// 	}
+// 	catch (err) {
+// 		if (!silent)
+// 			console.error(`Error reading directory for cleanup: ${path.relative(MONOREPO_ROOT, sourceDirAbs)}`, err)
+// 	}
+// 	return { artboardFilesRemoved, pngFilesRemoved }
+// } //<
 
 export async function main( //>
 	iconType: 'all' | 'file' | 'folder' = 'all',

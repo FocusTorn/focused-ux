@@ -11,7 +11,7 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			'vscode': path.resolve(__dirname, '../shared/vscode-test-adapter.ts'),
+			vscode: path.resolve(__dirname, '../shared/vscode-test-adapter.ts'),
 		},
 	},
 })

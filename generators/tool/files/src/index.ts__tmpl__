@@ -1,0 +1,2 @@
+// Main entry point for <%= className %>
+export * from './lib/<%= fileName %>';

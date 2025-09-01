@@ -28,6 +28,8 @@ import {
 	checkCorePackageBuildConfig,
 	checkExtensionPackageBuildConfig,
 	checkPackageTestConfig,
+	checkPackageLintConfig,
+	checkSharedPackageLintConfig,
 } from './checks/project-json.js'
 import {
 	checkTestSetupStructure,
@@ -101,7 +103,7 @@ function resolvePackageName(input: string): string | null {
 }
 
 function showHelp() {
-	console.log('AKA - Feature Structure Auditor')
+	console.log('PAE - Feature Structure Auditor')
 	console.log('')
 	console.log('Usage:')
 	console.log('  audit <project1> [project2] [project3] ... [options]')
@@ -229,7 +231,9 @@ function main(): number {
 			.map(dirent => dirent.name)
 		: []
 
-	// Combine all items for checking
+	// Tool packages are direct execution scripts, not buildable packages
+	// They are excluded from auditing as they don't follow the same structure
+	// Combine all items for checking (excluding tools)
 	const allItems = [...allPackages, ...allLibs]
 
 	// Parse command line arguments
@@ -394,6 +398,7 @@ function main(): number {
 			ok = checkCorePackageBuildConfig(featureName) && ok
 			ok = checkExtensionPackageBuildConfig(featureName) && ok
 			ok = checkPackageTestConfig(featureName) && ok
+			ok = checkPackageLintConfig(featureName) && ok
 			ok = checkTestSetupStructure(featureName) && ok
 			ok = checkTestOrganization(featureName) && ok
 			ok = checkTestFileImports(featureName) && ok
@@ -403,8 +408,11 @@ function main(): number {
 			ok = checkCoreDirectInstantiation(featureName) && ok
 		}
 		else if (isLib) {
-			// Lib-specific checks can be added here if needed
-			// For now, libs are not part of the refactored end state audit
+			// Check if it's the shared package
+			if (item === '@fux/shared') {
+				ok = checkSharedPackageLintConfig() && ok
+			}
+			// Other lib-specific checks can be added here if needed
 		}
 	}
 

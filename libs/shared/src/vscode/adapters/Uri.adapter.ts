@@ -16,8 +16,6 @@ export class UriAdapter implements IUri {
 	get fsPath(): string {
 		return this.uri.fsPath
 	}
-
-    
     
 	toString(): string {
 		return this.uri.toString()

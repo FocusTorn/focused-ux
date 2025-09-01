@@ -10,6 +10,7 @@
         "visualize-bundle": "nx analyze-bundle:open"
     },
     "dependencies": {
+        "@nx/devkit": "21.4.1",
         "chalk": "^5.5.0",
         "commander": "^14.0.0"
     },
@@ -18,13 +19,16 @@
         "@nx/devkit": "21.4.1",
         "@nx/esbuild": "21.4.1",
         "@nx/eslint": "21.4.1",
+        "@nx/jest": "21.4.1",
         "@nx/js": "21.4.1",
         "@nx/node": "21.4.1",
+        "@nx/plugin": "21.4.1",
         "@nx/vite": "21.4.1",
         "@nx/web": "21.4.1",
         "@nx/workspace": "21.4.1",
         "@seahax/eslint-plugin-wrap": "^0.6.7",
         "@swc-node/register": "~1.9.1",
+        "@swc/cli": "~0.6.0",
         "@swc/core": "~1.5.7",
         "@swc/helpers": "~0.5.11",
         "@types/glob": "^8.1.0",
@@ -44,6 +48,7 @@
         "glob": "^10.4.2",
         "jiti": "2.4.2",
         "jsdom": "~22.1.0",
+        "jsonc-eslint-parser": "^2.1.0",
         "knip": "^5.62.0",
         "mocha": "^10.2.0",
         "nx": "21.4.1",
@@ -67,7 +72,8 @@
         "libs/*"
     ],
     "nx": {
-        "includedScripts": []
+        "includedScripts": [],
+        "defaultCollection": "./generators"
     },
     "pnpm": {
         "overrides": {
@@ -76,5 +82,11 @@
             "@vitest/coverage-v8": "^3.2.4",
             "typescript@*": "5.8.3"
         }
-    }
+    },
+    "generators": "./generators.json",
+    "files": [
+        "dist",
+        "!**/*.tsbuildinfo",
+        "generators.json"
+    ]
 }

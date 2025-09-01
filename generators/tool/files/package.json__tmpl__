@@ -1,0 +1,44 @@
+{
+  "name": "@fux/<%= name %>",
+  "version": "<%= version %>",
+  "description": "<%= description %>",
+  "main": "dist/index.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "nx build @fux/<%= name %>",
+    "test": "nx test @fux/<%= name %>",
+    "lint": "nx lint @fux/<%= name %>",
+    "audit": "nx audit @fux/<%= name %>"
+  },
+  "keywords": [
+    "focusedux",
+    "tool",
+    "utility"
+  ],
+  "author": "<%= author %>",
+  "license": "MIT",
+  "devDependencies": {
+    "@nx/esbuild": "^21.4.1",
+    "@nx/js": "^21.4.1",
+    "@nx/vite": "^21.4.1",
+    "@nx/eslint": "^21.4.1",
+    "@types/node": "^20.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+    <% if (dependencies && dependencies.length > 0) { %>
+    ,<% dependencies.join(',\n    ') %>
+    <% } %>
+  },
+  "peerDependencies": {},
+  "dependencies": {}
+}

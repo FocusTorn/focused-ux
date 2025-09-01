@@ -8,19 +8,19 @@ vi.mock('vscode', () => ({
 		kind,
 		range,
 		selectionRange,
-		children
+		children,
 	})),
 	RelativePattern: vi.fn().mockImplementation((base, pattern) => ({
 		base,
-		pattern
+		pattern,
 	})),
 	Position: vi.fn().mockImplementation((line, character) => ({
 		line,
-		character
+		character,
 	})),
 	SymbolKind: {
-		Function: 12
-	}
+		Function: 12,
+	},
 }))
 
 describe('Document Tests', () => {

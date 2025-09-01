@@ -10,8 +10,12 @@ describe('Text Comprehensive Tests', () => {
 
 			const replaceSpy = vi.fn()
 			const editor = { edit: (fn: any) => { fn({ replace: replaceSpy }); return Promise.resolve(true) } }
-					const { TextEditorAdapter, EditBuilderAdapter } = await import('../../src/vscode/adapters/TextEditor.adapter.js')
-	const { RangeAdapter } = await import('../../src/vscode/adapters/Range.adapter.js')
+            
+			// const { TextEditorAdapter, EditBuilderAdapter } = await import('../../src/vscode/adapters/TextEditor.adapter.js')
+			const { TextEditorAdapter } = await import('../../src/vscode/adapters/TextEditor.adapter.js')
+            
+			// const { RangeAdapter } = await import('../../src/vscode/adapters/Range.adapter.js')
+            
 			const vs: any = await import('vscode')
 
 			const start = { create: () => ({ line: 1, character: 2 }) }
@@ -21,7 +25,7 @@ describe('Text Comprehensive Tests', () => {
 			const a = new TextEditorAdapter(editor as any)
 
 			await a.edit((eb) => {
-				(eb as unknown as InstanceType<typeof EditBuilderAdapter>).replace(range, 'x')
+				(eb as any).replace(range, 'x')
 			})
 
 			expect(replaceSpy).toHaveBeenCalled()
@@ -50,4 +54,4 @@ describe('Text Comprehensive Tests', () => {
 			await a.save()
 		})
 	})
-}) 
+})

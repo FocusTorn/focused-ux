@@ -1,0 +1,365 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# AI-Optimized Project-FocusedUX Operational Doctrine
+
+## **DOCUMENT PURPOSE**
+
+**Primary Consumer**: AI Agent operating in FocusedUX workspace
+**Objective**: Project-specific operational guidelines for FocusedUX workspace
+**Scope**: Architecture patterns, testing strategies, command execution, and anti-patterns
+
+## **CRITICAL PRE-RESPONSE VALIDATION FRAMEWORK**
+
+### **MANDATORY EXECUTION CHECKLIST**
+
+**CRITICAL**: Before ANY response involving FocusedUX project operations, execute this validation sequence:
+
+**STEP 1: PAE ALIAS COMPLIANCE**
+
+- [ ] **Alias Discovery**: Will I attempt `pae help` first to discover available aliases?
+- [ ] **Alias Usage**: Will I use appropriate alias for the operation (e.g., `pae dc b` for dynamicons build)?
+- [ ] **Fallback Protocol**: Will I only use direct nx commands if no alias exists or alias fails?
+- [ ] **Documentation**: Will I document any missing aliases that should be added to PAE system?
+
+**STEP 2: BUILD-BEFORE-TEST COMPLIANCE**
+
+- [ ] **Build First**: If directive involves testing, will I run `{alias} b` first?
+- [ ] **Error Resolution**: Will I fix build errors immediately before proceeding?
+- [ ] **Cache Bypass**: Will I use `--skip-nx-cache` for troubleshooting when needed?
+
+**STEP 3: DOCUMENTATION FIRST COMPLIANCE**
+
+- [ ] **Architecture Check**: Have I checked `./docs/Architecture.md` for package structure and patterns?
+- [ ] **Testing Check**: Have I checked `./docs/FocusedUX-Testing-Strategy.md` for testing patterns?
+- [ ] **Previous Solutions**: Have I checked `./docs/Actions-Log.md` for existing implementations?
+
+**STEP 4: PACKAGE ANALYSIS COMPLIANCE**
+
+- [ ] **Project Details**: Will I use `nx_project_details` to understand package dependencies?
+- [ ] **Architectural Deviations**: Will I check for deviations from standard patterns?
+- [ ] **Package Type Verification**: Will I verify package type (core vs ext vs shared vs tool) and role?
+
+**STEP 5: SELF-CORRECTION**
+
+- [ ] **Violation Detection**: If I detect any protocol violation, will I acknowledge immediately?
+
+**VIOLATION PENALTY**: Any failure to complete this checklist constitutes a critical failure requiring immediate acknowledgment and correction.
+
+## **ARCHITECTURE EXECUTION FRAMEWORK**
+
+### **REFERENCE DOCUMENTATION MAPPING**
+
+**PRIMARY REFERENCES:**
+
+- **Architecture**: `./docs/Architecture.md` - Package structure, build configurations, implementation patterns
+- **Testing**: `./docs/FocusedUX-Testing-Strategy.md` - Testing patterns and implementation guides
+- **Previous Solutions**: `./docs/Actions-Log.md` - Existing implementations and lessons learned
+
+### **PACKAGE TYPE EXECUTION MATRIX**
+
+**CORE PACKAGES** (`packages/{feature}/core/`):
+
+- **Role**: Pure business logic, self-contained
+- **Architecture**: Type imports only, no VSCode value imports
+- **Dependencies**: Minimal external, no shared package dependencies
+- **Build**: `bundle: false`, `format: ["esm"]`
+
+**EXTENSION PACKAGES** (`packages/{feature}/ext/`):
+
+- **Role**: VSCode integration wrapper
+- **Architecture**: Local adapters, CommonJS bundle
+- **Dependencies**: Primary dependency on core package
+- **Build**: `bundle: true`, `format: ["cjs"]`
+
+**SHARED PACKAGES** (`libs/shared/`):
+
+- **Role**: Utilities for other packages
+- **Architecture**: Pure functions, clear exports
+- **Dependencies**: No VSCode dependencies
+- **Build**: `bundle: false`, `format: ["esm"]`
+
+**TOOL PACKAGES** (`libs/tools/{tool-name}/`):
+
+- **Role**: Standalone utilities
+- **Architecture**: Direct execution, minimal dependencies
+- **Dependencies**: Minimal external dependencies
+- **Build**: `bundle: false`, `format: ["esm"]`
+
+## **TESTING EXECUTION FRAMEWORK**
+
+### **TEST CONFIGURATION PROTOCOL**
+
+**EXECUTOR SPECIFICATION:**
+
+- **Use**: `@nx/vite:test` (direct executor, not extends)
+- **Test Organization**: `__tests__/functional/` structure
+- **Setup Files**: `./__tests__/_setup.ts` for global test setup
+
+### **TEST EXECUTION PROTOCOL**
+
+**MANDATORY TEST SEQUENCE:**
+
+1. **Run `{alias} b` first** - ensure clean builds before testing
+2. **Execute full test suites** - ensure no regressions
+3. **Verify test isolation** - tests shouldn't interfere with each other
+4. **Validate mocks** - verify mocks properly simulate real behavior
+
+### **TEST LANE EXECUTION MATRIX**
+
+**FAST FEEDBACK** (Project tests only, no coverage):
+
+- **Command**: `t`
+- **Use Case**: Quick validation, fast feedback
+- **Coverage**: None
+
+**COMPREHENSIVE VALIDATION** (Tests with coverage):
+
+- **Command**: `tc` or `tcw`
+- **Use Case**: Full validation, coverage reporting
+- **Coverage**: Full coverage analysis
+
+**CACHE TROUBLESHOOTING**:
+
+- **Command**: `-s` (skip cache)
+- **Use Case**: Diagnosing cache issues only
+- **Avoid**: Normal operation
+
+## **COMMAND EXECUTION FRAMEWORK**
+
+### **PAE ALIAS MANDATE**
+
+**CRITICAL RULES:**
+
+- **ALWAYS use PAE aliases** for all project operations
+- **NEVER fall back to npm/nx directly** unless explicitly requested
+- **Primary discovery**: `pae help`
+- **Deviation prevention**: Any deviation constitutes a critical failure
+
+### **FALLBACK EXECUTION PROTOCOL**
+
+**STEP 1: ALIAS DISCOVERY**
+
+- **Execute**: `pae help` first to discover available aliases
+- **Document**: Available aliases for the operation
+
+**STEP 2: ALIAS USAGE**
+
+- **Execute**: Appropriate alias (e.g., `pae dc b` for dynamicons build)
+- **Verify**: Alias execution success
+
+**STEP 3: FALLBACK CONDITIONS**
+
+- **Use direct nx commands ONLY if**:
+    - No appropriate alias exists for the operation
+    - The alias command fails and direct nx command is the only alternative
+    - Explicitly requested by the user
+
+**STEP 4: DOCUMENTATION**
+
+- **Document**: Any missing aliases that should be added to PAE system
+
+### **BUILD TOOL EXECUTION PREFERENCES**
+
+**CACHE BYPASS**: Use `--skip-nx-cache` for troubleshooting Nx build issues
+**PACKAGE MANAGER**: Prefer `pnpm` over `npm` for all package management tasks
+**PROJECT ALIASES**: Use project-specific aliases - `shared`, `mockly`, `pbc`, `pbe`, etc.
+
+## **ANTI-PATTERN PREVENTION FRAMEWORK**
+
+### **ARCHITECTURAL VIOLATION PREVENTION**
+
+**❌ FORBIDDEN: Business Logic in Extensions**
+
+- **Rule**: Business logic belongs in core packages only
+- **Violation**: Any business logic in extension packages
+- **Prevention**: Verify all business logic is in core packages
+
+**❌ FORBIDDEN: Direct VSCode Value Imports**
+
+- **Rule**: Only type imports allowed outside shared adapters
+- **Violation**: `import { Uri } from 'vscode'` (value import)
+- **Allowed**: `import type { Uri } from 'vscode'` (type import)
+
+**❌ FORBIDDEN: Incomplete Consumer Updates**
+
+- **Rule**: Update all consumers when modifying shared components
+- **Violation**: Partial updates leaving some consumers broken
+- **Prevention**: Systematic update of all dependent packages
+
+**❌ FORBIDDEN: DI Containers in Core Packages**
+
+- **Rule**: Core packages should be self-contained
+- **Violation**: Using DI containers in core packages
+- **Prevention**: Direct service instantiation in core packages
+
+**❌ FORBIDDEN: Shared Dependencies in Core Packages**
+
+- **Rule**: Core packages should have minimal external dependencies
+- **Violation**: Adding shared package dependencies to core packages
+- **Prevention**: Verify core packages are self-contained
+
+**❌ FORBIDDEN: VSCode Extension Configuration Removal**
+
+- **Rule**: Never remove VSCode extension metadata during refactoring
+- **Violation**: Removing `contributes`, `activationEvents`, `engines`
+- **Prevention**: Preserve all VSCode extension configuration
+
+### **TESTING VIOLATION PREVENTION**
+
+**❌ FORBIDDEN: VSCode Mocking in Shared Tests**
+
+- **Rule**: Don't use `vi.mock('vscode')` in shared package tests
+- **Violation**: Mocking VSCode in shared package tests
+- **Prevention**: Use appropriate mocking strategies for shared packages
+
+**❌ FORBIDDEN: Test Skipping for Deadlines**
+
+- **Rule**: Never skip tests to meet deadlines
+- **Violation**: Skipping tests for expediency
+- **Prevention**: Ensure all tests pass before proceeding
+
+**❌ FORBIDDEN: Large Test Files**
+
+- **Rule**: Never allow test files to exceed 500 lines
+- **Violation**: Large, unfocused test files
+- **Prevention**: Split into focused units proactively
+
+**❌ FORBIDDEN: Timeout-Inducing Tests**
+
+- **Rule**: Mock complex internal methods to prevent timeouts
+- **Violation**: Tests calling complex internal methods without mocking
+- **Prevention**: Isolate unit tests from complex dependencies
+
+**❌ FORBIDDEN: Test Simplification Anti-Pattern**
+
+- **Rule**: Tests must verify actual implementation behavior
+- **Violation**: Over-simplified tests that don't verify real behavior
+- **Prevention**: Ensure tests validate actual implementation
+
+### **DOCUMENTATION VIOLATION PREVENTION**
+
+**❌ FORBIDDEN: Skipping Date Verification**
+
+- **Rule**: NEVER write Actions Log entries without verifying actual file timestamps
+- **Violation**: Using estimated or guessed dates
+- **Prevention**: Always use verified file modification timestamps
+
+**❌ FORBIDDEN: Making Up Dates**
+
+- **Rule**: NEVER use estimated or guessed dates
+- **Violation**: Using approximate dates in documentation
+- **Prevention**: Always verify actual file timestamps
+
+**❌ FORBIDDEN: Premature Completion Claims**
+
+- **Rule**: NEVER document completion without verification
+- **Violation**: Claiming completion without verifying all components
+- **Prevention**: Verify ALL claimed components before documenting
+
+**❌ FORBIDDEN: Historical Reference Modification**
+
+- **Rule**: NEVER modify historical references in Actions Log entries
+- **Violation**: Updating old log entries to reflect current tool names or patterns
+- **Prevention**: Preserve historical accuracy - references were correct at the time of entry
+- **Rationale**: Historical entries document the actual tools and patterns used when the work was performed
+
+### **BUILD VIOLATION PREVENTION**
+
+**❌ FORBIDDEN: Build Dependencies in Wrong Section**
+
+- **Rule**: Build-only dependencies belong in `devDependencies`
+- **Violation**: Build dependencies in `dependencies`
+- **Prevention**: Verify dependency categorization
+
+**❌ FORBIDDEN: Direct Node.js Module Imports**
+
+- **Rule**: Don't import Node.js modules directly in extension code
+- **Violation**: Direct Node.js imports in extension packages
+- **Prevention**: Use appropriate abstraction layers
+
+**❌ FORBIDDEN: Missing Externalization**
+
+- **Rule**: All third-party dependencies must be externalized
+- **Violation**: Missing externalization of dependencies
+- **Prevention**: Verify all dependencies are properly externalized
+
+**❌ FORBIDDEN: Caching Packaging Targets**
+
+- **Rule**: NEVER cache `package:dev` targets
+- **Violation**: Caching targets that create unique timestamped versions
+- **Prevention**: Disable caching for packaging targets
+
+### **VALIDATION VIOLATION PREVENTION**
+
+**❌ FORBIDDEN: Strict Error Throwing**
+
+- **Rule**: Use warnings for non-critical validation issues
+- **Violation**: Throwing errors for non-blocking issues
+- **Prevention**: Prioritize user experience over strict validation
+
+**❌ FORBIDDEN: User Experience Neglect**
+
+- **Rule**: Never prioritize strict validation over user experience
+- **Violation**: Blocking user workflow for non-critical issues
+- **Prevention**: Use warnings for non-blocking validation issues
+
+### **REFACTORING VIOLATION PREVENTION**
+
+**❌ FORBIDDEN: Incremental Renaming**
+
+- **Rule**: Execute complete renaming in logical order
+- **Violation**: Partial renaming leaving inconsistent state
+- **Prevention**: Plan and execute complete renaming sequences
+
+**❌ FORBIDDEN: Pattern Deviation**
+
+- **Rule**: Don't create custom solutions when patterns exist
+- **Violation**: Ignoring established patterns for custom solutions
+- **Prevention**: Follow established patterns unless absolutely necessary
+
+**❌ FORBIDDEN: Interface-First Violations**
+
+- **Rule**: Define complete interface contracts before implementation
+- **Violation**: Implementing services before defining interfaces
+- **Prevention**: Complete interface definition before implementation
+
+**❌ FORBIDDEN: Build-Before-Interface**
+
+- **Rule**: Complete interface definitions before building
+- **Violation**: Attempting builds before interface completion
+- **Prevention**: Complete architectural refactoring before builds
+
+## **EXECUTION PRIORITY MATRIX**
+
+### **CRITICAL PRIORITY** (Execute immediately)
+
+- PAE alias compliance verification
+- Build-before-test execution
+- Documentation first verification
+- Package analysis execution
+- Anti-pattern violation detection
+
+### **HIGH PRIORITY** (Execute before proceeding)
+
+- Test execution and validation
+- Build error resolution
+- Pattern compliance verification
+- Tool usage verification
+
+### **MEDIUM PRIORITY** (Execute during normal operation)
+
+- Documentation updates
+- Pattern recognition
+- Performance measurement
+- Status reporting
+
+### **LOW PRIORITY** (Execute when time permits)
+
+- Process improvements
+- Pattern documentation
+- Lesson sharing
+- Future planning

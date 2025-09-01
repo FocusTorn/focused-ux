@@ -1,18 +1,21 @@
 {
     "extends": "../../../tsconfig.base.json",
-    
+
     "include": ["src/**/*"],
     "exclude": ["node_modules", "**/*.test.ts", "__tests__/**/*", "dist/**/*"],
-    
+
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
         "composite": true
     },
-    
+
     "references": [
         {
             "path": "../core"
+        },
+        {
+            "path": "../../../libs/vscode-test-cli-config"
         }
     ]
 }

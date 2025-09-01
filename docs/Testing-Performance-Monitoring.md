@@ -2,7 +2,7 @@
 
 ## Overview
 
-The FocusedUX workspace includes a comprehensive performance monitoring system for test execution that helps developers identify performance regressions, track improvements, and maintain optimal test execution times. This system integrates seamlessly with the existing PAX CLI tool and provides actionable insights for performance optimization.
+The FocusedUX workspace includes a comprehensive performance monitoring system for test execution that helps developers identify performance regressions, track improvements, and maintain optimal test execution times. This system integrates seamlessly with the existing PAE CLI tool and provides actionable insights for performance optimization.
 
 ## Features
 
@@ -21,13 +21,13 @@ Create a performance baseline for a project's test target:
 
 ```bash
 # Create baseline for shared library tests
-pax shared test --performance-baseline
+pae shared test --performance-baseline
 
 # Create baseline for coverage tests
-pax shared tc --performance-baseline
+pae shared tc --performance-baseline
 
 # Create baseline for extension tests
-pax gwe test --performance-baseline
+pae gwe test --performance-baseline
 ```
 
 ### 2. Monitor Performance
@@ -36,10 +36,10 @@ Check current performance against established baseline:
 
 ```bash
 # Quick performance check
-pax shared test --performance-check
+pae shared test --performance-check
 
 # Validate performance with detailed analysis
-pax shared test --performance-validate
+pae shared test --performance-validate
 ```
 
 ### 3. Monitor All Projects
@@ -48,13 +48,13 @@ Check performance across all projects:
 
 ```bash
 # Check all core packages
-pax core test --performance-check
+pae core test --performance-check
 
 # Check all extension packages
-pax ext test --performance-check
+pae ext test --performance-check
 
 # Check everything
-pax all test --performance-check
+pae all test --performance-check
 ```
 
 ## Performance Metrics
@@ -100,36 +100,36 @@ Default performance thresholds (configurable in baseline files):
 
 ```bash
 # Create baseline for functional tests
-pax shared test --performance-baseline
+pae shared test --performance-baseline
 
 # Create baseline for coverage tests
-pax shared tc --performance-baseline
+pae shared tc --performance-baseline
 
 # Create baseline for specific package
-pax gwc test --performance-baseline
+pae gwc test --performance-baseline
 ```
 
 ### Daily Performance Monitoring
 
 ```bash
 # Quick check before committing
-pax shared test --performance-check
+pae shared test --performance-check
 
 # Comprehensive validation
-pax shared test --performance-validate
+pae shared test --performance-validate
 
 # Check all core packages
-pax core test --performance-check
+pae core test --performance-check
 ```
 
 ### CI/CD Integration
 
 ```bash
 # Performance gate in CI pipeline
-pax all test --performance-validate
+pae all test --performance-validate
 
 # Baseline update after optimizations
-pax all test --performance-baseline
+pae all test --performance-baseline
 ```
 
 ## Output Interpretation
@@ -295,7 +295,7 @@ Performance reports contain detailed analysis of each test run:
 **Solution**: Create a baseline first:
 
 ```bash
-pax {project} {target} --performance-baseline
+pae {project} {target} --performance-baseline
 ```
 
 #### Performance Regression
@@ -340,7 +340,7 @@ pax {project} {target} --performance-baseline
 
 ```bash
 # Get detailed performance information
-pax {project} {target} --performance-validate --verbose
+pae {project} {target} --performance-validate --verbose
 ```
 
 #### Check Historical Data
@@ -371,9 +371,9 @@ Add performance monitoring to your pre-commit workflow:
 echo "Running performance checks..."
 
 # Check performance for modified packages
-pax shared test --performance-check
-pax gwc test --performance-check
-pax gwe test --performance-check
+pae shared test --performance-check
+pae gwc test --performance-check
+pae gwe test --performance-check
 
 # Fail if any regressions detected
 if [ $? -ne 0 ]; then
@@ -406,7 +406,7 @@ jobs:
 
             - name: Performance validation
               run: |
-                  pax all test --performance-validate
+                  pae all test --performance-validate
 
             - name: Upload performance reports
               uses: actions/upload-artifact@v3
@@ -429,7 +429,7 @@ Configure your IDE to run performance checks:
             {
                 "label": "Performance Check",
                 "type": "shell",
-                "command": "pax",
+                "command": "pae",
                 "args": ["shared", "test", "--performance-check"],
                 "group": "test",
                 "presentation": {
@@ -525,7 +525,7 @@ Set up automated alerts for performance regressions:
 # performance-alert.sh
 
 # Check for regressions and send alerts
-pax all test --performance-validate
+pae all test --performance-validate
 
 # Parse results and send notifications
 if grep -q "regression" performance-reports/*.json; then

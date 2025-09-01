@@ -161,3 +161,84 @@ export function checkPackageTestConfig(pkg: string): boolean {
 
 	return !found
 }
+
+/**
+ * Check that packages have proper lint configuration that extends the global target.
+ */
+export function checkPackageLintConfig(pkg: string): boolean {
+	const coreProjectJsonPath = path.join(ROOT, 'packages', pkg, 'core', 'project.json')
+	const extProjectJsonPath = path.join(ROOT, 'packages', pkg, 'ext', 'project.json')
+	
+	let found = false
+
+	// Check core package lint config
+	if (fs.existsSync(coreProjectJsonPath)) {
+		const projectJson = readJson(coreProjectJsonPath)
+		if (projectJson) {
+			const lintTarget = projectJson.targets?.lint
+			if (lintTarget) {
+				if (!lintTarget.extends || lintTarget.extends !== 'lint') {
+					addError('CRITICAL: Core package wrong lint configuration', 
+						`packages/${pkg}/core/project.json: Core packages must extend the global lint target with "extends": "lint"`)
+					found = true
+				}
+			} else {
+				addError('Missing lint target', `packages/${pkg}/core/project.json`)
+				found = true
+			}
+		}
+	}
+
+	// Check extension package lint config
+	if (fs.existsSync(extProjectJsonPath)) {
+		const projectJson = readJson(extProjectJsonPath)
+		if (projectJson) {
+			const lintTarget = projectJson.targets?.lint
+			if (lintTarget) {
+				if (!lintTarget.extends || lintTarget.extends !== 'lint') {
+					addError('CRITICAL: Extension package wrong lint configuration', 
+						`packages/${pkg}/ext/project.json: Extension packages must extend the global lint target with "extends": "lint"`)
+					found = true
+				}
+			} else {
+				addError('Missing lint target', `packages/${pkg}/ext/project.json`)
+				found = true
+			}
+		}
+	}
+
+	return !found
+}
+
+
+
+/**
+ * Check that shared packages have proper lint configuration that extends the global target.
+ */
+export function checkSharedPackageLintConfig(): boolean {
+	const sharedProjectJsonPath = path.join(ROOT, 'libs', 'shared', 'project.json')
+	
+	if (!fs.existsSync(sharedProjectJsonPath)) {
+		addError('Missing project.json', 'libs/shared')
+		return false
+	}
+
+	const projectJson = readJson(sharedProjectJsonPath)
+	if (!projectJson) {
+		return false
+	}
+
+	const lintTarget = projectJson.targets?.lint
+	if (lintTarget) {
+		if (!lintTarget.extends || lintTarget.extends !== 'lint') {
+			addError('CRITICAL: Shared package wrong lint configuration', 
+				'libs/shared/project.json: Shared packages must extend the global lint target with "extends": "lint"')
+			return false
+		}
+	} else {
+		addError('Missing lint target', 'libs/shared/project.json')
+		return false
+	}
+
+	return true
+}

@@ -4,7 +4,7 @@
     "sourceRoot": "libs/project-alias-expander/src",
     "projectType": "library",
     "targets": {
-        "build:compile": {
+        "build:compile": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "inputs": [
@@ -28,8 +28,8 @@
                     }
                 ]
             }
-        },
-        "build": {
+        }, //<
+        "build": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["build:compile"],
             "outputs": [
@@ -44,19 +44,19 @@
                 "commands": ["node libs/project-alias-expander/dist/cli.js install-aliases"],
                 "parallel": false
             }
-        },
-        "lint": {
-            "executor": "@nx/eslint:lint"
-        },
-        "test": {
+        }, //<
+        
+        "lint": { "executor": "@nx/eslint:lint" },
+        
+        "test": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
             "options": {
                 "reportsDirectory": "libs/project-alias-expander/_reports/coverage",
                 "passWithNoTests": true
             }
-        },
-        "test:full": {
+        }, //<
+        "test:full": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
             "dependsOn": [
@@ -70,7 +70,8 @@
                 "reportsDirectory": "libs/project-alias-expander/_reports/coverage",
                 "passWithNoTests": true
             }
-        }
+        } //<
     },
+    
     "tags": ["tool"]
 }

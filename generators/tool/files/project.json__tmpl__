@@ -1,0 +1,39 @@
+{
+  "name": "@fux/<%= name %>",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/tools/<%= name %>/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/tools/<%= name %>",
+        "main": "libs/tools/<%= name %>/src/index.ts",
+        "tsConfig": "libs/tools/<%= name %>/tsconfig.lib.json",
+        "assets": ["libs/tools/<%= name %>/*.md"],
+        "bundle": false,
+        "format": ["esm"],
+        "external": []
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/libs/tools/<%= name %>"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "audit": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "nx run @fux/<%= name %>:lint && nx run @fux/<%= name %>:test"
+      }
+    }
+  },
+  "tags": ["type:tool", "scope:shared"]
+}

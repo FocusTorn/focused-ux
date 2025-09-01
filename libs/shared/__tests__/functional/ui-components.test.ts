@@ -51,4 +51,4 @@ describe('UI Components Tests', () => {
 			expect(adapter).toBeDefined()
 		})
 	})
-}) 
+})

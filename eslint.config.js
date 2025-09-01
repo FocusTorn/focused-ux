@@ -117,6 +117,10 @@ export default combine(
 
             '**/dist/**',
             '**/.output/**',
+            '**/_out-tsc/**',
+            '**/__tests__/**/*.js',
+
+            '**/.vscode-test/**',
 
             '**/*.model.*/**',
             '**/*.md',
@@ -224,29 +228,29 @@ export default combine(
         },
     }, //<
 
-    	{
-		name: 'focused-ux/test-rules', //>
-		files: ['**/*.test.ts', '**/*.spec.ts', '**/test/**/*.ts', '**/__tests__/**/*.ts'],
-		rules: {
-			'ts/no-explicit-any': 'off', // Often 'any' is used more liberally in tests
-			'no-console': 'off', // Allow console.log in tests
+    {
+        name: 'focused-ux/test-rules', //>
+        files: ['**/*.test.ts', '**/*.spec.ts', '**/test/**/*.ts', '**/__tests__/**/*.ts'],
+        rules: {
+            'ts/no-explicit-any': 'off', // Often 'any' is used more liberally in tests
+            'no-console': 'off', // Allow console.log in tests
 
-			// Example for Vitest/Jest globals:
-			// 'vitest/globals': 'error', // if using eslint-plugin-vitest
-		},
-		languageOptions: {
-			globals: {
-				// For Vitest/Jest like environments
-				describe: 'readonly',
-				it: 'readonly',
-				expect: 'readonly',
-				beforeEach: 'readonly',
-				afterEach: 'readonly',
-				vi: 'readonly', // For Vitest
-				jest: 'readonly', // For Jest
-			},
-		},
-	}, //<
+            // Example for Vitest/Jest globals:
+            // 'vitest/globals': 'error', // if using eslint-plugin-vitest
+        },
+        languageOptions: {
+            globals: {
+                // For Vitest/Jest like environments
+                describe: 'readonly',
+                it: 'readonly',
+                expect: 'readonly',
+                beforeEach: 'readonly',
+                afterEach: 'readonly',
+                vi: 'readonly', // For Vitest
+                jest: 'readonly', // For Jest
+            },
+        },
+    }, //<
 
     {
         name: 'focused-ux/shared-library-rules', //>

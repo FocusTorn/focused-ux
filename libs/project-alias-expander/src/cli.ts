@@ -126,7 +126,7 @@ function normalizeFullSemantics(isFull: boolean, target: string): string {
 }
 
 function runNx(argv: string[]): number {
-	if (process.env.PAX_ECHO === '1') {
+	if (process.env.PAE_ECHO === '1') {
 		console.log(`NX_CALL -> ${argv.join(' ')}`)
 		return 0
 	}
@@ -137,7 +137,7 @@ function runNx(argv: string[]): number {
 }
 
 function runCommand(command: string, args: string[]): number {
-	if (process.env.PAX_ECHO === '1') {
+	if (process.env.PAE_ECHO === '1') {
 		console.log(`COMMAND_CALL -> ${command} ${args.join(' ')}`)
 		return 0
 	}
@@ -231,6 +231,11 @@ Write-Host -ForegroundColor DarkGreen "  - Module loaded: PAE aliases "
 	
 	fs.writeFileSync(modulePath, moduleContent)
 	
+	// Display yellow warning about shell restart
+	console.log('\n\x1b[33m⚠️  IMPORTANT: Restart your shell to apply PAE alias changes!\x1b[0m')
+	console.log('\x1b[90m   The PowerShell module has been updated. You need to restart your shell\x1b[0m')
+	console.log('\x1b[90m   or reload the module to use the updated aliases.\x1b[0m\n')
+	
 	if (isVerbose) {
 		console.log(`PowerShell module generated: ${modulePath}`)
 		console.log('Import the module in your PowerShell profile with:')
@@ -247,7 +252,7 @@ function main() {
 		return
 	}
     
-	// Handle both direct execution (pbc b) and pax-prefixed execution (pax pbc b)
+	// Handle both direct execution (pbc b) and pae-prefixed execution (pae pbc b)
 	let alias: string
 	let rest: string[]
     
@@ -309,7 +314,7 @@ function main() {
 		console.log('  pbc test --coverage')
 		console.log('  pbc b -f -s')
 		console.log('  pbc esv')
-		console.log('  aka t -echo')
+		console.log('  pae t -echo')
 		console.log('')
 		console.log('  # Global executor:')
 		console.log('  pae pbc test --coverage')
@@ -328,33 +333,33 @@ function main() {
 
 	processedArgs = expandFlags(processedArgs, expandMap)
 
-	// Handle ephemeral echo flag: "-echo" -> "--pax-echo"
-	const paxEchoEnabled = processedArgs.includes('--pax-echo')
+	// Handle ephemeral echo flag: "-echo" -> "--pae-echo"
+	const paeEchoEnabled = processedArgs.includes('--pae-echo')
 
 	// Remove control flag from downstream Nx args
-	if (paxEchoEnabled) {
-		processedArgs = processedArgs.filter(a => a !== '--pax-echo')
+	if (paeEchoEnabled) {
+		processedArgs = processedArgs.filter(a => a !== '--pae-echo')
 	}
 
 	if (alias === 'ext' || alias === 'core' || alias === 'all') {
 		const target = processedArgs[0]
 		const flags = processedArgs.filter(a => a.startsWith('--'))
 
-		const previousEcho = process.env.PAX_ECHO
+		const previousEcho = process.env.PAE_ECHO
 
-		if (paxEchoEnabled) {
-			process.env.PAX_ECHO = '1'
+		if (paeEchoEnabled) {
+			process.env.PAE_ECHO = '1'
 		}
 
 		const code = runMany(alias as any, [target], flags, config)
 
 		// Restore echo environment
-		if (paxEchoEnabled) {
+		if (paeEchoEnabled) {
 			if (previousEcho === undefined) {
-				delete process.env.PAX_ECHO
+				delete process.env.PAE_ECHO
 			}
 			else {
-				process.env.PAX_ECHO = previousEcho
+				process.env.PAE_ECHO = previousEcho
 			}
 		}
 
@@ -368,7 +373,7 @@ function main() {
 		process.exit(1)
 	}
 
-	// Check args length before removing --pax-echo flag
+	// Check args length before removing --pae-echo flag
 	if (processedArgs.length === 0) {
 		console.error(`Please provide a command for '${alias}'.`)
 		process.exit(1)
@@ -386,10 +391,10 @@ function main() {
 		// For not-nx-targets, we run the workspace-level command with the project name
 		const additionalArgs = processedArgs.slice(1)
         
-		const previousEcho = process.env.PAX_ECHO
+		const previousEcho = process.env.PAE_ECHO
 
-		if (paxEchoEnabled) {
-			process.env.PAX_ECHO = '1'
+		if (paeEchoEnabled) {
+			process.env.PAE_ECHO = '1'
 		}
         
 		// Parse the command (e.g., "npx esbuild-visualizer --metadata")
@@ -415,12 +420,12 @@ function main() {
 		const rc = runCommand(command, commandArgs)
         
 		// Restore echo environment
-		if (paxEchoEnabled) {
+		if (paeEchoEnabled) {
 			if (previousEcho === undefined) {
-				delete process.env.PAX_ECHO
+				delete process.env.PAE_ECHO
 			}
 			else {
-				process.env.PAX_ECHO = previousEcho
+				process.env.PAE_ECHO = previousEcho
 			}
 		}
         
@@ -452,21 +457,21 @@ function main() {
 	}
 
 	// Default single invocation
-	const previousEcho = process.env.PAX_ECHO
+	const previousEcho = process.env.PAE_ECHO
 
-	if (paxEchoEnabled) {
-		process.env.PAX_ECHO = '1'
+	if (paeEchoEnabled) {
+		process.env.PAE_ECHO = '1'
 	}
 
 	const rc = runNx([normalizedTarget, project, ...enhancedArgs, ...restArgs])
 
 	// Restore echo environment
-	if (paxEchoEnabled) {
+	if (paeEchoEnabled) {
 		if (previousEcho === undefined) {
-			delete process.env.PAX_ECHO
+			delete process.env.PAE_ECHO
 		}
 		else {
-			process.env.PAX_ECHO = previousEcho
+			process.env.PAE_ECHO = previousEcho
 		}
 	}
 

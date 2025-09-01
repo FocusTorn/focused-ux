@@ -1,226 +1,331 @@
-# FocusedUX Package Generators
+# FocusedUX Generators - Functional Testing Guide
 
-This directory contains Nx generators for creating different types of packages in the FocusedUX monorepo.
+## Overview
 
-## Available Generators
+This directory contains Nx generators designed to create architecture-compliant packages that work immediately after generation. Each generator includes functional test source code in the `_test-source/` directory to validate that the generated structure works correctly.
 
-### 1. Shared Package Generator (`shared`)
+## Goal
 
-Creates a shared library package that provides common functionality to other packages.
+**Create generators (tool, lib, core, ext) with actual functional source code contained in `_test-source/` to be implanted into the generated structure, ensuring they work as expected right out of the box.**
 
-**Usage:**
+## Generator Philosophy
 
-```bash
-nx g ./generators:shared --name=utilities --description="Common utilities and services"
-```
+### 1. **Functional by Default**
 
-**Creates:**
+- Every generated package should build, test, and run immediately
+- No placeholder code or TODO comments
+- Real, working implementations that demonstrate the package's purpose
 
-- Package with `build:core` target
-- TypeScript configuration for declaration generation
-- Individual exports for tree-shaking
-- Proper package.json with exports
+### 2. **Test-Driven Development**
 
-### 2. Core Package Generator (`core`)
+- Use `_test-source/` directory to store functional implementations
+- Copy real source code into generated packages during testing
+- Validate that generated packages work with actual code
 
-Creates a core library package that contains business logic for a specific feature.
+### 3. **Architecture Compliance**
 
-**Usage:**
+- Follow established patterns from `docs/Architecture.md`
+- Ensure generated packages integrate properly with the workspace
+- Maintain consistency across all package types
 
-```bash
-nx g ./generators:core --name=ghost-writer --description="Ghost Writer core functionality"  --directory=packages/ghost-writer
-```
-
-**Creates:**
-
-- Package with `build:core` target
-- TypeScript configuration for declaration generation
-- Individual exports for tree-shaking
-- Proper package.json with exports
-
-### 3. Extension Package Generator (`ext`)
-
-Creates a VSCode extension package that provides the UI and VSCode-specific implementation.
-
-**Usage:**
-
-```bash
-nx g ./generators:ext --name=ghost-writer --displayName="F-UX: Ghost Writer" --description="Dynamically generate frequently used code" --corePackage=ghost-writer --directory=packages/ghost-writer
-```
-
-**Creates:**
-
-- Package with `build:extension` target
-- VSCode extension manifest (package.json)
-- Basic extension structure with DI container
-- TypeScript configuration with core package reference
-- Packaging and publishing targets
-
-### 4. Library Package Generator (`lib`)
-
-Creates a library package in the `libs/` directory for internal utilities and tools.
-
-**Usage:**
-
-```bash
-nx g ./generators:lib --name=utilities --description="Internal utility functions" --directory=libs
-```
-
-**Creates:**
-
-- Library with `build:core` target
-- TypeScript configuration for declaration generation
-- Proper package.json with exports
-
-### 5. Test Scaffold Generator (`test-scaffold`)
-
-Creates a comprehensive test directory structure with Mockly integration, vitest configuration, and helper utilities for VSCode extension testing.
-
-**Usage:**
-
-```bash
-# For a core package
-nx g ./generators:test-scaffold --project=my-feature --packageType=core
-
-# For an extension package
-nx g ./generators:test-scaffold --project=my-feature-ext --packageType=ext
-
-# For a shared library
-nx g ./generators:test-scaffold --project=utilities --packageType=shared
-```
-
-**Creates:**
-
-- `__tests__/` directory with comprehensive test structure
-- `_setup.ts` with Mockly integration and console control
-- `helpers.ts` with mock setup functions and utilities
-- `vitest.functional.config.ts` for functional testing
-- `vitest.coverage.config.ts` for coverage testing
-- Sample test files demonstrating usage patterns
-- Directory structure for services and adapters
-- Comprehensive README documentation
-- Automatic project.json updates with test targets
-
-**Features:**
-
-- **Mockly Integration**: Full integration with the Mockly VSCode API mocking library
-- **Comprehensive Mocks**: Pre-configured mocks for window, workspace, terminal, file system, and path utilities
-- **Test Organization**: Structured directories for services, adapters, and coverage tests
-- **Vitest Configuration**: Separate configs for functional and coverage testing
-- **Helper Utilities**: Functions for creating mock objects and setting up test environments
-- **Documentation**: Extensive README files with examples and best practices
-
-## Generator Features
-
-### ✅ **Automatic Configuration**
-
-- Uses global targets from `nx.json` (`build:core`, `build:extension`)
-- Proper TypeScript configuration with `emitDeclarationOnly: true`
-- Correct package.json structure for each package type
-
-### ✅ **Workspace Integration**
-
-- Automatically adds packages to `pnpm-workspace.yaml`
-- Updates Nx workspace configuration
-- Proper dependency management
-
-### ✅ **Best Practices**
-
-- Individual exports for tree-shaking
-- Proper TypeScript declaration generation
-- Optimized bundle sizes
-- Consistent naming conventions
-
-### ✅ **Extension-Specific Features**
-
-- VSCode extension manifest with proper structure
-- Dependency injection setup with Awilix
-- Command registration and activation events
-- Packaging and publishing targets
-
-## Package Structure
-
-### Shared/Core Packages
+## Directory Structure
 
 ```
-packages/package-name/
+generators/
+├── README.md                    # This guide
+├── collection.json              # Generator collection configuration
+├── package.json                 # Collection metadata
+├── tool/                        # Tool package generator
+│   ├── generator.ts
+│   ├── schema.json
+│   ├── schema.d.ts
+│   └── files/                   # Template files
+├── lib/                         # Library package generator
+├── core/                        # Core package generator
+├── ext/                         # Extension package generator
+└── test-scaffold/               # Test structure generator
+
+_test-source/                    # Functional test implementations
+├── observability/               # Test implementation for observability tool
+│   ├── src/                     # Source code to copy into generated tool
+│   ├── config/                  # Configuration files
+│   └── expected-output/         # Expected generated structure
+├── example-core/                # Test implementation for core package
+├── example-ext/                 # Test implementation for extension package
+└── example-lib/                 # Test implementation for library package
+```
+
+## Generator Types
+
+### 1. Tool Generator (`tool/`)
+
+**Purpose**: Generate standalone utility packages in `libs/tools/`
+
+**Test Implementation**: `_test-source/observability/`
+
+- Comprehensive observability system
+- Structured logging, metrics collection, error tracking
+- CLI interface with configuration management
+- Full test suite with coverage
+
+**Generated Structure**:
+
+```
+libs/tools/{name}/
+├── package.json                 # ESM package with minimal dependencies
+├── project.json                 # Nx project configuration
+├── tsconfig.json               # TypeScript configuration
+├── vitest.config.ts            # Test configuration
+├── README.md                   # Documentation
 ├── src/
-│   └── index.ts          # Individual exports
-├── package.json          # Library configuration
-├── project.json          # Nx configuration
-├── tsconfig.json         # TypeScript configuration
-└── tsconfig.lib.json     # Library TypeScript configuration
+│   ├── index.ts                # Main exports
+│   ├── lib/                    # Core functionality
+│   └── cli/                    # CLI interface (optional)
+└── __tests__/                  # Comprehensive test structure
+    ├── _setup.ts
+    ├── isolated-tests/
+    ├── functional-tests/
+    └── coverage-tests/
 ```
 
-### Extension Packages
+### 2. Core Generator (`core/`)
+
+**Purpose**: Generate pure business logic packages in `packages/{feature}/core/`
+
+**Test Implementation**: `_test-source/example-core/`
+
+- Self-contained business logic
+- No VSCode dependencies
+- Asset generation capabilities
+- Pure TypeScript/JavaScript
+
+**Generated Structure**:
 
 ```
-packages/package-name/ext/
+packages/{feature}/core/
+├── package.json                 # Pure business logic package
+├── project.json                 # Build and test targets
 ├── src/
-│   ├── extension.ts      # Main extension entry point
-│   ├── injection.ts      # DI container setup
-│   ├── index.ts          # Module exports
-│   └── _config/
-│       └── constants.ts  # Extension constants
-├── assets/
-│   └── icon.png          # Extension icon
-├── package.json          # VSCode extension manifest
-├── project.json          # Nx configuration
-├── tsconfig.json         # TypeScript configuration
-├── tsconfig.lib.json     # Library TypeScript configuration
-└── .vscodeignore         # VSCode packaging ignore
+│   ├── index.ts                # Main exports
+│   ├── services/               # Business logic services
+│   └── scripts/                # Asset generation scripts
+└── __tests__/                  # Unit and integration tests
 ```
 
-## Usage Examples
+### 3. Extension Generator (`ext/`)
 
-### Creating a Complete Feature
+**Purpose**: Generate VSCode extension packages in `packages/{feature}/ext/`
 
-1. **Create the core package:**
+**Test Implementation**: `_test-source/example-ext/`
 
-    ```bash
-    nx g ./generators:core --name=my-feature --description="My feature core functionality"
-    ```
+- VSCode integration wrapper
+- CommonJS bundling
+- Local adapters pattern
+- Integration testing setup
 
-2. **Create the extension package:**
+**Generated Structure**:
 
-    ```bash
-    nx g ./generators:ext --name=my-feature --displayName="F-UX: My Feature" --description="My feature extension" --corePackage=my-feature
-    ```
+```
+packages/{feature}/ext/
+├── package.json                 # VSCode extension manifest
+├── project.json                 # Extension build configuration
+├── src/
+│   ├── extension.ts            # Main extension entry point
+│   └── adapters/               # VSCode API adapters
+└── __tests__/                  # Extension-specific tests
+```
 
-3. **Build both packages:**
-    ```bash
-    nx run @fux/my-feature-core:build
-    nx run @fux/my-feature-ext:build
-    ```
+### 4. Library Generator (`lib/`)
 
-### Benefits
+**Purpose**: Generate shared utility libraries in `libs/`
 
-- **Consistency**: All packages follow the same proven configuration
-- **Performance**: Optimized bundle sizes and build times
-- **Maintainability**: Uses global targets for easy updates
-- **Type Safety**: Proper TypeScript declaration generation
-- **Tree-shaking**: Individual exports enable better optimization
+**Test Implementation**: `_test-source/example-lib/`
 
-## Configuration
+- Reusable utility functions
+- No external dependencies
+- Pure functions with clear contracts
+- Comprehensive documentation
 
-The generators use the global targets defined in `nx.json`:
+**Generated Structure**:
 
-- `build:core`: For shared and core packages
-- `build:extension`: For VSCode extension packages
+```
+libs/{name}/
+├── package.json                 # Shared utility package
+├── project.json                 # Library configuration
+├── src/
+│   ├── index.ts                # Main exports
+│   └── utils/                  # Utility functions
+└── __tests__/                  # Unit tests
+```
 
-These targets include all the optimizations we've discovered:
+## Testing Workflow
 
-- Proper dependency ordering
-- TypeScript declaration generation
-- ESBuild bundling with tree-shaking
-- Asset copying
-- Minification for production
+### 1. **Prepare Test Source**
+
+```bash
+# Create test implementation in _test-source/
+mkdir -p _test-source/{package-name}
+# Add functional source code, config files, etc.
+```
+
+### 2. **Test Generator with Dry Run**
+
+```bash
+# Test generator without making changes
+nx g ./generators:tool test-package --dryRun
+
+# Verify generated structure matches expectations
+# Check that all templates are correctly applied
+```
+
+### 3. **Generate Package**
+
+```bash
+# Generate actual package
+nx g ./generators:tool test-package --description="Test package"
+```
+
+### 4. **Implant Test Source**
+
+```bash
+# Copy functional source code into generated package
+cp -r _test-source/{package-name}/src/* libs/tools/test-package/src/
+cp -r _test-source/{package-name}/config/* libs/tools/test-package/
+```
+
+### 5. **Validate Functionality**
+
+```bash
+# Build the generated package
+nx build @fux/test-package
+
+# Run tests
+nx test @fux/test-package
+
+# Verify it works as expected
+```
+
+### 6. **Clean Up**
+
+```bash
+# Remove test package after validation
+rm -rf libs/tools/test-package
+```
+
+## Test Source Requirements
+
+### Functional Source Code
+
+- **Real implementations** - No placeholder code
+- **Working examples** - Demonstrates package capabilities
+- **Proper structure** - Follows established patterns
+- **Complete features** - Shows full functionality
+
+### Configuration Files
+
+- **Build configuration** - Proper Nx targets
+- **Test configuration** - Vitest setup
+- **TypeScript config** - Correct compiler options
+- **Package metadata** - Proper dependencies and scripts
+
+### Documentation
+
+- **README templates** - Clear usage instructions
+- **API documentation** - Function signatures and examples
+- **Architecture notes** - Package design decisions
+
+## Validation Checklist
+
+### Before Committing Generator Changes
+
+- [ ] **Generator runs successfully** - No errors during generation
+- [ ] **Templates are complete** - All necessary files included
+- [ ] **Schema validation works** - Proper input validation
+- [ ] **Workspace integration** - Package appears in Nx graph
+- [ ] **Build succeeds** - Generated package builds without errors
+- [ ] **Tests pass** - All tests run successfully
+- [ ] **Functionality works** - Package performs its intended purpose
+- [ ] **Documentation is clear** - README and comments are helpful
+
+### Test Source Validation
+
+- [ ] **Source code is functional** - Implements real features
+- [ ] **No external dependencies** - Self-contained where possible
+- [ ] **Follows patterns** - Consistent with existing packages
+- [ ] **Well-documented** - Clear comments and examples
+- [ ] **Testable** - Includes unit and integration tests
+
+## Best Practices
+
+### Generator Development
+
+1. **Start with test source** - Create functional implementation first
+2. **Test thoroughly** - Use dry runs and manual validation
+3. **Follow patterns** - Reuse successful approaches
+4. **Document everything** - Clear guides and examples
+5. **Validate integration** - Ensure workspace compatibility
+
+### Test Source Management
+
+1. **Keep implementations simple** - Focus on core functionality
+2. **Use realistic examples** - Demonstrate real use cases
+3. **Maintain consistency** - Follow established conventions
+4. **Update regularly** - Keep test source current
+5. **Version control** - Track changes to test implementations
+
+## Troubleshooting
+
+### Common Issues
+
+**Generator not found**
+
+- Check `collection.json` configuration
+- Verify `defaultCollection` in `package.json`
+- Use full path: `nx g ./generators:generator-name`
+
+**Template variables not resolved**
+
+- Ensure `generateFiles` includes all variables
+- Check template file naming (`__tmpl__` suffix)
+- Verify `names()` function usage
+
+**Generated package doesn't build**
+
+- Check `project.json` configuration
+- Verify dependencies in `package.json`
+- Ensure TypeScript configuration is correct
+
+**Test source doesn't work**
+
+- Validate source code independently
+- Check for missing dependencies
+- Verify file structure matches templates
+
+## Future Enhancements
+
+### Planned Improvements
+
+1. **Automated testing** - Scripts to validate generators
+2. **More test sources** - Additional functional examples
+3. **Template validation** - Automated template checking
+4. **Integration testing** - End-to-end generator validation
+5. **Documentation generation** - Auto-generated usage guides
+
+### Generator Extensions
+
+1. **Custom templates** - Project-specific variations
+2. **Conditional generation** - Feature flags for optional components
+3. **Post-generation hooks** - Automated setup tasks
+4. **Validation rules** - Custom schema validation
+5. **Migration helpers** - Update existing packages
+
+## Resources
+
+- [Nx Generators Documentation](https://nx.dev/recipes/generators)
+- [Workspace Architecture Guide](../docs/Architecture.md)
+- [Testing Strategy Guide](../docs/FocusedUX-Testing-Strategy.md)
+- [Package-Specific Details](../docs/Package-Specific-Details.md)
 
 ---
 
-## Notes
-
-- These generators are now invoked using the local path syntax (`./generators:core`, `./generators:ext`, `./generators:shared`).
-- The previous `@fux/core`, `@fux/ext`, and `@fux/shared` commands are no longer valid unless the generators are published as a package and installed as a plugin.
-
----
+**Remember**: The goal is to create generators that produce working packages immediately. Every generated package should be functional, testable, and ready for development.

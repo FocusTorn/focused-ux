@@ -19,6 +19,7 @@ suite('Poetry Shell Test Suite', () => {
 		// Verify the command is registered
 		const commands = await vscode.commands.getCommands()
 		const poetryCommand = commands.find(cmd => cmd.includes('enterPoetryShell'))
+
 		assert.ok(poetryCommand, 'Enter poetry shell command should be registered')
 		
 		// Execute the poetry shell command
@@ -68,8 +69,7 @@ suite('Poetry Shell Test Suite', () => {
 			},
 			(err: any) => {
 				// Should fail with a file system error
-				assert.ok(err.code === 'ENOENT' || err.message.includes('does not exist') || err.message.includes('ENOENT'), 
-					`Expected file system error but got: ${err.message} (code: ${err.code})`)
+				assert.ok(err.code === 'ENOENT' || err.message.includes('does not exist') || err.message.includes('ENOENT'), `Expected file system error but got: ${err.message} (code: ${err.code})`)
 				return true
 			},
 			'Command should have rejected with a file system error.',
@@ -79,6 +79,7 @@ suite('Poetry Shell Test Suite', () => {
 	test('Should handle poetry shell in directory without pyproject.toml', async () => { //>
 		// Create a temporary directory without pyproject.toml
 		const tempDir = path.join(testWorkspaceRoot, 'temp-poetry-test')
+
 		if (!fs.existsSync(tempDir)) {
 			fs.mkdirSync(tempDir, { recursive: true })
 		}

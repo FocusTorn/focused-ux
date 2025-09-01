@@ -825,7 +825,7 @@ export default mergeConfig(
 
 ### Alias Integration
 
-The `pax` tool automatically expands feature aliases to target extension packages for integration tests:
+The `pae` tool automatically expands feature aliases to target extension packages for integration tests:
 
 ```bash
 # These commands automatically target the extension package
@@ -1428,12 +1428,12 @@ For every adapter, ensure tests cover:
 
 ### Double Execution Elimination
 
-**Problem**: Test commands were running twice due to conflicting configurations between global `targetDefaults` and PAX script injection.
+**Problem**: Test commands were running twice due to conflicting configurations between global `targetDefaults` and PAE script injection.
 
 **Solution**:
 
 - **Pattern Replication Protocol**: When a working solution exists (Project Butler), replicate it exactly rather than trying to improve it
-- **Remove Global Conflicts**: Remove `configFile` options from `nx.json` `targetDefaults` to allow PAX script to handle config injection
+- **Remove Global Conflicts**: Remove `configFile` options from `nx.json` `targetDefaults` to allow PAE script to handle config injection
 - **Use Proven Executor**: Use `@nx/vite:test` executor with proper configuration instead of complex `nx:run-commands`
 - **Single Execution Verification**: Always use `-s -stream` flags to verify no duplicate test runs before considering a solution complete
 
@@ -1466,7 +1466,7 @@ For every adapter, ensure tests cover:
     - `{alias} t -s -stream` - Should show single execution
     - `{alias} tf -s -stream` - Should show single execution for each package in dependency chain
 
-4. **PAX Script Integration**: Ensure no conflicting `configFile` options in local packages to allow PAX script to handle config injection
+4. **PAE Script Integration**: Ensure no conflicting `configFile` options in local packages to allow PAE script to handle config injection
 
 ### Configuration Hierarchy Understanding
 
@@ -1474,9 +1474,9 @@ For every adapter, ensure tests cover:
 
 1. Global `targetDefaults` in `nx.json`
 2. Local package `project.json` targets
-3. PAX script dynamic injection
+3. PAE script dynamic injection
 
-**Best Practice**: Remove global `targetDefaults` for test targets and let local packages handle their own configuration with PAX script support.
+**Best Practice**: Remove global `targetDefaults` for test targets and let local packages handle their own configuration with PAE script support.
 
 ### Anti-Patterns for Test Configuration
 
@@ -1890,7 +1890,7 @@ nx run @fux/package-name-ext:test
 # Test entire dependency chain
 nx run @fux/package-name-ext:test:full
 
-# Test with coverage (via pax aliases)
+# Test with coverage (via pae aliases)
 pn tc   # → test with coverage for package
 pn tfc  # → test:full with coverage for entire dependency chain
 

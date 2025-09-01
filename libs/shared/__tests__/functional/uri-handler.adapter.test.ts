@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-import * as vscode from 'vscode'
 
 describe('UriHandlerAdapter', () => {
 	it('instance handleUri unwraps UriAdapter and static create wraps handler', async () => {

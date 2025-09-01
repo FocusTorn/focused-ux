@@ -24,7 +24,9 @@ export class EventEmitterAdapter<T = any> implements IEventEmitter<T> {
 	// Factory method to create from VSCode EventEmitter
 	static fromVSCode<T>(vscodeEmitter: EventEmitter<T>): EventEmitterAdapter<T> {
 		const adapter = new EventEmitterAdapter<T>()
+
 		adapter.emitter = vscodeEmitter
 		return adapter
 	}
+
 }

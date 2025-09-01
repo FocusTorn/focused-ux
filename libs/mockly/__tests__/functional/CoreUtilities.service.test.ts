@@ -34,27 +34,34 @@ describe('CoreUtilitiesService', () => {
 	describe('formatLogMessage', () => {
 		it('should format string messages correctly', () => {
 			const result = service.formatLogMessage('test message')
+
 			expect(result).toBe('test message')
 		})
 
 		it('should format object messages as JSON', () => {
 			const testObj = { key: 'value', number: 42 }
 			const result = service.formatLogMessage(testObj)
+
 			expect(result).toBe('{"key":"value","number":42}')
 		})
 
 		it('should format Error objects with stack trace', () => {
 			const testError = new Error('test error')
+
 			testError.stack = 'Error: test error\n    at test'
+
 			const result = service.formatLogMessage(testError)
+
 			expect(result).toBe('Error: test error\n    at test')
 		})
 
 		it('should handle objects that cannot be serialized', () => {
 			const circularObj: any = {}
+
 			circularObj.self = circularObj
 			
 			const result = service.formatLogMessage(circularObj)
+
 			expect(result).toBe('[Object (serialization failed)]')
 		})
 	})
@@ -122,6 +129,7 @@ describe('CoreUtilitiesService', () => {
 
 		it('should handle object parameters', () => {
 			const obj = { test: 'value' }
+
 			service.info('message', obj)
 			expect(consoleSpy.info).toHaveBeenCalledWith('[INFO] message', obj)
 		})
@@ -165,4 +173,4 @@ describe('CoreUtilitiesService', () => {
 			expect(consoleSpy.info).toHaveBeenCalledWith('[INFO] ')
 		})
 	})
-}) 
+})

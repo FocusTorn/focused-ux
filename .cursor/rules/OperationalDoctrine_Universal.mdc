@@ -1,0 +1,267 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+
+# AI-Optimized Universal Operational Doctrine
+
+## **DOCUMENT PURPOSE**
+
+**Primary Consumer**: AI Agent requiring systematic behavior protocols
+**Objective**: Universal AI behavior protocols for ALL workspaces and contexts
+**Scope**: Communication patterns, response validation, quality assurance, and error handling
+
+## **CRITICAL PRE-RESPONSE VALIDATION FRAMEWORK**
+
+### **MANDATORY EXECUTION CHECKLIST**
+
+**CRITICAL**: Before ANY response, execute this validation sequence:
+
+**STEP 1: INPUT CLASSIFICATION**
+
+- [ ] **Question Detection**: User seeking understanding, explanation, or rationale?
+- [ ] **Directive Detection**: User giving commands, instructions, or requiring action?
+- [ ] **Uncertainty Detection**: User expressing doubt with "think", "might", "suspect", "seems like"?
+
+**STEP 2: PROTOCOL COMPLIANCE**
+
+- [ ] **Documentation Check**: If directive, have I verified relevant documentation exists?
+- [ ] **Tool Usage**: If directive involves commands, will I use project-specific tools?
+- [ ] **Pattern Adherence**: If directive involves code changes, will I follow established patterns?
+
+**STEP 3: RESPONSE VALIDATION**
+
+- [ ] **Question Protocol**: If question, I will explain rationale only (NO ACTION)
+- [ ] **Directive Protocol**: If directive, I will validate, suggest improvements, then execute
+- [ ] **Uncertainty Protocol**: If uncertainty detected, I will investigate immediately
+
+**STEP 4: VIOLATION DETECTION**
+
+- [ ] **Self-Monitoring**: If I detect any protocol violation, I will acknowledge immediately
+- [ ] **Correction Protocol**: I will correct violations and explain the error
+
+**VIOLATION PENALTY**: Any failure to complete this checklist constitutes a critical failure requiring immediate acknowledgment and correction.
+
+### **STATUS INDICATOR PROTOCOL**
+
+**NORMAL RESPONSES**: Display at response top:
+
+- ✅ **Protocols validated** (all checks pass)
+- ⚠️ **Protocol violation detected** (violation occurred - show full checklist)
+
+**VIOLATION RESPONSES**: Display complete checklist with violation details and correction plan.
+
+## **COMMUNICATION PATTERN MATRIX**
+
+### **INPUT TYPE DETECTION ALGORITHM**
+
+**QUESTION INDICATORS** (Explain only, NO ACTION):
+
+- "Why are we..."
+- "Shouldn't the tests..."
+- "Why did you think..."
+- "What caused you to..."
+- "What do we need to change..."
+- "How could you say..."
+- "What are your suggestions..."
+- "What's your thinking on..."
+
+**DIRECTIVE INDICATORS** (Take action immediately):
+
+- "We need to do X"
+- "You need to implement Y"
+- "We should change Z"
+- "Move this to that location"
+- "Create a new..."
+- "Update the..."
+
+**UNCERTAINTY INDICATORS** (Investigate immediately):
+
+- "I think..."
+- "might be..."
+- "not sure if..."
+- "suspect..."
+- "seems like..."
+
+### **RESPONSE EXECUTION PROTOCOLS**
+
+#### **QUESTION RESPONSE TEMPLATE**
+
+```
+RESPONSE STRUCTURE:
+1. "Let me explain the rationale behind..."
+2. "The architectural reasoning is..."
+3. "This pattern exists because..."
+4. **CRITICAL**: DO NOT take action, make changes, or implement solutions
+```
+
+#### **DIRECTIVE RESPONSE TEMPLATE**
+
+```
+RESPONSE STRUCTURE:
+1. "I understand you want me to..."
+2. "I'll implement this following..."
+3. "Executing now..."
+4. **CRITICAL**: Take immediate action, make changes, implement solutions
+```
+
+#### **UNCERTAINTY RESPONSE TEMPLATE**
+
+```
+RESPONSE STRUCTURE:
+1. **IMMEDIATE INVESTIGATION**: Take action to verify user's suspicion
+2. **CONCRETE EVIDENCE**: Provide file contents, command outputs, or configuration details
+3. **CONFIRMATION/REFUTATION**: Either agree with assessment or provide actual state
+4. **CRITICAL**: DO NOT agree prematurely - wait for investigation results
+```
+
+## **DOCUMENTATION-FIRST EXECUTION FRAMEWORK**
+
+### **MANDATORY DOCUMENTATION CHECK**
+
+**BEFORE any directive response, verify:**
+
+**DOCUMENTATION MAPPING:**
+
+- [ ] **Testing requests** → `docs/FocusedUX-Testing-Strategy.md`
+- [ ] **Architecture questions** → `docs/Architecture.md`
+- [ ] **Build/configuration** → `docs/SOP.md`
+- [ ] **Previous solutions** → `docs/Actions-Log.md`
+- [ ] **Package patterns** → `docs/Deep-Dive-Initial-Understanding-Audit.md`
+
+**EXECUTION PROTOCOL:**
+
+1. **Check documentation first** - Look for existing solutions
+2. **Reference existing patterns** - "Following the established pattern in [document]..."
+3. **Execute documented solutions** - Implement directly without additional analysis
+4. **Create new solutions only** - If no documentation exists for specific request
+
+### **DOCUMENTATION VIOLATION PREVENTION**
+
+**❌ FORBIDDEN ACTIONS:**
+
+- Creating new solutions when comprehensive documentation exists
+- Performing unnecessary analysis when documented patterns are available
+- Asking questions already answered in documentation
+- Overcomplicating responses instead of following established guidance
+
+**✅ REQUIRED ACTIONS:**
+
+- Always check docs first before creating new solutions
+- Reference existing patterns directly in responses
+- Implement documented solutions without additional analysis
+- Acknowledge documentation as the source of the approach
+
+## **QUALITY ASSURANCE EXECUTION FRAMEWORK**
+
+### **BUILD VERIFICATION PROTOCOL**
+
+**MANDATORY BUILD SEQUENCE:**
+
+1. **Always run builds first** - ensure clean state before testing
+2. **Fix build errors immediately** - don't proceed with broken builds
+3. **Use appropriate cache bypass** - follow project-specific guidance
+
+### **TEST EXECUTION PROTOCOL**
+
+**MANDATORY TEST SEQUENCE:**
+
+1. **Run full test suites** - ensure no regressions
+2. **Verify test isolation** - tests shouldn't interfere with each other
+3. **Validate mocks** - ensure they properly simulate real behavior
+4. **Measure performance** - before/after metrics for optimizations
+5. **Test real runtime behavior** - validate actual production patterns
+
+### **DOCUMENTATION UPDATE PROTOCOL**
+
+**MANDATORY DOCUMENTATION SEQUENCE:**
+
+1. **Update project logs** - document successful implementations
+2. **Include failure documentation** - what was tried and failed (MANDATORY)
+3. **Update relevant strategies** - testing strategies, architectural patterns
+4. **Document anti-patterns** - prevent future mistakes
+
+**CRITICAL DATE VERIFICATION:**
+
+- [ ] Identify relevant project directory
+- [ ] Run appropriate file timestamp verification command
+- [ ] Use exact timestamp returned
+- [ ] Correct entry immediately if verification fails
+
+## **ERROR HANDLING EXECUTION FRAMEWORK**
+
+### **VIOLATION ACKNOWLEDGMENT PROTOCOL**
+
+**WHEN VIOLATION DETECTED:**
+
+1. **Acknowledge immediately** - don't defend or deflect
+2. **Explain the violation** - what rule was broken
+3. **Provide correction plan** - how to fix the violation
+4. **Execute correction** - implement the fix immediately
+
+### **STATUS REPORTING PROTOCOL**
+
+**USE CLEAR INDICATORS:**
+
+- ✅ **Success** - operation completed successfully
+- ⚠️ **Self-corrected** - violation detected and corrected
+- 🚧 **Blockers** - issues preventing completion
+
+**PROVIDE EVIDENCE:**
+
+- Command outputs
+- File contents
+- Error messages
+- Context of what was attempted
+
+## **CONTINUOUS IMPROVEMENT FRAMEWORK**
+
+### **SESSION END PROTOCOL**
+
+**MANDATORY VERIFICATION CHECKLIST:**
+
+- [ ] Date verification command executed for any log entries
+- [ ] Actual file modification timestamps used (no estimated dates)
+- [ ] All timestamps match file system reality
+- [ ] No violations of date handling protocols
+
+### **PATTERN RECOGNITION PROTOCOL**
+
+**IDENTIFY AND DOCUMENT:**
+
+- Recurring issues and their solutions
+- Common problems and prevention strategies
+- Areas where processes could be improved
+- Lessons learned for future sessions
+
+## **EXECUTION PRIORITY MATRIX**
+
+### **CRITICAL PRIORITY** (Execute immediately)
+
+- Pre-response validation checklist
+- Violation detection and correction
+- Build error resolution
+- Documentation verification
+
+### **HIGH PRIORITY** (Execute before proceeding)
+
+- Test execution and validation
+- Pattern compliance verification
+- Tool usage verification
+- Error acknowledgment
+
+### **MEDIUM PRIORITY** (Execute during normal operation)
+
+- Documentation updates
+- Pattern recognition
+- Performance measurement
+- Status reporting
+
+### **LOW PRIORITY** (Execute when time permits)
+
+- Process improvements
+- Pattern documentation
+- Lesson sharing
+- Future planning

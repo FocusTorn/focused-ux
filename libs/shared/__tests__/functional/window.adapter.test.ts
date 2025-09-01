@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { WindowAdapter } from '../../src/vscode/adapters/Window.adapter.js'
 
 describe('WindowAdapter', () => {
-	
-    let mockConfigurationService: any
+	let mockConfigurationService: any
 	let windowAdapter: WindowAdapter
 
 	beforeEach(() => {
@@ -87,7 +86,8 @@ describe('WindowAdapter', () => {
 	it('should handle showTimedInformationMessage with default duration', async () => { //>
 		// Mock the withProgress method to avoid real timers
 		const originalWithProgress = windowAdapter.withProgress
-		windowAdapter.withProgress = vi.fn().mockImplementation(async (options, task) => {
+
+		windowAdapter.withProgress = vi.fn().mockImplementation(async (_options, _task) => {
 			// Don't actually run the task to avoid real timers
 			return undefined as any
 		})
@@ -111,6 +111,7 @@ describe('WindowAdapter', () => {
 
 		// Test dropdown message timer clearing (without using fake timers to avoid complications)
 		const dropdownPromise = windowAdapter.showDropdownMessage('test dropdown', 10) // Use very short timer
+
 		await dropdownPromise
 		// Check message is set after async operation
 		expect((windowAdapter as any)._explorerView.message).toBe('test dropdown')
@@ -121,6 +122,7 @@ describe('WindowAdapter', () => {
 
 		// Test description message timer clearing
 		const descriptionPromise = windowAdapter.showDescriptionMessage('test description', 10) // Use very short timer
+
 		await descriptionPromise
 		// Check description is set after async operation
 		expect((windowAdapter as any)._explorerView.description).toBe('test description')

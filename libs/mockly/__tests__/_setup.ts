@@ -5,29 +5,29 @@ import process from 'node:process'
 // 1) Mock fs/promises globally (no real disk I/O)
 // This is needed for the Node.js adapters to work properly in tests
 vi.mock('node:fs/promises', () => ({
-  stat: vi.fn(),
-  access: vi.fn(),
-  copyFile: vi.fn(),
-  readFile: vi.fn(),
-  writeFile: vi.fn(),
-  readdir: vi.fn(),
-  mkdir: vi.fn(),
-  rmdir: vi.fn(),
-  unlink: vi.fn(),
+	stat: vi.fn(),
+	access: vi.fn(),
+	copyFile: vi.fn(),
+	readFile: vi.fn(),
+	writeFile: vi.fn(),
+	readdir: vi.fn(),
+	mkdir: vi.fn(),
+	rmdir: vi.fn(),
+	unlink: vi.fn(),
 }))
 
 // 2) Use fake timers globally (no real waits)
 beforeAll(() => {
-  vi.useFakeTimers()
+	vi.useFakeTimers()
 })
 
 afterAll(() => {
-  vi.useRealTimers()
+	vi.useRealTimers()
 })
 
 // 3) Keep mocks clean between tests
 afterEach(() => {
-  vi.clearAllMocks()
+	vi.clearAllMocks()
 })
 
 // Console output configuration for tests

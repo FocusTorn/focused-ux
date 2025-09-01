@@ -95,11 +95,9 @@ suite('Backup Test Suite', () => {
 				await vscode.commands.executeCommand('fux-project-butler.createBackup', invalidUri)
 			},
 			(err: any) => {
-				
 				// Check if it's a file system error
-				assert.ok(err.code === 'FileNotFound' || err.message.includes('does not exist'), 
-                    `Expected ENOENT error but got: ${err.message} (code: ${err.code})`
-                )
+				assert.ok(err.code === 'FileNotFound' || err.message.includes('does not exist'), `Expected ENOENT error but got: ${err.message} (code: ${err.code})`,
+				)
 				return true
 			},
 			'Command should have rejected with a file system error.',

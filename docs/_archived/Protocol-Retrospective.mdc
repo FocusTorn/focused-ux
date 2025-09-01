@@ -1,0 +1,325 @@
+# Protocol Retrospective
+
+## **Purpose**
+
+This protocol enables systematic learning and continuous improvement by analyzing session outcomes and integrating lessons into operational doctrine.
+
+## **Quick Reference**
+
+### **Execution Flow**
+
+```
+retro command issued
+├─ Phase 1: Session Analysis (chat only)
+├─ Phase 2: Lesson Distillation
+├─ Phase 3: Project-Specific Distillation
+├─ Phase 4: Preflight Documentation Review
+├─ Phase 5: Doctrine Integration
+└─ Phase 6: Final Report
+```
+
+### **Key Outputs**
+
+- **Session Analysis**: ≤10 key behavioral insights (chat only)
+- **Doctrine Updates**: Universal and/or FocusedUX doctrine improvements
+- **Actions Log Entry**: Document successful implementations and lessons
+- **Testing Strategy Updates**: If test-related lessons learned
+
+---
+
+## **Phase 1: Session Analysis (Chat-Only Reflection)**
+
+### **Directive**
+
+Review every turn of the conversation from the initial user request to this point. Synthesize findings into a concise, self-critical analysis.
+
+### **Output (Keep in chat only)**
+
+Produce a bulleted list (≤10 points) of key behavioral insights focusing on:
+
+#### **Successes**
+
+- What core principles or patterns led to efficient and correct outcomes?
+- Which established workflows proved effective?
+
+#### **Failures & Corrections**
+
+- Where did your approach fail? What was the root cause?
+- How did the user's feedback correct your behavior?
+- What misdiagnoses occurred and why?
+
+#### **Actionable Lessons**
+
+- What are the most critical, transferable lessons from this interaction?
+- What patterns should be repeated or avoided in the future?
+
+---
+
+## **Phase 2: Lesson Distillation**
+
+### **Directive**
+
+Filter and abstract only the most valuable insights into **durable, universal principles.**
+
+### **Keep (Universal Principles)**
+
+- ✅ **Universal Principles**: Lessons that apply across any language, framework, or project
+- ✅ **Critical Anti-Patterns**: Specific, dangerous actions that must be forbidden
+- ✅ **Effective Protocols**: High-level workflows that proved successful
+- ✅ **New User Feedback Patterns**: Insights from user corrections that reveal core logic flaws
+
+### **Discard (Project-Specific Details)**
+
+- ❌ **Project-Specific Details**: File paths, port numbers, specific function names
+- ❌ **One-Off Trivia**: Information that is not a reusable pattern
+- ❌ **Session Narrative**: The story of what you did (focus only on learning)
+
+---
+
+## **Phase 3: Project-Specific Distillation**
+
+### **Directive**
+
+Extract project-specific lessons that apply specifically to the FocusedUX project architecture, workflows, and patterns.
+
+### **Keep (Project-Specific Principles)**
+
+- ✅ **FocusedUX Architectural Patterns**: Lessons about core/ext patterns, VSCode import rules, package structure
+- ✅ **Project Workflow Insights**: Nx-specific patterns, build system configurations, testing strategies
+- ✅ **Documentation Organization**: Project-specific documentation routing and categorization patterns
+- ✅ **Protocol Design Patterns**: How protocols should work within the FocusedUX ecosystem
+- ✅ **Tool-Specific Lessons**: Insights about project-specific tools, scripts, and utilities
+
+### **Discard (Generic Details)**
+
+- ❌ **Universal Principles**: These go to Universal Doctrine
+- ❌ **One-Off Implementation Details**: Specific file changes, exact commands run
+- ❌ **Temporary Workarounds**: Solutions that don't represent lasting patterns
+
+### **Project-Specific Integration**
+
+Route project-specific lessons to the appropriate FocusedUX doctrine sections:
+
+1. **Architecture Patterns**: Package structure, build configurations, VSCode integration patterns
+2. **Workflow Patterns**: Nx workflows, testing patterns, documentation practices
+3. **Protocol Patterns**: How protocols should be designed and integrated
+4. **Tool Patterns**: Project-specific tool usage and configuration
+
+---
+
+## **Phase 4: Preflight Documentation Review**
+
+### **Proposed Documentation Updates**
+
+**MANDATORY**: Present proposed updates for user review before proceeding:
+
+## **Preflight Documentation Review**
+
+### **Architecture Updates** (`docs/Architecture.md`)
+
+- **Protocol vs Documentation distinction** - Clear separation between reference docs and actionable rules
+- **Documentation routing framework** - Systematic categorization prevents content bloat
+
+### **SOP Updates** (`docs/SOP.md`)
+
+- **Protocol refinement workflow** - How to systematically improve protocols based on user feedback
+- **Documentation organization principles** - When to use docs vs rules for different types of content
+
+### **Actions Log Entry**
+
+- **Session summary** - Document successful refactoring and protocol improvements with key implementations and lessons learned
+
+### **Uncategorized Findings**
+
+- **No uncategorized findings** - all lessons fit existing documentation categories
+
+---
+
+Please review the proposed documentation updates above. Suggest alterations, confirm the plan, or request changes before I proceed with integration.
+
+---
+
+## **Phase 5: Doctrine Integration**
+
+### **Directive**
+
+Route lessons to the correct rule file based on scope and update accordingly.
+
+### **Rule File Selection**
+
+1. **Universal Target** (`.cursor/rules/OperationalDoctrine-Universal.mdc`): Universal AI behavior, operational workflows, cross-project principles
+2. **Project-Specific Target** (`.cursor/rules/OperationalDoctrine-Project-FocusedUX.mdc`): Repo workflows, testing patterns, architectural rules, project conventions
+3. **Non-Duplication**: If both could apply, prefer project-specific; update universal only if it adds non-duplicative value
+
+### **Integration Protocol**
+
+1. **Read** the target rule file to understand current structure
+2. **Find logical sections** for each distilled lesson
+3. **Refine, Don't Just Append**: Improve existing rules with new insights; add new rules following established formatting
+4. **Write-Location Checklist**: Explicitly list files and sections updated in final report
+5. **Read-Write-Reread**: Confirm changes before reporting completion
+
+### **Instruction Quality Requirements**
+
+- **Voice**: Imperative and authoritative ("Always...", "Never...", "FORBIDDEN:...")
+- **Language**: 100% universal and tool-agnostic (natural language only)
+- **Conciseness**: Clear, concise, and non-redundant
+
+---
+
+## **Phase 6: Documentation Updates**
+
+### **Actions Log Documentation**
+
+- **Location**: `./docs/Actions-Log.md`
+- **Format**: Date and descriptive title, high-level summary, key implementations, lessons learned
+- **Placement**: Add to TOP of document
+- **Purpose**: Living reference for successful patterns and solutions
+
+#### **Date/Time Protocol**
+
+**MANDATORY**: Always use PowerShell to get the actual last modified time of files worked on during the session:
+
+**For Entire Project Analysis**:
+
+```powershell
+# Get file statistics for entire project directory
+.\scripts\Get-FileStats.ps1 -Directories @("path/to/project")
+```
+
+**For Specific Files Worked On**:
+
+```powershell
+# Get file statistics for specific modified files
+.\scripts\Get-FileStats.ps1 -FilePaths @("path/to/file1.ts", "path/to/file2.js", "path/to/file3.json")
+```
+
+**Format**: Use the output format `[YYYY-MM-DD HH:MM:SS]` for all Actions Log entry titles.
+
+**Example**: `### [2025-08-22 13:11:06] Dynamicons Test Performance Optimization`
+
+**Note**: Use the Maximum field from the output as the timestamp for the Actions Log entry. Use actual file modification times, not the current system time.
+
+#### **Changelog Update Protocol**
+
+**AUTOMATIC TRIGGER**: After completing any Actions Log entry, if the changes affected one or more packages specifically:
+
+1. **Identify Affected Packages**: Determine which packages were modified during the session
+2. **Update Package Changelogs**: For each affected package, update its `CHANGELOG.md` file
+3. **Changelog Format**: Follow the established format with sections for Added, Changed, Fixed, Technical Improvements
+4. **Version Tracking**: Use the same date format as the Actions Log entry for consistency
+
+**Changelog Locations**:
+
+- `packages/{package-name}/core/CHANGELOG.md`
+- `packages/{package-name}/ext/CHANGELOG.md`
+
+**Example Changelog Entry**:
+
+```markdown
+## [2025-08-22] - Session Title
+
+### Added
+
+- New feature description
+
+### Changed
+
+- Modified behavior description
+
+### Fixed
+
+- Bug fix description
+
+### Technical Improvements
+
+- Architectural or technical changes
+```
+
+#### **Documentation Standards**
+
+**Actions Log Requirements**:
+
+- **Entry gating**: Only add entries when:
+    - `retro` command issued
+    - Issue explicitly resolved
+    - Explicit request to add entry
+- **MANDATORY sections**: "What Was Tried and Failed" documenting all failed attempts
+- **Post-change documentation**: Update in same session as implementation
+
+**Date Verification Priority Protocol**:
+
+**Priority Order for Date Retrieval:**
+
+1. **Modified Files Only**: Start by running `.\scripts\Get-FileStats.ps1 -FilePaths @("file1.ts", "file2.js", "file3.json")` on only the files that were actually modified
+2. **Project Directory**: If specific files unknown, run `.\scripts\Get-FileStats.ps1 -Directories @("path/to/project")` on the project directory
+3. **Workspace Root**: As last resort, run on entire workspace
+
+**MANDATORY**: Always use actual file modification timestamps, never estimate or guess dates.
+
+### **Architecture Documentation**
+
+- **Location**: `docs/Architecture.md` for project architecture, package structure, build configurations, and implementation patterns
+- **Triggers**: Architectural changes, build system modifications, new package patterns, configuration updates
+- **Format**: Detailed technical documentation with examples, configurations, and step-by-step procedures
+
+### **Testing Strategy Documentation**
+
+- **Location**: `docs/FocusedUX-Testing-Strategy.md` for project-specific patterns
+- **Package-Specific**: `packages/{package}/__tests__/TESTING_STRATEGY.md` for unique requirements
+- **Triggers**: Test failures, mock issues, debugging challenges, new anti-patterns
+- **Format**: Problem description, root cause, solution, best practices, library coverage
+
+### **SOP Documentation**
+
+- **Location**: `docs/SOP.md` for comprehensive operational procedures and workflows
+- **Triggers**: Operational procedures, troubleshooting discoveries, development workflows
+- **Format**: Step-by-step procedures, troubleshooting guides, operational workflows
+- **Cross-Reference**: Ensure consistency with doctrine files and testing strategy
+
+---
+
+## **Phase 6: Documentation Updates**
+
+- **Before Implementation**: Consult `docs/SOP.md` and `docs/FocusedUX-Testing-Strategy.md`
+- **During Implementation**: Reference documents to prevent deviations
+- **After Implementation**: Verify alignment with documented patterns
+- **Critical Rule**: Obtain explicit user verification before deviating from global strategies
+
+---
+
+## **Phase 7: Final Report**
+
+### **Directive**
+
+Present a clear, structured report concluding the retrospective.
+
+### **Report Structure**
+
+1. **Status of Doctrine**:
+    - `✅ Universal Operational Doctrine updated.` OR
+    - `✅ FocusedUX Operational Doctrine updated.` OR
+    - `ℹ️ No universal lessons were distilled; no updates required.`
+
+2. **Session Analysis**: The full bulleted list from Phase 1
+
+3. **Files Updated**: Explicit list of files and sections modified
+
+4. **Key Learnings**: Most important insights for future sessions
+
+---
+
+## **Execution Trigger**
+
+- **Command**: `retro` - Triggers full retrospective analysis
+- **Scope**: Entire session review and learning integration
+- **Output**: Structured learning report with doctrine updates
+- **Integration**: Updates both Universal and FocusedUX doctrine files as appropriate
+
+---
+
+> **REMINDER**: This protocol is how you evolve. Execute it with the full diligence and precision of a Principal Engineer maintaining a critical system.
+
+**Begin your retrospective now.**
+
+---

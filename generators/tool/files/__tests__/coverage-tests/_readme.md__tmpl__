@@ -1,0 +1,16 @@
+# Coverage Tests
+
+This directory contains tests that are specifically designed to ensure comprehensive code coverage.
+
+## Purpose
+
+- Verify all code paths are tested
+- Ensure edge cases are covered
+- Validate error handling scenarios
+- Check integration points
+
+## Structure
+
+- `*.test.ts` - Coverage-focused test files
+- `*.spec.ts` - Specification-based tests
+- `_setup.ts` - Coverage-specific setup (if needed)

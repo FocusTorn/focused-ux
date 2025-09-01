@@ -24,6 +24,11 @@
             "factory": "./test-scaffold/generator#default",
             "schema": "./test-scaffold/schema.json",
             "description": "Scaffold test directory structure with consistent setup files"
+        },
+        "tool": {
+            "factory": "./tool/generator#default",
+            "schema": "./tool/schema.json",
+            "description": "Create a tool package following Architecture.md patterns"
         }
     }
 }

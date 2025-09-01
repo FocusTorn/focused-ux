@@ -26,7 +26,7 @@ export class PathUtilsAdapter implements IPathUtilsService {
 
 			return posixPath.startsWith('.') ? posixPath : `./${posixPath}`
 		}
-		catch (error) {
+		catch (_error) {
 			return undefined
 		}
 	}

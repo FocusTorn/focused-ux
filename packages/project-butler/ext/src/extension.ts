@@ -181,6 +181,7 @@ async function createBackup(
 
 	if (!IS_TEST_ENVIRONMENT) {
 		const backupFileName = backupPath.split('/').pop() || backupPath.split('\\').pop()
+
 		await window.showInformationMessage(`Backup created: ${backupFileName}`)
 	}
 }

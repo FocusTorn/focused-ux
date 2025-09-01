@@ -15,5 +15,9 @@
     },
     "include": ["src/**/*.ts"],
     "exclude": ["jest.config.ts", "**/*.spec.ts", "**/*.test.ts"],
-    "references": [{ "path": "../../../libs/shared/tsconfig.lib.json" }]
+    "references": [
+        {
+            "path": "../../shared/tsconfig.lib.json"
+        }
+    ]
 }

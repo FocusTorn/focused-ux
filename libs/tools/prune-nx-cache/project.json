@@ -4,59 +4,7 @@
     "sourceRoot": "libs/tools/prune-nx-cache/src",
     "projectType": "library",
     "targets": {
-        "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "main": "libs/tools/prune-nx-cache/src/index.ts",
-                "outputPath": "libs/tools/prune-nx-cache/dist",
-                "tsConfig": "libs/tools/prune-nx-cache/tsconfig.lib.json",
-                "platform": "node",
-                "format": ["esm"],
-                "bundle": false,
-                "sourcemap": true,
-                "target": "es2022",
-                "keepNames": true,
-                "declarationRootDir": "libs/tools/prune-nx-cache/src",
-                "thirdParty": false,
-                "deleteOutputPath": true,
-                "external": ["vscode", "typescript", "awilix", "js-yaml"]
-            }
-        },
-        "verify:dist:hash": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "node ../../../scripts/verify-dist-hash.cjs",
-                "cwd": "libs/tools/prune-nx-cache"
-            }
-        },
-        "build:with-verify": {
-            "executor": "nx:run-commands",
-            "options": {
-                "commands": [
-                    "nx run @fux/prune-nx-cache:build",
-                    "nx run @fux/prune-nx-cache:verify:dist:hash"
-                ]
-            }
-        },
-        "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" },
-        "lint": {
-            "executor": "@nx/eslint:lint",
-            "dependsOn": ["^build"],
-            "options": {
-                "lintFilePatterns": [
-                    "libs/tools/prune-nx-cache/**/*.ts",
-                    "libs/tools/prune-nx-cache/**/*.tsx",
-                    "libs/tools/prune-nx-cache/**/*.js",
-                    "libs/tools/prune-nx-cache/**/*.jsx"
-                ]
-            }
-        },
-        "test": {
-            "extends": "vite:test",
-            "dependsOn": ["^build"]
-        }
+       
     },
     "tags": []
 }

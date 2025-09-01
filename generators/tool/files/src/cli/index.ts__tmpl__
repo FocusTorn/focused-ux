@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+
+import { <%= className %> } from '../lib/main';
+
+/**
+ * CLI entry point for <%= className %>
+ */
+async function main() {
+  const tool = new <%= className %>();
+  tool.execute();
+}
+
+if (require.main === module) {
+  main().catch(console.error);
+}

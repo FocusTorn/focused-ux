@@ -59,28 +59,36 @@ export function createVscodeTestConfig(options: FuxVSCodeTestConfigOptions) {
 			// Use a dedicated, package-specific user data directory in the root for an isolated run
 			'--user-data-dir',
 			packageUserDataDir,
-            
+
 			// Centralize the extensions directory to prevent local .vscode-test folders
 			'--extensions-dir',
 			sharedExtensionsPath,
-            
+
 			// Disable all extensions except for the one being tested for a clean environment.
 			'--disable-extensions',
 
 			// Disable the workspace trust feature to prevent popups that can block tests.
 			'--disable-workspace-trust',
-			
+
 			// Disable Settings Sync to prevent authentication provider timeouts.
-			'--sync', 'off',
+			'--sync',
+			'off',
 
 			// Explicitly disable noisy or conflicting built-in and common extensions.
-			'--disable-extension', 'ms-vsliveshare.vsliveshare',
-			'--disable-extension', 'ms-python.python',
-			'--disable-extension', 'ms-python.gather',
-			'--disable-extension', 'vscode.git',
-			'--disable-extension', 'vscode.github-authentication',
-			'--disable-extension', 'GitHub.copilot',
-			'--disable-extension', 'GitHub.copilot-chat',
+			'--disable-extension',
+			'ms-vsliveshare.vsliveshare',
+			'--disable-extension',
+			'ms-python.python',
+			'--disable-extension',
+			'ms-python.gather',
+			'--disable-extension',
+			'vscode.git',
+			'--disable-extension',
+			'vscode.github-authentication',
+			'--disable-extension',
+			'GitHub.copilot',
+			'--disable-extension',
+			'GitHub.copilot-chat',
 
 			// Load our extension for testing.
 			'--extensionDevelopmentPath',

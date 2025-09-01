@@ -26,7 +26,7 @@
                 "assets": [
                     {
                         "glob": "**/*",
-                        "input": "packages/dynamicons/core/dist/assets/",
+                        "input": "packages/dynamicons/core/assets/",
                         "output": "./assets/"
                     }
                 ],

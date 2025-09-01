@@ -10,9 +10,7 @@
                 "command": "tsx libs/tools/structure-auditor/src/main.ts"
             }
         },
-        "lint": {
-            "executor": "@nx/eslint:lint"
-        }
+        "lint": { "extends": "lint" }
     },
     "tags": ["tool"]
 }

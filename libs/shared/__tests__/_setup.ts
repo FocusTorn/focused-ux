@@ -1,9 +1,10 @@
 import { vi, afterEach } from 'vitest'
 import { mockly, mocklyService } from '@fux/mockly'
+import process from 'node:process'
 
 // Keep mocks clean between tests
 afterEach(() => {
-  vi.clearAllMocks()
+	vi.clearAllMocks()
 })
 
 // Console output configuration for tests

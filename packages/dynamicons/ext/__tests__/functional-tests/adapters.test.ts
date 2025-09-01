@@ -527,23 +527,23 @@ describe('Adapters', () => {
 		})
 
 		describe('create method', () => {
-					it('should return the provided uri object', () => {
-			const uri = {
-				fsPath: '/test/path',
-				scheme: 'file',
-				authority: '',
-				path: '/test/path',
-				query: '',
-				fragment: '',
-				toString: () => '/test/path',
-			}
+			it('should return the provided uri object', () => {
+				const uri = {
+					fsPath: '/test/path',
+					scheme: 'file',
+					authority: '',
+					path: '/test/path',
+					query: '',
+					fragment: '',
+					toString: () => '/test/path',
+				}
 			
-			const result = adapter.create(uri)
+				const result = adapter.create(uri)
 
-			expect(result.fsPath).toBe(uri.fsPath)
-			expect(result.scheme).toBe(uri.scheme)
-			expect(result.path).toBe(uri.path)
-		})
+				expect(result.fsPath).toBe(uri.fsPath)
+				expect(result.scheme).toBe(uri.scheme)
+				expect(result.path).toBe(uri.path)
+			})
 
 			it('should handle string input by calling file method', () => {
 				const path = '/test/path'

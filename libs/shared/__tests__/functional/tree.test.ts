@@ -9,31 +9,33 @@ vi.mock('vscode', () => ({
 		tooltip: undefined,
 		contextValue: undefined,
 		iconPath: undefined,
-		command: undefined
+		command: undefined,
 	})),
 	ThemeIcon: vi.fn().mockImplementation((id, color) => ({
 		id,
-		color
+		color,
 	})),
 	EventEmitter: vi.fn().mockImplementation(() => ({
 		event: vi.fn(),
 		fire: vi.fn(),
-		dispose: vi.fn()
+		dispose: vi.fn(),
 	})),
 	TreeItemCollapsibleState: {
 		None: 0,
 		Collapsed: 1,
-		Expanded: 2
+		Expanded: 2,
 	},
 	SymbolKind: {
-		Function: 12
-	}
+		Function: 12,
+	},
 }))
 
 describe('Tree Comprehensive Tests', () => {
 	describe('TreeItem-related adapters', () => {
 		it('TreeItemAdapter get/set and toVsCode', async () => {
-			const { TreeItemAdapter, ThemeIconAdapter, ThemeColorAdapter } = await import('../../src/vscode/adapters/TreeItem.adapter.js')
+			// const { TreeItemAdapter, ThemeIconAdapter, ThemeColorAdapter } = await import('../../src/vscode/adapters/TreeItem.adapter.js')
+			const { TreeItemAdapter, ThemeIconAdapter } = await import('../../src/vscode/adapters/TreeItem.adapter.js')
+            
 			const vs: any = await import('vscode')
 			const ti = new vs.TreeItem('L', 1) as any
 			const a = new TreeItemAdapter(ti)
@@ -103,4 +105,4 @@ describe('Tree Comprehensive Tests', () => {
 			expect(a.Expanded).toBe(2)
 		})
 	})
-}) 
+})

@@ -18,8 +18,8 @@ describe('Workspace Comprehensive Tests', () => {
 				return { workspace, RelativePattern }
 			})
 
-					const { WorkspaceAdapter } = await import('../../src/vscode/adapters/Workspace.adapter.js')
-		const { TextDocumentAdapter } = await import('../../src/vscode/adapters/TextDocument.adapter.js')
+			const { WorkspaceAdapter } = await import('../../src/vscode/adapters/Workspace.adapter.js')
+			const { TextDocumentAdapter } = await import('../../src/vscode/adapters/TextDocument.adapter.js')
 			const a = new WorkspaceAdapter()
 
 			expect(a.getConfiguration('x')).toEqual({})

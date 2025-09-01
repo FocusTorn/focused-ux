@@ -34,9 +34,7 @@
                 "command": "tsx --expose-gc libs/tools/cursor-memory-optimizer/src/index.ts gc"
             }
         },
-        "lint": {
-            "executor": "@nx/eslint:lint"
-        }
+        "lint": { "extends": "lint" }
     },
     "tags": ["tool"]
 }

@@ -251,11 +251,14 @@ export class Range implements vt.Range {
 		
 		// Find the earlier end position
 		let end: Position
+
 		if (this.end.line < other.end.line) {
 			end = this.end
-		} else if (this.end.line > other.end.line) {
+		}
+		else if (this.end.line > other.end.line) {
 			end = other.end
-		} else {
+		}
+		else {
 			// Same line, find the earlier character position
 			end = this.end.character <= other.end.character ? this.end : other.end
 		}

@@ -1,0 +1,14 @@
+{
+    "generators": {
+        "tool": {
+            "factory": "./dist/generators/tool/tool",
+            "schema": "./dist/generators/tool/schema.json",
+            "description": "tool generator"
+        },
+        "lib": {
+            "factory": "./dist/generators/lib/lib",
+            "schema": "./dist/generators/lib/schema.json",
+            "description": "lib generator"
+        }
+    }
+}
