@@ -1,250 +1,252 @@
 {
-    "targetDefaults": {
-        "@nx/esbuild:esbuild": {
-            "cache": true,
-            "inputs": ["production", "^production"],
-            "options": {
-                "outputPath": "{projectRoot}/dist",
-                "tsConfig": "{projectRoot}/tsconfig.json",
-                "platform": "node",
-                "bundle": true,
-                "external": ["vscode"],
-                "thirdParty": true
-            }
-        },
-        "build": {
-            "dependsOn": ["^build"],
-            "outputs": ["{options.outputPath}"],
-            "inputs": ["production", "^production"],
-            "cache": true,
-            "syncGenerators": ["@nx/js:typescript-sync"]
-        },
-        "package:dev": {
-            "cache": false,
-            "dependsOn": ["build"],
-            "inputs": ["production", "^production", "{workspaceRoot}/scripts/create-vsix.js"],
-            "outputs": ["{options.outputPath}"]
-        },
-        "publish": {
-            "dependsOn": ["build"]
-        },
-        "check-types": {
-            "executor": "@nx/js:tsc",
-            "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build"],
-            "options": {
-                "main": "{projectRoot}/src/index.ts",
-                "outputPath": "{projectRoot}/dist",
-                "tsConfig": "{projectRoot}/tsconfig.json"
-            }
-        },
-        "lint": {
-            "executor": "@nx/eslint:lint",
-            "dependsOn": ["build", "^build"],
-            "options": {
-                "lintFilePatterns": [
-                    "{projectRoot}/**/*.ts",
-                    "{projectRoot}/**/*.tsx",
-                    "{projectRoot}/**/*.js",
-                    "{projectRoot}/**/*.jsx",
-                    "{projectRoot}/**/*.json",
-                    "{projectRoot}/**/*.jsonc"
-                ],
-                "eslintConfig": "eslint.config.js",
-                "format": "stylish",
-                "quiet": false
-            }
-        },
-        "lint:full": {
-            "executor": "@nx/eslint:lint",
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "lint",
-                    "params": "forward"
-                }
-            ]
-        },
-        "validate": {
-            "executor": "nx:run-commands",
-            "dependsOn": [],
-            "inputs": ["default", "^default"],
-            "outputs": [],
-            "cache": true,
-            "options": {
-                "commands": ["nx run {projectName}:lint --fix", "nx run {projectName}:audit"],
-                "parallel": false
-            }
-        },
-        "validate:full": {
-            "executor": "nx:run-commands",
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "validate",
-                    "params": "forward"
-                }
-            ],
-            "inputs": ["default", "^default"],
-            "outputs": [],
-            "cache": true,
-            "options": {
-                "commands": ["nx run {projectName}:validate"],
-                "parallel": false
-            }
-        },
-        "audit": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build", "^build"],
-            "inputs": ["default", "^default"],
-            "outputs": [],
-            "cache": true,
-            "options": {
-                "command": "tsx libs/tools/structure-auditor/src/main.ts {projectName}",
-                "cwd": "{workspaceRoot}"
-            }
-        },
-        "audit:full": {
-            "executor": "nx:run-commands",
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "audit",
-                    "params": "forward"
-                }
-            ],
-            "inputs": ["default", "^default"],
-            "outputs": [],
-            "cache": true,
-            "options": {
-                "commands": ["nx run {projectName}:audit"],
-                "parallel": false
-            }
-        },
-        "clean": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "rimraf {projectRoot}/dist {projectRoot}/coverage {projectRoot}/.nx",
-                "cwd": "{workspaceRoot}"
-            }
-        },
-        "clean:dist": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "rimraf {projectRoot}/dist",
-                "cwd": "{workspaceRoot}"
-            }
-        },
-        "clean:cache": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "rimraf {projectRoot}/.nx",
-                "cwd": "{workspaceRoot}"
-            }
-        },
-        "@nx/js:tsc": {
-            "cache": true,
-            "dependsOn": ["^build"],
-            "inputs": ["production", "^production"]
-        },
-        "test": {
-            "dependsOn": ["^build"]
-        }
+  "targetDefaults": {
+    "@nx/esbuild:esbuild": {
+      "cache": true,
+      "inputs": ["production", "^production"],
+      "options": {
+        "outputPath": "{projectRoot}/dist",
+        "tsConfig": "{projectRoot}/tsconfig.json",
+        "platform": "node",
+        "bundle": true,
+        "external": ["vscode"],
+        "thirdParty": true
+      }
     },
-    "plugins": [
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["{options.outputPath}"],
+      "inputs": ["production", "^production"],
+      "cache": true,
+      "syncGenerators": ["@nx/js:typescript-sync"]
+    },
+    "package:dev": {
+      "cache": false,
+      "dependsOn": ["build"],
+      "inputs": ["production", "^production", "{workspaceRoot}/scripts/create-vsix.js"],
+      "outputs": ["{options.outputPath}"]
+    },
+    "publish": {
+      "dependsOn": ["build"]
+    },
+    "check-types": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": ["^build"],
+      "options": {
+        "main": "{projectRoot}/src/index.ts",
+        "outputPath": "{projectRoot}/dist",
+        "tsConfig": "{projectRoot}/tsconfig.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "dependsOn": ["build", "^build"],
+      "options": {
+        "lintFilePatterns": [
+          "{projectRoot}/**/*.ts",
+          "{projectRoot}/**/*.tsx",
+          "{projectRoot}/**/*.js",
+          "{projectRoot}/**/*.jsx",
+          "{projectRoot}/**/*.json",
+          "{projectRoot}/**/*.jsonc"
+        ],
+        "eslintConfig": "eslint.config.js",
+        "format": "stylish",
+        "quiet": false,
+        "cache": true,
+        "cacheLocation": "{projectRoot}/.nx/eslintcache"
+      }
+    },
+    "lint:full": {
+      "executor": "@nx/eslint:lint",
+      "dependsOn": [
         {
-            "plugin": "@nx/eslint/plugin",
-            "options": {
-                "targetName": "lint",
-                "configFile": "eslint.config.js"
-            }
-        },
-        {
-            "plugin": "@nx/vite/plugin",
-            "options": {
-                "buildTargetName": "build",
-                "testTargetName": "vite:test",
-                "serveTargetName": "serve",
-                "devTargetName": "dev",
-                "previewTargetName": "preview",
-                "serveStaticTargetName": "serve-static",
-                "typecheckTargetName": "typecheck",
-                "buildDepsTargetName": "build-deps",
-                "watchDepsTargetName": "watch-deps"
-            }
+          "dependencies": true,
+          "target": "lint",
+          "params": "forward"
         }
+      ]
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "dependsOn": [],
+      "inputs": ["default", "^default"],
+      "outputs": [],
+      "cache": true,
+      "options": {
+        "commands": ["nx run {projectName}:lint --fix", "nx run {projectName}:audit"],
+        "parallel": false
+      }
+    },
+    "validate:full": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "dependencies": true,
+          "target": "validate",
+          "params": "forward"
+        }
+      ],
+      "inputs": ["default", "^default"],
+      "outputs": [],
+      "cache": true,
+      "options": {
+        "commands": ["nx run {projectName}:validate"],
+        "parallel": false
+      }
+    },
+    "audit": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build", "^build"],
+      "inputs": ["default", "^default"],
+      "outputs": [],
+      "cache": true,
+      "options": {
+        "command": "tsx libs/tools/structure-auditor/src/main.ts {projectName}",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "audit:full": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "dependencies": true,
+          "target": "audit",
+          "params": "forward"
+        }
+      ],
+      "inputs": ["default", "^default"],
+      "outputs": [],
+      "cache": true,
+      "options": {
+        "commands": ["nx run {projectName}:audit"],
+        "parallel": false
+      }
+    },
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "rimraf {projectRoot}/dist {projectRoot}/coverage {projectRoot}/.nx",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "clean:dist": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "rimraf {projectRoot}/dist",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "clean:cache": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "rimraf {projectRoot}/.nx",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "@nx/js:tsc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    }
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint",
+        "configFile": "eslint.config.js"
+      }
+    },
+    {
+      "plugin": "@nx/vite/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "testTargetName": "vite:test",
+        "serveTargetName": "serve",
+        "devTargetName": "dev",
+        "previewTargetName": "preview",
+        "serveStaticTargetName": "serve-static",
+        "typecheckTargetName": "typecheck",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    }
+  ],
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals",
+      "!{projectRoot}/**/*.md",
+      "!{projectRoot}/**/*.markdown",
+      "!{projectRoot}/**/*.mdx",
+      "!{projectRoot}/**/*.png",
+      "!{projectRoot}/**/*.jpg",
+      "!{projectRoot}/**/*.jpeg",
+      "!{projectRoot}/**/*.gif",
+      "!{projectRoot}/**/*.svg",
+      "!{projectRoot}/**/*.ico",
+      "!{projectRoot}/**/*.pdf",
+      "!{projectRoot}/docs/**"
     ],
-    "namedInputs": {
-        "default": [
-            "{projectRoot}/**/*",
-            "sharedGlobals",
-            "!{projectRoot}/**/*.md",
-            "!{projectRoot}/**/*.markdown",
-            "!{projectRoot}/**/*.mdx",
-            "!{projectRoot}/**/*.png",
-            "!{projectRoot}/**/*.jpg",
-            "!{projectRoot}/**/*.jpeg",
-            "!{projectRoot}/**/*.gif",
-            "!{projectRoot}/**/*.svg",
-            "!{projectRoot}/**/*.ico",
-            "!{projectRoot}/**/*.pdf",
-            "!{projectRoot}/docs/**"
-        ],
-        "production": [
-            "default",
-            "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-            "!{projectRoot}/tsconfig.spec.json",
-            "!{projectRoot}/src/test-setup.[jt]s"
-        ],
-        "test": [
-            "default",
-            "{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-            "{projectRoot}/tsconfig.spec.json",
-            "{projectRoot}/src/test-setup.[jt]s"
-        ],
-        "lint": ["default", "{projectRoot}/**/*.eslintrc.js", "{projectRoot}/**/*.eslint.json"],
-        "docs": [
-            "{projectRoot}/docs/**",
-            "{projectRoot}/**/*.md",
-            "{projectRoot}/**/*.markdown",
-            "{projectRoot}/**/*.mdx"
-        ],
-        "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
+    "production": [
+      "default",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/src/test-setup.[jt]s"
+    ],
+    "test": [
+      "default",
+      "{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "{projectRoot}/tsconfig.spec.json",
+      "{projectRoot}/src/test-setup.[jt]s"
+    ],
+    "lint": ["default", "{projectRoot}/**/*.eslintrc.js", "{projectRoot}/**/*.eslint.json"],
+    "docs": [
+      "{projectRoot}/docs/**",
+      "{projectRoot}/**/*.md",
+      "{projectRoot}/**/*.markdown",
+      "{projectRoot}/**/*.mdx"
+    ],
+    "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
+  },
+  "release": {
+    "projectsRelationship": "independent",
+    "changelog": {
+      "projectChangelogs": true
     },
-    "release": {
-        "projectsRelationship": "independent",
-        "changelog": {
-            "projectChangelogs": true
-        },
-        "projects": [
-            "@fux/ghost-writer-core",
-            "@fux/ghost-writer-ext",
-            "@fux/note-hub-core",
-            "@fux/note-hub-ext",
-            "@fux/project-butler-core",
-            "@fux/project-butler-ext",
-            "@fux/project-butler-core",
-            "@fux/project-butler-ext",
-            "@fux/context-cherry-picker-core",
-            "@fux/context-cherry-picker-ext",
-            "@fux/ai-agent-interactor-core",
-            "@fux/ai-agent-interactor-ext",
-            "@fux/dynamicons-core",
-            "@fux/dynamicons-ext",
-            "@fux/libs/shared",
-            "@fux/prune-nx-cache",
-            "@fux/mockly",
-            "@fux/project-alias-expander",
-            "@fux/vscode-test-cli-config"
-        ],
-        "version": {
-            "preVersionCommand": "pnpm dlx nx run-many -t build",
-            "conventionalCommits": true
-        }
-    },
-    "packageManager": "pnpm",
-    "nxCloudId": "685c28f2a5df05525dfa937b",
-    "$schema": "./node_modules/nx/schemas/nx-schema.json",
-    "defaultBase": "master",
-    "defaultRunner": "nx/tasks-runners/default"
+    "projects": [
+      "@fux/ghost-writer-core",
+      "@fux/ghost-writer-ext",
+      "@fux/note-hub-core",
+      "@fux/note-hub-ext",
+      "@fux/project-butler-core",
+      "@fux/project-butler-ext",
+      "@fux/project-butler-core",
+      "@fux/project-butler-ext",
+      "@fux/context-cherry-picker-core",
+      "@fux/context-cherry-picker-ext",
+      "@fux/ai-agent-interactor-core",
+      "@fux/ai-agent-interactor-ext",
+      "@fux/dynamicons-core",
+      "@fux/dynamicons-ext",
+      "@fux/libs/shared",
+      "@fux/prune-nx-cache",
+      "@fux/mockly",
+      "@fux/project-alias-expander",
+      "@fux/vscode-test-cli-config"
+    ],
+    "version": {
+      "preVersionCommand": "pnpm dlx nx run-many -t build",
+      "conventionalCommits": true
+    }
+  },
+  "packageManager": "pnpm",
+  "nxCloudId": "685c28f2a5df05525dfa937b",
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "master",
+  "defaultRunner": "nx/tasks-runners/default"
 }

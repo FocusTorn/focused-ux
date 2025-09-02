@@ -74,15 +74,16 @@ export class CursorOptimizer {
 			if (options.maxMemoryMB) {
 				runtimeArgs.push(`--max-old-space-size=${options.maxMemoryMB}`);
 			}
-			if (options.gcInterval) {
-				runtimeArgs.push(`--gc-interval=${options.gcInterval}`);
-			}
-			if (options.forceGC) {
-				runtimeArgs.push('--force-gc');
-			}
-			if (options.gcThreshold) {
-				runtimeArgs.push(`--gc-threshold=${options.gcThreshold}`);
-			}
+			// Removed automatic GC settings - GC is now manual-only
+			// if (options.gcInterval) {
+			// 	runtimeArgs.push(`--gc-interval=${options.gcInterval}`);
+			// }
+			// if (options.forceGC) {
+			// 	runtimeArgs.push('--force-gc');
+			// }
+			// if (options.gcThreshold) {
+			// 	runtimeArgs.push(`--gc-threshold=${options.gcThreshold}`);
+			// }
 
 			// Create optimized configuration
 			const argvConfig = {

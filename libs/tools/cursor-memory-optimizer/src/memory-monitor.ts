@@ -18,76 +18,32 @@ export interface MemoryStats {
 
 export class MemoryMonitor {
 
-	private intervalId?: NodeJS.Timeout
 	private options: Required<MonitorOptions>
 	private stats: MemoryStats[] = []
 	private isRunning = false
 
 	constructor(options: MonitorOptions = {}) {
 		this.options = {
-			intervalSeconds: options.intervalSeconds || 5,
-			thresholdPercent: options.thresholdPercent || 80,
+			intervalSeconds: options.intervalSeconds || 30, // Increased from 5 to 30
+			thresholdPercent: options.thresholdPercent || 90, // Increased from 80 to 90
 			maxMemoryMB: options.maxMemoryMB || 3072, // Changed from 4096 to 3072 (3GB)
 		}
 	}
 
-	async start(): Promise<void> {
-		if (this.isRunning) {
-			console.log(chalk.yellow('⚠️  Monitoring is already running'))
-			return
-		}
-
-		// Get configured max memory and threshold
-		const status = await CursorOptimizer.getStatus()
-
-		if (status.isOptimized && status.maxMemoryMB > 0) {
-			this.options.maxMemoryMB = status.maxMemoryMB
-		}
-		
-		if (status.isOptimized && status.gcThreshold > 0) {
-			this.options.thresholdPercent = status.gcThreshold
-		}
-
-		this.isRunning = true
-		console.log(chalk.blue(`📊 Starting memory monitoring (${this.options.intervalSeconds}s intervals)`))
-		console.log(chalk.gray(`   Threshold: ${this.options.thresholdPercent}% of ${this.options.maxMemoryMB}MB`))
-
-		// Set up periodic monitoring
-		this.intervalId = setInterval(async () => {
-			await this.checkMemoryUsage()
-		}, this.options.intervalSeconds * 1000)
-
-		// Set up graceful shutdown
-		process.on('SIGINT', () => {
-			this.stop()
-			process.exit(0)
-		})
-
-		process.on('SIGTERM', () => {
-			this.stop()
-			process.exit(0)
-		})
-
-		// Initial check
-		await this.checkMemoryUsage()
-	}
-
-	stop(): void {
-		if (this.intervalId) {
-			clearInterval(this.intervalId)
-			this.intervalId = undefined
-		}
-		this.isRunning = false
-		console.log(chalk.blue('📊 Memory monitoring stopped'))
-	}
-
-	private async checkMemoryUsage(): Promise<void> {
+	// Manual check method - no automatic monitoring
+	async checkOnce(): Promise<MemoryStats> {
 		try {
 			const processInfo = await CursorOptimizer.getProcessInfo()
       
 			if (!processInfo.isRunning) {
 				console.log(chalk.gray('📊 Cursor is not running'))
-				return
+				return {
+					timestamp: new Date(),
+					memoryMB: 0,
+					cpuPercent: 0,
+					isHighUsage: false,
+					processCount: 0
+				}
 			}
 
 			const memoryPercent = (processInfo.memoryMB / this.options.maxMemoryMB) * 100
@@ -115,10 +71,56 @@ export class MemoryMonitor {
 			if (isHighUsage) {
 				await this.handleHighMemoryUsage()
 			}
+
+			return stats
 		}
 		catch (error) {
 			console.error(chalk.red('❌ Error checking memory usage:'), error)
+			throw error
 		}
+	}
+
+	// Manual start method - only for explicit monitoring sessions
+	async start(): Promise<void> {
+		if (this.isRunning) {
+			console.log(chalk.yellow('⚠️  Monitoring is already running'))
+			return
+		}
+
+		// Get configured max memory and threshold
+		const status = await CursorOptimizer.getStatus()
+
+		if (status.isOptimized && status.maxMemoryMB > 0) {
+			this.options.maxMemoryMB = status.maxMemoryMB
+		}
+		
+		if (status.isOptimized && status.gcThreshold > 0) {
+			this.options.thresholdPercent = status.gcThreshold
+		}
+
+		this.isRunning = true
+		console.log(chalk.blue(`📊 Starting manual memory monitoring`))
+		console.log(chalk.gray(`   Threshold: ${this.options.thresholdPercent}% of ${this.options.maxMemoryMB}MB`))
+		console.log(chalk.yellow(`   Note: This is a manual session - use checkOnce() to check memory`))
+
+		// Set up graceful shutdown
+		process.on('SIGINT', () => {
+			this.stop()
+			process.exit(0)
+		})
+
+		process.on('SIGTERM', () => {
+			this.stop()
+			process.exit(0)
+		})
+
+		// Initial check
+		await this.checkOnce()
+	}
+
+	stop(): void {
+		this.isRunning = false
+		console.log(chalk.blue('📊 Memory monitoring stopped'))
 	}
 
 	private displayStatus(stats: MemoryStats, memoryPercent: number): void {
@@ -172,6 +174,7 @@ export class MemoryMonitor {
 		console.log(chalk.gray('   3. Restart Cursor'))
 		console.log(chalk.gray('   4. Check for memory leaks in extensions'))
 		console.log(chalk.gray('   5. Increase system swap/virtual memory'))
+		console.log(chalk.gray('   6. Run "cmo gc" to manually trigger garbage collection'))
 	}
 
 	getStats(): MemoryStats[] {
@@ -229,5 +232,4 @@ Monitoring duration: ${this.getMonitoringDuration()}
 			return `${Math.floor(durationSec / 60)}m ${durationSec % 60}s`
 		return `${Math.floor(durationSec / 3600)}h ${Math.floor((durationSec % 3600) / 60)}m`
 	}
-
 }

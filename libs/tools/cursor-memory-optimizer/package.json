@@ -1,15 +1,21 @@
 {
-  "name": "@fux/cursor-memory-optimizer",
-  "version": "0.0.1",
-  "description": "Memory optimization tool for Cursor IDE",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "chalk": "^5.3.0",
-    "commander": "^11.1.0"
-  },
-  "devDependencies": {
-    "@types/node": "18.19.39",
-    "tsx": "4.16.2"
-  }
-} 
+    "name": "@fux/cursor-memory-optimizer",
+    "version": "0.0.1",
+    "description": "Memory optimization tool for Cursor IDE",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "add-context-menu": "powershell.exe -ExecutionPolicy Bypass -File scripts/add-context-menu.ps1",
+        "add-shortcut-context": "powershell.exe -ExecutionPolicy Bypass -File scripts/add-shortcut-context.ps1",
+        "remove-context-menu": "powershell.exe -ExecutionPolicy Bypass -File scripts/add-context-menu.ps1 -Remove",
+        "remove-shortcut-context": "powershell.exe -ExecutionPolicy Bypass -File scripts/add-shortcut-context.ps1 -Remove"
+    },
+    "dependencies": {
+        "chalk": "^5.3.0",
+        "commander": "^11.1.0"
+    },
+    "devDependencies": {
+        "@types/node": "18.19.39",
+        "tsx": "4.16.2"
+    }
+}

@@ -68,15 +68,14 @@ program
 
 program
 	.command('monitor')
-	.description('Monitor Cursor memory usage in real-time')
-	.option('-i, --interval <seconds>', 'Monitoring interval in seconds', '5')
-	.option('-t, --threshold <percent>', 'Memory usage threshold percentage (triggers garbage collection when exceeded)', '80')
+	.description('Start a manual memory monitoring session (no automatic background monitoring)')
+	.option('-t, --threshold <percent>', 'Memory usage threshold percentage (triggers garbage collection when exceeded)', '90')
 	.action(async (options) => {
 		try {
-			console.log(chalk.blue('📊 Starting Cursor memory monitoring...'))
+			console.log(chalk.blue('📊 Starting manual Cursor memory monitoring session...'))
+			console.log(chalk.yellow('   Note: This is a manual session - use "cmo check" for single checks'))
       
 			const monitor = new MemoryMonitor({
-				intervalSeconds: Number.parseInt(options.interval, 10),
 				thresholdPercent: Number.parseInt(options.threshold, 10),
 			})
 
@@ -84,6 +83,30 @@ program
 		}
 		catch (error) {
 			console.error(chalk.red('❌ Error starting monitoring:'), error)
+			process.exit(1)
+		}
+	})
+
+program
+	.command('check')
+	.description('Check memory usage once (no continuous monitoring)')
+	.option('-t, --threshold <percent>', 'Memory usage threshold percentage', '90')
+	.action(async (options) => {
+		try {
+			console.log(chalk.blue('📊 Checking Cursor memory usage...'))
+      
+			const monitor = new MemoryMonitor({
+				thresholdPercent: Number.parseInt(options.threshold, 10),
+			})
+
+			const stats = await monitor.checkOnce()
+			
+			if (stats.isHighUsage) {
+				console.log(chalk.yellow('\n💡 Memory usage is high. Consider running "cmo gc" to trigger garbage collection.'))
+			}
+		}
+		catch (error) {
+			console.error(chalk.red('❌ Error checking memory usage:'), error)
 			process.exit(1)
 		}
 	})
