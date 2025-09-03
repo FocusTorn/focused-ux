@@ -8,7 +8,7 @@
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build"],
+            "dependsOn": ["^build", "copy-assets"],
             "options": {
                 "entryPoints": ["packages/dynamicons/ext/src/extension.ts"],
                 "outputPath": "packages/dynamicons/ext/dist",
@@ -23,18 +23,20 @@
                 "sourcemap": true,
                 "main": "packages/dynamicons/ext/src/extension.ts",
                 "tsConfig": "packages/dynamicons/ext/tsconfig.json",
-                "assets": [
-                    {
-                        "glob": "**/*",
-                        "input": "packages/dynamicons/core/assets/",
-                        "output": "./assets/"
-                    }
-                ],
                 "thirdParty": true,
                 "esbuildOptions": {
                     "logLevel": "silent"
                 }
-
+            }
+        }, //<
+        
+        "copy-assets": { //>
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/dist/assets"],
+            "dependsOn": ["^build", "@fux/dynamicons-core:process-assets"],
+            "options": {
+                "command": "npx tsx ../../dynamicons/core/scripts/copy-assets.ts --source-dir ../../dynamicons/core/dist/assets --output-dir dist/assets",
+                "cwd": "{projectRoot}"
             }
         }, //<
         "package": { //>

@@ -1,10 +1,6 @@
 ---
-description:
-globs:
-alwaysApply: true
+alwaysApply: false
 ---
-
-
 # AI-Optimized Universal Operational Doctrine
 
 ## **DOCUMENT PURPOSE**

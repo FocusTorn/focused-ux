@@ -2,9 +2,10 @@ import { vi, beforeAll, afterAll, afterEach } from 'vitest'
 import process from 'node:process'
 
 // Mock external dependencies
-vi.mock('strip-json-comments', () => ({
-	default: vi.fn(),
-}))
+vi.mock('strip-json-comments', () =>
+	({
+		default: vi.fn(),
+	}))
 
 // Use fake timers globally
 beforeAll(() => {

@@ -11,14 +11,17 @@ import type { IConfigurationService } from '../../src/services/ConfigurationServ
 import type { IIconPickerService } from '../../src/services/IconPickerService.js'
 
 // Mock vscode
-vi.mock('vscode', () => ({
-	Uri: {
-		file: (path: string) => ({
-			fsPath: path,
-			toString: () => path,
-		}),
-	},
-}))
+vi.mock('vscode', () =>
+	({
+		Uri: {
+			file: (path: string) =>
+				({
+					fsPath: path,
+					toString: () =>
+						path,
+				}),
+		},
+	}))
 
 // Mock dependencies
 const mockWindow: IWindow = {

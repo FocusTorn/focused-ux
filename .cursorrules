@@ -119,7 +119,8 @@
                         "Check documentation first - Look for existing solutions",
                         "Reference existing patterns - 'Following the established pattern in [document]...'",
                         "Execute documented solutions - Implement directly without additional analysis",
-                        "Create new solutions only - If no documentation exists for specific request"
+                        "Create new solutions only - If no documentation exists for specific request",
+                        "Always check existing documentation before creating solutions - this prevents reinventing existing patterns and architectural violations"
                     ]
                 },
                 "documentationViolationPrevention": {
@@ -167,7 +168,14 @@
                         "Use exact timestamp returned",
                         "Correct entry immediately if verification fails"
                     ]
-                }
+                },
+                "performanceMeasurementProtocol": [
+                    "ALWAYS measure performance before claiming improvements - document actual metrics, not estimated benefits",
+                    "Establish baseline measurements before implementing optimizations",
+                    "Use consistent measurement methodology for before/after comparisons",
+                    "Document specific performance metrics and improvement percentages",
+                    "Never claim performance improvements without actual measurement data"
+                ]
             },
             "errorHandlingExecutionFramework": {
                 "violationAcknowledgmentProtocol": [
@@ -188,7 +196,13 @@
                         "Error messages",
                         "Context of what was attempted"
                     ]
-                }
+                },
+                "rootCauseResolutionProtocol": [
+                    "NEVER apply band-aid fixes like process.setMaxListeners() - always address architectural root causes",
+                    "Identify the fundamental architectural issue causing the problem",
+                    "Implement proper architectural solutions instead of superficial workarounds",
+                    "Document the root cause and solution for future prevention"
+                ]
             },
             "continuousImprovementFramework": {
                 "sessionEndProtocol": {
@@ -204,7 +218,34 @@
                     "Common problems and prevention strategies",
                     "Areas where processes could be improved",
                     "Lessons learned for future sessions"
+                ],
+                "incrementalProblemSolvingApproach": [
+                    "Build solutions iteratively through multiple iterations - each iteration should build upon previous learnings",
+                    "Start with minimal viable solution and refine through testing and feedback",
+                    "Document each iteration's learnings and failures for continuous improvement",
+                    "Avoid big-bang solutions that don't allow for iterative refinement"
                 ]
+            },
+            "antiPatternPreventionFramework": {
+                "bandAidFixAntiPattern": [
+                    "FORBIDDEN: Using superficial fixes without addressing root cause - this creates technical debt and masks real problems",
+                    "NEVER use process.setMaxListeners() to hide MaxListenersExceededWarning",
+                    "NEVER use process.exit() without understanding why processes are spawning",
+                    "ALWAYS identify and fix the architectural root cause of the problem",
+                    "Document the anti-pattern and proper solution for future prevention"
+                ],
+                "typescriptAntiPatterns": [
+                    "FORBIDDEN: Using explicit 'any' type - this defeats TypeScript's type safety and creates runtime errors",
+                    "NEVER use 'any' type without proper type definition - always specify concrete types or use 'unknown' for truly unknown values",
+                    "ALWAYS define proper interfaces, types, or use generics instead of falling back to 'any'",
+                    "Use 'unknown' type for values that could be anything, then narrow with type guards",
+                    "Document the proper type definition and prevention strategy for future reference"
+                ]
+            },
+            "codeQualityStandards": {
+                "unusedVariableNaming": "ALWAYS prefix unused variables with underscore (_) - e.g., _unusedParam, _ignoredValue",
+                "variableNamingConvention": "Use descriptive names, prefix unused variables with underscore to indicate intentional non-use",
+                "lintingCompliance": "Ensure all unused variables follow underscore prefix convention to pass linting rules"
             },
             "executionPriorityMatrix": {
                 "criticalPriority": [
@@ -238,6 +279,18 @@
                 "primaryConsumer": "AI Agent operating in FocusedUX workspace",
                 "objective": "Project-specific operational guidelines for FocusedUX workspace",
                 "scope": "Architecture patterns, testing strategies, command execution, and anti-patterns"
+            },
+            "workspaceConfiguration": {
+                "moduleSystem": "ESM (ECMAScript Modules)",
+                "typescriptModuleResolution": "NodeNext",
+                "shell": "PowerShell 7 (pwsh)",
+                "packageManager": "pnpm workspaces",
+                "buildInfrastructure": {
+                    "bundler": "ESBuild",
+                    "testRunner": "Vitest",
+                    "linter": "ESLint",
+                    "formatter": "ESBuild"
+                }
             },
             "criticalPreResponseValidationFramework": {
                 "mandatoryExecutionChecklist": {
@@ -295,7 +348,9 @@
                         "role": "Pure business logic, self-contained",
                         "architecture": "Type imports only, no VSCode value imports",
                         "dependencies": "Minimal external, no shared package dependencies",
-                        "build": "bundle: false, format: ['esm']"
+                        "build": "bundle: false, format: ['esm']",
+                        "assetProcessing": "MUST process assets to own dist/assets directory - NEVER output to extension paths or external locations",
+                        "selfContainment": "Complete independence from extension package paths and dependencies"
                     },
                     "extensionPackages": {
                         "path": "packages/{feature}/ext/",
@@ -372,7 +427,8 @@
                 "buildToolExecutionPreferences": {
                     "cacheBypass": "Use '--skip-nx-cache' for troubleshooting Nx build issues",
                     "packageManager": "Prefer 'pnpm' over 'npm' for all package management tasks",
-                    "projectAliases": "Use project-specific aliases - 'shared', 'mockly', 'pbc', 'pbe', etc."
+                    "projectAliases": "Use project-specific aliases - 'shared', 'mockly', 'pbc', 'pbe', etc.",
+                    "targetExecution": "ALWAYS use Nx targets over package.json scripts - leverage Nx caching and dependency graph"
                 }
             },
             "antiPatternPreventionFramework": {
@@ -401,6 +457,12 @@
                         "rule": "Core packages should have minimal external dependencies",
                         "violation": "Adding shared package dependencies to core packages",
                         "prevention": "Verify core packages are self-contained"
+                    },
+                    "assetProcessingOrchestration": {
+                        "rule": "Use single orchestrator script for complex asset processing",
+                        "violation": "Multiple separate scripts causing MaxListenersExceededWarning",
+                        "prevention": "Consolidate asset operations into single orchestrator script",
+                        "rationale": "Multiple process spawning causes event listener leaks and memory issues"
                     },
                     "vscodeExtensionConfigurationRemoval": {
                         "rule": "Never remove VSCode extension metadata during refactoring",
@@ -478,6 +540,18 @@
                         "rule": "NEVER cache 'package:dev' targets",
                         "violation": "Caching targets that create unique timestamped versions",
                         "prevention": "Disable caching for packaging targets"
+                    },
+                    "moduleSystemCompatibility": {
+                        "rule": "Use process.argv[1].endsWith() pattern for CLI execution detection in TypeScript",
+                        "violation": "Using import.meta.url without considering TypeScript module configuration constraints",
+                        "prevention": "Always verify module system compatibility before implementing CLI patterns",
+                        "rationale": "import.meta.url requires specific TypeScript module settings and can cause compilation errors"
+                    },
+                    "buildDependencyOrder": {
+                        "rule": "Asset processing MUST occur AFTER core package build, not before",
+                        "violation": "Incorrect dependency order causing asset deletion during build",
+                        "prevention": "Ensure process-assets targets depend on build targets, not vice versa",
+                        "rationale": "Build targets with deleteOutputPath: true will clear processed assets if dependency order is wrong"
                     }
                 },
                 "validationViolationPrevention": {

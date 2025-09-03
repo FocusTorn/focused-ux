@@ -12,14 +12,17 @@ import type { IIconPickerService } from '../../src/services/IconPickerService.js
 import type { IUriFactory } from '../../src/_interfaces/IUri.js'
 
 // Mock vscode
-vi.mock('vscode', () => ({
-	Uri: {
-		file: (path: string) => ({
-			fsPath: path,
-			toString: () => path,
-		}),
-	},
-}))
+vi.mock('vscode', () =>
+	({
+		Uri: {
+			file: (path: string) =>
+				({
+					fsPath: path,
+					toString: () =>
+						path,
+				}),
+		},
+	}))
 
 // Mock dependencies
 const mockWindow: IWindow = {
@@ -81,16 +84,18 @@ const mockIconPicker: IIconPickerService = {
 }
 
 const mockUriFactory: IUriFactory = {
-	file: vi.fn((path: string) => ({
-		fsPath: path,
-		scheme: 'file',
-		authority: '',
-		path,
-		query: '',
-		fragment: '',
-		toString: () => path,
-		with: vi.fn(),
-	})),
+	file: vi.fn((path: string) =>
+		({
+			fsPath: path,
+			scheme: 'file',
+			authority: '',
+			path,
+			query: '',
+			fragment: '',
+			toString: () =>
+				path,
+			with: vi.fn(),
+		})),
 	parse: vi.fn(),
 	create: vi.fn(),
 	joinPath: vi.fn(),
@@ -126,7 +131,8 @@ describe('IconActionsService - QuickPick', () => {
 		})
 
 		it('should pass filter function to icon picker', async () => {
-			const filter = (name: string) => name.includes('test')
+			const filter = (name: string) =>
+				name.includes('test')
 
 			;(mockIconPicker.showAvailableIconsQuickPick as any).mockResolvedValue('_filtered-icon')
 

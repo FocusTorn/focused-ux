@@ -874,3 +874,193 @@ This architecture provides:
 - **Consistent patterns** across all packages in the monorepo
 
 The confirmed implementations in Ghost Writer and Project Butler demonstrate that this architecture is working, maintainable, and scalable for the FocusedUX monorepo.
+
+---
+
+## **Asset Processing Workflow**
+
+### **Core Package Asset Processing**
+
+**Workflow Steps**:
+
+1. **Asset Discovery**: Scan source directories for SVG, theme, and image assets
+2. **Manifest Generation**: Create comprehensive asset metadata with hashes and timestamps
+3. **Change Detection**: Compare current state with manifest to identify modifications
+4. **Selective Processing**: Process only changed assets for efficiency
+5. **Output Generation**: Store processed assets in core package's dist/assets directory
+
+**Nx Target Usage**:
+
+```bash
+# Full asset processing with change detection
+{alias} process-assets
+
+# Incremental processing (changed assets only)
+{alias} process-assets:incremental
+
+# Force all assets processing
+{alias} process-assets:all
+
+# Generate manifest only
+{alias} assets:manifest
+
+# Detect changes only
+{alias} assets:detect
+```
+
+### **Extension Package Asset Copying**
+
+**Workflow Steps**:
+
+1. **Dependency Check**: Ensure core package assets are processed
+2. **Asset Copying**: Copy processed assets from core's dist/assets to extension's dist/assets
+3. **Structure Preservation**: Maintain directory structure during copying
+4. **Validation**: Verify copied assets are accessible
+
+**Nx Target Usage**:
+
+```bash
+# Copy assets from core to extension
+{alias} copy-assets
+```
+
+### **Build Integration**
+
+**Target Dependencies**:
+
+- Core package: `build` → `process-assets`
+- Extension package: `copy-assets` → `@fux/dynamicons-core:process-assets` → `build`
+
+**Critical Rules**:
+
+- Asset processing MUST occur AFTER core package build
+- Extension copying MUST occur AFTER core asset processing
+- Never reverse dependency order to prevent asset deletion
+
+---
+
+## **Performance Measurement Protocol**
+
+### **Before Implementation**
+
+**Baseline Establishment**:
+
+1. **Build Time Measurement**: Measure current build times for asset-heavy builds
+2. **Asset Processing Time**: Measure time spent on asset operations
+3. **Cache Hit Rates**: Establish current Nx cache effectiveness
+4. **Memory Usage**: Measure peak memory during asset processing
+
+**Measurement Commands**:
+
+```bash
+# Measure build time
+time {alias} build
+
+# Measure asset processing time
+time {alias} process-assets
+
+# Check cache status
+nx show projects --graph
+```
+
+### **After Implementation**
+
+**Performance Validation**:
+
+1. **Build Time Comparison**: Compare before/after build times
+2. **Asset Processing Efficiency**: Measure incremental vs full processing times
+3. **Cache Effectiveness**: Verify Nx caching improvements
+4. **Memory Optimization**: Confirm reduced memory usage
+
+**Validation Commands**:
+
+```bash
+# Measure optimized build time
+time {alias} build
+
+# Test incremental processing
+time {alias} process-assets:incremental
+
+# Verify cache hits
+nx show projects --graph
+```
+
+### **Performance Documentation**
+
+**Required Metrics**:
+
+- Build time reduction percentage
+- Asset processing time improvement
+- Cache hit rate improvement
+- Memory usage optimization
+- Specific performance bottlenecks addressed
+
+**Documentation Format**:
+
+```markdown
+### Performance Impact
+
+- **Build Time Reduction**: X% improvement
+- **Asset Processing**: X% faster
+- **Cache Efficiency**: X% improvement
+- **Memory Usage**: X% reduction
+```
+
+---
+
+## **Documentation-First Approach**
+
+### **Development Workflow**
+
+**Before Implementation**:
+
+1. **Check Existing Documentation**: Review `./docs/` for existing solutions
+2. **Reference Established Patterns**: Use documented patterns when available
+3. **Documentation Gap Analysis**: Identify what needs to be documented
+4. **Pattern Validation**: Verify patterns align with architectural principles
+
+**During Implementation**:
+
+1. **Follow Documented Patterns**: Implement using established guidance
+2. **Document Deviations**: Note any deviations from documented patterns
+3. **Update Documentation**: Keep documentation current with implementation
+4. **Pattern Validation**: Ensure implementation follows documented principles
+
+**After Implementation**:
+
+1. **Document Success**: Record successful implementations in Actions Log
+2. **Document Failures**: Record what was tried and failed
+3. **Update Strategies**: Enhance documentation with new learnings
+4. **Pattern Recognition**: Identify new patterns for future use
+
+### **Documentation Sources**
+
+**Primary Sources**:
+
+- `docs/Architecture.md` - Architectural patterns and principles
+- `docs/SOP.md` - Operational procedures and workflows
+- `docs/FocusedUX-Testing-Strategy.md` - Testing patterns and strategies
+- `docs/Actions-Log.md` - Previous implementations and lessons learned
+
+**Documentation Priority**:
+
+1. **Architecture**: Core principles and patterns
+2. **SOP**: Operational procedures and workflows
+3. **Testing**: Testing strategies and patterns
+4. **Actions Log**: Implementation history and lessons learned
+
+### **Anti-Pattern Prevention**
+
+**Documentation Violations**:
+
+- Creating new solutions when comprehensive documentation exists
+- Performing unnecessary analysis when documented patterns are available
+- Asking questions already answered in documentation
+- Overcomplicating responses instead of following established guidance
+
+**Required Actions**:
+
+- Always check docs first before creating new solutions
+- Reference existing patterns directly in responses
+- Implement documented solutions without additional analysis
+- Acknowledge documentation as the source of the approach

@@ -65,7 +65,8 @@ export class IconDiscoveryService implements IIconDiscoveryService {
 				this.commonUtils.errMsg(`Error reading icon directory ${directoryPath}`, error)
 			}
 		}
-		return iconOptions.sort((a, b) => a.label.localeCompare(b.label))
+		return iconOptions.sort((a, b) =>
+			a.label.localeCompare(b.label))
 	}
 
 	public async getBuiltInIconDirectories(): Promise<{ fileIconsDir: string, folderIconsDir: string }> {

@@ -6,24 +6,29 @@ import type { ICommonUtils } from '../../src/_interfaces/ICommonUtils.js'
 import type { IUriFactory } from '../../src/_interfaces/IUri.js'
 
 // Mock vscode
-vi.mock('vscode', () => ({
-	Uri: {
-		file: (path: string) => ({
-			fsPath: path,
-			scheme: 'file',
-			authority: '',
-			path,
-			query: '',
-			fragment: '',
-			toString: () => path,
-		}),
-	},
-}))
+vi.mock('vscode', () =>
+	({
+		Uri: {
+			file: (path: string) =>
+				({
+					fsPath: path,
+					scheme: 'file',
+					authority: '',
+					path,
+					query: '',
+					fragment: '',
+					toString: () =>
+						path,
+				}),
+		},
+	}))
 
 // Mock strip-json-comments
-vi.mock('strip-json-comments', () => ({
-	default: (content: string) => content.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ''),
-}))
+vi.mock('strip-json-comments', () =>
+	({
+		default: (content: string) =>
+			content.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, ''),
+	}))
 
 // Mock dependencies
 const mockFileSystem: IFileSystem = {
@@ -51,16 +56,18 @@ const mockCommonUtils: ICommonUtils = {
 }
 
 const mockUriFactory: IUriFactory = {
-	file: vi.fn((path: string) => ({
-		fsPath: path,
-		scheme: 'file',
-		authority: '',
-		path,
-		query: '',
-		fragment: '',
-		toString: () => path,
-		with: vi.fn(),
-	})),
+	file: vi.fn((path: string) =>
+		({
+			fsPath: path,
+			scheme: 'file',
+			authority: '',
+			path,
+			query: '',
+			fragment: '',
+			toString: () =>
+				path,
+			with: vi.fn(),
+		})),
 	parse: vi.fn(),
 	create: vi.fn(),
 	joinPath: vi.fn(),
@@ -76,11 +83,13 @@ describe('IconThemeGeneratorService', () => {
 		service = new IconThemeGeneratorService(mockFileSystem, mockPath, mockCommonUtils, mockUriFactory)
 		baseManifestUri = {
 			fsPath: '/test/base.theme.json',
-			toString: () => '/test/base.theme.json',
+			toString: () =>
+				'/test/base.theme.json',
 		}
 		generatedThemeDirUri = {
 			fsPath: '/test/themes',
-			toString: () => '/test/themes',
+			toString: () =>
+				'/test/themes',
 		}
 	})
 
@@ -142,15 +151,19 @@ describe('IconThemeGeneratorService', () => {
 
 			const userIconsDir = '/test/user-icons'
 			const userIconFiles = [
-				{ name: 'custom-icon.svg', isFile: () => true },
-				{ name: 'another-icon.svg', isFile: () => true },
-				{ name: 'not-an-icon.txt', isFile: () => true },
+				{ name: 'custom-icon.svg', isFile: () =>
+					true },
+				{ name: 'another-icon.svg', isFile: () =>
+					true },
+				{ name: 'not-an-icon.txt', isFile: () =>
+					true },
 			]
 
 			;(mockFileSystem.readFile as any).mockResolvedValue(JSON.stringify(baseManifest))
 			;(mockFileSystem.access as any).mockResolvedValue(undefined)
 			;(mockFileSystem.readdir as any).mockResolvedValue(userIconFiles)
-			;(mockPath.join as any).mockImplementation((...args: string[]) => args.join('/'))
+			;(mockPath.join as any).mockImplementation((...args: string[]) =>
+				args.join('/'))
 			;(mockPath.relative as any).mockReturnValue('../../user-icons/custom-icon.svg')
 
 			const result = await service.generateIconThemeManifest(
@@ -331,7 +344,8 @@ describe('IconThemeGeneratorService', () => {
 			}
 			const outputPath = {
 				fsPath: '/test/output.theme.json',
-				toString: () => '/test/output.theme.json',
+				toString: () =>
+					'/test/output.theme.json',
 			} as any
 
 			await service.writeIconThemeFile(manifest, outputPath)
@@ -347,7 +361,8 @@ describe('IconThemeGeneratorService', () => {
 			const manifest = { iconDefinitions: {}, file: '_file' }
 			const outputPath = {
 				fsPath: '/test/output.theme.json',
-				toString: () => '/test/output.theme.json',
+				toString: () =>
+					'/test/output.theme.json',
 			} as any
 			const writeError = new Error('Write failed')
 

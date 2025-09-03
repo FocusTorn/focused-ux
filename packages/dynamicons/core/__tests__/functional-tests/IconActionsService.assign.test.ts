@@ -12,14 +12,17 @@ import type { IIconPickerService } from '../../src/services/IconPickerService.js
 import type { IUriFactory } from '../../src/_interfaces/IUri.js'
 
 // Mock vscode
-vi.mock('vscode', () => ({
-	Uri: {
-		file: (path: string) => ({
-			fsPath: path,
-			toString: () => path,
-		}),
-	},
-}))
+vi.mock('vscode', () =>
+	({
+		Uri: {
+			file: (path: string) =>
+				({
+					fsPath: path,
+					toString: () =>
+						path,
+				}),
+		},
+	}))
 
 // Mock dependencies
 const mockWindow: IWindow = {
@@ -81,16 +84,18 @@ const mockIconPicker: IIconPickerService = {
 }
 
 const mockUriFactory: IUriFactory = {
-	file: vi.fn((path: string) => ({
-		fsPath: path,
-		scheme: 'file',
-		authority: '',
-		path,
-		query: '',
-		fragment: '',
-		toString: () => path,
-		with: vi.fn(),
-	})),
+	file: vi.fn((path: string) =>
+		({
+			fsPath: path,
+			scheme: 'file',
+			authority: '',
+			path,
+			query: '',
+			fragment: '',
+			toString: () =>
+				path,
+			with: vi.fn(),
+		})),
 	parse: vi.fn(),
 	create: vi.fn(),
 	joinPath: vi.fn(),
@@ -122,10 +127,13 @@ describe('IconActionsService - Assign', () => {
 
 			;(service as any).regenerateAndApplyTheme = vi.fn().mockResolvedValue(undefined)
 
-			const resourceUri = { fsPath: '/test/file.ts', toString: () => '/test/file.ts' } as any
+			const resourceUri = { fsPath: '/test/file.ts', toString: () =>
+				'/test/file.ts' } as any
 			const selectedIcon = '_typescript'
 
-			;(mockFileSystem.stat as any).mockResolvedValue({ isFile: () => true, isDirectory: () => false })
+			;(mockFileSystem.stat as any).mockResolvedValue({ isFile: () =>
+				true, isDirectory: () =>
+				false })
 			;(mockPath.basename as any).mockReturnValue('file.ts')
 			;(mockIconPicker.showAvailableIconsQuickPick as any).mockResolvedValue(selectedIcon)
 			;(mockConfigService.updateCustomMappings as any).mockResolvedValue(undefined)
@@ -148,12 +156,16 @@ describe('IconActionsService - Assign', () => {
 			;(service as any).regenerateAndApplyTheme = vi.fn().mockResolvedValue(undefined)
 
 			const resourceUris = [
-				{ fsPath: '/test/file1.ts', toString: () => '/test/file1.ts' } as any,
-				{ fsPath: '/test/file2.ts', toString: () => '/test/file2.ts' } as any,
+				{ fsPath: '/test/file1.ts', toString: () =>
+					'/test/file1.ts' } as any,
+				{ fsPath: '/test/file2.ts', toString: () =>
+					'/test/file2.ts' } as any,
 			]
 			const selectedIcon = '_typescript'
 
-			;(mockFileSystem.stat as any).mockResolvedValue({ isFile: () => true, isDirectory: () => false })
+			;(mockFileSystem.stat as any).mockResolvedValue({ isFile: () =>
+				true, isDirectory: () =>
+				false })
 			;(mockPath.basename as any).mockReturnValue('file.ts')
 			;(mockIconPicker.showAvailableIconsQuickPick as any).mockResolvedValue(selectedIcon)
 			;(mockConfigService.updateCustomMappings as any).mockResolvedValue(undefined)
@@ -175,7 +187,8 @@ describe('IconActionsService - Assign', () => {
 		})
 
 		it('should handle icon picker cancellation', async () => {
-			const resourceUri = { fsPath: '/test/file.ts', toString: () => '/test/file.ts' } as any
+			const resourceUri = { fsPath: '/test/file.ts', toString: () =>
+				'/test/file.ts' } as any
 
 			;(mockIconPicker.showAvailableIconsQuickPick as any).mockResolvedValue(undefined)
 
@@ -191,7 +204,8 @@ describe('IconActionsService - Assign', () => {
 
 			;(service as any).regenerateAndApplyTheme = vi.fn().mockResolvedValue(undefined)
 
-			const resourceUri = { fsPath: '/test/file.ts', toString: () => '/test/file.ts' } as any
+			const resourceUri = { fsPath: '/test/file.ts', toString: () =>
+				'/test/file.ts' } as any
 			const selectedIcon = '_typescript'
 
 			;(mockFileSystem.stat as any).mockRejectedValue(new Error('Stat failed'))
@@ -210,10 +224,13 @@ describe('IconActionsService - Assign', () => {
 		})
 
 		it('should assign icon with specific type scope', async () => {
-			const resourceUri = { fsPath: '/test/folder', toString: () => '/test/folder' } as any
+			const resourceUri = { fsPath: '/test/folder', toString: () =>
+				'/test/folder' } as any
 			const selectedIcon = '_folder'
 
-			;(mockFileSystem.stat as any).mockResolvedValue({ isDirectory: () => true, isFile: () => false })
+			;(mockFileSystem.stat as any).mockResolvedValue({ isDirectory: () =>
+				true, isFile: () =>
+				false })
 			;(mockPath.basename as any).mockReturnValue('folder')
 			;(mockIconPicker.showAvailableIconsQuickPick as any).mockResolvedValue(selectedIcon)
 			;(mockConfigService.updateCustomMappings as any).mockResolvedValue(undefined)

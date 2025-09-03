@@ -54,7 +54,8 @@ async function localizeNewIcons(): Promise<boolean> { //>
 		return false // A real error occurred, fail the build.
 	}
 
-	const svgFilesToMove = sourceFiles.filter(file => file.toLowerCase().endsWith('.svg'))
+	const svgFilesToMove = sourceFiles.filter(file =>
+		file.toLowerCase().endsWith('.svg'))
 
 	if (svgFilesToMove.length === 0) {
 		console.log(`    ${ansii.green}✓ No new SVG icons found in external source.${ansii.none}`)
@@ -97,7 +98,8 @@ function formatOptimizationResults(result: OptimizeIconsResult, treeFormatter: T
 	}
 
 	if (result.filesAttempted) {
-		const fileNodes = result.fileOptimizationDetails.map(detail => createDetailNode(detail, 'file'))
+		const fileNodes = result.fileOptimizationDetails.map(detail =>
+			createDetailNode(detail, 'file'))
 
 		if (fileNodes.length > 0) {
 			children.push({ label: 'Files', isDirectory: true, children: fileNodes })
@@ -105,7 +107,8 @@ function formatOptimizationResults(result: OptimizeIconsResult, treeFormatter: T
 	}
 
 	if (result.foldersAttempted) {
-		const folderNodes = result.folderOptimizationDetails.map(detail => createDetailNode(detail, 'folder'))
+		const folderNodes = result.folderOptimizationDetails.map(detail =>
+			createDetailNode(detail, 'folder'))
 
 		if (folderNodes.length > 0) {
 			children.push({ label: 'Folders', isDirectory: true, children: folderNodes })
@@ -144,7 +147,9 @@ async function run(): Promise<void> { //>
 		const fileIcons = await fs.readdir(fileIconsDir) as string[]
 		const folderIcons = await fs.readdir(folderIconsDir) as string[]
 		
-		hasIconsToProcess = fileIcons.some(file => file.endsWith('.svg')) || folderIcons.some(file => file.endsWith('.svg'))
+		hasIconsToProcess = fileIcons.some(file =>
+			file.endsWith('.svg')) || folderIcons.some(file =>
+			file.endsWith('.svg'))
 	}
 	catch (_e) {
 		hasIconsToProcess = false

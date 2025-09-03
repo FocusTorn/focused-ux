@@ -114,7 +114,8 @@ async function convertSvgsToPngs( //>
 	size: number,
 	svgIconsDirAbs: string,
 	pngOutputDirAbs: string,
-	filter: (filename: string) => boolean = () => true,
+	filter: (filename: string) => boolean = () =>
+		true,
 	isLastInSection: boolean = false,
 	logPrefix: string = '│  ├─',
 	silent: boolean = false,
@@ -138,7 +139,8 @@ async function convertSvgsToPngs( //>
 
 	try {
 		const iconFiles = fs.readdirSync(svgIconsDirAbs).filter(
-			file => file.endsWith('.svg') && filter(file),
+			file =>
+				file.endsWith('.svg') && filter(file),
 		)
 
 		if (iconFiles.length === 0) {
@@ -207,7 +209,8 @@ function generateHtmlContent( //>
 
 	try {
 		if (fs.existsSync(pngIconsDirAbs)) {
-			files = fs.readdirSync(pngIconsDirAbs).filter(f => f.endsWith('.png'))
+			files = fs.readdirSync(pngIconsDirAbs).filter(f =>
+				f.endsWith('.png'))
 		}
 		else if (!silent) {
 			console.warn(
@@ -365,14 +368,16 @@ export async function main( //>
 			ranAnyConversion = true
 	}
 	if (previewType === 'all' || previewType === 'folder') {
-		const folderConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_ICONS_PNG_DIR_ABS, file => !file.endsWith('-open.svg'), false, '│  ├─', silent)
+		const folderConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_ICONS_PNG_DIR_ABS, file =>
+			!file.endsWith('-open.svg'), false, '│  ├─', silent)
 
 		if (!folderConversionSuccess && fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))
 			success = false
 		if (fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))
 			ranAnyConversion = true
 
-		const folderOpenConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_OPEN_ICONS_PNG_DIR_ABS, file => file.endsWith('-open.svg'), true, '│  ├─', silent)
+		const folderOpenConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_OPEN_ICONS_PNG_DIR_ABS, file =>
+			file.endsWith('-open.svg'), true, '│  ├─', silent)
 
 		if (!folderOpenConversionSuccess && fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))
 			success = false

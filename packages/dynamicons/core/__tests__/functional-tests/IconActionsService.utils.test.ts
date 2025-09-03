@@ -12,14 +12,17 @@ import type { IIconPickerService } from '../../src/services/IconPickerService.js
 import type { IUriFactory } from '../../src/_interfaces/IUri.js'
 
 // Mock vscode
-vi.mock('vscode', () => ({
-	Uri: {
-		file: (path: string) => ({
-			fsPath: path,
-			toString: () => path,
-		}),
-	},
-}))
+vi.mock('vscode', () =>
+	({
+		Uri: {
+			file: (path: string) =>
+				({
+					fsPath: path,
+					toString: () =>
+						path,
+				}),
+		},
+	}))
 
 // Mock dependencies
 const mockWindow: IWindow = {
@@ -81,16 +84,18 @@ const mockIconPicker: IIconPickerService = {
 }
 
 const mockUriFactory: IUriFactory = {
-	file: vi.fn((path: string) => ({
-		fsPath: path,
-		scheme: 'file',
-		authority: '',
-		path,
-		query: '',
-		fragment: '',
-		toString: () => path,
-		with: vi.fn(),
-	})),
+	file: vi.fn((path: string) =>
+		({
+			fsPath: path,
+			scheme: 'file',
+			authority: '',
+			path,
+			query: '',
+			fragment: '',
+			toString: () =>
+				path,
+			with: vi.fn(),
+		})),
 	parse: vi.fn(),
 	create: vi.fn(),
 	joinPath: vi.fn(),
@@ -117,9 +122,12 @@ describe('IconActionsService - Utils', () => {
 
 	describe('getResourceName', () => {
 		it('should get file name from file URI', async () => {
-			const fileUri = { fsPath: '/test/path/file.ts', toString: () => '/test/path/file.ts' } as any
+			const fileUri = { fsPath: '/test/path/file.ts', toString: () =>
+				'/test/path/file.ts' } as any
 
-			;(mockFileSystem.stat as any).mockResolvedValue({ isFile: () => true, isDirectory: () => false })
+			;(mockFileSystem.stat as any).mockResolvedValue({ isFile: () =>
+				true, isDirectory: () =>
+				false })
 			;(mockPath.basename as any).mockReturnValue('file.ts')
 
 			const result = await service.getResourceName(fileUri)
@@ -129,9 +137,12 @@ describe('IconActionsService - Utils', () => {
 		})
 
 		it('should get folder name from folder URI', async () => {
-			const folderUri = { fsPath: '/test/path/folder', toString: () => '/test/path/folder' } as any
+			const folderUri = { fsPath: '/test/path/folder', toString: () =>
+				'/test/path/folder' } as any
 
-			;(mockFileSystem.stat as any).mockResolvedValue({ isDirectory: () => true, isFile: () => false })
+			;(mockFileSystem.stat as any).mockResolvedValue({ isDirectory: () =>
+				true, isFile: () =>
+				false })
 			;(mockPath.basename as any).mockReturnValue('folder')
 
 			const result = await service.getResourceName(folderUri)
@@ -141,7 +152,8 @@ describe('IconActionsService - Utils', () => {
 		})
 
 		it('should handle stat error gracefully', async () => {
-			const uri = { fsPath: '/test/path/file.ts', toString: () => '/test/path/file.ts' } as any
+			const uri = { fsPath: '/test/path/file.ts', toString: () =>
+				'/test/path/file.ts' } as any
 
 			;(mockFileSystem.stat as any).mockRejectedValue(new Error('Stat failed'))
 			;(mockPath.basename as any).mockReturnValue('file.ts')

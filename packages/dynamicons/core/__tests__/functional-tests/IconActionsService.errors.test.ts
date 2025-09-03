@@ -11,14 +11,17 @@ import type { IConfigurationService } from '../../src/services/ConfigurationServ
 import type { IIconPickerService } from '../../src/services/IconPickerService.js'
 
 // Mock vscode
-vi.mock('vscode', () => ({
-	Uri: {
-		file: (path: string) => ({
-			fsPath: path,
-			toString: () => path,
-		}),
-	},
-}))
+vi.mock('vscode', () =>
+	({
+		Uri: {
+			file: (path: string) =>
+				({
+					fsPath: path,
+					toString: () =>
+						path,
+				}),
+		},
+	}))
 
 // Mock dependencies
 const mockWindow: IWindow = {
@@ -100,7 +103,9 @@ describe('IconActionsService - Error Handling', () => {
 	describe('Edge Cases and Error Handling', () => {
 		it('should handle configuration update errors in assignIconToResource', async () => {
 			const mockUri = { fsPath: '/test/path/file.ts' }
-			const mockStat = { isDirectory: () => false, isFile: () => true }
+			const mockStat = { isDirectory: () =>
+				false, isFile: () =>
+				true }
 
 			;(mockFileSystem.stat as any).mockResolvedValue(mockStat)
 			;(mockPath.basename as any).mockReturnValue('file.ts')
@@ -116,7 +121,9 @@ describe('IconActionsService - Error Handling', () => {
 
 		it('should handle configuration update errors in revertIconAssignment', async () => {
 			const mockUri = { fsPath: '/test/path/file.ts' }
-			const mockStat = { isDirectory: () => false, isFile: () => true }
+			const mockStat = { isDirectory: () =>
+				false, isFile: () =>
+				true }
 
 			;(mockFileSystem.stat as any).mockResolvedValue(mockStat)
 			;(mockPath.basename as any).mockReturnValue('file.ts')

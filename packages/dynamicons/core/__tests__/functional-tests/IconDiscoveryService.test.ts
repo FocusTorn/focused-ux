@@ -6,14 +6,17 @@ import type { ICommonUtils } from '../../src/_interfaces/ICommonUtils.js'
 import type { IUriFactory } from '../../src/_interfaces/IUri.js'
 
 // Mock vscode
-vi.mock('vscode', () => ({
-	Uri: {
-		file: (path: string) => ({
-			fsPath: path,
-			toString: () => path,
-		}),
-	},
-}))
+vi.mock('vscode', () =>
+	({
+		Uri: {
+			file: (path: string) =>
+				({
+					fsPath: path,
+					toString: () =>
+						path,
+				}),
+		},
+	}))
 
 // Mock dependencies
 const mockFileSystem: IFileSystem = {
@@ -41,16 +44,18 @@ const mockCommonUtils: ICommonUtils = {
 }
 
 const mockUriFactory: IUriFactory = {
-	file: vi.fn((path: string) => ({
-		fsPath: path,
-		scheme: 'file',
-		authority: '',
-		path,
-		query: '',
-		fragment: '',
-		toString: () => path,
-		with: vi.fn(),
-	})),
+	file: vi.fn((path: string) =>
+		({
+			fsPath: path,
+			scheme: 'file',
+			authority: '',
+			path,
+			query: '',
+			fragment: '',
+			toString: () =>
+				path,
+			with: vi.fn(),
+		})),
 	parse: vi.fn(),
 	create: vi.fn(),
 	joinPath: vi.fn(),
@@ -69,15 +74,21 @@ describe('IconDiscoveryService', () => {
 		it('should return file icons from directory', async () => {
 			const directoryPath = '/test/icons'
 			const entries = [
-				{ name: 'file-icon.svg', isFile: () => true },
-				{ name: 'folder-icon.svg', isFile: () => true },
-				{ name: 'not-an-icon.txt', isFile: () => true },
-				{ name: 'subdir', isDirectory: () => true },
+				{ name: 'file-icon.svg', isFile: () =>
+					true },
+				{ name: 'folder-icon.svg', isFile: () =>
+					true },
+				{ name: 'not-an-icon.txt', isFile: () =>
+					true },
+				{ name: 'subdir', isDirectory: () =>
+					true },
 			]
 
 			;(mockFileSystem.readdir as any).mockResolvedValue(entries)
-			;(mockPath.parse as any).mockImplementation((name: string) => ({ name: name.replace('.svg', '') }))
-			;(mockPath.join as any).mockImplementation((dir: string, file: string) => `${dir}/${file}`)
+			;(mockPath.parse as any).mockImplementation((name: string) =>
+				({ name: name.replace('.svg', '') }))
+			;(mockPath.join as any).mockImplementation((dir: string, file: string) =>
+				`${dir}/${file}`)
 
 			const result = await service.getIconOptionsFromDirectory(directoryPath, 'file')
 
@@ -99,13 +110,17 @@ describe('IconDiscoveryService', () => {
 		it('should return folder icons with folder prefix removed', async () => {
 			const directoryPath = '/test/icons'
 			const entries = [
-				{ name: 'folder-src.svg', isFile: () => true },
-				{ name: 'folder-open.svg', isFile: () => true },
+				{ name: 'folder-src.svg', isFile: () =>
+					true },
+				{ name: 'folder-open.svg', isFile: () =>
+					true },
 			]
 
 			;(mockFileSystem.readdir as any).mockResolvedValue(entries)
-			;(mockPath.parse as any).mockImplementation((name: string) => ({ name: name.replace('.svg', '') }))
-			;(mockPath.join as any).mockImplementation((dir: string, file: string) => `${dir}/${file}`)
+			;(mockPath.parse as any).mockImplementation((name: string) =>
+				({ name: name.replace('.svg', '') }))
+			;(mockPath.join as any).mockImplementation((dir: string, file: string) =>
+				`${dir}/${file}`)
 
 			const result = await service.getIconOptionsFromDirectory(directoryPath, 'folder')
 
@@ -127,13 +142,17 @@ describe('IconDiscoveryService', () => {
 		it('should return user icons with user prefix', async () => {
 			const directoryPath = '/test/user-icons'
 			const entries = [
-				{ name: 'custom-icon.svg', isFile: () => true },
-				{ name: 'another-icon.svg', isFile: () => true },
+				{ name: 'custom-icon.svg', isFile: () =>
+					true },
+				{ name: 'another-icon.svg', isFile: () =>
+					true },
 			]
 
 			;(mockFileSystem.readdir as any).mockResolvedValue(entries)
-			;(mockPath.parse as any).mockImplementation((name: string) => ({ name: name.replace('.svg', '') }))
-			;(mockPath.join as any).mockImplementation((dir: string, file: string) => `${dir}/${file}`)
+			;(mockPath.parse as any).mockImplementation((name: string) =>
+				({ name: name.replace('.svg', '') }))
+			;(mockPath.join as any).mockImplementation((dir: string, file: string) =>
+				`${dir}/${file}`)
 
 			const result = await service.getIconOptionsFromDirectory(directoryPath, 'user')
 
@@ -155,16 +174,22 @@ describe('IconDiscoveryService', () => {
 		it('should apply filter function', async () => {
 			const directoryPath = '/test/icons'
 			const entries = [
-				{ name: 'icon1.svg', isFile: () => true },
-				{ name: 'icon2.svg', isFile: () => true },
-				{ name: 'icon3.svg', isFile: () => true },
+				{ name: 'icon1.svg', isFile: () =>
+					true },
+				{ name: 'icon2.svg', isFile: () =>
+					true },
+				{ name: 'icon3.svg', isFile: () =>
+					true },
 			]
 
 			;(mockFileSystem.readdir as any).mockResolvedValue(entries)
-			;(mockPath.parse as any).mockImplementation((name: string) => ({ name: name.replace('.svg', '') }))
-			;(mockPath.join as any).mockImplementation((dir: string, file: string) => `${dir}/${file}`)
+			;(mockPath.parse as any).mockImplementation((name: string) =>
+				({ name: name.replace('.svg', '') }))
+			;(mockPath.join as any).mockImplementation((dir: string, file: string) =>
+				`${dir}/${file}`)
 
-			const filter = (name: string) => name.includes('2')
+			const filter = (name: string) =>
+				name.includes('2')
 
 			const result = await service.getIconOptionsFromDirectory(directoryPath, 'file', filter)
 
@@ -206,14 +231,19 @@ describe('IconDiscoveryService', () => {
 		it('should sort icons alphabetically', async () => {
 			const directoryPath = '/test/icons'
 			const entries = [
-				{ name: 'zebra.svg', isFile: () => true },
-				{ name: 'apple.svg', isFile: () => true },
-				{ name: 'banana.svg', isFile: () => true },
+				{ name: 'zebra.svg', isFile: () =>
+					true },
+				{ name: 'apple.svg', isFile: () =>
+					true },
+				{ name: 'banana.svg', isFile: () =>
+					true },
 			]
 
 			;(mockFileSystem.readdir as any).mockResolvedValue(entries)
-			;(mockPath.parse as any).mockImplementation((name: string) => ({ name: name.replace('.svg', '') }))
-			;(mockPath.join as any).mockImplementation((dir: string, file: string) => `${dir}/${file}`)
+			;(mockPath.parse as any).mockImplementation((name: string) =>
+				({ name: name.replace('.svg', '') }))
+			;(mockPath.join as any).mockImplementation((dir: string, file: string) =>
+				`${dir}/${file}`)
 
 			const result = await service.getIconOptionsFromDirectory(directoryPath, 'file')
 
@@ -226,13 +256,17 @@ describe('IconDiscoveryService', () => {
 		it('should handle folder icons with open suffix removal', async () => {
 			const directoryPath = '/test/icons'
 			const entries = [
-				{ name: 'folder-open.svg', isFile: () => true },
-				{ name: 'folder-closed.svg', isFile: () => true },
+				{ name: 'folder-open.svg', isFile: () =>
+					true },
+				{ name: 'folder-closed.svg', isFile: () =>
+					true },
 			]
 
 			;(mockFileSystem.readdir as any).mockResolvedValue(entries)
-			;(mockPath.parse as any).mockImplementation((name: string) => ({ name: name.replace('.svg', '') }))
-			;(mockPath.join as any).mockImplementation((dir: string, file: string) => `${dir}/${file}`)
+			;(mockPath.parse as any).mockImplementation((name: string) =>
+				({ name: name.replace('.svg', '') }))
+			;(mockPath.join as any).mockImplementation((dir: string, file: string) =>
+				`${dir}/${file}`)
 
 			const result = await service.getIconOptionsFromDirectory(directoryPath, 'folder')
 
@@ -254,7 +288,8 @@ describe('IconDiscoveryService', () => {
 
 	describe('getBuiltInIconDirectories', () => {
 		it('should return correct built-in icon directories', async () => {
-			(mockPath.join as any).mockImplementation((...args: string[]) => args.join('/'))
+			(mockPath.join as any).mockImplementation((...args: string[]) =>
+				args.join('/'))
 
 			const result = await service.getBuiltInIconDirectories()
 

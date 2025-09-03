@@ -64,7 +64,8 @@ export class IconPickerService implements IIconPickerService {
 		if (assignableToType === 'folder' || !assignableToType) {
 			// console.log(`[IconPickerService] showAvailableIconsQuickPick - Loading folder icons...`)
 
-			const folderFilter = (name: string) => !name.endsWith(`${dynamiconsConstants.defaults.openFolderIconSuffix}.svg`)
+			const folderFilter = (name: string) =>
+				!name.endsWith(`${dynamiconsConstants.defaults.openFolderIconSuffix}.svg`)
 
 			folderIconOptions = await this.iconDiscovery.getIconOptionsFromDirectory(folderIconsDir, 'folder', folderFilter)
 			// console.log(`[IconPickerService] showAvailableIconsQuickPick - Folder icons loaded:`, folderIconOptions.length)
@@ -87,11 +88,15 @@ export class IconPickerService implements IIconPickerService {
 			}
 		}
 
-		const filterFn = currentFilter || (() => true)
+		const filterFn = currentFilter || (() =>
+			true)
 
-		fileIconOptions = fileIconOptions.filter(item => filterFn(item.iconNameInDefinitions))
-		folderIconOptions = folderIconOptions.filter(item => filterFn(item.iconNameInDefinitions))
-		userIconOptions = userIconOptions.filter(item => filterFn(item.iconNameInDefinitions))
+		fileIconOptions = fileIconOptions.filter(item =>
+			filterFn(item.iconNameInDefinitions))
+		folderIconOptions = folderIconOptions.filter(item =>
+			filterFn(item.iconNameInDefinitions))
+		userIconOptions = userIconOptions.filter(item =>
+			filterFn(item.iconNameInDefinitions))
 
 		// console.log(`[IconPickerService] showAvailableIconsQuickPick - After filtering:`, { fileIconOptions: fileIconOptions.length, folderIconOptions: folderIconOptions.length, userIconOptions: userIconOptions.length })
 
@@ -112,7 +117,8 @@ export class IconPickerService implements IIconPickerService {
 
 		// console.log(`[IconPickerService] showAvailableIconsQuickPick - Combined options:`, combinedIconOptions.length)
 
-		const dataItems = combinedIconOptions.filter(item => 'iconNameInDefinitions' in item) as ICoreQuickPickItem[]
+		const dataItems = combinedIconOptions.filter(item =>
+			'iconNameInDefinitions' in item) as ICoreQuickPickItem[]
 
 		// console.log(`[IconPickerService] showAvailableIconsQuickPick - Data items:`, dataItems.length)
 

@@ -447,3 +447,154 @@ export class UriAdapter implements IUriFactory {
 - **Clear separation**: Business logic vs VSCode integration
 - **Maintainable**: Changes in one package don't affect others
 - **Scalable**: Easy to add new packages following the same pattern
+
+---
+
+## **Asset Processing Architecture**
+
+### **Core Package Self-Containment**
+
+Core packages MUST process assets to their own `dist/assets` directory and NEVER output to extension paths or external locations. This ensures complete independence and enables orchestrator extensions to use core packages without external dependencies.
+
+**Key Principles**:
+
+- **Independent Asset Processing**: Core packages handle all asset processing internally
+- **Self-Contained Output**: All processed assets stored in package's own dist directory
+- **No External Paths**: Never reference extension or external package paths
+- **Orchestrator Ready**: Core packages can be used by orchestrator extensions
+
+### **Asset Processing Workflow**
+
+1. **Asset Discovery**: Scan source directories for SVG, theme, and image assets
+2. **Change Detection**: Compare current state with manifest to identify modifications
+3. **Selective Processing**: Process only changed assets for efficiency
+4. **Output Generation**: Store processed assets in core package's dist/assets
+5. **Extension Copying**: Extension packages copy assets from core's dist to their own dist
+
+### **Nx Target Integration Best Practices**
+
+**Target Dependencies**:
+
+- Asset processing targets MUST depend on build targets, not vice versa
+- This prevents `deleteOutputPath: true` from clearing processed assets
+- Correct order: build → process-assets → copy-assets
+
+**Caching Strategy**:
+
+- Asset processing targets should leverage Nx caching for performance
+- Use `outputs` configuration to specify cacheable outputs
+- Avoid caching targets that create unique timestamped versions
+
+### **Asset Change Detection System**
+
+**Manifest Generation**:
+
+- Create comprehensive asset metadata including hashes, sizes, and timestamps
+- Store manifest in core package's dist directory for change tracking
+- Use MD5 hashing for reliable change detection
+
+**Change Analysis**:
+
+- Compare current asset state with stored manifest
+- Identify added, modified, and deleted assets
+- Provide detailed change summary for processing decisions
+
+**Incremental Processing**:
+
+- Process only changed assets to minimize build time
+- Maintain full processing capability for complete rebuilds
+- Support both incremental and full processing modes
+
+---
+
+## **Nx Target Integration Best Practices**
+
+### **Target vs Package Scripts**
+
+**ALWAYS use Nx targets over package.json scripts** for better caching, dependency management, and build graph integration.
+
+**Benefits**:
+
+- **Caching**: Leverages Nx's intelligent caching system
+- **Dependencies**: Proper dependency graph management
+- **Build Order**: Correct execution order for complex workflows
+- **Performance**: Better performance through optimized execution
+
+### **Target Configuration**
+
+**Output Paths**:
+
+- Use package-relative paths, not workspace-relative paths
+- Example: `"{projectRoot}/dist/assets"` not `"{workspaceRoot}/packages/..."`
+- This ensures proper caching and dependency resolution
+
+**Dependency Management**:
+
+- Define clear dependencies between targets
+- Ensure asset processing occurs after core package build
+- Use `dependsOn` to establish correct execution order
+
+### **Asset Processing Targets**
+
+**Core Package Targets**:
+
+- `process-assets`: Full asset processing with change detection
+- `process-assets:incremental`: Change-based processing only
+- `process-assets:all`: Force all assets processing
+- `assets:manifest`: Generate manifest only
+- `assets:detect`: Detect changes only
+
+**Extension Package Targets**:
+
+- `copy-assets`: Copy processed assets from core to extension
+
+---
+
+## **Asset Change Detection System**
+
+### **Architectural Components**
+
+**Asset Manifest Generator**:
+
+- Discovers assets recursively from source directories
+- Generates metadata including file hashes, sizes, and timestamps
+- Creates JSON manifest for change tracking and analysis
+
+**Change Detector**:
+
+- Compares current asset state with stored manifest
+- Identifies added, modified, and deleted assets
+- Provides detailed change summary for processing decisions
+
+**Asset Processor**:
+
+- Processes assets based on change analysis
+- Supports asset-specific processing logic
+- Includes validation and error handling
+
+**Asset Orchestrator**:
+
+- Unified entry point for all asset operations
+- Coordinates manifest generation, change detection, and processing
+- Provides comprehensive logging and statistics
+
+### **Change Detection Algorithm**
+
+**Hash-Based Comparison**:
+
+- Use MD5 hashing for reliable change detection
+- Compare file hashes, sizes, and modification times
+- Handle edge cases like file corruption or partial writes
+
+**Change Classification**:
+
+- **Added**: New assets not present in manifest
+- **Modified**: Existing assets with changed content
+- **Deleted**: Assets present in manifest but not in filesystem
+- **Unchanged**: Assets with identical content and metadata
+
+**Performance Optimization**:
+
+- Process only changed assets for incremental builds
+- Maintain full processing capability for complete rebuilds
+- Support both incremental and full processing modes

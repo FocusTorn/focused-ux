@@ -9,14 +9,17 @@ import type { IConfigurationService } from '../../src/services/ConfigurationServ
 import type { IUriFactory } from '../../src/_interfaces/IUri.js'
 
 // Mock vscode
-vi.mock('vscode', () => ({
-	Uri: {
-		file: (path: string) => ({
-			fsPath: path,
-			toString: () => path,
-		}),
-	},
-}))
+vi.mock('vscode', () =>
+	({
+		Uri: {
+			file: (path: string) =>
+				({
+					fsPath: path,
+					toString: () =>
+						path,
+				}),
+		},
+	}))
 
 // Mock dependencies
 const mockWindow: IWindow = {
@@ -60,16 +63,18 @@ const mockConfigService: IConfigurationService = {
 }
 
 const mockUriFactory: IUriFactory = {
-	file: vi.fn((path: string) => ({
-		fsPath: path,
-		scheme: 'file',
-		authority: '',
-		path,
-		query: '',
-		fragment: '',
-		toString: () => path,
-		with: vi.fn(),
-	})),
+	file: vi.fn((path: string) =>
+		({
+			fsPath: path,
+			scheme: 'file',
+			authority: '',
+			path,
+			query: '',
+			fragment: '',
+			toString: () =>
+				path,
+			with: vi.fn(),
+		})),
 	parse: vi.fn(),
 	create: vi.fn(),
 	joinPath: vi.fn(),
@@ -241,7 +246,8 @@ describe('IconPickerService', () => {
 				.mockResolvedValueOnce(folderIcons)
 			;(mockQuickPick.showQuickPickSingle as any).mockResolvedValue('_file1')
 
-			const filter = (name: string) => name.includes('1')
+			const filter = (name: string) =>
+				name.includes('1')
 
 			const result = await service.showAvailableIconsQuickPick(undefined, filter)
 

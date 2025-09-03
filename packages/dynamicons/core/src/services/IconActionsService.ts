@@ -170,11 +170,13 @@ export class IconActionsService {
 
 		const prefix = dynamiconsConstants.associationKeyPrefixes[type]
 		const relevantMappings = Object.entries(mappings)
-			.filter(([key]) => key.startsWith(prefix))
-			.map(([key, value]) => ({
-				resource: key.substring(prefix.length),
-				icon: value,
-			}))
+			.filter(([key]) =>
+				key.startsWith(prefix))
+			.map(([key, value]) =>
+				({
+					resource: key.substring(prefix.length),
+					icon: value,
+				}))
 
 		if (relevantMappings.length === 0) {
 			this.window.showInformationMessage(`No ${type} icon assignments found.`)
@@ -182,7 +184,8 @@ export class IconActionsService {
 		}
 
 		const message = relevantMappings
-			.map(m => `${m.resource} → ${m.icon}`)
+			.map(m =>
+				`${m.resource} → ${m.icon}`)
 			.join('\n')
 
 		this.window.showInformationMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} Icon Assignments:\n${message}`)
@@ -239,14 +242,16 @@ export class IconActionsService {
 
 				if (currentTheme === 'dynamicons-theme') {
 					await workbenchConfig.update('iconTheme', 'vs-seti-file-icons', true)
-					await new Promise(resolve => setTimeout(resolve, 25))
+					await new Promise(resolve =>
+						setTimeout(resolve, 25))
 					await workbenchConfig.update('iconTheme', 'dynamicons-theme', true)
 				}
 			}
 			else {
 			// Fallback to command execution if workspace adapter not available
 				await this.commands.executeCommand('workbench.action.selectIconTheme', 'vs-seti-file-icons')
-				await new Promise(resolve => setTimeout(resolve, 25))
+				await new Promise(resolve =>
+					setTimeout(resolve, 25))
 				await this.commands.executeCommand('workbench.action.selectIconTheme', 'dynamicons-theme')
 			}
 		}

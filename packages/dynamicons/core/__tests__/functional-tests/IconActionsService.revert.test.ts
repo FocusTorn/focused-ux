@@ -12,14 +12,17 @@ import type { IIconPickerService } from '../../src/services/IconPickerService.js
 import type { IUriFactory } from '../../src/_interfaces/IUri.js'
 
 // Mock vscode
-vi.mock('vscode', () => ({
-	Uri: {
-		file: (path: string) => ({
-			fsPath: path,
-			toString: () => path,
-		}),
-	},
-}))
+vi.mock('vscode', () =>
+	({
+		Uri: {
+			file: (path: string) =>
+				({
+					fsPath: path,
+					toString: () =>
+						path,
+				}),
+		},
+	}))
 
 // Mock dependencies
 const mockWindow: IWindow = {
@@ -81,16 +84,18 @@ const mockIconPicker: IIconPickerService = {
 }
 
 const mockUriFactory: IUriFactory = {
-	file: vi.fn((path: string) => ({
-		fsPath: path,
-		scheme: 'file',
-		authority: '',
-		path,
-		query: '',
-		fragment: '',
-		toString: () => path,
-		with: vi.fn(),
-	})),
+	file: vi.fn((path: string) =>
+		({
+			fsPath: path,
+			scheme: 'file',
+			authority: '',
+			path,
+			query: '',
+			fragment: '',
+			toString: () =>
+				path,
+			with: vi.fn(),
+		})),
 	parse: vi.fn(),
 	create: vi.fn(),
 	joinPath: vi.fn(),
@@ -122,9 +127,12 @@ describe('IconActionsService - Revert', () => {
 
 			;(service as any).regenerateAndApplyTheme = vi.fn().mockResolvedValue(undefined)
 
-			const resourceUri = { fsPath: '/test/file.ts', toString: () => '/test/file.ts' } as any
+			const resourceUri = { fsPath: '/test/file.ts', toString: () =>
+				'/test/file.ts' } as any
 
-			;(mockFileSystem.stat as any).mockResolvedValue({ isFile: () => true, isDirectory: () => false })
+			;(mockFileSystem.stat as any).mockResolvedValue({ isFile: () =>
+				true, isDirectory: () =>
+				false })
 			;(mockPath.basename as any).mockReturnValue('file.ts')
 			;(mockConfigService.updateCustomMappings as any).mockResolvedValue(undefined)
 
@@ -151,7 +159,8 @@ describe('IconActionsService - Revert', () => {
 
 			;(service as any).regenerateAndApplyTheme = vi.fn().mockResolvedValue(undefined)
 
-			const resourceUri = { fsPath: '/test/file.ts', toString: () => '/test/file.ts' } as any
+			const resourceUri = { fsPath: '/test/file.ts', toString: () =>
+				'/test/file.ts' } as any
 
 			;(mockFileSystem.stat as any).mockRejectedValue(new Error('Stat failed'))
 			;(mockConfigService.updateCustomMappings as any).mockResolvedValue(undefined)
