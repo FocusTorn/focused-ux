@@ -4,6 +4,7 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import { assetConstants } from '../src/_config/dynamicons.constants.js'
 import { main as optimizeIconsMain } from './generate_optimized_icons.js'
+import { errorHandler, inputValidator, rollbackManager, ErrorType, ErrorSeverity } from './error-handler.js'
 
 /**
  * Process Icons - Complete workflow from external source to optimized output
@@ -14,12 +15,39 @@ async function processIcons(verbose: boolean = false): Promise<void> {
 		console.log('\n🔄 [ICON PROCESSING WORKFLOW]')
 		console.log('═══════════════════════════════════════════════════════════════')
 		console.log('📋 Workflow Steps:')
-		console.log('   1. 📥 Stage icons from external source')
-		console.log('   2. 🔧 Organize and optimize icons')
+		console.log('   1. 🔍 Input validation')
+		console.log('   2. 📥 Stage icons from external source')
+		console.log('   3. 🔧 Organize and optimize icons')
 		console.log('═══════════════════════════════════════════════════════════════\n')
 	}
 	
 	try {
+		// Step 0: Input validation
+		if (verbose) {
+			console.log('🔍 STEP 0: INPUT VALIDATION')
+			console.log('───────────────────────────────────────────────────────────')
+			console.log('🔄 Validating external source, directories, and disk space...')
+		}
+
+		const validationResult = await inputValidator.validateAllInputs()
+		if (!validationResult) {
+			const validationError = errorHandler.createError(
+				'Input validation failed',
+				ErrorType.INVALID_EXTERNAL_SOURCE,
+				ErrorSeverity.HIGH,
+				'processIcons',
+				undefined,
+				false
+			)
+			await errorHandler.handleError(validationError, verbose)
+			return
+		}
+
+		if (verbose) {
+			console.log('✅ Input validation passed')
+			console.log('───────────────────────────────────────────────────────────\n')
+		}
+
 		// Step 1: Stage icons from external source
 		if (verbose) {
 			console.log('📥 STEP 1: STAGING ICONS')
@@ -71,8 +99,16 @@ async function processIcons(verbose: boolean = false): Promise<void> {
 			console.log('═══════════════════════════════════════════════════════════════\n')
 		}
 	} catch (error) {
-		console.error('❌ Icon processing failed:', error)
-		throw error
+		const processingError = errorHandler.createError(
+			'Icon processing failed',
+			ErrorType.OPTIMIZATION_FAILED,
+			ErrorSeverity.HIGH,
+			'processIcons',
+			error instanceof Error ? error : undefined,
+			true
+		)
+		await errorHandler.handleError(processingError, verbose)
+		await rollbackManager.executeRollback()
 	}
 }
 

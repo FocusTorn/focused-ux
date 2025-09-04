@@ -5,6 +5,7 @@ import path from 'path'
 import { main as generateManifestsMain } from './generate_icon_manifests.js'
 import { assetConstants } from '../src/_config/dynamicons.constants.js'
 import { validateModels } from './audit-models.js'
+import { errorHandler, inputValidator, rollbackManager, ErrorType, ErrorSeverity } from './error-handler.js'
 
 const THEMES_DIR = path.resolve(process.cwd(), assetConstants.paths.distThemesDir)
 
@@ -15,21 +16,53 @@ const THEMES_DIR = path.resolve(process.cwd(), assetConstants.paths.distThemesDi
  */
 async function generateThemes(_verbose: boolean = false): Promise<void> {
 	try {
-		// 0) Validate models and fail fast if any errors found
-		const modelsValid = await validateModels(false)
-		if (!modelsValid) {
-			process.exit(1)
+		// Step 0: Input validation
+		const validationResult = await inputValidator.validateModelFiles()
+		if (!validationResult) {
+			const validationError = errorHandler.createError(
+				'Model validation failed',
+				ErrorType.INVALID_MODEL_FORMAT,
+				ErrorSeverity.HIGH,
+				'generateThemes',
+				undefined,
+				false
+			)
+			await errorHandler.handleError(validationError, _verbose)
+			return
 		}
 
-		// 1) Delete existing generated themes and verify
+		// Step 1: Validate models and fail fast if any errors found
+		const modelsValid = await validateModels(false)
+		if (!modelsValid) {
+			const modelValidationError = errorHandler.createError(
+				'Model validation failed',
+				ErrorType.MODEL_VALIDATION_FAILED,
+				ErrorSeverity.HIGH,
+				'generateThemes',
+				undefined,
+				false
+			)
+			await errorHandler.handleError(modelValidationError, _verbose)
+			return
+		}
+
+		// Step 2: Delete existing generated themes and verify
 		const deleteResult = await deleteExistingThemes()
 		
 		if (!deleteResult.success) {
-			// Delete failed - exit early
-			process.exit(1)
+			const deleteError = errorHandler.createError(
+				'Failed to delete existing theme files',
+				ErrorType.FILE_NOT_FOUND,
+				ErrorSeverity.HIGH,
+				'deleteExistingThemes',
+				undefined,
+				false
+			)
+			await errorHandler.handleError(deleteError, _verbose)
+			return
 		}
 		
-		// 2) Generate new themes and verify
+		// Step 3: Generate new themes and verify
 		try {
 			await generateAndVerifyThemes()
 			
@@ -41,14 +74,29 @@ async function generateThemes(_verbose: boolean = false): Promise<void> {
 			// Generation failed - show deletion success + generation failure
 			console.log('\x1B[32mSuccess: Existing theme files deleted and verified.\x1B[0m')
 			console.log('')
-			console.error('\x1B[31mError: Generating theme files\x1B[0m')
-			console.error(`Type: ${error instanceof Error ? error.constructor.name : 'Unknown'}`)
-			console.error(`Description: ${error instanceof Error ? error.message : String(error)}`)
-			process.exit(1)
+			
+			const generationError = errorHandler.createError(
+				'Generating theme files',
+				ErrorType.THEME_GENERATION_FAILED,
+				ErrorSeverity.HIGH,
+				'generateAndVerifyThemes',
+				error instanceof Error ? error : undefined,
+				true
+			)
+			await errorHandler.handleError(generationError, _verbose)
+			await rollbackManager.executeRollback()
 		}
 	} catch (error) {
-		console.error('❌ Theme generation failed:', error)
-		throw error
+		const themeError = errorHandler.createError(
+			'Theme generation failed',
+			ErrorType.THEME_GENERATION_FAILED,
+			ErrorSeverity.HIGH,
+			'generateThemes',
+			error instanceof Error ? error : undefined,
+			true
+		)
+		await errorHandler.handleError(themeError, _verbose)
+		await rollbackManager.executeRollback()
 	}
 }
 

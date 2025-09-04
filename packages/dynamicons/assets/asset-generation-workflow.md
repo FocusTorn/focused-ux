@@ -59,6 +59,9 @@ All json parsing should leverage the strip json comments package
 - ✅ Early exit on deletion/generation failures
 - ✅ Dark grey, dashed file paths for generated themes
 - ✅ Suppression of unwanted output from underlying scripts
+- ✅ **Language Assignment Integration**: Processes `language_icons.model.json` and includes language assignments in generated themes
+- ✅ **Model-Driven Generation**: Only includes icons explicitly assigned in models (excludes "unassigned" arrays and orphaned icons)
+- ✅ **Standardized Model Keys**: Uses `languageID` and `iconName` keys across all model files
 
 ### ✅ **STEP 4: Theme File Auditing (`audit-themes.ts`)**
 
@@ -121,10 +124,13 @@ All json parsing should leverage the strip json comments package
     - ❌ File date comparison logic missing
     - ❌ Orchestrator extension support missing
 
+### ✅ **COMPLETED ITEMS**
+
 2. **Error Handling & Validation** - Cross-cutting concerns
-    - ❌ Comprehensive error reporting system missing
-    - ❌ Input validation for external sources missing
-    - ❌ Rollback mechanisms for failed operations missing
+    - ✅ **Comprehensive Error Reporting System**: Centralized error handling with severity levels, context tracking, and detailed reporting
+    - ✅ **Input Validation for External Sources**: Validation of external sources, directories, disk space, and model files
+    - ✅ **Rollback Mechanisms**: Automatic backup creation and rollback capabilities for failed operations
+    - ✅ **Error Analysis Tools**: CLI-based error reporting, statistics, and export capabilities
 
 ## **CRITICAL ARCHITECTURAL GUIDELINES**
 
@@ -146,9 +152,74 @@ All json parsing should leverage the strip json comments package
 - No model assignments are missing from the generated theme
 - Generated themes contain ONLY valid model assignments (no extras)
 
+## **ERROR HANDLING & VALIDATION SYSTEM - COMPLETED ✅**
+
+The asset generation workflow now includes a comprehensive error handling and validation system that provides:
+
+### **Error Handling Components:**
+
+**`error-handler.ts`**: Centralized error management system
+
+- **Error Types**: Categorized error types (input validation, file system, processing, rollback, system)
+- **Severity Levels**: LOW, MEDIUM, HIGH, CRITICAL with appropriate handling strategies
+- **Error Context**: Detailed context tracking including operation, file path, timestamp, process ID
+- **Recovery Strategies**: Automatic rollback and recovery mechanisms
+
+**`error-reporter.ts`**: Comprehensive error analysis and reporting
+
+- **Error Reports**: Detailed reports with severity breakdowns and recommendations
+- **Error Statistics**: Statistical analysis of error patterns and recovery rates
+- **Export Capabilities**: JSON export for external analysis and debugging
+- **CLI Interface**: Command-line interface for error management
+
+### **Validation Components:**
+
+**Input Validator**: Pre-processing validation system
+
+- **External Source Validation**: Verifies external icon source accessibility
+- **Directory Validation**: Ensures all required directories exist and are accessible
+- **Disk Space Validation**: Checks available disk space for operations
+- **Model File Validation**: Validates JSON syntax and structure of model files
+
+**Rollback Manager**: Automatic recovery system
+
+- **Operation Registration**: Registers operations with rollback functions
+- **Automatic Rollback**: Executes rollback operations in reverse order
+- **Backup Management**: Creates automatic backups before modifications
+
+### **Integration Points:**
+
+- **Process Icons**: Integrated input validation and error handling
+- **Generate Themes**: Enhanced with model validation and rollback capabilities
+- **Audit Scripts**: Error handling for validation failures
+- **Preview Generation**: Error handling for generation failures
+
+### **Error Reporting Features:**
+
+- **Severity-Based Handling**: Different responses based on error severity
+- **Contextual Information**: Detailed error context for debugging
+- **Recovery Recommendations**: Actionable recommendations for error resolution
+- **Export Capabilities**: JSON export for external analysis tools
+
+### **Usage Examples:**
+
+```bash
+# Generate error report
+npx tsx scripts/error-reporter.ts --report error-report.txt
+
+# Export error log
+npx tsx scripts/error-reporter.ts --export error-log.json
+
+# Show error statistics
+npx tsx scripts/error-reporter.ts --stats
+
+# Clear error log
+npx tsx scripts/error-reporter.ts --clear
+```
+
 ## **NOTES**
 
-All json parsing should leverage the strip json comments package - ❌ Comprehensive error reporting system missing - ❌ Input validation for external sources missing - ❌ Rollback mechanisms for failed operations missing
+All json parsing should leverage the strip json comments package
 
 ## **High level description**
 
@@ -247,6 +318,13 @@ Using the models in src/models, if nx detects that changes any of the model file
 
 1. ✅ Generate the core/dist/assets/themes/base.theme.json
 2. ✅ Generate the core/dist/assets/themes/dynamicons.theme.json
+
+**Model Integration:**
+
+- **File Icons**: Processes `file_icons.model.json` with `iconName` key for file icon assignments
+- **Folder Icons**: Processes `folder_icons.model.json` with `iconName` key for folder icon assignments
+- **Language Icons**: Processes `language_icons.model.json` with `languageID` and `iconName` keys for language assignments
+- **Model-Driven Generation**: Only includes icons explicitly assigned in models, excluding "unassigned" arrays and orphaned icons
 
 ## **Theme File Auditing - COMPLETED ✅ (`audit-themes.ts`)**
 
@@ -355,6 +433,8 @@ Depending on a passed arg, will check the dist of either
 - ✅ Orphaned icon detection (icons in directories not assigned in models)
 - ✅ Tree-structured error output with proper formatting
 - ✅ Early exit on model errors before theme generation
+- ✅ **Standardized Model Key Support**: Validates `iconName` for file/folder icons and `languageID` for language icons
+- ✅ **Language Model Validation**: Audits `language_icons.model.json` for proper language assignments
 
 **Next Step:** Extract the audit functionality into a separate `audit-models.ts` script to:
 
@@ -488,20 +568,20 @@ The output should have this tree structure:
 
 ❌ MODEL ERRORS (??):
 
-**MODEL: ASSIGNED ICON NOT FOUND**: When value of name is not a found icon
-**MODEL: DUPLICATE ASSIGNMENT**: When value of name is assigned more than once
+**MODEL: ASSIGNED ICON NOT FOUND**: When value of iconName is not a found icon
+**MODEL: DUPLICATE ASSIGNMENT**: When value of iconName is assigned more than once
 **DIRECTORY: UNASSIGNED ICON**: When icon exists in directory, but not assigned or in orphans array
 
 **MODEL: ASSIGNED ICON NOT FOUND**:
 
-- When value of 'folder-{icon.name}.svg' is not a found icon it will append (closed). Example: arduino (closed)
-- When value of 'folder-{icon.name}-open.svg' is not a found icon it will show (open) Example: arduino (open)
+- When value of 'folder-{icon.iconName}.svg' is not a found icon it will append (closed). Example: arduino (closed)
+- When value of 'folder-{icon.iconName}-open.svg' is not a found icon it will show (open) Example: arduino (open)
 - When both of the above is true, it will show (closed,open) Example: arduino (closed,open)
-  **MODEL: DUPLICATE ASSIGNMENT**: When value of name is assigned more than once
+  **MODEL: DUPLICATE ASSIGNMENT**: When value of iconName is assigned more than once
   **DIRECTORY: UNASSIGNED ICON**: When icon exists in directory, but not assigned or in orphans array
 
-**MODEL: ASSIGNED ICON NOT FOUND**: When value of icon is not a found icon
-**MODEL: DUPLICATE ASSIGNMENT ID**: When value of id is assigned more than once
+**MODEL: ASSIGNED ICON NOT FOUND**: When value of iconName is not a found icon
+**MODEL: DUPLICATE ASSIGNMENT ID**: When value of languageID is assigned more than once
 
 if there are errors in the models audit show the error output
 
