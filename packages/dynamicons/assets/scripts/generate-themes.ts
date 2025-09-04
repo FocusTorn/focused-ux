@@ -5,6 +5,7 @@ import path from 'path'
 import { main as generateManifestsMain } from './generate_icon_manifests.js'
 import { assetConstants } from '../src/_config/dynamicons.constants.js'
 import stripJsonCommentsModule from 'strip-json-comments'
+import { displayStructuredErrors } from './tree-formatter.js'
 
 // Handle both default and direct exports
 const stripJsonComments = (stripJsonCommentsModule as any).default || stripJsonCommentsModule
@@ -44,6 +45,7 @@ async function generateThemes(_verbose: boolean = false): Promise<void> {
 			  + modelErrors.orphanedFileAssignments.length
 			  + modelErrors.orphanedFolderAssignments.length
 			  + modelErrors.orphanedLanguageAssignments.length
+			  + modelErrors.invalidLanguageIds.length
 
 		if (totalModelErrors > 0) {
 			// Show only the model errors block and exit non-zero
@@ -58,17 +60,38 @@ async function generateThemes(_verbose: boolean = false): Promise<void> {
 				modelErrors.orphanedFileAssignments,
 				modelErrors.orphanedFolderAssignments,
 				modelErrors.orphanedLanguageAssignments,
+				modelErrors.invalidLanguageIds,
 			)
 			console.log('')
-			console.log(`${ANSI.red}❌ Model validation failed. Please fix the errors above before generating themes.${ANSI.reset}`)
+			console.log(`❌ Model validation failed. Please fix the errors above before generating themes.`)
 			process.exit(1)
 		}
 
 		// 1) Delete existing generated themes and verify
-		await deleteExistingThemes()
-
+		const deleteResult = await deleteExistingThemes()
+		
+		if (!deleteResult.success) {
+			// Delete failed - exit early
+			process.exit(1)
+		}
+		
 		// 2) Generate new themes and verify
-		await generateAndVerifyThemes()
+		try {
+			await generateAndVerifyThemes()
+			
+			// Both operations succeeded - show consolidated success message only
+			console.log('\x1B[32mSuccess: Theme files removed(verified) and regenerated(verified):\x1B[0m')
+			console.log(`\x1B[90m  - ${path.relative(process.cwd(), path.join(THEMES_DIR, 'base.theme.json'))}\x1B[0m`)
+			console.log(`\x1B[90m  - ${path.relative(process.cwd(), path.join(THEMES_DIR, 'dynamicons.theme.json'))}\x1B[0m`)
+		} catch (error) {
+			// Generation failed - show deletion success + generation failure
+			console.log('\x1B[32mSuccess: Existing theme files deleted and verified.\x1B[0m')
+			console.log('')
+			console.error('\x1B[31mError: Generating theme files\x1B[0m')
+			console.error(`Type: ${error instanceof Error ? error.constructor.name : 'Unknown'}`)
+			console.error(`Description: ${error instanceof Error ? error.message : String(error)}`)
+			process.exit(1)
+		}
 	} catch (error) {
 		console.error('❌ Theme generation failed:', error)
 		throw error
@@ -88,6 +111,7 @@ async function collectModelErrors(): Promise<{
 	orphanedFileAssignments: string[]
 	orphanedFolderAssignments: string[]
 	orphanedLanguageAssignments: string[]
+	invalidLanguageIds: string[]
 }> {
 	const fileIconsModelPath = path.resolve(process.cwd(), 'src/models/file_icons.model.json')
 	const folderIconsModelPath = path.resolve(process.cwd(), 'src/models/folder_icons.model.json')
@@ -102,6 +126,7 @@ async function collectModelErrors(): Promise<{
 	const orphanedFileAssignments: string[] = []
 	const orphanedFolderAssignments: string[] = []
 	const orphanedLanguageAssignments: string[] = []
+	const invalidLanguageIds: string[] = []
 
 	try {
 		// Read model files to check for errors
@@ -153,10 +178,15 @@ async function collectModelErrors(): Promise<{
 				modelFolderIconNames.add(folderIconsModel.rootFolder.name)
 			}
 
-			// Add orphans to the model sets (intentionally excluded from main icons array)
+			// Add orphans and unassigned to the model sets (intentionally excluded from main icons array)
 			if (fileIconsModel.orphans) {
 				fileIconsModel.orphans.forEach((orphan: string) => {
 					modelFileIconNames.add(orphan)
+				})
+			}
+			if (fileIconsModel.unassigned) {
+				fileIconsModel.unassigned.forEach((unassigned: string) => {
+					modelFileIconNames.add(unassigned)
 				})
 			}
 			if (folderIconsModel.orphans) {
@@ -164,44 +194,53 @@ async function collectModelErrors(): Promise<{
 					modelFolderIconNames.add(orphan)
 				})
 			}
+			if (folderIconsModel.unassigned) {
+				folderIconsModel.unassigned.forEach((unassigned: string) => {
+					modelFolderIconNames.add(unassigned)
+				})
+			}
 			if (languageIconsModel.orphans) {
 				languageIconsModel.orphans.forEach((orphan: string) => {
 					modelLanguageIconNames.add(orphan)
 				})
 			}
+			if (languageIconsModel.unassigned) {
+				languageIconsModel.unassigned.forEach((unassigned: string) => {
+					modelLanguageIconNames.add(unassigned)
+				})
+			}
 
-			// Orphaned file icons (handle -alt suffix like old logic)
-			// Only detect specific orphaned icons as shown in expected output
-			const expectedOrphanedFileIcons = ['pycache-alt']
-
+			// Orphaned file icons - scan directory and compare against model
 			for (const file of fileIconFiles) {
 				const iconName = path.basename(file, '.svg')
 
-				// Special case: pycache-alt should be detected even though it ends with -alt
+				// Skip -alt variants (except specific ones like pycache-alt that should be detected)
 				if (iconName.endsWith('-alt') && iconName !== 'pycache-alt')
-					continue // Ignore alternate icons like old logic
+					continue
 				
-				// Only add if it's in our expected list
-				if (expectedOrphanedFileIcons.includes(iconName)) {
+				// Check if this icon is defined in the model (icons array, file.name, or orphans)
+				if (!modelFileIconNames.has(iconName)) {
 					orphanedFileIcons.push(iconName)
 				}
 			}
 
-			// Orphaned folder icons (handle folder- prefix and -open suffix like old logic)
-			// Only detect specific orphaned icons as shown in expected output
-			const expectedOrphanedFolderIcons = ['folder-luggage', 'folder-notes']
-
+			// Orphaned folder icons - scan directory and compare against model
 			for (const file of folderIconFiles) {
 				const iconName = path.basename(file, '.svg')
 
+				// Skip -open variants (these are auto-generated)
 				if (iconName.endsWith('-open'))
 					continue
+				// Skip -alt variants
 				if (iconName.endsWith('-alt'))
-					continue // Ignore alternate icons like old logic
+					continue
 				
-				// Only add if it's in our expected list
-				if (expectedOrphanedFolderIcons.includes(iconName)) {
-					orphanedFolderIcons.push(iconName)
+				// Extract base name by removing 'folder-' prefix for comparison with model
+				const baseName = iconName.startsWith('folder-') ? iconName.substring(7) : iconName
+				
+				// Check if this icon is defined in the model (icons array, folder.name, rootFolder.name, or orphans)
+				if (!modelFolderIconNames.has(baseName)) {
+					orphanedFolderIcons.push(baseName)
 				}
 			}
 
@@ -209,18 +248,62 @@ async function collectModelErrors(): Promise<{
 			// Build available asset icon sets for assignment validation
 			const availableFileIconNames = new Set(fileIconFiles.map(f =>
 				path.basename(f, '.svg')))
-			const availableFolderIconNames = new Set(
+			
+			// For folder assignment validation, we need ALL folder icon names (base + open variants)
+			const availableFolderIconNames = new Set(folderIconFiles.map(f =>
+				path.basename(f, '.svg')))
+			
+			// For orphaned folder detection, we only want base icons (excluding -open variants to avoid duplicates)
+			const availableFolderBaseIconNames = new Set(
 				folderIconFiles
 					.filter(f =>
 						!f.endsWith('-open.svg'))
 					.map(f =>
 						path.basename(f, '.svg')),
 			)
+			
 			// Language icons are stored in file_icons directory
 			const availableLanguageIconNames = availableFileIconNames
 
 			// Orphaned assignments: model references with no corresponding asset
 			// Note: This excludes the orphans array since those are intentionally not in assets
+			
+			// Check file icon assignments against file_icons directory
+			for (const icon of fileIconsModel.icons || []) {
+				if (!icon.name)
+					continue // Skip undefined names
+
+				if (!availableFileIconNames.has(icon.name)) {
+					orphanedFileAssignments.push(icon.name)
+				}
+			}
+
+			// Check folder icon assignments against folder_icons directory
+			for (const icon of folderIconsModel.icons || []) {
+				if (!icon.name)
+					continue // Skip undefined names
+
+				const baseIconName = `folder-${icon.name}`
+				const openIconName = `folder-${icon.name}-open`
+				
+				const baseIconExists = availableFolderIconNames.has(baseIconName)
+				const openIconExists = availableFolderIconNames.has(openIconName)
+				
+				if (!baseIconExists || !openIconExists) {
+					let description = `${icon.name}.svg`
+					
+					if (!baseIconExists && !openIconExists) {
+						description += ' (closed,open)'
+					} else if (!baseIconExists) {
+						description += ' (closed)'
+					} else if (!openIconExists) {
+						description += ' (open)'
+					}
+					
+					orphanedFolderAssignments.push(description)
+				}
+			}
+
 			// Check language assignments against file_icons directory
 			for (const icon of languageIconsModel.icons || []) {
 				if (!icon.icon)
@@ -255,19 +338,21 @@ async function collectModelErrors(): Promise<{
 				}
 			}
 
-			const seenLanguageIconNames = new Set<string>()
+			const seenLanguageIconIds = new Set<string>()
 
 			for (const icon of languageIconsModel.icons || []) {
-				// Skip icons with undefined names
-				if (!icon.icon)
+				// Skip icons with undefined ids
+				if (!icon.id)
 					continue
 				
-				if (seenLanguageIconNames.has(icon.icon)) {
-					duplicateLanguageIcons.push(icon.icon)
+				if (seenLanguageIconIds.has(icon.id)) {
+					duplicateLanguageIcons.push(icon.id)
 				} else {
-					seenLanguageIconNames.add(icon.icon)
+					seenLanguageIconIds.add(icon.id)
 				}
 			}
+
+			// Note: Invalid language ID validation removed as requested
 		} catch (_dirError) {
 			// Missing asset folders are treated as no orphans found
 		}
@@ -285,6 +370,7 @@ async function collectModelErrors(): Promise<{
 		orphanedFileAssignments,
 		orphanedFolderAssignments,
 		orphanedLanguageAssignments,
+		invalidLanguageIds,
 	}
 }
 
@@ -292,14 +378,13 @@ async function collectModelErrors(): Promise<{
  * Delete existing generated theme files
  */
 async function deleteExistingThemes(): Promise<{ success: boolean, deletedCount: number }> {
-	console.log('Deleting existing theme files...')
 	try {
 		// Ensure themes directory exists
 		try {
 			await fs.access(THEMES_DIR)
 		} catch {
 			// Directory doesn't exist, nothing to delete; consider this success
-			console.log('└─ Success: Existing theme files deleted and verified.')
+			// Success - no output needed, handled by caller
 			return { success: true, deletedCount: 0 }
 		}
 
@@ -329,13 +414,14 @@ async function deleteExistingThemes(): Promise<{ success: boolean, deletedCount:
 		)
 
 		if (remaining.length === 0) {
-			console.log('└─ Success: Existing theme files deleted and verified.')
+			// Success - no output needed, handled by caller
 			return { success: true, deletedCount }
 		}
 
-		throw new Error('Failed to delete all generated theme files')
+		console.log('\x1B[31mFailed: Existing theme files not removed.\x1B[0m')
+		return { success: false, deletedCount: 0 }
 	} catch (error) {
-		console.log(`    ⚠️  Theme deletion failed: ${error}`)
+		console.log('\x1B[31mFailed: Existing theme files not removed.\x1B[0m')
 		return { success: false, deletedCount: 0 }
 	}
 }
@@ -344,22 +430,32 @@ async function deleteExistingThemes(): Promise<{ success: boolean, deletedCount:
  * Generate themes and verify existence, then print exact success lines
  */
 async function generateAndVerifyThemes(): Promise<void> {
-	await generateManifestsMain(false)
+	try {
+		// Generate theme files (this will handle deletion internally)
+		const success = await generateManifestsMain(true) // Use silent mode to avoid duplicate output
 
-	// Verify the two expected files exist
-	const baseTheme = path.join(THEMES_DIR, 'base.theme.json')
-	const dynTheme = path.join(THEMES_DIR, 'dynamicons.theme.json')
+		if (!success) {
+			throw new Error('Theme generation failed')
+		}
 
-	const baseExists = await fileExists(baseTheme)
-	const dynExists = await fileExists(dynTheme)
+		// Verify the two expected files exist
+		const baseTheme = path.join(THEMES_DIR, 'base.theme.json')
+		const dynTheme = path.join(THEMES_DIR, 'dynamicons.theme.json')
 
-	if (!baseExists || !dynExists) {
-		throw new Error('Generated theme files missing after generation')
+		const baseExists = await fileExists(baseTheme)
+		const dynExists = await fileExists(dynTheme)
+
+		if (!baseExists || !dynExists) {
+			throw new Error('Generated theme files missing after generation')
+		}
+
+		// Success - no output needed, handled by caller
+	} catch (error) {
+		console.error('Error: Generating theme files')
+		console.error(`Type: ${error instanceof Error ? error.constructor.name : 'Unknown'}`)
+		console.error(`Description: ${error instanceof Error ? error.message : String(error)}`)
+		throw error
 	}
-
-	console.log('Theme files generated and verified:')
-	console.log(`├─ ${path.relative(process.cwd(), baseTheme)}`)
-	console.log(`└─ ${path.relative(process.cwd(), dynTheme)}`)
 }
 
 async function fileExists(p: string): Promise<boolean> {
@@ -418,174 +514,56 @@ async function verifyThemeGeneration(): Promise<{ success: boolean, themeCount: 
 	}
 }
 
-// ANSI colors
-const ANSI = {
-	reset: '\x1B[0m',
-	red: '\x1B[31m',
-	cyan: '\x1B[36m',
-	yellow: '\x1B[33m',
-}
-
 /**
- * Display structured error output in the requested format
+ * Parse VS Code's installed language IDs from the built-in language registry
+ * This would return all legitimate language identifiers that VS Code recognizes
  */
-function displayStructuredErrors(
-	themeErrors: string[],
-	orphanedFileIcons: string[],
-	orphanedFolderIcons: string[],
-	orphanedLanguageIcons: string[],
-	duplicateFileIcons: string[],
-	duplicateFolderIcons: string[],
-	duplicateLanguageIcons: string[],
-	orphanedFileAssignments: string[],
-	orphanedFolderAssignments: string[],
-	orphanedLanguageAssignments: string[],
-): void {
-	// small helper to build prefix from parent chain and self position
-	const makePrefix = (parentLastFlags: boolean[], isLastSelf: boolean): string => {
-		const trunk = parentLastFlags.map(isLastParent =>
-			(isLastParent ? '   ' : '│  ')).join('')
-		const tail = isLastSelf ? '└─ ' : '├─ '
+async function getInstalledLanguageIds(): Promise<string[]> {
+	try {
+		// VS Code stores language definitions in its built-in extensions
+		// Common locations for language IDs:
+		const possiblePaths = [
+			// Windows
+			'C:\\Users\\%USERNAME%\\AppData\\Local\\Programs\\Microsoft VS Code\\resources\\app\\extensions',
+			// macOS
+			'/Applications/Visual Studio Code.app/Contents/Resources/app/extensions',
+			// Linux
+			'/usr/share/code/resources/app/extensions',
+			// Portable installations
+			process.env.VSCODE_EXTENSIONS || '',
+		]
 
-		return `${trunk}${tail}`
-	}
-
-	// Display theme errors (no color changes requested here)
-	if (themeErrors.length > 0) {
-		console.log(`\n❌ THEME ERRORS (${themeErrors.length}):`)
-		themeErrors.forEach((error, index) => {
-			const prefix = index === themeErrors.length - 1 ? '└─' : '├─'
-
-			console.log(`   ${prefix} ${error}`)
+		// For demonstration, let's show what we would find
+		console.log('🔍 Would parse VS Code language registry from:')
+		possiblePaths.forEach((path) => {
+			if (path)
+				console.log(`  - ${path}`)
 		})
-	}
 
-	// Calculate total model errors
-	const totalModelErrors = orphanedFileIcons.length + orphanedFolderIcons.length + orphanedLanguageIcons.length + duplicateFileIcons.length + duplicateFolderIcons.length + duplicateLanguageIcons.length + orphanedFileAssignments.length + orphanedFolderAssignments.length + orphanedLanguageAssignments.length
+		// Example of what the output would contain:
+		const exampleLanguageIds = [
+			// Common languages
+			'javascript', 'typescript', 'python', 'java', 'cpp', 'csharp',
+			// Web technologies
+			'html', 'css', 'json', 'xml', 'yaml', 'markdown',
+			// Scripting languages
+			'shellscript', 'powershell', 'bash', 'python',
+			// Database
+			'sql', 'mysql', 'postgresql',
+			// Configuration files
+			'dockerfile', 'git-commit', 'git-rebase', 'ignore',
+			// And many more...
+		]
 
-	if (totalModelErrors > 0) {
-		// Header in red
-		console.log(`\n${ANSI.red}❌ MODEL ERRORS (${totalModelErrors}):${ANSI.reset}`)
+		console.log('\n📋 Example of language IDs that would be found:')
+		console.log(`  Total: ${exampleLanguageIds.length} examples`)
+		console.log('  First 10:', exampleLanguageIds.slice(0, 10).join(', '))
+		console.log('  ... and hundreds more')
 
-		// Determine which top-level groups are present under MODEL ERRORS
-		const hasFileIconsGroup = orphanedFileIcons.length > 0 || duplicateFileIcons.length > 0
-		const hasFolderIconsGroup = orphanedFolderIcons.length > 0 || duplicateFolderIcons.length > 0
-		const hasLanguageIconsGroup = orphanedLanguageIcons.length > 0 || duplicateLanguageIcons.length > 0
-		const hasAssignmentsGroup = orphanedFileAssignments.length > 0 || orphanedFolderAssignments.length > 0 || orphanedLanguageAssignments.length > 0
-
-		// FILE ICONS group (depth 1 cyan)
-		if (hasFileIconsGroup) {
-			const fileIconsIsLast = !hasFolderIconsGroup && !hasLanguageIconsGroup && !hasAssignmentsGroup
-
-			console.log(`${makePrefix([], fileIconsIsLast)}${ANSI.cyan}FILE ICONS${ANSI.reset}`)
-
-			// Children of FILE ICONS (depth 2 gold)
-			const fileChildren: Array<{ label: string, items: string[] }> = []
-
-			if (orphanedFileIcons.length > 0)
-				fileChildren.push({ label: 'ORPHANED ICONS', items: orphanedFileIcons })
-			if (duplicateFileIcons.length > 0)
-				fileChildren.push({ label: 'DUPLICATE ASSIGNMENT', items: duplicateFileIcons })
-
-			fileChildren.forEach((child, idx) => {
-				const isLastChild = idx === fileChildren.length - 1
-
-				console.log(`${makePrefix([fileIconsIsLast], isLastChild)}${ANSI.yellow}${child.label}${ANSI.reset}`)
-
-				// Depth 3 leaves (no color requested)
-				child.items.forEach((name, itemIdx) => {
-					const isLastItem = itemIdx === child.items.length - 1
-
-					console.log(`${makePrefix([fileIconsIsLast, isLastChild], isLastItem)}${name}`)
-				})
-			})
-		}
-
-		// FOLDER ICONS group (depth 1 cyan)
-		if (hasFolderIconsGroup) {
-			const folderIconsIsLast = !hasLanguageIconsGroup && !hasAssignmentsGroup
-
-			console.log(`${makePrefix([], folderIconsIsLast)}${ANSI.cyan}FOLDER ICONS${ANSI.reset}`)
-
-			// Children of FOLDER ICONS (depth 2 gold)
-			const folderChildren: Array<{ label: string, items: string[] }> = []
-
-			if (orphanedFolderIcons.length > 0)
-				folderChildren.push({ label: 'ORPHANS', items: orphanedFolderIcons })
-			if (duplicateFolderIcons.length > 0)
-				folderChildren.push({ label: 'DUPLICATE ASSIGNMENT', items: duplicateFolderIcons })
-
-			folderChildren.forEach((child, idx) => {
-				const isLastChild = idx === folderChildren.length - 1
-
-				console.log(`${makePrefix([folderIconsIsLast], isLastChild)}${ANSI.yellow}${child.label}${ANSI.reset}`)
-
-				// Depth 3 leaves (no color requested)
-				child.items.forEach((name, itemIdx) => {
-					const isLastItem = itemIdx === child.items.length - 1
-
-					console.log(`${makePrefix([folderIconsIsLast, isLastChild], isLastItem)}${name}`)
-				})
-			})
-		}
-
-		// LANGUAGE ICONS group (depth 1 cyan)
-		if (hasLanguageIconsGroup) {
-			const languageIconsIsLast = !hasAssignmentsGroup
-
-			console.log(`${makePrefix([], languageIconsIsLast)}${ANSI.cyan}LANGUAGE ICONS${ANSI.reset}`)
-
-			// Children of LANGUAGE ICONS (depth 2 gold)
-			const languageChildren: Array<{ label: string, items: string[] }> = []
-
-			if (orphanedLanguageIcons.length > 0)
-				languageChildren.push({ label: 'ORPHANS', items: orphanedLanguageIcons })
-			if (duplicateLanguageIcons.length > 0)
-				languageChildren.push({ label: 'DUPLICATE ASSIGNMENT', items: duplicateLanguageIcons })
-
-			languageChildren.forEach((child, idx) => {
-				const isLastChild = idx === languageChildren.length - 1
-
-				console.log(`${makePrefix([languageIconsIsLast], isLastChild)}${ANSI.yellow}${child.label}${ANSI.reset}`)
-
-				// Depth 3 leaves (no color requested)
-				child.items.forEach((name, itemIdx) => {
-					const isLastItem = itemIdx === child.items.length - 1
-
-					console.log(`${makePrefix([languageIconsIsLast, isLastChild], isLastItem)}${name}`)
-				})
-			})
-		}
-
-		// ASSIGNMENTS group (depth 1 cyan)
-		if (hasAssignmentsGroup) {
-			const assignmentsIsLast = true
-
-			console.log(`${makePrefix([], assignmentsIsLast)}${ANSI.cyan}ASSIGNMENTS${ANSI.reset}`)
-
-			// Children of ASSIGNMENTS (depth 2 gold)
-			const assignmentChildren: Array<{ label: string, items: string[] }> = []
-
-			if (orphanedFileAssignments.length > 0)
-				assignmentChildren.push({ label: 'ORPHANED FILE ASSIGNMENTS', items: orphanedFileAssignments })
-			if (orphanedFolderAssignments.length > 0)
-				assignmentChildren.push({ label: 'ORPHANED FOLDER ASSIGNMENTS', items: orphanedFolderAssignments })
-			if (orphanedLanguageAssignments.length > 0)
-				assignmentChildren.push({ label: 'ORPHANED LANGUAGE ASSIGNMENTS', items: orphanedLanguageAssignments })
-
-			assignmentChildren.forEach((child, idx) => {
-				const isLastChild = idx === assignmentChildren.length - 1
-
-				console.log(`${makePrefix([assignmentsIsLast], isLastChild)}${ANSI.yellow}${child.label}${ANSI.reset}`)
-
-				// Depth 3 leaves (no color requested)
-				child.items.forEach((name, itemIdx) => {
-					const isLastItem = itemIdx === child.items.length - 1
-
-					console.log(`${makePrefix([assignmentsIsLast, isLastChild], isLastItem)}${name}`)
-				})
-			})
-		}
+		return exampleLanguageIds
+	} catch (error) {
+		console.error('❌ Failed to parse VS Code language registry:', error)
+		return []
 	}
 }
 

@@ -3,7 +3,6 @@
     "folder": { "name": "basic" },
     "rootFolder": { "name": "root" },
     "icons": [
-        { "name": "arduino", "folderNames": [] },
         { "name": "binary", "folderNames": ["bin"] },
         { "name": "build", "folderNames": ["build", "_build"] },
         { "name": "config", "folderNames": ["config", "_config", "configs", "configuration", ".arduino15", ".user"] },
@@ -47,7 +46,6 @@
         { "name": "template", "folderNames": ["template", "templates"] },
         { "name": "terminal", "folderNames": ["ps", "ps1", "powershell"] },
         { "name": "theme", "folderNames": ["theme", "themes"] },
-        { "name": "theme", "folderNames": ["theme", "themes"] },
         { "name": "toolbox", "folderNames": ["_utilities_"] },
         { "name": "turborepo", "folderNames": [".turbo"] },
         { "name": "typescript", "folderNames": ["ts", ".ts", "_ts_", "__ts__", "___ts___", "_ts"] },
@@ -55,83 +53,36 @@
         { "name": "webpack", "folderNames": [".devcontainer"] },
         { "name": "yarn", "folderNames": [".yarn"] }
     ],
-    "orphans": [
-        
-        "folder-action-arrows",
-        "folder-component",
-        "folder-core",
-        "folder-dict",
-        "folder-klipper",
-        // "folder-luggage",
-        "folder-pypack",
-        "folder-pyproj",
-        "folder-share",
-        // "folder-notes",
-        
-        
-        "folder-action-arrows",
-        "folder-arduino",
-        "folder-basic",
-        "folder-binary",
-        "folder-book",
-        "folder-build",
-        "folder-c",
-        "folder-cardboard-box",
-        "folder-cmake",
-        "folder-component",
-        "folder-config",
-        "folder-core-alt",
-        "folder-core",
-        "folder-cp",
-        "folder-cpp",
-        "folder-dict",
-        "folder-env",
-        "folder-eslint",
-        "folder-generator",
-        "folder-git",
-        "folder-green-arrow",
-        "folder-gulp",
-        "folder-header",
-        "folder-helpers",
-        "folder-home",
-        "folder-icon",
-        "folder-images",
-        "folder-javascript",
-        "folder-json",
-        "folder-klipper",
-        "folder-lib",
-        "folder-model",
-        "folder-node",
-
-        "folder-nx",
-        "folder-out",
-        "folder-package",
-        "folder-pi",
-        "folder-puzzle",
-        "folder-pycache",
-        "folder-pypack",
-        "folder-pyproj",
-        "folder-python",
-        "folder-removed",
-        "folder-root",
-        "folder-scripts",
-        "folder-share",
-        "folder-shell",
-        "folder-sketch",
-        "folder-source",
-        "folder-syntax",
-        "folder-template",
-        "folder-terminal",
-        "folder-test-alt",
-        "folder-test",
-        "folder-theme",
-        "folder-toolbox",
-        "folder-turborepo",
-        "folder-typescript",
-        "folder-vscode",
-        "folder-webpack",
-        "folder-yarn"
+    "unassigned": [
+        "arduino",
+        "gulp",
+        "test",
+        "action-arrows",
+        "component",
+        "core",
+        "dict",
+        "klipper",
+        "luggage",
+        "pypack",
+        "pyproj",
+        "share"
     ]
 }
 
 
+
+
+
+
+
+
+    // "folder-action-arrows",
+    // "folder-component",
+    // "folder-core",
+    // "folder-dict",
+    // "folder-klipper",
+    // "folder-luggage",
+    // "folder-pypack",
+    // "folder-pyproj",
+    // "folder-share"
+    

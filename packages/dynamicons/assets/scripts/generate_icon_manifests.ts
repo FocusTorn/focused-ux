@@ -442,7 +442,7 @@ function checkForOrphanedIcons( //>
 
 export async function main(silent: boolean = false): Promise<boolean> { //>
 	// Always show minimal output for theme generation
-	console.log('Deleting existing theme files...')
+	// console.log('Deleting existing theme files...')
 
 	if (!fs.existsSync(THEMES_OUTPUT_DIR_ABS_POSIX.replace(/\//g, path.sep))) {
 		if (!silent) {
@@ -516,7 +516,7 @@ export async function main(silent: boolean = false): Promise<boolean> { //>
 	}
 
 	if (!silent) {
-		console.log(`    └─ ${ansii.green}Success:${ansii.none} Existing theme files deleted and verified.`)
+		console.log(`    └─ ${ansii.green}Success: Existing theme files deleted and verified.${ansii.none}`)
 	}
 
 	let fileIconsData: FileIconsModel
@@ -533,7 +533,7 @@ export async function main(silent: boolean = false): Promise<boolean> { //>
 		return false
 	}
 
-	checkForOrphanedIcons(fileIconsData, folderIconsData, silent)
+	// checkForOrphanedIcons(fileIconsData, folderIconsData, silent)
 
 	const combinedIconsData = transformIcons(fileIconsData, folderIconsData, silent)
 
@@ -590,9 +590,9 @@ export async function main(silent: boolean = false): Promise<boolean> { //>
 	}
 
 	if (!silent) {
-		console.log(`    └─ ${ansii.green}Success:${ansii.none} Theme files generated and verified:`)
-		console.log(`       ├─ ${path.relative(MONOREPO_ROOT, BASE_THEME_FILE_ABS)}`)
-		console.log(`       └─ ${path.relative(MONOREPO_ROOT, OUTPUT_THEME_FILE_ABS)}`)
+		console.log(`    └─ ${ansii.green}Success: Theme files generated and verified:${ansii.none}`)
+		console.log(`\x1B[90m       - ${path.relative(MONOREPO_ROOT, BASE_THEME_FILE_ABS)}\x1B[0m`)
+		console.log(`\x1B[90m       - ${path.relative(MONOREPO_ROOT, OUTPUT_THEME_FILE_ABS)}\x1B[0m`)
 	}
 
 	if (!silent) {

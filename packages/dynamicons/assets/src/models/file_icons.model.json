@@ -4,7 +4,6 @@
     "file": { "name": "file" },
     "icons": [
         { "name": "ahk", "fileExtensions": ["ahk"] },
-        { "name": "ahk", "fileExtensions": ["ahk"] },
         { "name": "ahk-alt", "fileExtensions": ["ah2"] },
         { "name": "arduino-cli", "fileNames": ["arduino-cli"] },
         { "name": "arduino-config", "fileNames": ["sketch.yaml"] },
@@ -91,15 +90,17 @@
         { "name": "vscode-ignore", "fileNames": [".vscodeignore"] },
         { "name": "webpack-config", "fileNames": ["webpack.config.js"] },
         { "name": "zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
+        // ,{ "name": "zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
+        //, { "name": "not-zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
         
     ],
-    "orphans": [
+    "unassigned": [
         "bun",
         "cmake-flow",
         "css-map",
         "css",
         "dict",
-        // "docker",
+        "docker",
         "file-drawer",
         "fthead",
         "jest",
@@ -124,7 +125,7 @@
         "generator",
         "jest-config-alt",
         "node",
-        // "pycache-alt",
+        "pycache-alt",
         "pycache",
         "python-alt",
         "svg-alt",
