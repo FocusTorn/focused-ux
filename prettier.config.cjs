@@ -16,6 +16,8 @@ const config = {
     
     markdown: {
         codeFences: "~~~",
+        useTabs: false,
+	    tabWidth: 4,
     },
     
 	// plugins: ['./.prettier/plugin.cjs'],

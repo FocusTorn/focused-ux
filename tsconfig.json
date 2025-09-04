@@ -59,6 +59,9 @@
         },
         {
             "path": "./libs/observability"
+        },
+        {
+            "path": "./packages/dynamicons/assets"
         }
     ]
 }

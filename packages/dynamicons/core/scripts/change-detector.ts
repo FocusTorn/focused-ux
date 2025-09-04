@@ -38,25 +38,19 @@ export class AssetChangeDetector {
 	 * Analyze changes between current assets and previous manifest
 	 */
 	async analyzeChanges(): Promise<ChangeAnalysis> {
-		const previousManifest = await this.loadPreviousManifest()
 		const currentAssets = await this.scanCurrentAssets()
     
-		if (!previousManifest) {
-			// First run - all assets are new
-			const changes = currentAssets.map(asset =>
-				({
-					type: 'added' as const,
-					assetPath: asset.path,
-					currentHash: asset.hash,
-					currentModifiedTime: asset.modifiedTime,
-					size: asset.size,
-				}))
+		// For SVG processing, we assume all source icons are new and need processing
+		// since we can't determine if they've changed until after import/optimization
+		const changes = currentAssets.map(asset =>
+			({
+				type: 'added' as const,
+				assetPath: asset.path,
+				currentHash: asset.hash,
+				currentModifiedTime: asset.modifiedTime,
+				size: asset.size,
+			}))
       
-			return this.createChangeAnalysis(changes)
-		}
-
-		const changes = this.detectChanges(previousManifest, currentAssets)
-
 		return this.createChangeAnalysis(changes)
 	}
 
@@ -135,13 +129,45 @@ export class AssetChangeDetector {
 	}
 
 	/**
-	 * Scan current assets directory
+	 * Scan external source icons directory (external source, not local processed outputs)
 	 */
 	private async scanCurrentAssets(): Promise<AssetMetadata[]> {
-		const { AssetManifestGenerator } = await import('./asset-manifest')
-		const generator = new AssetManifestGenerator(this.assetsDir)
-
-		return generator.discoverAssets()
+		const fs = await import('fs/promises')
+		const path = await import('path')
+		const assets: AssetMetadata[] = []
+		
+		// Scan external source directory for SVG files
+		const externalSourceDir = 'D:/_dev/!Projects/_fux/icons'
+		
+		try {
+			const files = await fs.readdir(externalSourceDir)
+			const svgFiles = files.filter(file => file.toLowerCase().endsWith('.svg'))
+			
+			for (const svgFile of svgFiles) {
+				const fullPath = path.join(externalSourceDir, svgFile)
+				// Create path for processing (will be moved to local assets/icons/)
+				const relativePath = path.join('icons', svgFile)
+				const stats = await fs.stat(fullPath)
+				const content = await fs.readFile(fullPath)
+				const crypto = await import('crypto')
+				const hash = crypto.createHash('sha256').update(content).digest('hex')
+				
+				assets.push({
+					path: relativePath,
+					size: stats.size,
+					modifiedTime: stats.mtime.getTime(),
+					hash,
+					type: 'icon',
+					dependencies: [],
+					category: 'external'
+				})
+			}
+		} catch (error) {
+			// External directory might not exist, return empty list
+			console.log(`External source directory not found: ${externalSourceDir}`)
+		}
+		
+		return assets
 	}
 
 	/**

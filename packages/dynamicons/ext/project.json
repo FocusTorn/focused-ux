@@ -30,15 +30,15 @@
             }
         }, //<
         
-        "copy-assets": { //>
+        "copy-assets": {
             "executor": "nx:run-commands",
             "outputs": ["{projectRoot}/dist/assets"],
-            "dependsOn": ["^build", "@fux/dynamicons-core:process-assets"],
+            "dependsOn": ["^build", "@fux/dynamicons-assets:process-assets"],
             "options": {
-                "command": "npx tsx ../../dynamicons/core/scripts/copy-assets.ts --source-dir ../../dynamicons/core/dist/assets --output-dir dist/assets",
+                "command": "npx tsx ../../dynamicons/assets/scripts/sync-to-ext.ts --source-dir ../../dynamicons/assets/assets --target-dir dist/assets",
                 "cwd": "{projectRoot}"
             }
-        }, //<
+        },
         "package": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["build"],

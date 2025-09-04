@@ -4,56 +4,7 @@
     "sourceRoot": "packages/dynamicons/core/src",
     "projectType": "library",
     "targets": {
-        "process-assets": { //>
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/dist/asset-manifest.json", "{projectRoot}/dist/assets"],
-            "dependsOn": ["build"],
-            "options": {
-                "command": "npx tsx scripts/asset-orchestrator.ts process",
-                "cwd": "{projectRoot}"
-            }
-        }, //<
-        "process-assets:incremental": { //>
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/dist/asset-manifest.json", "{projectRoot}/dist/assets"],
-            "dependsOn": ["build"],
-            "options": {
-                "command": "npx tsx scripts/asset-orchestrator.ts process",
-                "cwd": "{projectRoot}"
-            }
-        }, //<
-        "process-assets:all": { //>
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/dist/asset-manifest.json", "{projectRoot}/dist/assets"],
-            "dependsOn": ["build"],
-            "options": {
-                "command": "npx tsx scripts/asset-orchestrator.ts process --no-skip --verbose",
-                "cwd": "{projectRoot}"
-            }
-        }, //<
-
-        "assets:manifest": { //>
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/dist/asset-manifest.json"],
-            "options": {
-                "command": "npx tsx scripts/asset-orchestrator.ts manifest",
-                "cwd": "{projectRoot}"
-            }
-        }, //<
-        "assets:detect": { //>
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/dist/asset-manifest.json"],
-            "options": {
-                "command": "npx tsx scripts/asset-orchestrator.ts detect",
-                "cwd": "{projectRoot}"
-            }
-        }, //<
-
-        "build-assets": { //>
-            "dependsOn": ["process-assets"],
-            "executor": "nx:noop"
-        }, //<
-        "build": { //>
+        "build": {
             "dependsOn": [],
             "executor": "@nx/esbuild:esbuild",
             "outputs": [
@@ -81,9 +32,8 @@
                     "vscode",
                     "strip-json-comments"
                 ]
-
             }
-        }, //<
+        },
         
         "check-types": { "extends": "check-types" },
         
@@ -100,12 +50,12 @@
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
 
-        "test": { //>
+        "test": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
             "dependsOn": ["build", "^build"]
-        }, //<
-        "test:full": { //>
+        },
+        "test:full": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
             "dependsOn": [
@@ -115,106 +65,7 @@
                     "params": "forward"
                 }
             ]
-        } //<
-
+        }
     },
-    "tags": []
+    "tags": ["scope:dynamicons", "type:core"]
 }
-
-
-
-
-
-// {
-//     "name": "@fux/dynamicons-core",
-//     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-//     "sourceRoot": "packages/dynamicons/core/src",
-//     "projectType": "library",
-//     "targets": {
-//         "process-assets": { //>
-//             "executor": "nx:run-commands",
-//             "options": {
-//                 "command": "tsx ./src/scripts/build_dynamicon_assets.ts",
-//                 "cwd": "packages/dynamicons/core"
-//             },
-//             "inputs": [
-//                 "{projectRoot}/src/scripts/**/*",
-//                 "{projectRoot}/src/icons/**/*",
-//                 "{projectRoot}/src/models/**/*"
-//             ],
-//             "outputs": ["{projectRoot}/dist/assets/**/*"],
-//             "cache": true
-//         }, //<
-//         "build-assets": { //>
-//             "dependsOn": ["process-assets"],
-//             "executor": "nx:noop"
-//         }, //<
-//         "build": { //>
-//             "dependsOn": [
-//                 "process-assets"
-//             ],
-//             "executor": "@nx/esbuild:esbuild",
-//             "outputs": [
-//                 "{options.outputPath}"
-//             ],
-//             "inputs": [
-//                 "{projectRoot}/src/**/*"
-//             ],
-//             "options": {
-//                 "main": "packages/dynamicons/core/src/index.ts",
-//                 "outputPath": "packages/dynamicons/core/dist",
-//                 "tsConfig": "packages/dynamicons/core/tsconfig.lib.json",
-//                 "platform": "node",
-//                 "format": [
-//                     "esm"
-//                 ],
-//                 "bundle": false,
-//                 "sourcemap": true,
-//                 "target": "es2022",
-//                 "keepNames": true,
-//                 "declarationRootDir": "packages/dynamicons/core/src",
-//                 "thirdParty": false,
-//                 "deleteOutputPath": true,
-//                 "external": [
-//                     "vscode",
-//                     "strip-json-comments"
-//                 ]
-
-//             }
-//         }, //<
-        
-//         "check-types": { "extends": "check-types" },
-        
-//         "lint": { "extends": "lint" },
-//         "lint:full": { "extends": "lint:full" },
-        
-//         "validate": { "extends": "validate" },
-//         "validate:full": { "extends": "validate:full" },
-        
-//         "audit": { "extends": "audit" },
-//         "audit:full": { "extends": "audit:full" },
-        
-//         "clean": { "extends": "clean" },
-//         "clean:dist": { "extends": "clean:dist" },
-//         "clean:cache": { "extends": "clean:cache" },
-
-//         "test": { //>
-//             "executor": "@nx/vite:test",
-//             "outputs": ["{options.reportsDirectory}"],
-//             "dependsOn": ["build", "^build"]
-//         }, //<
-//         "test:full": { //>
-//             "executor": "@nx/vite:test",
-//             "outputs": ["{options.reportsDirectory}"],
-//             "dependsOn": [
-//                 {
-//                     "dependencies": true,
-//                     "target": "test",
-//                     "params": "forward"
-//                 }
-//             ]
-//         } //<
-
-//     },
-//     "tags": []
-// }
