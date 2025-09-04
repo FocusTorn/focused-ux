@@ -31,6 +31,14 @@ interface ValidationArrays {
 	invalidLanguageIds?: string[]
 }
 
+// Section titles interface for customizable labels
+interface SectionTitles {
+	assignedIconNotFound?: string
+	duplicateAssignment?: string
+	unassignedIcon?: string
+	duplicateAssignmentId?: string
+}
+
 /**
  * TreeFormatter - Handles all tree formatting logic with proper depth colors and prefix calculations
  */
@@ -44,7 +52,15 @@ export class TreeFormatter {
 	/**
 	 * Build tree structure from validation arrays
 	 */
-	buildTreeFromArrays(arrays: ValidationArrays): TreeNode[] {
+	buildTreeFromArrays(arrays: ValidationArrays, sectionTitles?: SectionTitles): TreeNode[] {
+		// Default section titles
+		const titles = {
+			assignedIconNotFound: 'MODEL: ASSIGNED ICON NOT FOUND',
+			duplicateAssignment: 'MODEL: DUPLICATE ASSIGNMENT',
+			unassignedIcon: 'DIRECTORY: UNASSIGNED ICON',
+			duplicateAssignmentId: 'MODEL: DUPLICATE ASSIGNMENT ID',
+			...sectionTitles
+		}
 		const nodes: TreeNode[] = []
 
 		// FILE group
@@ -58,7 +74,7 @@ export class TreeFormatter {
 
 			if (arrays.orphanedFileAssignments?.length) {
 				fileNode.children!.push({
-					name: 'MODEL: ASSIGNED ICON NOT FOUND',
+					name: titles.assignedIconNotFound,
 					depth: 2,
 					color: this.depthColors[2],
 					children: arrays.orphanedFileAssignments.map(name => ({
@@ -71,7 +87,7 @@ export class TreeFormatter {
 
 			if (arrays.duplicateFileIcons?.length) {
 				fileNode.children!.push({
-					name: 'MODEL: DUPLICATE ASSIGNMENT',
+					name: titles.duplicateAssignment,
 					depth: 2,
 					color: this.depthColors[2],
 					children: arrays.duplicateFileIcons.map(name => ({
@@ -84,7 +100,7 @@ export class TreeFormatter {
 
 			if (arrays.orphanedFileIcons?.length) {
 				fileNode.children!.push({
-					name: 'DIRECTORY: UNASSIGNED ICON',
+					name: titles.unassignedIcon,
 					depth: 2,
 					color: this.depthColors[2],
 					children: arrays.orphanedFileIcons.map(name => ({
@@ -109,7 +125,7 @@ export class TreeFormatter {
 
 			if (arrays.orphanedFolderAssignments?.length) {
 				folderNode.children!.push({
-					name: 'MODEL: ASSIGNED ICON NOT FOUND',
+					name: titles.assignedIconNotFound,
 					depth: 2,
 					color: this.depthColors[2],
 					children: arrays.orphanedFolderAssignments.map(name => ({
@@ -122,7 +138,7 @@ export class TreeFormatter {
 
 			if (arrays.duplicateFolderIcons?.length) {
 				folderNode.children!.push({
-					name: 'MODEL: DUPLICATE ASSIGNMENT',
+					name: titles.duplicateAssignment,
 					depth: 2,
 					color: this.depthColors[2],
 					children: arrays.duplicateFolderIcons.map(name => ({
@@ -135,7 +151,7 @@ export class TreeFormatter {
 
 			if (arrays.orphanedFolderIcons?.length) {
 				folderNode.children!.push({
-					name: 'DIRECTORY: UNASSIGNED ICON',
+					name: titles.unassignedIcon,
 					depth: 2,
 					color: this.depthColors[2],
 					children: arrays.orphanedFolderIcons.map(name => ({
@@ -160,7 +176,7 @@ export class TreeFormatter {
 
 			if (arrays.orphanedLanguageAssignments?.length) {
 				languageNode.children!.push({
-					name: 'MODEL: ASSIGNED ICON NOT FOUND',
+					name: titles.assignedIconNotFound,
 					depth: 2,
 					color: this.depthColors[2],
 					children: arrays.orphanedLanguageAssignments.map(name => ({
@@ -173,7 +189,7 @@ export class TreeFormatter {
 
 			if (arrays.duplicateLanguageIcons?.length) {
 				languageNode.children!.push({
-					name: 'MODEL: DUPLICATE ASSIGNMENT ID',
+					name: titles.duplicateAssignmentId,
 					depth: 2,
 					color: this.depthColors[2],
 					children: arrays.duplicateLanguageIcons.map(name => ({
@@ -288,6 +304,8 @@ export function displayStructuredErrors(
 	orphanedFolderAssignments: string[],
 	orphanedLanguageAssignments: string[],
 	invalidLanguageIds: string[],
+	errorTitle: string = 'MODEL ERRORS',
+	sectionTitles?: SectionTitles,
 ): void {
 	const formatter = new TreeFormatter()
 
@@ -308,7 +326,7 @@ export function displayStructuredErrors(
 
 	if (totalModelErrors > 0) {
 		// Header in red
-		console.log(`\n${ANSI.red}❌ MODEL ERRORS (${totalModelErrors}):${ANSI.reset}`)
+		console.log(`\n${ANSI.red}❌ ${errorTitle} (${totalModelErrors}):${ANSI.reset}`)
 
 		// Build and output tree
 		const treeNodes = formatter.buildTreeFromArrays({
@@ -322,7 +340,7 @@ export function displayStructuredErrors(
 			orphanedFolderAssignments,
 			orphanedLanguageAssignments,
 			invalidLanguageIds,
-		})
+		}, sectionTitles)
 
 		// Output each top-level node with correct isLast flags
 		treeNodes.forEach((node, index) => {

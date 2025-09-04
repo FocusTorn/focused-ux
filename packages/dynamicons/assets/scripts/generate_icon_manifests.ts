@@ -63,6 +63,7 @@ const __dirname = path.dirname(__filename)
 const MONOREPO_ROOT = path.resolve(__dirname, '../../../../../')
 const FILE_ICONS_MODEL_PATH = path.resolve(__dirname, '../src/models/file_icons.model.json')
 const FOLDER_ICONS_MODEL_PATH = path.resolve(__dirname, '../src/models/folder_icons.model.json')
+const LANGUAGE_ICONS_MODEL_PATH = path.resolve(__dirname, '../src/models/language_icons.model.json')
 const ASSETS_DIR_ABS = path.resolve(__dirname, '../assets')
 const OPTIMIZED_ICONS_ROOT_DIR_ABS_POSIX = path.join(ASSETS_DIR_ABS, 'icons').replace(/\\/g, '/')
 const OPTIMIZED_FILE_ICONS_DIR_ABS_POSIX = path.join(OPTIMIZED_ICONS_ROOT_DIR_ABS_POSIX, 'file_icons').replace(/\\/g, '/')
@@ -81,18 +82,25 @@ interface IconDefinition { //>
 	iconPath: string
 } //<
 interface FileIconsModel { //>
-	file: { name: string }
+	file: { iconName: string }
 	icons: IconEntry[]
 	orphans?: string[]
 } //<
 interface FolderIconsModel { //>
-	folder: { name: string }
-	rootFolder: { name: string }
+	folder: { iconName: string }
+	rootFolder: { iconName: string }
 	icons: IconEntry[]
 	orphans?: string[]
 } //<
+interface LanguageIconsModel { //>
+	icons: LanguageIconEntry[]
+} //<
+interface LanguageIconEntry { //>
+	languageID: string
+	iconName: string
+} //<
 interface IconEntry { //>
-	name: string
+	iconName: string
 	fileExtensions?: string[]
 	fileNames?: string[]
 	folderNames?: string[]
@@ -121,48 +129,123 @@ function readJsonFileSync<T = any>(filePath: string, encoding: BufferEncoding = 
 	return JSON.parse(contentWithoutComments) as T
 } //<
 
-function generateMetadata( //>
-	iconsDirAbsPosix: string,
+function generateMetadataForAssignedIcons( //>
+	fileIconsModel: FileIconsModel,
+	folderIconsModel: FolderIconsModel,
+	languageIconsModel: LanguageIconsModel,
+	fileIconsDirAbsPosix: string,
+	folderIconsDirAbsPosix: string,
 	themesDirAbsPosix: string,
 	silent: boolean = false,
 ): Record<string, IconDefinition> {
 	const iconsData: Record<string, IconDefinition> = {}
+	const relativePathFromOutputThemesToOutputIcons = path.posix.relative(themesDirAbsPosix, OPTIMIZED_ICONS_ROOT_DIR_ABS_POSIX)
+
+	// Build sets of assigned icon names by type
+	const assignedFileIconNames = new Set<string>()
+	const assignedFolderIconNames = new Set<string>()
+	const assignedLanguageIconNames = new Set<string>()
+	
+	// Add file icons from models
+	fileIconsModel.icons.forEach((icon) => {
+		if (icon.iconName) {
+			assignedFileIconNames.add(icon.iconName)
+		}
+	})
+	
+	// Add folder icons from models
+	folderIconsModel.icons.forEach((icon) => {
+		if (icon.iconName) {
+			assignedFolderIconNames.add(icon.iconName)
+		}
+	})
+	
+	// Add language icons from models
+	languageIconsModel.icons.forEach((icon) => {
+		if (icon.iconName) {
+			// Remove .svg extension for comparison
+			const iconName = icon.iconName.replace(/\.svg$/, '')
+			assignedLanguageIconNames.add(iconName)
+		}
+	})
+	
+	// Add core icons
+	assignedFileIconNames.add(fileIconsModel.file.iconName)
+	assignedFolderIconNames.add(folderIconsModel.folder.iconName)
+	assignedFolderIconNames.add(folderIconsModel.rootFolder.iconName)
 
 	try {
-		if (!fs.existsSync(iconsDirAbsPosix.replace(/\//g, path.sep))) {
-			if (!silent) {
-				console.warn(
-					`│  ├─ ${ansii.yellow}WARN:${ansii.none} Source icons directory does not exist: ${path.relative(
-						MONOREPO_ROOT,
-						iconsDirAbsPosix,
-					)}. Skipping metadata.`,
-				)
+		// Process file icons
+		if (fs.existsSync(fileIconsDirAbsPosix.replace(/\//g, path.sep))) {
+			const files = fs.readdirSync(fileIconsDirAbsPosix.replace(/\//g, path.sep))
+			
+			for (const file of files) {
+				if (path.extname(file).toLowerCase() === '.svg') {
+					const baseName = path.parse(file).name
+					
+					// Only include if this icon is assigned in the file models
+					if (assignedFileIconNames.has(baseName)) {
+						const name = `_${baseName}`
+						const iconPath = path.posix.join(relativePathFromOutputThemesToOutputIcons, 'file_icons', file)
+						iconsData[name] = { iconPath }
+					}
+				}
 			}
-			return iconsData
 		}
 
-		const files = fs.readdirSync(iconsDirAbsPosix.replace(/\//g, path.sep))
-		const relativePathFromOutputThemesToOutputIcons = path.posix.relative(themesDirAbsPosix, OPTIMIZED_ICONS_ROOT_DIR_ABS_POSIX)
-
-		for (const file of files) {
-			if (path.extname(file).toLowerCase() === '.svg') {
-				const name = `_${path.parse(file).name}`
-				const iconPath = path.posix.join(relativePathFromOutputThemesToOutputIcons, path.basename(iconsDirAbsPosix), file)
-
-				iconsData[name] = { iconPath }
+		// Process folder icons
+		if (fs.existsSync(folderIconsDirAbsPosix.replace(/\//g, path.sep))) {
+			const files = fs.readdirSync(folderIconsDirAbsPosix.replace(/\//g, path.sep))
+			
+			for (const file of files) {
+				if (path.extname(file).toLowerCase() === '.svg') {
+					const baseName = path.parse(file).name
+					
+					// Handle folder icon naming convention (folder-{name} or folder-{name}-open)
+					let modelName = baseName
+					if (baseName.startsWith('folder-')) {
+						modelName = baseName.substring(7) // remove 'folder-'
+					}
+					if (modelName.endsWith('-open')) {
+						modelName = modelName.substring(0, modelName.length - 5) // remove '-open'
+					}
+					
+					// Only include if this icon is assigned in the folder models
+					if (assignedFolderIconNames.has(modelName)) {
+						const name = `_${baseName}`
+						const iconPath = path.posix.join(relativePathFromOutputThemesToOutputIcons, 'folder_icons', file)
+						iconsData[name] = { iconPath }
+					}
+				}
 			}
 		}
 	}
 	catch (error) {
 		if (!silent) {
 			console.warn(
-				`│  ├─ ${ansii.yellow}WARN:${ansii.none} Could not read directory ${path.relative(
-					MONOREPO_ROOT,
-					iconsDirAbsPosix,
-				)}. Error: ${(error as Error).message}`,
+				`│  ├─ ${ansii.yellow}WARN:${ansii.none} Could not read icon directories. Error: ${(error as Error).message}`,
 			)
 		}
+
+		// Process language icons (they're stored in file_icons directory)
+		if (fs.existsSync(fileIconsDirAbsPosix.replace(/\//g, path.sep))) {
+			const files = fs.readdirSync(fileIconsDirAbsPosix.replace(/\//g, path.sep))
+			
+			for (const file of files) {
+				if (path.extname(file).toLowerCase() === '.svg') {
+					const baseName = path.parse(file).name
+					
+					// Only include if this icon is assigned in the language models
+					if (assignedLanguageIconNames.has(baseName)) {
+						const name = `_${baseName}`
+						const iconPath = path.posix.join(relativePathFromOutputThemesToOutputIcons, 'file_icons', file)
+						iconsData[name] = { iconPath }
+					}
+				}
+			}
+		}
 	}
+	
 	return iconsData
 } //<
 
@@ -215,7 +298,7 @@ function processIconAssociations( //>
 	type: 'file' | 'folder',
 	silent: boolean = false,
 ): void {
-	const iconModelName = iconEntry.name
+	const iconModelName = iconEntry.iconName
 
 	if (!iconModelName)
 		return
@@ -252,6 +335,7 @@ function processIconAssociations( //>
 function transformIcons( //>
 	fileIconsModel: FileIconsModel,
 	folderIconsModel: FolderIconsModel,
+	languageIconsModel: LanguageIconsModel,
 	silent: boolean = false,
 ): ThemeManifest {
 	const result: ThemeManifest = {
@@ -260,50 +344,67 @@ function transformIcons( //>
 		folderNamesExpanded: {},
 		fileExtensions: {},
 		fileNames: {},
-		file: `_${fileIconsModel.file.name}`,
-		folder: `_folder-${folderIconsModel.folder.name}`,
-		folderExpanded: `_folder-${folderIconsModel.folder.name}${assetConstants.iconNaming.openFolderIconSuffix}`,
-		rootFolder: `_folder-${folderIconsModel.rootFolder.name}`,
-		rootFolderExpanded: `_folder-${folderIconsModel.rootFolder.name}${assetConstants.iconNaming.openFolderIconSuffix}`,
+		file: `_${fileIconsModel.file.iconName}`,
+		folder: `_folder-${folderIconsModel.folder.iconName}`,
+		folderExpanded: `_folder-${folderIconsModel.folder.iconName}${assetConstants.iconNaming.openFolderIconSuffix}`,
+		rootFolder: `_folder-${folderIconsModel.rootFolder.iconName}`,
+		rootFolderExpanded: `_folder-${folderIconsModel.rootFolder.iconName}${assetConstants.iconNaming.openFolderIconSuffix}`,
 		languageIds: {},
 		hidesExplorerArrows: true,
 		highContrast: { fileExtensions: {}, fileNames: {} },
 	}
 
-	addIconDefinitionToResult(result, fileIconsModel.file.name, 'file', false, silent)
-	addIconDefinitionToResult(result, folderIconsModel.folder.name, 'folder', false, silent)
-	addIconDefinitionToResult(result, folderIconsModel.folder.name, 'folder', true, silent)
-	addIconDefinitionToResult(result, folderIconsModel.rootFolder.name, 'folder', false, silent)
-	addIconDefinitionToResult(result, folderIconsModel.rootFolder.name, 'folder', true, silent)
+	addIconDefinitionToResult(result, fileIconsModel.file.iconName, 'file', false, silent)
+	addIconDefinitionToResult(result, folderIconsModel.folder.iconName, 'folder', false, silent)
+	addIconDefinitionToResult(result, folderIconsModel.folder.iconName, 'folder', true, silent)
+	addIconDefinitionToResult(result, folderIconsModel.rootFolder.iconName, 'folder', false, silent)
+	addIconDefinitionToResult(result, folderIconsModel.rootFolder.iconName, 'folder', true, silent)
 
-	Object.assign(result.iconDefinitions, generateMetadata(OPTIMIZED_FILE_ICONS_DIR_ABS_POSIX, THEMES_OUTPUT_DIR_ABS_POSIX, silent))
-	Object.assign(result.iconDefinitions, generateMetadata(OPTIMIZED_FOLDER_ICONS_DIR_ABS_POSIX, THEMES_OUTPUT_DIR_ABS_POSIX, silent))
+	// Generate metadata ONLY for assigned icons (not all files in directories)
+	Object.assign(result.iconDefinitions, generateMetadataForAssignedIcons(fileIconsModel, folderIconsModel, languageIconsModel, OPTIMIZED_FILE_ICONS_DIR_ABS_POSIX, OPTIMIZED_FOLDER_ICONS_DIR_ABS_POSIX, THEMES_OUTPUT_DIR_ABS_POSIX, silent))
 
 	const processedFileIconNames = new Set<string>()
 	const duplicateFileIconNames = new Set<string>()
 	const processedFolderIconNames = new Set<string>()
 	const duplicateFolderIconNames = new Set<string>()
+	const processedLanguageIconNames = new Set<string>()
+	const duplicateLanguageIconNames = new Set<string>()
 
 	for (const iconEntry of fileIconsModel.icons) {
-		if (!iconEntry.name)
+		if (!iconEntry.iconName)
 			continue
-		if (processedFileIconNames.has(iconEntry.name)) {
-			duplicateFileIconNames.add(iconEntry.name)
+		if (processedFileIconNames.has(iconEntry.iconName)) {
+			duplicateFileIconNames.add(iconEntry.iconName)
 			continue
 		}
-		processedFileIconNames.add(iconEntry.name)
+		processedFileIconNames.add(iconEntry.iconName)
 		processIconAssociations(result, iconEntry, 'file', silent)
 	}
 
 	for (const iconEntry of folderIconsModel.icons) {
-		if (!iconEntry.name)
+		if (!iconEntry.iconName)
 			continue
-		if (processedFolderIconNames.has(iconEntry.name)) {
-			duplicateFolderIconNames.add(iconEntry.name)
+		if (processedFolderIconNames.has(iconEntry.iconName)) {
+			duplicateFolderIconNames.add(iconEntry.iconName)
 			continue
 		}
-		processedFolderIconNames.add(iconEntry.name)
+		processedFolderIconNames.add(iconEntry.iconName)
 		processIconAssociations(result, iconEntry, 'folder', silent)
+	}
+
+	// Process language associations
+	for (const iconEntry of languageIconsModel.icons) {
+		if (!iconEntry.languageID || !iconEntry.iconName)
+			continue
+		if (processedLanguageIconNames.has(iconEntry.languageID)) {
+			duplicateLanguageIconNames.add(iconEntry.languageID)
+			continue
+		}
+		processedLanguageIconNames.add(iconEntry.languageID)
+		
+		// Add language association
+		const iconName = iconEntry.iconName.replace(/\.svg$/, '')
+		result.languageIds[iconEntry.languageID] = `_${iconName}`
 	}
 
 	if (!silent) {
@@ -316,6 +417,12 @@ function transformIcons( //>
 		if (duplicateFolderIconNames.size > 0) {
 			console.log(`\n    ${ansii.red}WARNING:${ansii.none} Duplicated Folder icon model names (skipped after first):`)
 			Array.from(duplicateFolderIconNames).forEach((name, index, array) => {
+				console.log(`${index === array.length - 1 ? '    └─ ' : '    ├─ '}${name}`)
+			})
+		}
+		if (duplicateLanguageIconNames.size > 0) {
+			console.log(`\n    ${ansii.red}WARNING:${ansii.none} Duplicated Language icon model IDs (skipped after first):`)
+			Array.from(duplicateLanguageIconNames).forEach((name, index, array) => {
 				console.log(`${index === array.length - 1 ? '    └─ ' : '    ├─ '}${name}`)
 			})
 		}
@@ -404,20 +511,20 @@ function checkForOrphanedIcons( //>
 	const modelIconNames = new Set<string>()
 
 	fileIconsModel.icons.forEach((icon) => {
-		if (icon.name)
-			modelIconNames.add(icon.name)
+		if (icon.iconName)
+			modelIconNames.add(icon.iconName)
 	})
 	folderIconsModel.icons.forEach((icon) => {
-		if (icon.name)
-			modelIconNames.add(icon.name)
+		if (icon.iconName)
+			modelIconNames.add(icon.iconName)
 	})
 	// Also add the default file/folder/rootFolder icons
-	if (fileIconsModel.file.name)
-		modelIconNames.add(fileIconsModel.file.name)
-	if (folderIconsModel.folder.name)
-		modelIconNames.add(folderIconsModel.folder.name)
-	if (folderIconsModel.rootFolder.name)
-		modelIconNames.add(folderIconsModel.rootFolder.name)
+	if (fileIconsModel.file.iconName)
+		modelIconNames.add(fileIconsModel.file.iconName)
+	if (folderIconsModel.folder.iconName)
+		modelIconNames.add(folderIconsModel.folder.iconName)
+	if (folderIconsModel.rootFolder.iconName)
+		modelIconNames.add(folderIconsModel.rootFolder.iconName)
 
 	// Generate orphan warnings using separate functions for each concern
 	const orphanedFileIcons = checkOrphanedFileIcons(modelIconNames, fileIconsModel.orphans || [], OPTIMIZED_FILE_ICONS_DIR_ABS_POSIX)
@@ -521,10 +628,12 @@ export async function main(silent: boolean = false): Promise<boolean> { //>
 
 	let fileIconsData: FileIconsModel
 	let folderIconsData: FolderIconsModel
+	let languageIconsData: LanguageIconsModel
 
 	try {
 		fileIconsData = readJsonFileSync<FileIconsModel>(FILE_ICONS_MODEL_PATH)
 		folderIconsData = readJsonFileSync<FolderIconsModel>(FOLDER_ICONS_MODEL_PATH)
+		languageIconsData = readJsonFileSync<LanguageIconsModel>(LANGUAGE_ICONS_MODEL_PATH)
 	}
 	catch (e) {
 		if (!silent) {
@@ -535,7 +644,7 @@ export async function main(silent: boolean = false): Promise<boolean> { //>
 
 	// checkForOrphanedIcons(fileIconsData, folderIconsData, silent)
 
-	const combinedIconsData = transformIcons(fileIconsData, folderIconsData, silent)
+	const combinedIconsData = transformIcons(fileIconsData, folderIconsData, languageIconsData, silent)
 
 	// Step 2: Generate theme files and verify creation
 	if (!silent) {
