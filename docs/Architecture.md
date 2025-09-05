@@ -86,9 +86,20 @@ Is the package intended to be a VS Code extension?
 
 ## **Build System Architecture**
 
+### **Universal Build Executor Rule**
+
+**CRITICAL**: ALL packages MUST use `@nx/esbuild:esbuild` as the build executor, regardless of package type or bundling needs.
+
+**Rationale**:
+
+- **Performance**: ESBuild is significantly faster than Vite, Rollup, or Webpack for TypeScript compilation
+- **Consistency**: Single build system across all packages for maintainability
+- **Nx Integration**: Superior caching and incremental build support
+- **TypeScript Support**: Native TypeScript compilation without bundling when `bundle: false`
+
 ### **Core Package Build Configuration**
 
-- **Executor**: `@nx/esbuild:esbuild`
+- **Executor**: `@nx/esbuild:esbuild` (MANDATORY)
 - **Bundle**: `false` (library mode)
 - **Format**: `["esm"]` (ES modules)
 - **Declaration**: `true` with `declarationMap: true`
@@ -97,11 +108,20 @@ Is the package intended to be a VS Code extension?
 
 ### **Extension Package Build Configuration**
 
-- **Executor**: `@nx/esbuild:esbuild`
+- **Executor**: `@nx/esbuild:esbuild` (MANDATORY)
 - **Bundle**: `true` (application mode)
 - **Format**: `["cjs"]` (CommonJS for VSCode)
 - **External Dependencies**: `vscode` and core package dependencies
 - **TypeScript Config**: Single `tsconfig.json` with cross-project references
+
+### **Tool Package Build Configuration**
+
+- **Executor**: `@nx/esbuild:esbuild` (MANDATORY)
+- **Bundle**: `false` (utility mode)
+- **Format**: `["esm"]` (ES modules)
+- **Declaration**: `false` (no declarations needed for utilities)
+- **External Dependencies**: All runtime dependencies must be externalized
+- **TypeScript Config**: Uses `tsconfig.json` for compilation
 
 ## **Critical Architectural Rules**
 

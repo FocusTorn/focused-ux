@@ -166,16 +166,16 @@ async function generateAndVerifyThemes(): Promise<void> {
 			throw new Error('Theme generation failed')
 		}
 
-		// Verify the two expected files exist
-		const baseTheme = path.join(THEMES_DIR, 'base.theme.json')
-		const dynTheme = path.join(THEMES_DIR, 'dynamicons.theme.json')
+	// Verify the two expected files exist
+	const baseTheme = path.join(THEMES_DIR, 'base.theme.json')
+	const dynTheme = path.join(THEMES_DIR, 'dynamicons.theme.json')
 
-		const baseExists = await fileExists(baseTheme)
-		const dynExists = await fileExists(dynTheme)
+	const baseExists = await fileExists(baseTheme)
+	const dynExists = await fileExists(dynTheme)
 
-		if (!baseExists || !dynExists) {
-			throw new Error('Generated theme files missing after generation')
-		}
+	if (!baseExists || !dynExists) {
+		throw new Error('Generated theme files missing after generation')
+	}
 
 		// Success - no output needed, handled by caller
 	} catch (error) {

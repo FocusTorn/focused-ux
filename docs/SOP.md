@@ -197,6 +197,24 @@ packages/package-name/ext/
 
 ## **Build Configuration**
 
+### **Universal Build Executor Rule**
+
+**CRITICAL**: ALL packages MUST use `@nx/esbuild:esbuild` as the build executor, regardless of package type or bundling needs.
+
+**Rationale**:
+
+- **Performance**: ESBuild is significantly faster than Vite, Rollup, or Webpack for TypeScript compilation
+- **Consistency**: Single build system across all packages for maintainability
+- **Nx Integration**: Superior caching and incremental build support
+- **TypeScript Support**: Native TypeScript compilation without bundling when `bundle: false`
+
+**Forbidden Executors**:
+
+- ❌ `@nx/vite:build` - Use ESBuild instead
+- ❌ `@nx/rollup:rollup` - Use ESBuild instead
+- ❌ `@nx/webpack:webpack` - Use ESBuild instead
+- ❌ `@nx/tsc:tsc` - Use ESBuild instead
+
 ### **Core Package Configuration**
 
 **`package.json`:**
@@ -289,6 +307,52 @@ packages/package-name/ext/
     },
     "include": ["src/**/*"],
     "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+}
+```
+
+### **Tool Package Configuration**
+
+**`package.json`:**
+
+```json
+{
+    "name": "@fux/tool-name",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "dependencies": {
+        "dependency1": "^1.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "typescript": "^5.0.0"
+    }
+}
+```
+
+**`project.json`:**
+
+```json
+{
+    "name": "@fux/tool-name",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "libs/tools/tool-name/src/index.ts",
+                "outputPath": "libs/tools/tool-name/dist",
+                "tsConfig": "libs/tools/tool-name/tsconfig.json",
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "external": ["dependency1", "dependency2"]
+            }
+        }
+    }
 }
 ```
 

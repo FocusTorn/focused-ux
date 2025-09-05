@@ -506,12 +506,18 @@
                 "typescriptModuleResolution": "NodeNext",
                 "shell": "PowerShell 7 (pwsh)",
                 "packageManager": "pnpm workspaces",
-                "buildInfrastructure": {
-                    "bundler": "ESBuild",
-                    "testRunner": "Vitest",
-                    "linter": "ESLint",
-                    "formatter": "ESBuild"
-                }
+                            "buildInfrastructure": {
+                "bundler": "ESBuild",
+                "testRunner": "Vitest",
+                "linter": "ESLint",
+                "formatter": "ESBuild"
+            },
+            "universalBuildExecutorRule": {
+                "rule": "ALL packages MUST use @nx/esbuild:esbuild as the build executor, regardless of package type or bundling needs",
+                "rationale": "ESBuild is significantly faster than Vite, Rollup, or Webpack for TypeScript compilation and provides superior Nx integration",
+                "forbiddenExecutors": ["@nx/vite:build", "@nx/rollup:rollup", "@nx/webpack:webpack", "@nx/tsc:tsc"],
+                "mandatoryConfiguration": "Use @nx/esbuild:esbuild with bundle: false for libraries and bundle: true for applications"
+            }
             },
             "criticalPreResponseValidationFramework": {
                 "mandatoryExecutionChecklist": {
@@ -782,6 +788,12 @@
                     }
                 },
                 "buildViolationPrevention": {
+                    "universalBuildExecutorViolation": {
+                        "rule": "ALL packages MUST use @nx/esbuild:esbuild as the build executor",
+                        "violation": "Using @nx/vite:build, @nx/rollup:rollup, @nx/webpack:webpack, or @nx/tsc:tsc for TypeScript compilation",
+                        "prevention": "Always use @nx/esbuild:esbuild with bundle: false for libraries and bundle: true for applications",
+                        "rationale": "ESBuild is significantly faster than other executors for TypeScript compilation and provides superior Nx integration"
+                    },
                     "buildDependenciesInWrongSection": {
                         "rule": "Build-only dependencies belong in 'devDependencies'",
                         "violation": "Build dependencies in 'dependencies'",

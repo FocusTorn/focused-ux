@@ -3,7 +3,6 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 import { assetConstants } from '../src/_config/dynamicons.constants.js'
-import { main as optimizeIconsMain } from './generate_optimized_icons.js'
 import { errorHandler, inputValidator, rollbackManager, ErrorType, ErrorSeverity } from './error-handler.js'
 
 /**

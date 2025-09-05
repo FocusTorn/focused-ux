@@ -8,7 +8,7 @@
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build", "copy-assets"],
+            "dependsOn": ["^build", "generate-and-sync-assets"],
             "options": {
                 "entryPoints": ["packages/dynamicons/ext/src/extension.ts"],
                 "outputPath": "packages/dynamicons/ext/dist",
@@ -30,14 +30,15 @@
             }
         }, //<
         
-        "copy-assets": {
+        "generate-and-sync-assets": {
             "executor": "nx:run-commands",
             "outputs": ["{projectRoot}/dist/assets"],
-            "dependsOn": ["^build", "@fux/dynamicons-assets:process-assets"],
+            "dependsOn": ["@fux/dynamicons-assets:generate-assets"],
             "options": {
-                "command": "npx tsx ../../dynamicons/assets/scripts/sync-to-ext.ts --source-dir ../../dynamicons/assets/assets --target-dir dist/assets",
+                "command": "npx tsx ../../dynamicons/assets/scripts/sync-to-ext.ts --target dynamicons-ext",
                 "cwd": "{projectRoot}"
-            }
+            },
+            "description": "Generate all assets and sync to extension package"
         },
         "package": { //>
             "executor": "nx:run-commands",

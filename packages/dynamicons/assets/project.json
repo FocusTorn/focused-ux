@@ -5,13 +5,18 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "executor": "@nx/vite:build",
+            "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "options": {
-                "outputPath": "dist/packages/dynamicons/assets",
                 "main": "packages/dynamicons/assets/src/index.ts",
+                "outputPath": "dist/packages/dynamicons/assets",
                 "tsConfig": "packages/dynamicons/assets/tsconfig.json",
-                "assets": ["packages/dynamicons/assets/*.md"]
+                "platform": "node",
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "external": ["vscode", "js-yaml", "strip-json-comments"]
             }
         },
         "lint": {
@@ -26,22 +31,6 @@
                 "reportsDirectory": "../../coverage/packages/dynamicons/assets"
             }
         },
-        		"process-assets": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "npx tsx scripts/main.ts",
-                "cwd": "packages/dynamicons/assets"
-            },
-            "description": "Process all assets (concise output by default, use --verbose for detailed output)"
-        },
-        "process-assets:incremental": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "npx tsx scripts/process-icons.ts",
-                "cwd": "packages/dynamicons/assets"
-            },
-            "description": "Process icons only (concise output by default, use --verbose for detailed output)"
-        },
         "sync-to-ext": {
             "executor": "nx:run-commands",
             "options": {
@@ -49,14 +38,6 @@
                 "cwd": "packages/dynamicons/assets"
             },
             "description": "Sync assets to extension package (concise output by default, use --verbose for detailed output)"
-        },
-        "validate-assets": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "npx tsx scripts/validate-assets.ts",
-                "cwd": "packages/dynamicons/assets"
-            },
-            "description": "Validate all assets (concise output by default, use --verbose for detailed output)"
         },
         "generate-themes": {
             "executor": "nx:run-commands",
