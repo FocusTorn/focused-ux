@@ -65,6 +65,22 @@
                 "cwd": "packages/dynamicons/assets"
             },
             "description": "Generate theme files (concise output by default, use --verbose for detailed output)"
+        },
+        "generate-assets": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx tsx scripts/generate-assets.ts",
+                "cwd": "packages/dynamicons/assets"
+            },
+            "description": "Generate all assets (icons, themes, previews) with orchestrated output"
+        },
+        "generate-previews": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx tsx scripts/generate-previews.ts",
+                "cwd": "packages/dynamicons/assets"
+            },
+            "description": "Generate preview images (concise output by default, use --verbose for detailed output)"
         }
     },
     "tags": ["scope:dynamicons", "type:assets"]

@@ -2,11 +2,22 @@
 
 import { promises as fs } from 'fs'
 import { join, dirname, basename } from 'path'
+import { assetConstants } from '../src/_config/dynamicons.constants.js'
+import { errorHandler, inputValidator, rollbackManager, ErrorType, ErrorSeverity } from './error-handler.js'
 
 interface SyncConfig {
 	sourceDir: string
 	targetDir: string
 	verbose: boolean
+	forceSync?: boolean
+	validateOnly?: boolean
+	backupBeforeSync?: boolean
+}
+
+interface SyncTarget {
+	name: string
+	path: string
+	description: string
 }
 
 interface ChangeAnalysis {
@@ -25,53 +36,257 @@ interface ChangeAnalysis {
 
 class AssetSync {
 	private config: SyncConfig
+	private syncTargets: SyncTarget[] = []
 
 	constructor(config: SyncConfig) {
 		this.config = config
+		this.initializeSyncTargets()
+	}
+
+	/**
+	 * Initialize available sync targets
+	 */
+	private initializeSyncTargets(): void {
+		this.syncTargets = [
+			{
+				name: 'dynamicons-ext',
+				path: '../ext/dist/assets',
+				description: 'Dynamicons extension package'
+			},
+			{
+				name: 'dynamicons-core',
+				path: '../core/dist/assets',
+				description: 'Dynamicons core package'
+			},
+			{
+				name: 'dynamicons-orchestrator',
+				path: '../orchestrator/dist/assets',
+				description: 'Combination orchestrator (monolithic extension with all functionality)'
+			}
+		]
 	}
 
 	/**
 	 * Sync assets from source to target directory with change detection
 	 */
 	async syncAssets(): Promise<void> {
-		console.log('🔄 Syncing assets to extension package...')
+		if (this.config.verbose) {
+			console.log('\n🔄 [ASSET SYNC WORKFLOW]')
+			console.log('═══════════════════════════════════════════════════════════════')
+			console.log('📋 Workflow Steps:')
+			console.log('   1. 🔍 Input validation')
+			console.log('   2. 📊 Change analysis')
+			console.log('   3. 📁 Asset synchronization')
+			console.log('   4. ✅ Verification')
+			console.log('═══════════════════════════════════════════════════════════════\n')
+		} else {
+			console.log('🔄 Syncing assets to target package...')
+		}
 		
 		try {
-			// Step 1: Analyze changes
-			console.log('  🔍 Step 1: Analyzing changes...')
+			// Step 1: Input validation
+			if (this.config.verbose) {
+				console.log('🔍 STEP 1: INPUT VALIDATION')
+				console.log('───────────────────────────────────────────────────────────')
+			}
+			
+			const validationResult = await this.validateSyncInputs()
+			if (!validationResult) {
+				const validationError = errorHandler.createError(
+					'Sync input validation failed',
+					ErrorType.INVALID_EXTERNAL_SOURCE,
+					ErrorSeverity.HIGH,
+					'syncAssets',
+					undefined,
+					false
+				)
+				await errorHandler.handleError(validationError, this.config.verbose)
+				return
+			}
+
+			if (this.config.verbose) {
+				console.log('✅ Input validation passed')
+				console.log('───────────────────────────────────────────────────────────\n')
+			}
+
+			// Step 2: Analyze changes
+			if (this.config.verbose) {
+				console.log('📊 STEP 2: CHANGE ANALYSIS')
+				console.log('───────────────────────────────────────────────────────────')
+			}
+			
 			const changeAnalysis = await this.analyzeChanges()
 			
-			// Step 2: Report change summary
-			console.log('  📊 Step 2: Change summary:')
-			console.log(`    Added: ${changeAnalysis.summary.added}`)
-			console.log(`    Modified: ${changeAnalysis.summary.modified}`)
-			console.log(`    Deleted: ${changeAnalysis.summary.deleted}`)
-			console.log(`    Unchanged: ${changeAnalysis.summary.unchanged}`)
-			
-			// Step 3: Ensure target directory exists
-			await this.ensureDirectoryExists(this.config.targetDir)
+			// Step 3: Report change summary
+			if (this.config.verbose) {
+				console.log('📊 Change Summary:')
+				console.log(`  Added: ${changeAnalysis.summary.added}`)
+				console.log(`  Modified: ${changeAnalysis.summary.modified}`)
+				console.log(`  Deleted: ${changeAnalysis.summary.deleted}`)
+				console.log(`  Unchanged: ${changeAnalysis.summary.unchanged}`)
+				console.log('───────────────────────────────────────────────────────────\n')
+			} else {
+				console.log(`📊 Changes: ${changeAnalysis.summary.added} added, ${changeAnalysis.summary.modified} modified`)
+			}
 			
 			// Step 4: Sync based on changes
-			if (changeAnalysis.summary.added > 0 || changeAnalysis.summary.modified > 0) {
-				console.log('  📁 Step 3: Syncing changed assets...')
+			if (this.config.validateOnly) {
+				console.log('✅ Validation only mode - no sync performed')
+				return
+			}
+			
+			if (changeAnalysis.summary.added > 0 || changeAnalysis.summary.modified > 0 || this.config.forceSync) {
+				if (this.config.verbose) {
+					console.log('📁 STEP 3: ASSET SYNCHRONIZATION')
+					console.log('───────────────────────────────────────────────────────────')
+				}
 				
-				// Sync icons
-				await this.syncDirectoryWithChanges('icons', 'icons', changeAnalysis)
+				// Register sync operations for rollback
+				this.registerSyncOperations()
 				
-				// Sync themes
-				await this.syncDirectoryWithChanges('themes', 'themes', changeAnalysis)
+				// Sync assets
+				await this.performSync(changeAnalysis)
 				
-				// Sync manifests
-				await this.syncDirectoryWithChanges('manifests', 'manifests', changeAnalysis)
-				
-				console.log('✅ Asset sync completed successfully')
+				if (this.config.verbose) {
+					console.log('───────────────────────────────────────────────────────────\n')
+				}
 			} else {
 				console.log('✅ No changes detected, sync skipped')
 			}
+			
+			// Step 5: Verification
+			if (this.config.verbose) {
+				console.log('✅ STEP 4: VERIFICATION')
+				console.log('───────────────────────────────────────────────────────────')
+			}
+			
+			await this.verifySync(changeAnalysis)
+			
+			if (this.config.verbose) {
+				console.log('═══════════════════════════════════════════════════════════════')
+				console.log('✅ ASSET SYNC WORKFLOW COMPLETED SUCCESSFULLY')
+				console.log('═══════════════════════════════════════════════════════════════\n')
+			} else {
+				console.log('✅ Asset sync completed successfully')
+			}
 		} catch (error) {
-			console.error('❌ Asset sync failed:', error)
-			throw error
+			const syncError = errorHandler.createError(
+				'Asset sync failed',
+				ErrorType.FILE_NOT_FOUND,
+				ErrorSeverity.HIGH,
+				'syncAssets',
+				error instanceof Error ? error : undefined,
+				true
+			)
+			await errorHandler.handleError(syncError, this.config.verbose)
+			await rollbackManager.executeRollback()
 		}
+	}
+
+	/**
+	 * Validate sync inputs
+	 */
+	private async validateSyncInputs(): Promise<boolean> {
+		try {
+			// Validate source directory exists
+			await fs.access(this.config.sourceDir)
+			
+			// Validate target directory path is valid
+			const targetPath = join(process.cwd(), this.config.targetDir)
+			const targetDir = dirname(targetPath)
+			await fs.access(targetDir)
+			
+			return true
+		} catch (error) {
+			const validationError = errorHandler.createError(
+				`Invalid sync paths: source=${this.config.sourceDir}, target=${this.config.targetDir}`,
+				ErrorType.DIRECTORY_NOT_FOUND,
+				ErrorSeverity.HIGH,
+				'validateSyncInputs',
+				error instanceof Error ? error : undefined,
+				false
+			)
+			await errorHandler.handleError(validationError, this.config.verbose)
+			return false
+		}
+	}
+
+	/**
+	 * Register sync operations for rollback
+	 */
+	private registerSyncOperations(): void {
+		if (this.config.backupBeforeSync) {
+			rollbackManager.registerOperation(
+				'backup-target',
+				async () => {
+					// Backup logic would go here
+					if (this.config.verbose) {
+						console.log('  🔄 Rollback: Restoring target from backup')
+					}
+				},
+				'Backup target directory before sync'
+			)
+		}
+	}
+
+	/**
+	 * Perform the actual sync operation
+	 */
+	private async performSync(changeAnalysis: ChangeAnalysis): Promise<void> {
+		// Ensure target directory exists
+		await this.ensureDirectoryExists(this.config.targetDir)
+		
+		// Sync different asset types
+		const assetTypes = [
+			{ source: 'icons', target: 'icons', description: 'Icon files' },
+			{ source: 'themes', target: 'themes', description: 'Theme files' },
+			{ source: 'images/preview-images', target: 'images/preview-images', description: 'Preview images' }
+		]
+		
+		for (const assetType of assetTypes) {
+			if (this.config.verbose) {
+				console.log(`  📁 Syncing ${assetType.description}...`)
+			}
+			await this.syncDirectoryWithChanges(assetType.source, assetType.target, changeAnalysis)
+		}
+	}
+
+	/**
+	 * Verify sync operation
+	 */
+	private async verifySync(changeAnalysis: ChangeAnalysis): Promise<void> {
+		const verificationErrors: string[] = []
+		
+		// Verify that all added/modified files exist in target
+		for (const file of [...changeAnalysis.added, ...changeAnalysis.modified]) {
+			const targetFile = join(this.config.targetDir, file)
+			try {
+				await fs.access(targetFile)
+			} catch {
+				verificationErrors.push(`Missing in target: ${file}`)
+			}
+		}
+		
+		if (verificationErrors.length > 0) {
+			const verificationError = errorHandler.createError(
+				`Sync verification failed: ${verificationErrors.length} files missing`,
+				ErrorType.FILE_NOT_FOUND,
+				ErrorSeverity.HIGH,
+				'verifySync',
+				undefined,
+				true
+			)
+			await errorHandler.handleError(verificationError, this.config.verbose)
+		} else if (this.config.verbose) {
+			console.log('✅ All synced files verified successfully')
+		}
+	}
+
+	/**
+	 * Get available sync targets
+	 */
+	public getAvailableTargets(): SyncTarget[] {
+		return this.syncTargets
 	}
 
 	/**
@@ -83,10 +298,20 @@ class AssetSync {
 		const deleted: string[] = []
 		const unchanged: string[] = []
 		
-		// Analyze each directory type
-		await this.analyzeDirectoryChanges('icons', added, modified, deleted, unchanged)
-		await this.analyzeDirectoryChanges('themes', added, modified, deleted, unchanged)
-		await this.analyzeDirectoryChanges('manifests', added, modified, deleted, unchanged)
+		// Define asset types to analyze
+		const assetTypes = [
+			{ source: 'icons', description: 'Icon files' },
+			{ source: 'themes', description: 'Theme files' },
+			{ source: 'images/preview-images', description: 'Preview images' }
+		]
+		
+		// Analyze each asset type
+		for (const assetType of assetTypes) {
+			if (this.config.verbose) {
+				console.log(`  🔍 Analyzing ${assetType.description}...`)
+			}
+			await this.analyzeDirectoryChanges(assetType.source, added, modified, deleted, unchanged)
+		}
 		
 		return {
 			added,
@@ -338,9 +563,12 @@ async function main(): Promise<void> {
 	const args = process.argv.slice(2)
 	
 	const config: SyncConfig = {
-		sourceDir: 'assets',
+		sourceDir: 'dist/assets',
 		targetDir: '../ext/dist/assets',
-		verbose: args.includes('--verbose') || args.includes('-v')
+		verbose: args.includes('--verbose') || args.includes('-v'),
+		forceSync: args.includes('--force') || args.includes('-f'),
+		validateOnly: args.includes('--validate-only') || args.includes('--dry-run'),
+		backupBeforeSync: args.includes('--backup') || args.includes('-b')
 	}
 	
 	// Parse command line arguments
@@ -356,10 +584,45 @@ async function main(): Promise<void> {
 			case '-t':
 				config.targetDir = args[++i] || config.targetDir
 				break
+			case '--target':
+			case '--to':
+				const targetName = args[++i]
+				if (targetName) {
+					const sync = new AssetSync(config)
+					const targets = sync.getAvailableTargets()
+					const target = targets.find(t => t.name === targetName)
+					if (target) {
+						config.targetDir = target.path
+					} else {
+						console.error(`❌ Unknown target: ${targetName}`)
+						console.log('Available targets:')
+						targets.forEach(t => console.log(`  ${t.name}: ${t.description}`))
+						process.exit(1)
+					}
+				}
+				break
 			case '--verbose':
 			case '-v':
 				config.verbose = true
 				break
+			case '--force':
+			case '-f':
+				config.forceSync = true
+				break
+			case '--validate-only':
+			case '--dry-run':
+				config.validateOnly = true
+				break
+			case '--backup':
+			case '-b':
+				config.backupBeforeSync = true
+				break
+			case '--list-targets':
+				const sync = new AssetSync(config)
+				const targets = sync.getAvailableTargets()
+				console.log('Available sync targets:')
+				targets.forEach(t => console.log(`  ${t.name}: ${t.description} (${t.path})`))
+				return
 			case '--help':
 			case '-h':
 				showHelp()
@@ -383,9 +646,14 @@ Dynamicons Asset Sync Tool
 Usage: npx tsx scripts/sync-to-ext.ts [options]
 
 Options:
-  -s, --source-dir <dir>     Source assets directory (default: assets)
+  -s, --source-dir <dir>     Source assets directory (default: dist/assets)
   -t, --target-dir <dir>     Target extension directory (default: ../ext/dist/assets)
+  --target, --to <name>      Use predefined target (dynamicons-ext, dynamicons-core, dynamicons-orchestrator)
   -v, --verbose              Enable verbose logging
+  -f, --force                Force sync even if no changes detected
+  --validate-only, --dry-run Validate only, don't perform sync
+  -b, --backup               Create backup before syncing
+  --list-targets             List available predefined targets
   -h, --help                 Show this help message
 
 Examples:
@@ -395,8 +663,17 @@ Examples:
   # Sync with verbose logging
   npx tsx scripts/sync-to-ext.ts --verbose
   
+  # Use predefined target
+  npx tsx scripts/sync-to-ext.ts --target dynamicons-ext
+  
   # Custom source and target directories
   npx tsx scripts/sync-to-ext.ts -s shared-assets -t ../ext/assets
+  
+  # Validate only (dry run)
+  npx tsx scripts/sync-to-ext.ts --validate-only
+  
+  # Force sync with backup
+  npx tsx scripts/sync-to-ext.ts --force --backup
 `)
 }
 

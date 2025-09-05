@@ -20,6 +20,8 @@ node_modules
 .settings/
 *.sublime-workspace
 
+.cursor/conversation-memories
+
 #= IDE - VSCODE =============================================
 !.vscode/*
 mockly-vsc

@@ -4,6 +4,54 @@
         "**/*"
     ],
     "alwaysApply": true,
+    "criticalAdherenceRequired": {
+        "description": "CRITICAL RULES - These rules MUST be followed without exception",
+        "rules": [
+            "ALWAYS complete the mandatory execution checklist before ANY response",
+            "NEVER display '✅ Protocols validated' without completing all validation steps",
+            "ALWAYS use PAE aliases for all project operations - NEVER fall back to direct nx commands",
+            "ALWAYS attempt 'pae help' first to discover available aliases",
+            "ALWAYS run builds before testing - NEVER skip build verification",
+            "ALWAYS fix build errors immediately before proceeding",
+            "ALWAYS check documentation first before creating new solutions",
+            "NEVER add business logic to extension packages - core packages only",
+            "NEVER use VSCode value imports outside shared adapters - type imports only",
+            "NEVER skip tests to meet deadlines - all tests must pass",
+            "NEVER use estimated dates in documentation - always verify actual timestamps",
+            "ALWAYS distinguish between questions (explain only) and directives (take action)",
+            "NEVER take action when user asks questions seeking understanding",
+            "ALWAYS investigate immediately when user expresses uncertainty",
+            "NEVER apply band-aid fixes - always address architectural root causes",
+            "ALWAYS acknowledge protocol violations immediately and correct them",
+            "ALWAYS implement conversation memory protocol - create conversation ID on first response, append entries on subsequent responses",
+            "ALWAYS display conversation header with protocol validation status and memory confirmation",
+            "ALWAYS use Node.js timestamp command for conversation ID generation - NEVER use PowerShell Get-Date",
+            "ALWAYS store conversation memory in .cursor/conversation-memories/ with JSON structure including topics and entries"
+        ]
+    },
+    "ruleManagementFramework": {
+        "ruleAdditionProtocol": {
+            "step1": "Check for existing similar rules - avoid duplicates and overlaps",
+            "step2": "Determine if new rule should modify existing rule or be separate",
+            "step3": "Ensure rule has clear structure: rule, violation, prevention",
+            "step4": "Keep rules concise but complete - avoid context bloat",
+            "step5": "Place in appropriate section (Universal vs Project-FocusedUX)",
+            "step6": "Consider if rule belongs in criticalAdherenceRequired section"
+        },
+        "ruleStructureRequirements": {
+            "clarity": "Rule must be clear and unambiguous",
+            "actionability": "Rule must specify what to do/not do",
+            "conciseness": "Rule must be concise to avoid context bloat",
+            "completeness": "Rule must include violation description and prevention method",
+            "categorization": "Rule must fit into existing framework structure"
+        },
+        "duplicatePreventionProtocol": {
+            "similarityCheck": "Before adding rule, check for existing similar rules",
+            "consolidationPreference": "Prefer modifying existing rules over adding new ones",
+            "subClauseAddition": "Add sub-clauses to existing rules when appropriate",
+            "conflictResolution": "Resolve conflicts between overlapping rules"
+        }
+    },
     "sections": {
         "Universal": {
             "documentPurpose": {
@@ -47,8 +95,26 @@
                     "violationPenalty": "Any failure to complete this checklist constitutes a critical failure requiring immediate acknowledgment and correction"
                 },
                 "statusIndicatorProtocol": {
-                    "normalResponses": "Display at response top: ✅ Protocols validated (all checks pass)",
-                    "violationResponses": "Display complete checklist with violation details and correction plan"
+                    "gateConditions": {
+                        "normalResponse": "Display ✅ Protocols validated (all checks pass) ONLY when ALL 4 steps of mandatoryExecutionChecklist are completed successfully",
+                        "violationResponse": "Display ⚠️ Protocol violation detected when ANY step of mandatoryExecutionChecklist fails or is skipped"
+                    },
+                    "displayRules": {
+                        "normalResponses": "✅ Protocols validated (all checks pass)",
+                        "violationResponses": "⚠️ Protocol violation detected - Display complete checklist with violation details and correction plan"
+                    },
+                    "validationCriteria": {
+                        "step1Complete": "Input Classification - All checks completed",
+                        "step2Complete": "Protocol Compliance - All checks completed", 
+                        "step3Complete": "Response Validation - All checks completed",
+                        "step4Complete": "Violation Detection - All checks completed"
+                    },
+                    "onDemandDisplay": "User can request 'Show checklist' to see full validation details",
+                    "conditionalDisplayBehavior": {
+                        "defaultBehavior": "Display only ✅ Protocols validated (all checks pass) without showing individual steps",
+                        "onDemandBehavior": "When user requests 'Show checklist', display the complete mandatoryExecutionChecklist with all 4 steps and their individual check results",
+                        "violationBehavior": "When protocol violations detected, always display complete checklist with violation details and correction plan"
+                    }
                 }
             },
             "communicationPatternMatrix": {
@@ -104,6 +170,24 @@
                             "CRITICAL: DO NOT agree prematurely - wait for investigation results"
                         ]
                     }
+                },
+                "mentorshipRoleRecognition": {
+                    "userRole": "User is learning and seeking understanding of architectural decisions",
+                    "agentRole": "Agent is mentor with expertise in best practices and project patterns",
+                    "relationship": "Collaborative relationship where both parties contribute to better solutions",
+                    "userInput": "User may have good ideas with suboptimal implementation approaches",
+                    "agentGuidance": "Agent should guide toward better implementations while respecting user's intent"
+                },
+                "implementationGuidelines": {
+                    "questions": "Provide educational explanations, don't take action",
+                    "directives": "Validate, suggest improvements if needed, then execute",
+                    "considerations": [
+                        "Industry best practices",
+                        "Project documentation", 
+                        "Architectural consistency"
+                    ],
+                    "transparency": "If a directive conflicts with established patterns, explain why and suggest alternatives",
+                    "trustMaintenance": "User's suggestions are valuable input, even if implementation needs refinement"
                 }
             },
             "documentationFirstExecutionFramework": {
@@ -226,6 +310,72 @@
                     "Avoid big-bang solutions that don't allow for iterative refinement"
                 ]
             },
+                            "conversationMemoryFramework": {
+                "conversationHeaderProtocol": {
+                    "firstResponse": {
+                        "executeTimestampCommand": "node -e \"console.log(new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14))\"",
+                        "createConversationFile": ".cursor/conversation-memories/{timestamp}.json",
+                        "displayHeader": "✅ .cursorrules read and Protocols validated (all checks pass)\nCreated conversation ID: {timestamp}\n---",
+                        "initializeStructure": {
+                            "conversationId": "{timestamp}",
+                            "created": "{ISO_timestamp}",
+                            "topics": ["Initial topic extraction"],
+                            "entries": [{"input": "user_input", "response": "ai_response"}]
+                        }
+                    },
+                    "subsequentResponses": {
+                        "readConversationFile": "Load existing .cursor/conversation-memories/{conversationId}.json",
+                        "appendEntry": "Add new input/response pair to entries array",
+                        "updateTopics": "Extract and add new topics to topics array",
+                        "writeUpdatedFile": "Save updated JSON structure",
+                        "displayHeader": "✅ .cursorrules read and Protocols validated (all checks pass)\nPrevious input and response added to conversation memory: {conversationId}\n---"
+                    }
+                },
+                "contextOptimizationProtocol": {
+                    "summarizationDetection": {
+                        "triggerConditions": [
+                            "Context summarization message detected in conversation",
+                            "Reference to 'Summarizing Chat Context' appears",
+                            "Conversation history compression mentioned"
+                        ],
+                        "detectionMethod": "Monitor conversation context for summarization indicators"
+                    },
+                    "memoryComparisonProcess": {
+                        "step1": "Read current conversation memory file (.cursor/conversation-memories/{conversationId}.json)",
+                        "step2": "Extract conversation summary from context",
+                        "step3": "Compare summary against stored conversation history",
+                        "step4": "Identify any missing information or gaps",
+                        "step5": "Update memory file with any missing conversation details"
+                    },
+                    "contextOffloadingStrategy": {
+                        "memoryReference": "Reference conversation memory file instead of relying on summary",
+                        "contextSpaceRecovery": "Free up context space by offloading summary to persistent memory",
+                        "continuityMaintenance": "Maintain conversation continuity through memory file access",
+                        "efficiencyGain": "Maximize available context for new interactions"
+                    },
+                    "implementationNotes": {
+                        "limitation": "Cannot directly control system summarization process",
+                        "workaround": "Detect summarization and optimize memory usage post-summarization",
+                        "benefit": "Effectively creates 'context bank' using persistent memory files"
+                    }
+                },
+                "conversationMemoryStructure": {
+                    "fileLocation": ".cursor/conversation-memories/",
+                    "fileNaming": "{timestamp}.json (YYYYMMDDHHMMSS format)",
+                    "jsonStructure": {
+                        "conversationId": "14-digit timestamp string",
+                        "created": "ISO timestamp string",
+                        "topics": "Array of topic strings",
+                        "entries": "Array of {input, response} objects"
+                    },
+                    "processingLogic": {
+                        "timestampAcquisition": "Node.js command only - NEVER PowerShell Get-Date",
+                        "fileOperations": "Create on first response, append on subsequent responses",
+                        "topicExtraction": "Identify key themes and concepts from conversation",
+                        "errorHandling": "Fallback to conversation context if file operations fail"
+                    }
+                }
+            },
             "antiPatternPreventionFramework": {
                 "bandAidFixAntiPattern": [
                     "FORBIDDEN: Using superficial fixes without addressing root cause - this creates technical debt and masks real problems",
@@ -246,6 +396,77 @@
                 "unusedVariableNaming": "ALWAYS prefix unused variables with underscore (_) - e.g., _unusedParam, _ignoredValue",
                 "variableNamingConvention": "Use descriptive names, prefix unused variables with underscore to indicate intentional non-use",
                 "lintingCompliance": "Ensure all unused variables follow underscore prefix convention to pass linting rules"
+            },
+            "diagnosticProtocols": {
+                "testExecutionIssues": {
+                    "cacheBypass": "Use appropriate cache bypass flags - follow project-specific guidance",
+                    "executionVsOutput": "Distinguish execution vs output - tests not running vs output suppressed",
+                    "frameworkBehavior": "Check framework behavior - verify against actual documentation",
+                    "systemImpact": "Measure system impact - overall performance, not just individual components"
+                },
+                "performanceIssues": {
+                    "measureBeforeAfter": "Measure before/after - both individual components and overall system",
+                    "targetSpecificProblems": "Target specific problems - avoid global optimizations that can backfire",
+                    "validateImprovements": "Validate improvements - ensure changes actually help",
+                    "considerUserFeedback": "Consider user feedback - prioritize reported issues over internal metrics"
+                },
+                "architecturalIssues": {
+                    "consultDocumentation": "Consult documentation first - project-specific documentation and patterns",
+                    "verifyAgainstPatterns": "Verify against patterns - ensure alignment with established approaches",
+                    "checkAllConsumers": "Check all consumers - update imports, DI wiring, TypeScript mappings",
+                    "maintainConsistency": "Maintain consistency - apply patterns uniformly"
+                },
+                "templateConfigurationManagement": {
+                    "coLocateTemplates": "Co-locate templates with tools - place configuration templates within the package that validates them",
+                    "useAppropriatePaths": "Use appropriate path patterns - follow the module system conventions for the project",
+                    "validateIncrementally": "Validate incrementally - test each step of file loading implementations immediately",
+                    "distinguishErrorTypes": "Distinguish error types - separate configuration issues from actual code problems"
+                }
+            },
+            "communicationStandards": {
+                "statusReporting": {
+                    "useClearIndicators": {
+                        "success": "✅ Success - operation completed successfully",
+                        "selfCorrected": "⚠️ Self-corrected - violation detected and corrected",
+                        "blockers": "🚧 Blockers - issues preventing completion"
+                    },
+                    "provideEvidence": [
+                        "Command outputs",
+                        "File contents",
+                        "Error messages",
+                        "Context of what was attempted"
+                    ],
+                    "includeContext": "Include context - what was attempted, what worked, what failed",
+                    "suggestNextSteps": "Suggest next steps - clear action items or recommendations"
+                },
+                "errorHandling": {
+                    "acknowledgeMistakes": "Acknowledge mistakes - don't defend or deflect",
+                    "provideSolutions": "Provide solutions - don't just report problems",
+                    "learnFromFailures": "Learn from failures - document what went wrong and how to prevent it",
+                    "maintainTransparency": "Maintain transparency - be honest about limitations and uncertainties"
+                }
+            },
+            "continuousImprovementFramework": {
+                "sessionEndProtocol": {
+                    "mandatoryVerificationChecklist": [
+                        "Date verification command executed for any log entries",
+                        "Actual file modification timestamps used (no estimated dates)",
+                        "All timestamps match file system reality",
+                        "No violations of date handling protocols"
+                    ]
+                },
+                "patternRecognitionProtocol": [
+                    "Recurring issues and their solutions",
+                    "Common problems and prevention strategies",
+                    "Areas where processes could be improved",
+                    "Lessons learned for future sessions"
+                ],
+                "incrementalProblemSolvingApproach": [
+                    "Build solutions iteratively through multiple iterations - each iteration should build upon previous learnings",
+                    "Start with minimal viable solution and refine through testing and feedback",
+                    "Document each iteration's learnings and failures for continuous improvement",
+                    "Avoid big-bang solutions that don't allow for iterative refinement"
+                ]
             },
             "executionPriorityMatrix": {
                 "criticalPriority": [
@@ -495,6 +716,46 @@
                         "rule": "Tests must verify actual implementation behavior",
                         "violation": "Over-simplified tests that don't verify real behavior",
                         "prevention": "Ensure tests validate actual implementation"
+                    },
+                    "mockParameterMismatches": {
+                        "rule": "Never write mock expectations without understanding actual method signatures",
+                        "violation": "Mock expectations without understanding parameter counts and behavior patterns",
+                        "prevention": "Understand actual method signatures before writing mocks"
+                    },
+                    "serviceLifecycleTestingNeglect": {
+                        "rule": "Never test service disposal without first initializing the service",
+                        "violation": "Testing service disposal without setting up disposables",
+                        "prevention": "Initialize service to set up disposables before testing disposal"
+                    },
+                    "configurationMockingOversimplification": {
+                        "rule": "Never underestimate the complexity of mocking platform-specific configuration systems",
+                        "violation": "Oversimplified mocking of complex configuration systems",
+                        "prevention": "Account for platform-specific configuration complexity"
+                    },
+                    "dynamicImportViolations": {
+                        "rule": "Never use await import() for mocking in test files",
+                        "violation": "Using dynamic imports for mocking instead of static imports",
+                        "prevention": "Use static imports with vi.mocked()"
+                    },
+                    "redundantMocking": {
+                        "rule": "Never create redundant mocks when standard Vitest mocking patterns are sufficient",
+                        "violation": "Creating unnecessary mock complexity",
+                        "prevention": "Use standard Vitest mocking patterns when sufficient"
+                    },
+                    "vscodeIntegrationTestEnvironmentViolations": {
+                        "rule": "Never skip VSCODE_TEST='1' environment variable in .vscode-test.mjs configuration",
+                        "violation": "Missing VSCODE_TEST environment variable in test configuration",
+                        "prevention": "Include VSCODE_TEST='1' in .vscode-test.mjs"
+                    },
+                    "uiOperationTestViolations": {
+                        "rule": "Never allow UI operations to execute in test environment without environment detection",
+                        "violation": "UI operations executing in test environment without detection",
+                        "prevention": "Detect test environment before allowing UI operations"
+                    },
+                    "moduleLoadingAntiPattern": {
+                        "rule": "Never use --require parameter when setupFiles configuration option is available",
+                        "violation": "Using --require when setupFiles is available for VS Code extension tests",
+                        "prevention": "Use setupFiles configuration option instead of --require"
                     }
                 },
                 "documentationViolationPrevention": {
@@ -586,6 +847,28 @@
                         "rule": "Complete interface definitions before building",
                         "violation": "Attempting builds before interface completion",
                         "prevention": "Complete architectural refactoring before builds"
+                    }
+                },
+                "toolConfigurationViolationPrevention": {
+                    "hardcodedConfigurationTemplates": {
+                        "rule": "Never hardcode configuration templates in validation logic",
+                        "violation": "Hardcoded templates in validation logic",
+                        "prevention": "Use external template files"
+                    },
+                    "templatesOutsideToolPackage": {
+                        "rule": "Never place templates outside the tool package that uses them",
+                        "violation": "Templates placed outside the tool package",
+                        "prevention": "Co-locate templates with the tool package"
+                    },
+                    "commonjsPathResolutionInESModules": {
+                        "rule": "Never use CommonJS path resolution patterns in ES module tools",
+                        "violation": "CommonJS patterns in ES module tools",
+                        "prevention": "Use ES module path resolution patterns"
+                    },
+                    "skippingIncrementalValidation": {
+                        "rule": "Never skip incremental validation of file loading implementations",
+                        "violation": "Skipping incremental validation steps",
+                        "prevention": "Validate each step of file loading implementations immediately"
                     }
                 }
             },
