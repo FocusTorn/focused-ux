@@ -97,6 +97,32 @@ Is the package intended to be a VS Code extension?
 - **Nx Integration**: Superior caching and incremental build support
 - **TypeScript Support**: Native TypeScript compilation without bundling when `bundle: false`
 
+### **ESBuild TypeScript Configuration Consistency Rule**
+
+**CRITICAL**: ESBuild and TypeScript configurations MUST use consistent path resolution strategies to prevent intermittent build failures.
+
+**Configuration Requirements**:
+
+- **Path Consistency**: Either use all absolute paths or all relative paths consistently
+- **Explicit File Specification**: For single-file projects, prefer `"files": ["src/main.ts"]` over `"include": ["src/**/*"]`
+- **Deterministic Behavior**: Configuration must work regardless of working directory or execution context
+
+**Anti-Pattern Prevention**:
+
+- **Mixed Path Resolution**: Never mix absolute ESBuild paths with relative TypeScript paths
+- **Glob Pattern Dependency**: Avoid relying solely on glob patterns for single-file projects
+- **Working Directory Dependencies**: Ensure builds work from any directory
+
+**Example Configuration**:
+
+```json
+// tsconfig.json - Explicit file specification for single-file projects
+{
+    "files": ["src/cli.ts"],
+    "include": ["src/**/*"] // Keep for IDE support
+}
+```
+
 ### **Core Package Build Configuration**
 
 - **Executor**: `@nx/esbuild:esbuild` (MANDATORY)

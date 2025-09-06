@@ -2,6 +2,43 @@
 
 ## **Latest Entries**
 
+### [2025-09-05 14:21:06] ESBuild TypeScript Configuration Path Resolution Fix
+
+**Summary**: Identified and resolved intermittent TypeScript validation failures in ESBuild executor caused by path resolution mismatch between absolute ESBuild paths and relative TypeScript configuration paths.
+
+**Root Cause Analysis**:
+
+- **ESBuild Configuration**: Uses absolute paths (`"main": "libs/project-alias-expander/src/cli.ts"`)
+- **TypeScript Configuration**: Uses relative paths (`"include": ["src/**/*"]`)
+- **Path Resolution Mismatch**: Creates inconsistent behavior depending on working directory and timing
+- **Intermittent Failures**: "No inputs were found in config file 'tsconfig.json'" errors occurring randomly
+
+**Solution Implemented**:
+
+- **Explicit File Specification**: Added `"files": ["src/cli.ts"]` to tsconfig.json
+- **Deterministic Configuration**: Eliminates path resolution ambiguity
+- **Consistent Behavior**: Ensures TypeScript validation always knows exactly which file to process
+
+**Technical Details**:
+
+- **File Modified**: `libs/project-alias-expander/tsconfig.json`
+- **Change**: Added explicit `files` array alongside existing `include` pattern
+- **Result**: Eliminated flaky task behavior and intermittent build failures
+
+**Lessons Learned**:
+
+- **Configuration Consistency**: ESBuild and TypeScript configurations must use consistent path resolution strategies
+- **Explicit Over Implicit**: Explicit file specification prevents path resolution ambiguity
+- **Flaky Task Investigation**: When Nx flags a task as "flaky", investigate configuration mismatches, not just timing issues
+- **Path Resolution Dependencies**: Working directory and execution context can cause intermittent failures in mixed absolute/relative path configurations
+- **Deterministic Builds**: All build configurations should be deterministic regardless of execution context
+
+**Prevention Strategy**:
+
+- Always use consistent path resolution (either all absolute or all relative) between ESBuild and TypeScript configurations
+- Prefer explicit file specification over glob patterns when dealing with single-file projects
+- Investigate configuration mismatches when encountering intermittent build failures
+
 ### [2025-09-03 03:59:23] Dynamicons Asset Performance Enhancement Implementation
 
 **Summary**: Successfully implemented comprehensive incremental asset processing system with change detection for Dynamicons package, achieving 15-25% build time reduction while maintaining core package self-containment and architectural integrity.

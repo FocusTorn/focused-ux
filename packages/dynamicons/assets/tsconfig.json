@@ -1,7 +1,6 @@
 {
     "extends": "../../../tsconfig.base.json",
     "compilerOptions": {
-        "outDir": "../../../dist/out-tsc",
         "module": "ESNext",
         "moduleResolution": "NodeNext",
         "target": "ES2022",
@@ -9,10 +8,5 @@
         "types": ["node"]
     },
     "include": ["src/**/*", "scripts/**/*"],
-    "exclude": ["node_modules", "dist"],
-    "references": [
-        {
-            "path": "../core"
-        }
-    ]
+    "exclude": ["node_modules", "dist"]
 }

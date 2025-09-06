@@ -2,25 +2,14 @@
     "name": "@fux/dynamicons-assets",
     "version": "0.0.0",
     "type": "module",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
-    },
+    "private": true,
     "scripts": {
-        "build": "nx build dynamicons-assets",
-        "build:watch": "nx build dynamicons-assets --watch",
         "test": "nx test dynamicons-assets",
         "lint": "nx lint dynamicons-assets",
-        "process-assets": "nx run dynamicons-assets:process-assets",
-        "process-assets:incremental": "nx run dynamicons-assets:process-assets:incremental",
+        "generate-assets": "nx run dynamicons-assets:generate-assets",
+        "generate-themes": "nx run dynamicons-assets:generate-themes",
+        "generate-previews": "nx run dynamicons-assets:generate-previews",
         "sync-to-ext": "nx run dynamicons-assets:sync-to-ext"
-    },
-    "dependencies": {
-        "@fux/dynamicons-core": "workspace:*"
     },
     "devDependencies": {
         "@nx/eslint": "^21.4.1",

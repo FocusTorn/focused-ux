@@ -5,7 +5,7 @@
     "projectType": "library",
     "targets": {
         "build": {
-            "dependsOn": [],
+            "dependsOn": ["@fux/dynamicons-assets:generate-assets"],
             "executor": "@nx/esbuild:esbuild",
             "outputs": [
                 "{options.outputPath}"

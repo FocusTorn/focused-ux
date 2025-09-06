@@ -69,6 +69,11 @@
             "suffix": "ext",
             "full": true
         },
+        "dca": {
+            "name": "dynamicons",
+            "suffix": "assets"
+        },
+        
         "dcc": {
             "name": "dynamicons",
             "suffix": "core"

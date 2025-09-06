@@ -4,65 +4,61 @@
     "sourceRoot": "packages/dynamicons/assets/src",
     "projectType": "library",
     "targets": {
-        "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "options": {
-                "main": "packages/dynamicons/assets/src/index.ts",
-                "outputPath": "dist/packages/dynamicons/assets",
-                "tsConfig": "packages/dynamicons/assets/tsconfig.json",
-                "platform": "node",
-                "format": ["esm"],
-                "bundle": false,
-                "sourcemap": true,
-                "target": "es2022",
-                "external": ["vscode", "js-yaml", "strip-json-comments"]
-            }
-        },
-        "lint": {
-            "executor": "@nx/eslint:lint",
-            "outputs": ["{options.outputFile}"]
-        },
-        "test": {
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "options": {
-                "passWithNoTests": true,
-                "reportsDirectory": "../../coverage/packages/dynamicons/assets"
-            }
-        },
-        "sync-to-ext": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "npx tsx scripts/sync-to-ext.ts",
-                "cwd": "packages/dynamicons/assets"
-            },
-            "description": "Sync assets to extension package (concise output by default, use --verbose for detailed output)"
-        },
-        "generate-themes": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "npx tsx scripts/generate-themes.ts",
-                "cwd": "packages/dynamicons/assets"
-            },
-            "description": "Generate theme files (concise output by default, use --verbose for detailed output)"
-        },
-        "generate-assets": {
+
+        "lint": { "extends": "lint" },
+
+        "generate-assets": { //>
             "executor": "nx:run-commands",
             "options": {
                 "command": "npx tsx scripts/generate-assets.ts",
                 "cwd": "packages/dynamicons/assets"
             },
             "description": "Generate all assets (icons, themes, previews) with orchestrated output"
-        },
-        "generate-previews": {
+        }, //<
+        
+        "process-icons": { //>
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx tsx scripts/process-icons.ts",
+                "cwd": "packages/dynamicons/assets"
+            },
+            "description": "Process icons from external source (stage, organize, optimize)"
+        }, //<
+        "generate-themes": { //>
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx tsx scripts/generate-themes.ts",
+                "cwd": "packages/dynamicons/assets"
+            },
+            "description": "Generate theme files (concise output by default, use --verbose for detailed output)"
+        }, //<
+        "generate-previews": { //>
             "executor": "nx:run-commands",
             "options": {
                 "command": "npx tsx scripts/generate-previews.ts",
                 "cwd": "packages/dynamicons/assets"
             },
             "description": "Generate preview images (concise output by default, use --verbose for detailed output)"
-        }
+        }, //<
+
+        "audit-models": { //>
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx tsx scripts/audit-models.ts",
+                "cwd": "packages/dynamicons/assets"
+            },
+            "description": "Audit icon models for validation and error reporting"
+        }, //<
+        
+        "sync-to-ext": { //>
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx tsx scripts/sync-to-ext.ts",
+                "cwd": "packages/dynamicons/assets"
+            },
+            "description": "Sync assets to extension package (concise output by default, use --verbose for detailed output)"
+        } //<
+        
     },
     "tags": ["scope:dynamicons", "type:assets"]
 }
