@@ -58,7 +58,6 @@ const focusTornBaseRules = { //>
 	'no-unused-vars': 'off',
 	'antfu/curly': 'off',
 	'space-in-parens': ['warn', 'never'],
-    'jsonc/indent': ['warn', 4],
 
 	// 'style/lines-between-class-members': 'off',
 	// 'style/lines-between-class-members': ['error', ''],
@@ -382,7 +381,7 @@ export default combine(
 	// └────────────────────────────────────────────────────────────────────────────────────────────────┘        
 	// Load heavy plugins only when their rules are actually used
 	
-    { name: 'focused-ux/markdown-rules', //>
+	{ name: 'focused-ux/markdown-rules', //>
 		files: ['**/*.md', '**/*.markdown'],
 		plugins: {
 			// Load markdown plugin only for markdown files
@@ -417,7 +416,22 @@ export default combine(
 			'toml/indent': ['warn', 4],
 		},
 	}, //<
-
+	{ name: 'focused-ux/json-rules', //>
+		files: ['**/*.json'],
+		rules: {
+			'jsonc/indent': ['warn', 4],
+			'jsonc/quotes': ['warn', 'double'],
+			'jsonc/no-dupe-keys': 'error',
+		},
+	}, //<
+	{ name: 'focused-ux/jsonc-rules', //>
+		files: ['**/*.jsonc'],
+		rules: {
+			'jsonc/indent': ['warn', 4],
+			'jsonc/quotes': ['warn', 'double'],
+			'jsonc/no-dupe-keys': 'error',
+		},
+	}, //<
 
 	// Note: Nx module boundaries rule temporarily disabled due to rule name issues
 	// The main performance optimizations (import rules, TypeScript rules) are active

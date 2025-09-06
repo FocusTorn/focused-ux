@@ -135,13 +135,15 @@ class AssetGenerationOrchestrator {
 	async generateAssets(): Promise<OrchestrationResult> {
 		this.startTime = Date.now()
 		
-		console.log('\n🎨 [ASSET GENERATION ORCHESTRATOR]')
-		console.log('═'.repeat(60))
-		console.log('📋 Workflow Steps:')
-		console.log('   1. 🔧 Process Icons (staging, organization, optimization)')
-		console.log('   2. 🎨 Generate Themes (base and dynamicons themes)')
-		console.log('   3. 🖼️  Generate Previews (preview images)')
-		console.log('═'.repeat(60))
+		if (this.verbose || this.veryVerbose) {
+			console.log('\n🎨 [ASSET GENERATION ORCHESTRATOR]')
+			console.log('═'.repeat(60))
+			console.log('📋 Workflow Steps:')
+			console.log('   1. 🔧 Process Icons (staging, organization, optimization)')
+			console.log('   2. 🎨 Generate Themes (base and dynamicons themes)')
+			console.log('   3. 🖼️  Generate Previews (preview images)')
+			console.log('═'.repeat(60))
+		}
 
 		// Define the scripts to execute in order
 		const scripts = [
@@ -229,7 +231,10 @@ class AssetGenerationOrchestrator {
 async function main(): Promise<void> {
 	const args = process.argv.slice(2)
 	
-	const verbose = args.includes('--verbose') || args.includes('-v')
+	// Check for explicit verbose flags or Nx verbose mode
+	const verbose = args.includes('--verbose') || args.includes('-v') || 
+		process.env.NX_VERBOSE_LOGGING === 'true' ||
+		process.argv.some(arg => arg.includes('--verbose'))
 	const veryVerbose = args.includes('--very-verbose') || args.includes('-vv')
 	
 	if (args.includes('--help') || args.includes('-h')) {

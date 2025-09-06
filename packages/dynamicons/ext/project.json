@@ -8,7 +8,7 @@
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build", "generate-and-sync-assets"],
+            "dependsOn": ["^build"],
             "options": {
                 "entryPoints": ["packages/dynamicons/ext/src/extension.ts"],
                 "outputPath": "packages/dynamicons/ext/dist",
@@ -23,10 +23,7 @@
                 "sourcemap": true,
                 "main": "packages/dynamicons/ext/src/extension.ts",
                 "tsConfig": "packages/dynamicons/ext/tsconfig.json",
-                "thirdParty": true,
-                "esbuildOptions": {
-                    "logLevel": "silent"
-                }
+                "thirdParty": true
             }
         }, //<
         
@@ -40,16 +37,26 @@
             },
             "description": "Generate all assets and sync to extension package"
         },
+        "sync-assets": {
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/dist/assets"],
+            "dependsOn": ["build"],
+            "options": {
+                "command": "npx tsx ../../dynamicons/assets/scripts/sync-to-ext.ts --target dynamicons-ext",
+                "cwd": "{projectRoot}"
+            },
+            "description": "Sync assets to extension package (run after build)"
+        },
         "package": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": ["build", "sync-assets"],
             "options": {
                 "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages"
             }
         }, //<
         "package:dev": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "dependsOn": ["build", "sync-assets"],
             "options": {
                 "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"

@@ -47,6 +47,8 @@
         
         "watch": "watch",
         "stream": "output-style=stream",
+        "tui": "output-style=tui",
+
         "echo": "pae-echo"
     },
     

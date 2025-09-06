@@ -191,10 +191,17 @@ class AssetSync {
 			// Validate source directory exists
 			await fs.access(this.config.sourceDir)
 			
-			// Validate target directory path is valid
+			// Validate target directory path is valid (check parent directory exists)
 			const targetPath = join(process.cwd(), this.config.targetDir)
-			const targetDir = dirname(targetPath)
-			await fs.access(targetDir)
+			const targetParentDir = dirname(targetPath)
+			
+			// Check if parent directory exists, if not, create it
+			try {
+				await fs.access(targetParentDir)
+			} catch {
+				// Parent directory doesn't exist, create it
+				await fs.mkdir(targetParentDir, { recursive: true })
+			}
 			
 			return true
 		} catch (error) {
