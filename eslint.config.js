@@ -89,6 +89,7 @@ const focusTornBaseRules = { //>
     
 	'ts/no-explicit-any': 'warn',
     
+	'style/implicit-arrow-linebreak': ['warn', 'beside'],
 	'style/max-statements-per-line': 'off',
 	'style/no-tabs': 'off',
 	'style/spaced-comment': 'off',
@@ -241,7 +242,11 @@ export default combine(
 		overrides: {
 			// PERFORMANCE: Disable expensive TypeScript rules
 			// ORIGINAL: 'ts/no-unused-vars': 'off',
-			'ts/no-unused-vars': 'warn', // Instead of 'off'
+			'ts/no-unused-vars': ['warn', {
+				argsIgnorePattern: '^_',
+				varsIgnorePattern: '^_',
+				caughtErrorsIgnorePattern: '^_',
+			}], // Ignore variables starting with underscore
 
 			// ORIGINAL: 'ts/no-explicit-any': 'error',
 			'ts/no-explicit-any': 'warn', // Instead of 'error'

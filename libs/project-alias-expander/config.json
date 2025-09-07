@@ -1,6 +1,7 @@
 {
     "targets": {
         "b": "build",
+        "pp": "prepackage",
         "p": "package",
         "pd": "package:dev",
         "pub": "publish",

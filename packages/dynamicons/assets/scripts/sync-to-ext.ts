@@ -3,7 +3,7 @@
 import { promises as fs } from 'fs'
 import { join, dirname, basename } from 'path'
 import { assetConstants } from '../src/_config/dynamicons.constants.js'
-import { errorHandler, inputValidator, rollbackManager, ErrorType, ErrorSeverity } from './error-handler.js'
+import { errorHandler, inputValidator, rollbackManager, ErrorType, ErrorSeverity } from './error-handler.ts'
 
 interface SyncConfig {
 	sourceDir: string
@@ -125,8 +125,6 @@ class AssetSync {
 				console.log(`  Deleted: ${changeAnalysis.summary.deleted}`)
 				console.log(`  Unchanged: ${changeAnalysis.summary.unchanged}`)
 				console.log('───────────────────────────────────────────────────────────\n')
-			} else {
-				console.log(`📊 Changes: ${changeAnalysis.summary.added} added, ${changeAnalysis.summary.modified} modified`)
 			}
 			
 			// Step 4: Sync based on changes
@@ -136,6 +134,9 @@ class AssetSync {
 			}
 			
 			if (changeAnalysis.summary.added > 0 || changeAnalysis.summary.modified > 0 || this.config.forceSync) {
+				if (!this.config.verbose) {
+					console.log(`📊 Changes: ${changeAnalysis.summary.added} added, ${changeAnalysis.summary.modified} modified`)
+				}
 				if (this.config.verbose) {
 					console.log('📁 STEP 3: ASSET SYNCHRONIZATION')
 					console.log('───────────────────────────────────────────────────────────')
@@ -152,6 +153,10 @@ class AssetSync {
 				}
 			} else {
 				console.log('✅ No changes detected, sync skipped')
+				// Ensure staging directory exists even when no changes
+				if (this.config.targetDir.includes('assets-staging')) {
+					await this.ensureDirectoryExists(this.config.targetDir)
+				}
 			}
 			
 			// Step 5: Verification
@@ -245,9 +250,9 @@ class AssetSync {
 		
 		// Sync different asset types
 		const assetTypes = [
-			{ source: 'icons', target: 'icons', description: 'Icon files' },
-			{ source: 'themes', target: 'themes', description: 'Theme files' },
-			{ source: 'images/preview-images', target: 'images/preview-images', description: 'Preview images' }
+			{ source: '../assets/icons', target: 'icons', description: 'Icon files' },
+			{ source: 'assets/themes', target: 'themes', description: 'Theme files' },
+			{ source: 'assets/images/preview-images', target: 'images/preview-images', description: 'Preview images' }
 		]
 		
 		for (const assetType of assetTypes) {
@@ -307,9 +312,9 @@ class AssetSync {
 		
 		// Define asset types to analyze
 		const assetTypes = [
-			{ source: 'icons', description: 'Icon files' },
-			{ source: 'themes', description: 'Theme files' },
-			{ source: 'images/preview-images', description: 'Preview images' }
+			{ source: '../assets/icons', target: 'icons', description: 'Icon files' },
+			{ source: 'assets/themes', target: 'themes', description: 'Theme files' },
+			{ source: 'assets/images/preview-images', target: 'images/preview-images', description: 'Preview images' }
 		]
 		
 		// Analyze each asset type
@@ -363,17 +368,34 @@ class AssetSync {
 			const targetFile = join(targetPath, relativePath)
 			
 			try {
-				// Check if target file exists
-				await fs.access(targetFile)
+				// Check if target file exists with retry for race conditions
+				let targetExists = false
+				for (let i = 0; i < 3; i++) {
+					try {
+						await fs.access(targetFile)
+						targetExists = true
+						break
+					} catch {
+						if (i < 2) {
+							// Small delay to handle race conditions
+							await new Promise(resolve => setTimeout(resolve, 10))
+						}
+					}
+				}
 				
-				// Compare timestamps
-				const sourceStats = await fs.stat(sourceFile)
-				const targetStats = await fs.stat(targetFile)
-				
-				if (sourceStats.mtime > targetStats.mtime) {
-					modified.push(join(subDir, relativePath))
+				if (targetExists) {
+					// Compare timestamps
+					const sourceStats = await fs.stat(sourceFile)
+					const targetStats = await fs.stat(targetFile)
+					
+					if (sourceStats.mtime > targetStats.mtime) {
+						modified.push(join(subDir, relativePath))
+					} else {
+						unchanged.push(join(subDir, relativePath))
+					}
 				} else {
-					unchanged.push(join(subDir, relativePath))
+					// Target file doesn't exist after retries
+					added.push(join(subDir, relativePath))
 				}
 			} catch {
 				// Target file doesn't exist
@@ -412,6 +434,7 @@ class AssetSync {
 	): Promise<void> {
 		const sourcePath = join(this.config.sourceDir, sourceSubDir)
 		const targetPath = join(this.config.targetDir, targetSubDir)
+		
 		
 		try {
 			// Check if source directory exists
@@ -569,14 +592,16 @@ class AssetSync {
 async function main(): Promise<void> {
 	const args = process.argv.slice(2)
 	
+	const isStaging = args.includes('--staging')
 	const config: SyncConfig = {
-		sourceDir: 'dist/assets',
-		targetDir: '../ext/dist/assets',
+		sourceDir: 'dist',
+		targetDir: isStaging ? '../ext/assets-staging' : '../ext/dist/assets',
 		verbose: args.includes('--verbose') || args.includes('-v'),
 		forceSync: args.includes('--force') || args.includes('-f'),
 		validateOnly: args.includes('--validate-only') || args.includes('--dry-run'),
 		backupBeforeSync: args.includes('--backup') || args.includes('-b')
 	}
+	
 	
 	// Parse command line arguments
 	for (let i = 0; i < args.length; i++) {
@@ -599,7 +624,13 @@ async function main(): Promise<void> {
 					const targets = sync.getAvailableTargets()
 					const target = targets.find(t => t.name === targetName)
 					if (target) {
-						config.targetDir = target.path
+						// Respect staging flag when setting target directory
+						if (isStaging) {
+							// For staging, use assets-staging instead of dist/assets
+							config.targetDir = target.path.replace('/dist/assets', '/assets-staging').replace('\\dist\\assets', '\\assets-staging')
+						} else {
+							config.targetDir = target.path
+						}
 					} else {
 						console.error(`❌ Unknown target: ${targetName}`)
 						console.log('Available targets:')

@@ -295,6 +295,71 @@ function checkDuplicateAssignments(result: ThemeAuditResult): void {
 /**
  * Validate themes and display results
  */
+/**
+ * Check if theme validation is needed based on recent changes
+ */
+async function checkIfThemeValidationNeeded(): Promise<boolean> {
+	try {
+		const baseThemePath = path.resolve(process.cwd(), assetConstants.paths.distThemesDir, assetConstants.themeFiles.baseTheme)
+		const dynamiconsThemePath = path.resolve(process.cwd(), assetConstants.paths.distThemesDir, assetConstants.themeFiles.generatedTheme)
+		
+		// If theme files don't exist, validation is needed
+		try {
+			await fs.stat(baseThemePath)
+			await fs.stat(dynamiconsThemePath)
+		} catch {
+			return true // Theme files don't exist, validation needed
+		}
+		
+		// Get theme file timestamps
+		const baseThemeStat = await fs.stat(baseThemePath)
+		const dynamiconsThemeStat = await fs.stat(dynamiconsThemePath)
+		const latestThemeTime = Math.max(baseThemeStat.mtime.getTime(), dynamiconsThemeStat.mtime.getTime())
+		
+		// Check if theme files were modified recently (within last 2 minutes)
+		// This ensures audit runs after theme generation
+		const twoMinutesAgo = Date.now() - (2 * 60 * 1000)
+		if (latestThemeTime > twoMinutesAgo) {
+			return true // Themes were recently generated, validation needed
+		}
+		
+		// Check if model files are newer than theme files
+		const modelFiles = [
+			path.resolve(process.cwd(), assetConstants.paths.modelsDir, 'file_icons.model.json'),
+			path.resolve(process.cwd(), assetConstants.paths.modelsDir, 'folder_icons.model.json')
+		]
+		
+		for (const modelFile of modelFiles) {
+			try {
+				const modelStat = await fs.stat(modelFile)
+				if (modelStat.mtime.getTime() > latestThemeTime) {
+					return true // Model file is newer than theme files
+				}
+			} catch {
+				return true // Model file doesn't exist, validation needed
+			}
+		}
+		
+		return false // No changes detected - themes are up to date
+	} catch (error) {
+		return true // If we can't determine, assume validation is needed
+	}
+}
+
+export async function validateThemesWithStatus(showSuccessMessage: boolean = true): Promise<{ isValid: boolean; wasSkipped: boolean }> {
+	const needsValidation = await checkIfThemeValidationNeeded()
+	
+	if (!needsValidation) {
+		if (showSuccessMessage) {
+			console.log('✅ Theme validation skipped - no recent changes detected')
+		}
+		return { isValid: true, wasSkipped: true }
+	}
+	
+	const isValid = await validateThemes()
+	return { isValid, wasSkipped: false }
+}
+
 export async function validateThemes(): Promise<boolean> {
 	const auditResult = await auditThemes()
 	

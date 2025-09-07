@@ -1,232 +1,514 @@
-#!/usr/bin/env node
+/* NOTES ------------->>
 
-import { promises as fs } from 'fs'
-import path from 'path'
-import { assetConstants } from '../src/_config/dynamicons.constants.js'
-import { main as generatePreviewsMain } from './generate_icon_previews.js'
+SCRIPT: generate_icon_previews.ts
+PURPOSE:
+  Generates HTML previews of SVG icons (converted to PNGs for the HTML)
+  and then captures screenshots of these HTML pages to create PNG preview images.
+  This is useful for documentation or marketplace assets.
+
+USAGE (Standalone):
+  npx ts-node --esm packages/dynamicons/core/src/scripts/generate_icon_previews.ts [all|file|folder]
+
+ARGUMENTS (Standalone):
+  [all|file|folder] (Optional): Specifies which set of previews to generate.
+    - 'all' (default): Generates previews for file, folder, and folder-open icons.
+    - 'file': Generates previews only for file icons.
+    - 'folder': Generates previews for folder and folder-open icons.
+
+PREQUISITES:
+  1. Optimized SVG Icons: (Assumes optimize_icons.ts has run)
+     - File Icons: 'packages/dynamicons/assets/assets/icons/file_icons/'
+     - Folder Icons: 'packages/dynamicons/assets/assets/icons/folder_icons/'
+  2. Dependencies: Puppeteer for headless browser, Sharp for image manipulation.
+
+OUTPUT:
+  - PNG preview images in 'packages/dynamicons/assets/dist/assets/images/preview-images/':
+    - 'File_icons_preview.png'
+    - 'Folder_icons_preview.png'
+    - 'Folder_Open_icons_preview.png'
+  - Temporary PNG icons and HTML files are created in 'packages/dynamicons/assets/temp_previews/'
+    and can be optionally deleted.
+
+IMPORTANT:
+  - Puppeteer will download a browser if it hasn't already.
+*/
+//------------------------------------------------------------------------------------------------<<
+// ESLint & Imports -->>
+
+//= NODE JS ===================================================================================================
+import fs, { promises as fsPromises } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import process from 'node:process'
+//= MISC ======================================================================================================
+// Lazy imports to avoid loading heavy dependencies when not needed
+let puppeteer: any = null
+let sharp: any = null
+
+//--------------------------------------------------------------------------------------------------------------<<
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const MONOREPO_ROOT = path.resolve(__dirname, '../../../')
+const ASSETS_PACKAGE_ROOT_ABS = path.resolve(__dirname, '../')
+const ASSETS_DIR_ABS = path.join(ASSETS_PACKAGE_ROOT_ABS, 'assets')
+const FILE_ICONS_SVG_DIR_ABS = path.join(ASSETS_DIR_ABS, 'icons/file_icons')
+const FOLDER_ICONS_SVG_DIR_ABS = path.join(ASSETS_DIR_ABS, 'icons/folder_icons')
+const PNG_TEMP_ROOT_DIR_ABS = path.join(ASSETS_PACKAGE_ROOT_ABS, 'temp_previews')
+const FILE_ICONS_PNG_DIR_ABS = path.join(PNG_TEMP_ROOT_DIR_ABS, 'file_icons_png')
+const FOLDER_ICONS_PNG_DIR_ABS = path.join(PNG_TEMP_ROOT_DIR_ABS, 'folder_icons_png')
+const FOLDER_OPEN_ICONS_PNG_DIR_ABS = path.join(PNG_TEMP_ROOT_DIR_ABS, 'folder_open_icons_png')
+const HTML_OUTPUT_DIR_ABS = PNG_TEMP_ROOT_DIR_ABS
+const FINAL_IMAGE_OUTPUT_DIR_ABS = path.join(ASSETS_PACKAGE_ROOT_ABS, 'dist/assets/images/preview-images')
+
+const ICON_SIZE_FOR_PNG_CONVERSION = 16
+const HTML_COLUMNS = 5
+const CLEANUP_TEMP_FILES = true // Set to true to remove temp files after script runs
+
+const ansii = { //>
+	none: '\x1B[0m',
+	bold: '\x1B[1m',
+	blueLight: '\x1B[38;5;153m',
+	gold: '\x1B[38;5;179m',
+	red: '\x1B[38;5;9m',
+	yellow: '\x1B[38;5;226m',
+	green: '\x1B[38;5;35m',
+} //<
+
+// --- Helper Functions ---
+
+async function loadDependencies(): Promise<void> {
+	if (!puppeteer) {
+		const puppeteerModule = await import('puppeteer')
+		puppeteer = puppeteerModule.default
+	}
+	if (!sharp) {
+		const sharpModule = await import('sharp')
+		sharp = sharpModule.default
+	}
+}
+
+async function createDirectory(directoryPath: string, silent: boolean = false): Promise<void> { //>
+	try {
+		await fsPromises.mkdir(directoryPath, { recursive: true })
+	}
+	catch (err: any) {
+		if (err.code !== 'EEXIST') {
+			if (!silent)
+				console.error(`│  └─ ${ansii.red}ERROR:${ansii.none} creating directory ${path.relative(MONOREPO_ROOT, directoryPath)}:`, err)
+			throw err
+		}
+	}
+} //<
+
+async function convertSvgToPng( //>
+	size: number,
+	svgFilePath: string,
+	outputPngPath: string,
+	silent: boolean = false,
+): Promise<void> {
+	try {
+		await loadDependencies()
+		await sharp(svgFilePath)
+			.resize(size, size)
+			.png()
+			.toFile(outputPngPath)
+	}
+	catch (error) {
+		if (!silent)
+			console.error(`│     └─ ${ansii.red}ERROR:${ansii.none} converting ${path.basename(svgFilePath)} to PNG at ${path.relative(MONOREPO_ROOT, outputPngPath)}:`, error)
+		throw error
+	}
+} //<
+
+async function convertSvgsToPngs( //>
+	size: number,
+	svgIconsDirAbs: string,
+	pngOutputDirAbs: string,
+	filter: (filename: string) => boolean = () =>
+		true,
+	isLastInSection: boolean = false,
+	logPrefix: string = '│  ├─',
+	silent: boolean = false,
+): Promise<boolean> {
+	const effectiveLogPrefix = isLastInSection ? logPrefix.replace('├', '└') : logPrefix
+
+	if (!silent) {
+		console.log(
+			`${effectiveLogPrefix} Converting SVGs from ${path.relative(MONOREPO_ROOT, svgIconsDirAbs)} to PNGs in ${path.relative(MONOREPO_ROOT, pngOutputDirAbs)}...`,
+		)
+	}
+
+	if (!fs.existsSync(svgIconsDirAbs)) {
+		if (!silent) {
+			console.log(
+				`│     └─ ${ansii.yellow}WARN:${ansii.none} Source SVG directory not found: ${path.relative(MONOREPO_ROOT, svgIconsDirAbs)}. Skipping.`,
+			)
+		}
+		return false
+	}
+
+	try {
+		const iconFiles = fs.readdirSync(svgIconsDirAbs).filter(
+			file =>
+				file.endsWith('.svg') && filter(file),
+		)
+
+		if (iconFiles.length === 0) {
+			if (!silent) {
+				console.log(
+					`│     └─ ${ansii.yellow}No matching SVG files found in ${path.relative(MONOREPO_ROOT, svgIconsDirAbs)}.${ansii.none}`,
+				)
+			}
+			return false
+		}
+		await createDirectory(pngOutputDirAbs, silent)
+
+		const convertPromises = iconFiles.map(async (file) => {
+			const svgFilePath = path.join(svgIconsDirAbs, file)
+			const pngFileName = `${path.parse(file).name}.png`
+			const outputPngPath = path.join(pngOutputDirAbs, pngFileName)
+
+			await convertSvgToPng(size, svgFilePath, outputPngPath, silent)
+		})
+
+		await Promise.all(convertPromises)
+		if (!silent) {
+			console.log(
+				`│     └─ ${ansii.green}Success:${ansii.none} Finished converting ${iconFiles.length} icons.`,
+			)
+		}
+		return true
+	}
+	catch (error) {
+		if (!silent) {
+			console.error(
+				`│     └─ ${ansii.red}ERROR:${ansii.none} during SVG to PNG conversion for ${path.relative(MONOREPO_ROOT, svgIconsDirAbs)}:`,
+				error,
+			)
+		}
+		return false
+	}
+} //<
+
+function generateIconCellHtml( //>
+	_pageTitleType: string,
+	pngIconsDirAbsForCell: string,
+	file: string,
+): string {
+	let iconName = path.parse(file).name
+
+	iconName = iconName.replace(/-open$/, '').replace(/^folder-/, '')
+
+	const absolutePngPath = path.join(pngIconsDirAbsForCell, file)
+	const imgSrc = `file://${absolutePngPath.replace(/\\/g, '/')}`
+
+	return `
+      <td style="text-align: center; width: 40px;">
+        <img src="${imgSrc}" alt="${iconName}" title="${iconName}">
+      </td>
+      <td style="text-align: left; vertical-align: middle; width: 100px;">${iconName}</td>
+    `
+} //<
+
+function generateHtmlContent( //>
+	pageTitleType: string,
+	pngIconsDirAbs: string,
+	silent: boolean = false,
+): string {
+	let files: string[] = []
+
+	try {
+		if (fs.existsSync(pngIconsDirAbs)) {
+			files = fs.readdirSync(pngIconsDirAbs).filter(f =>
+				f.endsWith('.png'))
+		}
+		else if (!silent) {
+			console.warn(
+				`│     └─ ${ansii.yellow}WARN:${ansii.none} PNG directory not found for HTML generation: ${path.relative(MONOREPO_ROOT, pngIconsDirAbs)}`,
+			)
+		}
+	}
+	catch (error) {
+		if (!silent) {
+			console.error(
+				`│     └─ ${ansii.red}ERROR:${ansii.none} reading PNG directory ${path.relative(MONOREPO_ROOT, pngIconsDirAbs)}:`,
+				error,
+			)
+		}
+	}
+
+	const marPad = 10
+	const columns = HTML_COLUMNS
+	let htmlContent = `
+    <!DOCTYPE html><html><head><title>${pageTitleType.replace('_', ' ')} Icons</title><style>
+    @import url('https://fonts.googleapis.com/css2?family=Hind&display=swap');
+    body { background-color: #090a0c; margin: 0px; padding: 0; }
+    .container { background-color: #090a0c; text-align: center; margin: ${marPad}px; width: fit-content; display: inline-block; }
+    h1 { background-color: #090a0c; color: #EEEEEE; text-align: center; margin: 0 auto; padding: 0 0 10px 0; font-family: "Hind", sans-serif; }
+    table { background-color: #090a0c; color: #EEEEEE; margin: 0 auto; border-collapse: collapse; }
+    th, td { font-family: "Hind", sans-serif; font-weight: 400; font-style: normal; }
+    th { font-size: 15px; font-weight: 600; } td { font-size: 12px; }
+    th:nth-child(odd), td:nth-child(odd) { text-align: center; width: 40px; }
+    th:nth-child(even), td:nth-child(even) { text-align: left; vertical-align: middle; width: 100px; }
+    </style></head><body><div class="container"><h1>${pageTitleType.replace('_', ' ')} Icons</h1>
+    <table><thead><tr>`
+
+	for (let i = 0; i < columns; i++) htmlContent += `<th>Icon</th><th>Name</th>`
+	htmlContent += `</tr></thead><tbody>`
+	if (files.length === 0) {
+		htmlContent += `<tr><td colspan="${columns * 2}">No PNG icons found in ${path.relative(MONOREPO_ROOT, pngIconsDirAbs)}</td></tr>`
+	}
+	else {
+		for (let i = 0; i < files.length; i += columns) {
+			htmlContent += '<tr>'
+			for (let j = 0; j < columns; j++) {
+				if (i + j < files.length) {
+					htmlContent += generateIconCellHtml(pageTitleType, pngIconsDirAbs, files[i + j])
+				}
+				else {
+					htmlContent += '<td></td><td></td>'
+				}
+			}
+			htmlContent += '</tr>'
+		}
+	}
+	htmlContent += `</tbody></table></div></body></html>`
+	return htmlContent
+} //<
+
+async function generateHtmlAndScreenshot( //>
+	page: Page,
+	pageTitleType: string,
+	pngIconsDirAbs: string,
+	htmlOutputDirAbs: string,
+	finalImageOutputDirAbs: string,
+	isLastInSection: boolean = false,
+	logPrefix: string = '│  ├─',
+	silent: boolean = false,
+): Promise<boolean> {
+	const htmlFilePath = path.join(htmlOutputDirAbs, `${pageTitleType}_icons.html`)
+	const effectiveLogPrefix = isLastInSection ? logPrefix.replace('├', '└') : logPrefix
+
+	try {
+		if (!silent)
+			console.log(`${effectiveLogPrefix} Generating HTML for ${pageTitleType} icons...`)
+
+		const htmlContent = generateHtmlContent(pageTitleType, pngIconsDirAbs, silent)
+
+		fs.writeFileSync(htmlFilePath, htmlContent)
+
+		const pageUrl = `file://${htmlFilePath.replace(/\\/g, '/')}`
+
+		if (!silent)
+			console.log(`│  │  ├─ Navigating to HTML page: ${pageUrl}`)
+		await page.goto(pageUrl, { waitUntil: 'load' })
+
+		const containerElement = await page.$('.container')
+
+		if (containerElement) {
+			const outputPath = path.join(finalImageOutputDirAbs, `${pageTitleType}_icons_preview.png`)
+
+			await containerElement.screenshot({ path: outputPath as `${string}.png` | `${string}.jpeg` | `${string}.webp` })
+			if (!silent) {
+				console.log(
+					`│  │  └─ ${ansii.green}Success:${ansii.none} Screenshot saved: ${path.relative(MONOREPO_ROOT, outputPath)}`,
+				)
+			}
+			return true
+		}
+		else {
+			if (!silent) {
+				console.warn(
+					`│  │  └─ ${ansii.yellow}WARN:${ansii.none} Could not find .container for screenshot: ${pageTitleType}`,
+				)
+			}
+			return false
+		}
+	}
+	catch (error) {
+		if (!silent) {
+			console.error(
+				`│  │  └─ ${ansii.red}ERROR:${ansii.none} in generateHtmlAndScreenshot for ${pageTitleType}:`,
+				error,
+			)
+		}
+		return false
+	}
+} //<
 
 /**
- * Generate preview images using the existing preview logic
- * Handles change detection, forced regeneration, and verification
+ * Check if preview generation is needed
  */
-export async function generatePreviews(verbose: boolean = false, iconsChanged: boolean = false): Promise<{ success: boolean }> {
+async function checkIfPreviewGenerationNeeded(iconsChanged: boolean = false): Promise<boolean> {
 	try {
-		const previewDir = assetConstants.paths.distImagesDir
+		// If icons were explicitly changed, generation is needed
+		if (iconsChanged) {
+			return true
+		}
+		
+		// Check if all three preview images exist
 		const expectedFiles = [
 			'File_icons_preview.png',
 			'Folder_icons_preview.png',
 			'Folder_Open_icons_preview.png'
 		]
 		
-		// Ensure preview directory exists
-		await fs.mkdir(previewDir, { recursive: true })
-		
-		// Check if all three preview images already exist
-		const existingFiles = []
 		for (const file of expectedFiles) {
 			try {
-				await fs.access(path.join(previewDir, file))
-				existingFiles.push(file)
+				await fsPromises.access(path.join(FINAL_IMAGE_OUTPUT_DIR_ABS, file))
 			} catch {
-				// File doesn't exist
+				return true // Preview file doesn't exist, generation needed
 			}
 		}
 		
-		// If all three files exist and no icons changed, show green success message
-		if (existingFiles.length === 3 && !iconsChanged) {
-			if (verbose) {
-				console.log('✅ Preview images already exist and up to date')
-				console.log('📄 Existing files:')
-				console.log(`   • ${expectedFiles[0]}`)
-				console.log(`   • ${expectedFiles[1]}`)
-				console.log(`   • ${expectedFiles[2]}`)
-				console.log('───────────────────────────────────────────────────────────')
-			}
-			console.log('\x1B[32m🖼️  Previews: All preview images already exist\x1B[0m')
-			return { success: true }
-		}
-		
-		// If icons have changed, force regeneration by deleting existing previews
-		if (iconsChanged) {
-			if (verbose) {
-				console.log('🔄 CHANGE DETECTED - FORCING REGENERATION')
-				console.log('   Deleting existing preview files...')
-			}
-			
-			// Delete all existing preview files
-			for (const file of expectedFiles) {
-				try {
-					const filePath = path.join(previewDir, file)
-					await fs.access(filePath)
-					await fs.unlink(filePath)
-				} catch {
-					// File doesn't exist or can't be deleted, continue
-				}
-			}
-			
-			// Verify deletion
-			const remainingFiles = []
-			for (const file of expectedFiles) {
-				try {
-					await fs.access(path.join(previewDir, file))
-					remainingFiles.push(file)
-				} catch {
-					// File successfully deleted
-				}
-			}
-			
-			if (remainingFiles.length > 0) {
-				console.log(`\x1B[31m❌ Preview regeneration failed: Could not delete existing files: ${remainingFiles.join(', ')}\x1B[0m`)
-				return { success: false }
-			}
-			
-			if (verbose) {
-				console.log('✅ Existing preview files deleted and verified')
-			}
-		}
-		
-		// Generate previews using our own logic to avoid unwanted output
-		// Only show generation message and source directories in verbose mode
-		if (verbose) {
-			console.log('\n🖼️  GENERATING PREVIEW IMAGES')
-			console.log('───────────────────────────────────────────────────────────')
-			console.log('📁 Source Directories:')
-			console.log(`   File icons:   ${path.resolve(process.cwd(), assetConstants.paths.fileIconsDir)}`)
-			console.log(`   Folder icons: ${path.resolve(process.cwd(), assetConstants.paths.folderIconsDir)}`)
-			console.log(`📁 Output:      ${path.resolve(process.cwd(), previewDir)}`)
-			console.log('🔄 Generating preview images...')
-		}
-		
-		// Call the preview generation function but capture and suppress its output
-		try {
-			// Temporarily redirect console.log to suppress output from underlying script
-			const originalLog = console.log
-			const originalError = console.error
-			
-			// Always suppress output from the underlying script since we handle our own verbose output
-			console.log = () => {} // Suppress all output
-			console.error = () => {} // Suppress all errors
-			
-			// Generate the previews
-			await generatePreviewsMain('all', true)
-			
-			// Restore console functions
-			console.log = originalLog
-			console.error = originalError
-		} catch (error) {
-			// Restore console functions in case of error
-			console.log = originalLog
-			console.error = originalError
-			throw error
-		}
-		
-		// Wait a moment for files to be fully written
-		await new Promise(resolve => setTimeout(resolve, 1000))
-		
-		// Check if all three files were created (regardless of return value)
-		const generatedFiles = []
-		for (const file of expectedFiles) {
-			try {
-				await fs.access(path.join(previewDir, file))
-				generatedFiles.push(file)
-			} catch {
-				// File still doesn't exist
-			}
-		}
-		
-		if (generatedFiles.length === 3) {
-			if (verbose) {
-				console.log('✅ Preview generation completed successfully')
-				console.log('📄 Generated files:')
-				console.log(`   • ${expectedFiles[0]}`)
-				console.log(`   • ${expectedFiles[1]}`)
-				console.log(`   • ${expectedFiles[2]}`)
-				console.log('───────────────────────────────────────────────────────────')
-			}
-			console.log('\x1B[32m🖼️  Previews: Generated and verified\x1B[0m')
-			return { success: true }
-		} else {
-			if (verbose) {
-				console.log('❌ Preview generation failed')
-				console.log(`📄 Expected: ${expectedFiles.join(', ')}`)
-				console.log(`📄 Created:  ${generatedFiles.join(', ')}`)
-				console.log(`📄 Missing:  ${expectedFiles.filter(f => !generatedFiles.includes(f)).join(', ')}`)
-				console.log('───────────────────────────────────────────────────────────')
-			}
-			console.log(`\x1B[31m❌ Preview generation failed: Only ${generatedFiles.length}/3 files created\x1B[0m`)
-			return { success: false }
-		}
+		return false // All preview files exist and no changes detected
 	} catch (error) {
-		console.log(`\x1B[31m❌ Preview generation failed: ${error instanceof Error ? error.message : String(error)}\x1B[0m`)
-		return { success: false }
+		return true // If we can't determine, assume generation is needed
 	}
 }
 
-/**
- * Check if preview images exist and are up to date
- * Returns true if all expected preview files exist
- */
-export async function checkPreviewImages(): Promise<{ exists: boolean, missingFiles: string[] }> {
-	const previewDir = assetConstants.paths.distImagesDir
-	const expectedFiles = [
-		'File_icons_preview.png',
-		'Folder_icons_preview.png',
-		'Folder_Open_icons_preview.png'
-	]
+export async function generatePreviews( //>
+	previewType: 'all' | 'file' | 'folder' = 'all',
+	silent: boolean = false,
+	iconsChanged: boolean = false,
+): Promise<boolean> {
+	// Check if preview generation is needed
+	const needsGeneration = await checkIfPreviewGenerationNeeded(iconsChanged)
 	
-	const missingFiles: string[] = []
+	if (!needsGeneration) {
+		if (!silent) {
+			console.log('✅ Preview images already exist and up to date')
+			console.log('📄 Existing files:')
+			console.log('   • File_icons_preview.png')
+			console.log('   • Folder_icons_preview.png')
+			console.log('   • Folder_Open_icons_preview.png')
+		}
+		console.log('\x1B[32m🖼️  Previews: All preview images already exist\x1B[0m')
+		return true
+	}
 	
-	for (const file of expectedFiles) {
-		try {
-			await fs.access(path.join(previewDir, file))
-		} catch {
-			missingFiles.push(file)
+	console.log(`\nCREATE ICON PREVIEW IMAGES (${previewType.toUpperCase()})`)
+	console.log(`Source directories:`)
+	console.log(`  File icons: ${FILE_ICONS_SVG_DIR_ABS}`)
+	console.log(`  Folder icons: ${FOLDER_ICONS_SVG_DIR_ABS}`)
+	console.log(`  Output: ${FINAL_IMAGE_OUTPUT_DIR_ABS}`)
+	
+	if (!silent)
+		console.log(`\nCREATE ICON PREVIEW IMAGES (${previewType.toUpperCase()})`)
+
+	const tempDirs = [PNG_TEMP_ROOT_DIR_ABS, FILE_ICONS_PNG_DIR_ABS, FOLDER_ICONS_PNG_DIR_ABS, FOLDER_OPEN_ICONS_PNG_DIR_ABS]
+
+	if (!silent)
+		console.log(`├─ ${ansii.gold}Preparing Temporary Directories${ansii.none}`)
+	try {
+		for (const dir of tempDirs) {
+			if (fs.existsSync(dir))
+				await fsPromises.rm(dir, { recursive: true, force: true })
+			await createDirectory(dir, silent)
+		}
+		await createDirectory(FINAL_IMAGE_OUTPUT_DIR_ABS, silent)
+		if (!silent)
+			console.log(`│  └─ ${ansii.green}Success:${ansii.none} Temporary directories prepared.`)
+	}
+	catch (error) {
+		if (!silent)
+			console.error(`│  └─ ${ansii.red}ERROR:${ansii.none} Preparing temporary directories:`, error)
+		return false
+	}
+
+	if (!silent)
+		console.log(`├─ ${ansii.gold}Converting SVGs to PNGs for Previews${ansii.none}`)
+
+	let success = true
+	let ranAnyConversion = false
+
+	if (previewType === 'all' || previewType === 'file') {
+		const fileConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FILE_ICONS_SVG_DIR_ABS, FILE_ICONS_PNG_DIR_ABS, undefined, previewType === 'file', '│  ├─', silent)
+
+		if (!fileConversionSuccess && fs.existsSync(FILE_ICONS_SVG_DIR_ABS))
+			success = false // Only fail if source exists but conversion fails
+		if (fs.existsSync(FILE_ICONS_SVG_DIR_ABS))
+			ranAnyConversion = true
+	}
+	if (previewType === 'all' || previewType === 'folder') {
+		const folderConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_ICONS_PNG_DIR_ABS, file =>
+			!file.endsWith('-open.svg'), false, '│  ├─', silent)
+
+		if (!folderConversionSuccess && fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))
+			success = false
+		if (fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))
+			ranAnyConversion = true
+
+		const folderOpenConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_OPEN_ICONS_PNG_DIR_ABS, file =>
+			file.endsWith('-open.svg'), true, '│  ├─', silent)
+
+		if (!folderOpenConversionSuccess && fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))
+			success = false
+		// ranAnyConversion already true if folder icons exist
+	}
+	if (!ranAnyConversion && !silent) {
+		console.log(`│  └─ ${ansii.yellow}No relevant SVG icon source directories found to convert.${ansii.none}`)
+	}
+
+	if (!silent)
+		console.log(`├─ ${ansii.gold}Generating HTML & Capturing Screenshots${ansii.none}`)
+
+	let browser: any = null
+
+	try {
+		await loadDependencies()
+		browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+
+		const page = await browser.newPage()
+
+		if (previewType === 'all' || previewType === 'file') {
+			if (!await generateHtmlAndScreenshot(page, 'File', FILE_ICONS_PNG_DIR_ABS, HTML_OUTPUT_DIR_ABS, FINAL_IMAGE_OUTPUT_DIR_ABS, previewType === 'file', '│  ├─', silent))
+				success = false
+		}
+		if (previewType === 'all' || previewType === 'folder') {
+			if (!await generateHtmlAndScreenshot(page, 'Folder', FOLDER_ICONS_PNG_DIR_ABS, HTML_OUTPUT_DIR_ABS, FINAL_IMAGE_OUTPUT_DIR_ABS, false, '│  ├─', silent))
+				success = false
+			if (!await generateHtmlAndScreenshot(page, 'Folder_Open', FOLDER_OPEN_ICONS_PNG_DIR_ABS, HTML_OUTPUT_DIR_ABS, FINAL_IMAGE_OUTPUT_DIR_ABS, true, '│  ├─', silent))
+				success = false
 		}
 	}
-	
-	return {
-		exists: missingFiles.length === 0,
-		missingFiles
+	catch (error) {
+		if (!silent)
+			console.error(`│  └─ ${ansii.red}ERROR:${ansii.none} Puppeteer process failed:`, error)
+		success = false
 	}
-}
-
-/**
- * Force regeneration of all preview images
- * Deletes existing previews and generates new ones
- */
-export async function forceRegeneratePreviews(verbose: boolean = false): Promise<{ success: boolean }> {
-	return generatePreviews(verbose, true)
-}
-
-// CLI interface
-const _argv1 = process.argv[1] ?? ''
-
-if (_argv1.includes('generate-previews')) {
-	const args = process.argv.slice(2)
-	const verbose = args.includes('--verbose') || args.includes('-v')
-	const force = args.includes('--force') || args.includes('-f')
-
-	if (force) {
-		// Force regeneration
-		forceRegeneratePreviews(verbose).then((result) => {
-			if (!result.success) {
-				process.exit(1)
-			}
-			process.exit(0)
-		}).catch((error) => {
-			console.error('Fatal error during preview generation:', error)
-			process.exit(1)
-		})
-	} else {
-		// Check and generate if needed
-		generatePreviews(verbose, false).then((result) => {
-			if (!result.success) {
-				process.exit(1)
-			}
-			process.exit(0)
-		}).catch((error) => {
-			console.error('Fatal error during preview generation:', error)
-			process.exit(1)
-		})
+	finally {
+		if (browser)
+			await browser.close()
 	}
+
+	if (CLEANUP_TEMP_FILES) {
+		if (!silent)
+			console.log(`├─ ${ansii.gold}Cleaning up temporary files...${ansii.none}`)
+		try {
+			await fsPromises.rm(PNG_TEMP_ROOT_DIR_ABS, { recursive: true, force: true })
+			if (!silent)
+				console.log(`│  └─ ${ansii.green}Success:${ansii.none} Temporary files cleaned up.`)
+		}
+		catch (error) {
+			if (!silent)
+				console.error(`│  └─ ${ansii.red}ERROR:${ansii.none} cleaning temporary files:`, error)
+			// Do not mark overall success as false for cleanup failure
+		}
+	}
+	if (!silent)
+		console.log(`└─ ICON PREVIEW GENERATION (${previewType.toUpperCase()}) ${success ? 'COMPLETE' : 'FAILED'}`)
+	return success
+} //<
+
+// Standalone execution
+if (process.argv[1] && process.argv[1].endsWith('generate-previews.ts')) {
+	const previewTypeArg = (process.argv[2] as 'all' | 'file' | 'folder') || 'all'
+
+	generatePreviews(previewTypeArg, false).catch((error) => {
+		console.error(`${ansii.red}FATAL ERROR in generate-previews.ts (standalone):${ansii.none}`, error)
+		process.exit(1)
+	})
 }

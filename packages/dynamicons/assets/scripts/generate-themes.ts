@@ -13,6 +13,7 @@ const THEMES_DIR = path.resolve(process.cwd(), assetConstants.paths.distThemesDi
 
 /**
  * Generate Themes - Complete workflow for theme generation and verification
+ * Now includes change detection for Nx caching optimization
  */
 async function generateThemes(_verbose: boolean = false): Promise<void> {
 	try {
@@ -46,7 +47,18 @@ async function generateThemes(_verbose: boolean = false): Promise<void> {
 			return
 		}
 
-		// Step 2: Delete existing generated themes and verify
+		// Step 2: Check if theme generation is needed
+		const needsGeneration = await checkIfThemeGenerationNeeded()
+		if (!needsGeneration) {
+			if (_verbose) {
+				console.log('✨ No model changes detected - theme files are up to date!')
+			} else {
+				console.log('✨ No model changes detected - theme files are up to date!')
+			}
+			return
+		}
+
+		// Step 3: Delete existing generated themes and verify
 		const deleteResult = await deleteExistingThemes()
 		
 		if (!deleteResult.success) {
@@ -62,7 +74,7 @@ async function generateThemes(_verbose: boolean = false): Promise<void> {
 			return
 		}
 		
-		// Step 3: Generate new themes and verify
+		// Step 4: Generate new themes and verify
 		try {
 			await generateAndVerifyThemes()
 			
@@ -195,7 +207,81 @@ async function fileExists(p: string): Promise<boolean> {
 	}
 }
 
+/**
+ * Check if theme generation is needed by comparing model file timestamps with theme file timestamps
+ */
+async function checkIfThemeGenerationNeeded(): Promise<boolean> {
+	try {
+		const baseThemePath = path.join(THEMES_DIR, 'base.theme.json')
+		const dynThemePath = path.join(THEMES_DIR, 'dynamicons.theme.json')
+		
+		// If theme files don't exist, generation is needed
+		const baseThemeExists = await fileExists(baseThemePath)
+		const dynThemeExists = await fileExists(dynThemePath)
+		
+		if (!baseThemeExists || !dynThemeExists) {
+			return true
+		}
+		
+		// Get theme file timestamps
+		const baseThemeStats = await fs.stat(baseThemePath)
+		const dynThemeStats = await fs.stat(dynThemePath)
+		const latestThemeTime = Math.max(baseThemeStats.mtime.getTime(), dynThemeStats.mtime.getTime())
+		
+		// Check model files for changes
+		const modelFiles = [
+			path.resolve(process.cwd(), 'src/models/file_icons.model.json'),
+			path.resolve(process.cwd(), 'src/models/folder_icons.model.json'),
+			path.resolve(process.cwd(), 'src/models/language_icons.model.json')
+		]
+		
+		for (const modelFile of modelFiles) {
+			try {
+				const modelStats = await fs.stat(modelFile)
+				if (modelStats.mtime.getTime() > latestThemeTime) {
+					return true // Model file is newer than theme files
+				}
+			} catch {
+				// Model file doesn't exist, assume generation needed
+				return true
+			}
+		}
+		
+		// Check icon directories for changes
+		const iconDirs = [
+			path.resolve(process.cwd(), 'assets/icons/file_icons'),
+			path.resolve(process.cwd(), 'assets/icons/folder_icons'),
+			path.resolve(process.cwd(), 'assets/icons/language_icons')
+		]
+		
+		for (const iconDir of iconDirs) {
+			try {
+				const iconFiles = await fs.readdir(iconDir)
+				for (const iconFile of iconFiles) {
+					if (iconFile.endsWith('.svg')) {
+						const iconPath = path.join(iconDir, iconFile)
+						const iconStats = await fs.stat(iconPath)
+						if (iconStats.mtime.getTime() > latestThemeTime) {
+							return true // Icon file is newer than theme files
+						}
+					}
+				}
+			} catch {
+				// Icon directory doesn't exist, continue
+			}
+		}
+		
+		return false // No changes detected
+	} catch (error) {
+		// If we can't determine, assume generation is needed
+		return true
+	}
+}
 
+
+
+// Export the function for use by other scripts
+export { generateThemes }
 
 // CLI interface
 const _argv1 = process.argv[1] ?? ''

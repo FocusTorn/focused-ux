@@ -9,12 +9,7 @@
                 "platform": "node",
                 "bundle": true,
                 "external": ["vscode"],
-                "thirdParty": true,
-                
-                "logLevel": "info",
-                "esbuildOptions": {
-                    "logLevel": "info"
-                }
+                "thirdParty": true
                 
             }
         }, //<

@@ -8,6 +8,7 @@ import { errorHandler, inputValidator, rollbackManager, ErrorType, ErrorSeverity
 /**
  * Process Icons - Complete workflow from external source to optimized output
  * Follows the workflow: Stage → Organize → Optimize
+ * Now includes change detection for Nx caching optimization
  */
 async function processIcons(verbose: boolean = false): Promise<void> {
 	if (verbose) {
@@ -92,10 +93,21 @@ async function processIcons(verbose: boolean = false): Promise<void> {
 			}
 		}
 		
-		if (verbose) {
-			console.log('═══════════════════════════════════════════════════════════════')
-			console.log('✅ ICON PROCESSING WORKFLOW COMPLETED SUCCESSFULLY')
-			console.log('═══════════════════════════════════════════════════════════════\n')
+		// Step 3: Check if any processing was actually needed
+		const totalProcessed = stageResult.stagedCount + optimizationResult.optimizedCount
+		if (totalProcessed === 0) {
+			if (verbose) {
+				console.log('✨ No icon changes detected - all icons are up to date!')
+				console.log('═══════════════════════════════════════════════════════════════\n')
+			} else {
+				console.log('✨ No icon changes detected - all icons are up to date!')
+			}
+		} else {
+			if (verbose) {
+				console.log('═══════════════════════════════════════════════════════════════')
+				console.log('✅ ICON PROCESSING WORKFLOW COMPLETED SUCCESSFULLY')
+				console.log('═══════════════════════════════════════════════════════════════\n')
+			}
 		}
 	} catch (error) {
 		const processingError = errorHandler.createError(

@@ -291,10 +291,147 @@ export async function auditModels(): Promise<ModelAuditResult> {
 }
 
 /**
+ * Check if model validation is needed by comparing file timestamps
+ */
+async function checkIfModelValidationNeeded(): Promise<boolean> {
+	try {
+		const modelFiles = [
+			path.resolve(process.cwd(), 'src/models/file_icons.model.json'),
+			path.resolve(process.cwd(), 'src/models/folder_icons.model.json'),
+			path.resolve(process.cwd(), 'src/models/language_icons.model.json')
+		]
+		
+		const iconDirs = [
+			path.resolve(process.cwd(), 'assets/icons/file_icons'),
+			path.resolve(process.cwd(), 'assets/icons/folder_icons'),
+			path.resolve(process.cwd(), 'assets/icons/language_icons')
+		]
+		
+		// Check if any model files have been modified recently (within last 2 minutes)
+		// This is a simple heuristic - if models were modified recently, validation is needed
+		const twoMinutesAgo = Date.now() - (2 * 60 * 1000)
+		
+		// First check if any model files were modified recently
+		let modelFilesModified = false
+		for (const modelFile of modelFiles) {
+			try {
+				const modelStats = await fs.stat(modelFile)
+				if (modelStats.mtime.getTime() > twoMinutesAgo) {
+					modelFilesModified = true
+					break
+				}
+			} catch {
+				return true // Model file doesn't exist, assume validation needed
+			}
+		}
+		
+		// If no model files were modified recently, no validation needed
+		if (!modelFilesModified) {
+			return false
+		}
+		
+		// Check if any icon files have been modified recently
+		for (const iconDir of iconDirs) {
+			try {
+				const iconFiles = await fs.readdir(iconDir)
+				for (const iconFile of iconFiles) {
+					if (iconFile.endsWith('.svg')) {
+						const iconPath = path.join(iconDir, iconFile)
+						const iconStats = await fs.stat(iconPath)
+						if (iconStats.mtime.getTime() > fiveMinutesAgo) {
+							return true // Icon file was recently modified
+						}
+					}
+				}
+			} catch {
+				// Icon directory doesn't exist, continue
+			}
+		}
+		
+		return false // No recent changes detected
+	} catch (error) {
+		return true // If we can't determine, assume validation is needed
+	}
+}
+
+/**
+ * Check if models have any errors and display them if found
+ * Returns validation result and skip status
+ */
+export async function validateModelsWithStatus(showSuccessMessage: boolean = true): Promise<{ isValid: boolean; wasSkipped: boolean }> {
+	// Check if validation is needed
+	const validationNeeded = await checkIfModelValidationNeeded()
+	
+	if (!validationNeeded) {
+		if (showSuccessMessage) {
+			console.log('⏭️ Model validation skipped - no recent changes detected')
+		}
+		return { isValid: true, wasSkipped: true } // Assume models are still valid if no changes
+	}
+	
+	const modelErrors = await auditModels()
+	
+	const totalModelErrors
+		= modelErrors.orphanedFileIcons.length
+		  + modelErrors.orphanedFolderIcons.length
+		  + modelErrors.orphanedLanguageIcons.length
+		  + modelErrors.duplicateFileIcons.length
+		  + modelErrors.duplicateFolderIcons.length
+		  + modelErrors.duplicateLanguageIcons.length
+		  + modelErrors.orphanedFileAssignments.length
+		  + modelErrors.orphanedFolderAssignments.length
+		  + modelErrors.orphanedLanguageAssignments.length
+		  + modelErrors.invalidLanguageIds.length
+
+	if (totalModelErrors > 0) {
+		// Show the model errors block
+		displayStructuredErrors(
+			[],
+			modelErrors.orphanedFileIcons,
+			modelErrors.orphanedFolderIcons,
+			modelErrors.orphanedLanguageIcons,
+			modelErrors.duplicateFileIcons,
+			modelErrors.duplicateFolderIcons,
+			modelErrors.duplicateLanguageIcons,
+			modelErrors.orphanedFileAssignments,
+			modelErrors.orphanedFolderAssignments,
+			modelErrors.orphanedLanguageAssignments,
+			modelErrors.invalidLanguageIds,
+			'MODEL ERRORS', // Custom title for model audit
+			{
+				assignedIconNotFound: 'MODEL: ASSIGNED ICON NOT FOUND',
+				duplicateAssignment: 'MODEL: DUPLICATE ASSIGNMENT',
+				unassignedIcon: 'DIRECTORY: UNASSIGNED ICON',
+				duplicateAssignmentId: 'MODEL: DUPLICATE ASSIGNMENT ID'
+			}
+		)
+		console.log('')
+		console.log(`❌ Model validation failed. Please fix the errors above before proceeding.`)
+		return { isValid: false, wasSkipped: false }
+	}
+
+	if (showSuccessMessage) {
+		console.log('✅ Model validation passed - no errors found.')
+	}
+	
+	return { isValid: true, wasSkipped: false }
+}
+
+/**
  * Check if models have any errors and display them if found
  * Returns true if models are valid, false if errors found
  */
 export async function validateModels(showSuccessMessage: boolean = true): Promise<boolean> {
+	// Check if validation is needed
+	const validationNeeded = await checkIfModelValidationNeeded()
+	
+	if (!validationNeeded) {
+		if (showSuccessMessage) {
+			console.log('⏭️ Model validation skipped - no recent changes detected')
+		}
+		return true // Assume models are still valid if no changes
+	}
+	
 	const modelErrors = await auditModels()
 
 	const totalModelErrors

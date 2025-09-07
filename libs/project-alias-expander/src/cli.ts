@@ -203,7 +203,25 @@ function installAliases() {
 
 function Invoke-PaeAlias {
     param([Parameter(Mandatory = $true)][string]$Alias, [string[]]$Arguments = @())
-    node libs/project-alias-expander/dist/cli.js $Alias @Arguments
+    
+    # Find workspace root by looking for nx.json
+    $workspaceRoot = $PWD
+    while ($workspaceRoot -and -not (Test-Path (Join-Path $workspaceRoot "nx.json"))) {
+        $workspaceRoot = Split-Path $workspaceRoot -Parent
+    }
+    
+    if (-not $workspaceRoot) {
+        Write-Error "Could not find workspace root (nx.json not found)"
+        return 1
+    }
+    
+    $cliPath = Join-Path $workspaceRoot "libs/project-alias-expander/dist/cli.js"
+    if (-not (Test-Path $cliPath)) {
+        Write-Error "PAE CLI not found at: $cliPath"
+        return 1
+    }
+    
+    node $cliPath $Alias @Arguments
 }
 
 ${aliases.map(alias => `function ${alias} { 
