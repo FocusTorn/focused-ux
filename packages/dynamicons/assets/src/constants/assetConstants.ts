@@ -7,14 +7,14 @@ export const assetConstants = {
 		folderIconsDir: 'assets/icons/folder_icons',
 		distImagesDir: 'dist/assets/images/preview-images',
 		distThemesDir: 'dist/assets/themes',
-		modelsDir: 'src/models'
+		modelsDir: 'src/models',
 	},
 	fileTypes: {
 		allowed: ['.svg'],
-		ignored: ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.webp']
+		ignored: ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.webp'],
 	},
 	iconNaming: {
 		folderPrefix: 'folder-',
-		filePrefix: '' // Any icon not starting with 'folder-'
-	}
+		filePrefix: '', // Any icon not starting with 'folder-'
+	},
 } as const

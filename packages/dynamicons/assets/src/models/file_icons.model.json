@@ -88,8 +88,8 @@
         { "iconName": "vscode", "fileNames": ["vsc-extension-quickstart.md"], "fileExtensions": ["vsix", "code-workspace"] },
         { "iconName": "vscode-config", "fileNames": ["settings.json", "c_cpp_properties.json", "tasks.json"] },
         { "iconName": "vscode-ignore", "fileNames": [".vscodeignore"] },
-        { "iconName": "webpack-config", "fileNames": ["webpack.config.js"] }
-        ,{ "iconName": "zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
+        { "iconName": "webpack-config", "fileNames": ["webpack.config.js"] },
+        { "iconName": "zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
         // ,{ "name": "zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
         //, { "name": "not-zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
         

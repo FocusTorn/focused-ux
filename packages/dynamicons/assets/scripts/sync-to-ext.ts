@@ -1,9 +1,49 @@
 #!/usr/bin/env node
 
 import { promises as fs } from 'fs'
-import { join, dirname, basename } from 'path'
-import { assetConstants } from '../src/_config/dynamicons.constants.js'
-import { errorHandler, inputValidator, rollbackManager, ErrorType, ErrorSeverity } from './error-handler.ts'
+import { join, dirname } from 'path'
+import { errorHandler, rollbackManager, ErrorType, ErrorSeverity } from './error-handler.ts'
+
+/**
+ * Show help information
+ */
+function showHelp(): void {
+	console.log(`
+Dynamicons Asset Sync Tool
+
+Usage: npx tsx scripts/sync-to-ext.ts [options]
+
+Options:
+  -s, --source-dir <dir>     Source assets directory (default: dist/assets)
+  -t, --target-dir <dir>     Target extension directory (default: ../ext/dist/assets)
+  --target, --to <name>      Use predefined target (dynamicons-ext, dynamicons-core, dynamicons-orchestrator)
+  -v, --verbose              Enable verbose logging
+  -f, --force                Force sync even if no changes detected
+  --validate-only, --dry-run Validate only, don't perform sync
+  -b, --backup               Create backup before syncing
+  --list-targets             List available predefined targets
+  -h, --help                 Show this help message
+
+Examples:
+  # Sync assets with default settings
+  npx tsx scripts/sync-to-ext.ts
+  
+  # Sync with verbose logging
+  npx tsx scripts/sync-to-ext.ts --verbose
+  
+  # Use predefined target
+  npx tsx scripts/sync-to-ext.ts --target dynamicons-ext
+  
+  # Custom source and target directories
+  npx tsx scripts/sync-to-ext.ts -s shared-assets -t ../ext/assets
+  
+  # Validate only (dry run)
+  npx tsx scripts/sync-to-ext.ts --validate-only
+  
+  # Force sync with backup
+  npx tsx scripts/sync-to-ext.ts --force --backup
+`)
+}
 
 interface SyncConfig {
 	sourceDir: string
@@ -35,6 +75,7 @@ interface ChangeAnalysis {
 }
 
 class AssetSync {
+
 	private config: SyncConfig
 	private syncTargets: SyncTarget[] = []
 
@@ -51,18 +92,18 @@ class AssetSync {
 			{
 				name: 'dynamicons-ext',
 				path: '../ext/dist/assets',
-				description: 'Dynamicons extension package'
+				description: 'Dynamicons extension package',
 			},
 			{
 				name: 'dynamicons-core',
 				path: '../core/dist/assets',
-				description: 'Dynamicons core package'
+				description: 'Dynamicons core package',
 			},
 			{
 				name: 'dynamicons-orchestrator',
 				path: '../orchestrator/dist/assets',
-				description: 'Combination orchestrator (monolithic extension with all functionality)'
-			}
+				description: 'Combination orchestrator (monolithic extension with all functionality)',
+			},
 		]
 	}
 
@@ -91,6 +132,7 @@ class AssetSync {
 			}
 			
 			const validationResult = await this.validateSyncInputs()
+
 			if (!validationResult) {
 				const validationError = errorHandler.createError(
 					'Sync input validation failed',
@@ -98,8 +140,9 @@ class AssetSync {
 					ErrorSeverity.HIGH,
 					'syncAssets',
 					undefined,
-					false
+					false,
 				)
+
 				await errorHandler.handleError(validationError, this.config.verbose)
 				return
 			}
@@ -181,8 +224,9 @@ class AssetSync {
 				ErrorSeverity.HIGH,
 				'syncAssets',
 				error instanceof Error ? error : undefined,
-				true
+				true,
 			)
+
 			await errorHandler.handleError(syncError, this.config.verbose)
 			await rollbackManager.executeRollback()
 		}
@@ -216,8 +260,9 @@ class AssetSync {
 				ErrorSeverity.HIGH,
 				'validateSyncInputs',
 				error instanceof Error ? error : undefined,
-				false
+				false,
 			)
+
 			await errorHandler.handleError(validationError, this.config.verbose)
 			return false
 		}
@@ -236,7 +281,7 @@ class AssetSync {
 						console.log('  🔄 Rollback: Restoring target from backup')
 					}
 				},
-				'Backup target directory before sync'
+				'Backup target directory before sync',
 			)
 		}
 	}
@@ -252,7 +297,7 @@ class AssetSync {
 		const assetTypes = [
 			{ source: '../assets/icons', target: 'icons', description: 'Icon files' },
 			{ source: 'assets/themes', target: 'themes', description: 'Theme files' },
-			{ source: 'assets/images/preview-images', target: 'images/preview-images', description: 'Preview images' }
+			{ source: 'assets/images/preview-images', target: 'images/preview-images', description: 'Preview images' },
 		]
 		
 		for (const assetType of assetTypes) {
@@ -272,6 +317,7 @@ class AssetSync {
 		// Verify that all added/modified files exist in target
 		for (const file of [...changeAnalysis.added, ...changeAnalysis.modified]) {
 			const targetFile = join(this.config.targetDir, file)
+
 			try {
 				await fs.access(targetFile)
 			} catch {
@@ -286,8 +332,9 @@ class AssetSync {
 				ErrorSeverity.HIGH,
 				'verifySync',
 				undefined,
-				true
+				true,
 			)
+
 			await errorHandler.handleError(verificationError, this.config.verbose)
 		} else if (this.config.verbose) {
 			console.log('✅ All synced files verified successfully')
@@ -314,7 +361,7 @@ class AssetSync {
 		const assetTypes = [
 			{ source: '../assets/icons', target: 'icons', description: 'Icon files' },
 			{ source: 'assets/themes', target: 'themes', description: 'Theme files' },
-			{ source: 'assets/images/preview-images', target: 'images/preview-images', description: 'Preview images' }
+			{ source: 'assets/images/preview-images', target: 'images/preview-images', description: 'Preview images' },
 		]
 		
 		// Analyze each asset type
@@ -335,8 +382,8 @@ class AssetSync {
 				added: added.length,
 				modified: modified.length,
 				deleted: deleted.length,
-				unchanged: unchanged.length
-			}
+				unchanged: unchanged.length,
+			},
 		}
 	}
 	
@@ -348,7 +395,7 @@ class AssetSync {
 		added: string[],
 		modified: string[],
 		deleted: string[],
-		unchanged: string[]
+		unchanged: string[],
 	): Promise<void> {
 		const sourcePath = join(this.config.sourceDir, subDir)
 		const targetPath = join(this.config.targetDir, subDir)
@@ -370,6 +417,7 @@ class AssetSync {
 			try {
 				// Check if target file exists with retry for race conditions
 				let targetExists = false
+
 				for (let i = 0; i < 3; i++) {
 					try {
 						await fs.access(targetFile)
@@ -406,6 +454,7 @@ class AssetSync {
 		// Check for deleted files (files in target but not in source)
 		try {
 			await fs.access(targetPath)
+
 			const targetFiles = await this.getAllFiles(targetPath)
 			
 			for (const targetFile of targetFiles) {
@@ -428,13 +477,12 @@ class AssetSync {
 	 * Sync a specific directory with change detection
 	 */
 	private async syncDirectoryWithChanges(
-		sourceSubDir: string, 
-		targetSubDir: string, 
-		changeAnalysis: ChangeAnalysis
+		sourceSubDir: string,
+		targetSubDir: string,
+		changeAnalysis: ChangeAnalysis,
 	): Promise<void> {
 		const sourcePath = join(this.config.sourceDir, sourceSubDir)
 		const targetPath = join(this.config.targetDir, targetSubDir)
-		
 		
 		try {
 			// Check if source directory exists
@@ -465,8 +513,8 @@ class AssetSync {
 			
 			// Check if we need to copy this file based on change analysis
 			const assetPath = join(sourceSubDir, relativePath)
-			const shouldSync = changeAnalysis.added.includes(assetPath) || 
-							  changeAnalysis.modified.includes(assetPath)
+			const shouldSync = changeAnalysis.added.includes(assetPath)
+			  || changeAnalysis.modified.includes(assetPath)
 			
 			if (shouldSync) {
 				await fs.copyFile(file, targetFile)
@@ -586,6 +634,7 @@ class AssetSync {
 			await fs.mkdir(dir, { recursive: true })
 		}
 	}
+
 }
 
 // CLI interface
@@ -599,9 +648,8 @@ async function main(): Promise<void> {
 		verbose: args.includes('--verbose') || args.includes('-v'),
 		forceSync: args.includes('--force') || args.includes('-f'),
 		validateOnly: args.includes('--validate-only') || args.includes('--dry-run'),
-		backupBeforeSync: args.includes('--backup') || args.includes('-b')
+		backupBeforeSync: args.includes('--backup') || args.includes('-b'),
 	}
-	
 	
 	// Parse command line arguments
 	for (let i = 0; i < args.length; i++) {
@@ -617,12 +665,14 @@ async function main(): Promise<void> {
 				config.targetDir = args[++i] || config.targetDir
 				break
 			case '--target':
-			case '--to':
+			case '--to': {
 				const targetName = args[++i]
+
 				if (targetName) {
 					const sync = new AssetSync(config)
 					const targets = sync.getAvailableTargets()
 					const target = targets.find(t => t.name === targetName)
+
 					if (target) {
 						// Respect staging flag when setting target directory
 						if (isStaging) {
@@ -639,6 +689,7 @@ async function main(): Promise<void> {
 					}
 				}
 				break
+			}
 			case '--verbose':
 			case '-v':
 				config.verbose = true
@@ -655,12 +706,14 @@ async function main(): Promise<void> {
 			case '-b':
 				config.backupBeforeSync = true
 				break
-			case '--list-targets':
+			case '--list-targets': {
 				const sync = new AssetSync(config)
 				const targets = sync.getAvailableTargets()
+
 				console.log('Available sync targets:')
 				targets.forEach(t => console.log(`  ${t.name}: ${t.description} (${t.path})`))
 				return
+			}
 			case '--help':
 			case '-h':
 				showHelp()
@@ -670,49 +723,12 @@ async function main(): Promise<void> {
 	
 	try {
 		const sync = new AssetSync(config)
+
 		await sync.syncAssets()
 	} catch (error) {
 		console.error('❌ Asset sync failed:', error)
 		process.exit(1)
 	}
-}
-
-function showHelp(): void {
-	console.log(`
-Dynamicons Asset Sync Tool
-
-Usage: npx tsx scripts/sync-to-ext.ts [options]
-
-Options:
-  -s, --source-dir <dir>     Source assets directory (default: dist/assets)
-  -t, --target-dir <dir>     Target extension directory (default: ../ext/dist/assets)
-  --target, --to <name>      Use predefined target (dynamicons-ext, dynamicons-core, dynamicons-orchestrator)
-  -v, --verbose              Enable verbose logging
-  -f, --force                Force sync even if no changes detected
-  --validate-only, --dry-run Validate only, don't perform sync
-  -b, --backup               Create backup before syncing
-  --list-targets             List available predefined targets
-  -h, --help                 Show this help message
-
-Examples:
-  # Sync assets with default settings
-  npx tsx scripts/sync-to-ext.ts
-  
-  # Sync with verbose logging
-  npx tsx scripts/sync-to-ext.ts --verbose
-  
-  # Use predefined target
-  npx tsx scripts/sync-to-ext.ts --target dynamicons-ext
-  
-  # Custom source and target directories
-  npx tsx scripts/sync-to-ext.ts -s shared-assets -t ../ext/assets
-  
-  # Validate only (dry run)
-  npx tsx scripts/sync-to-ext.ts --validate-only
-  
-  # Force sync with backup
-  npx tsx scripts/sync-to-ext.ts --force --backup
-`)
 }
 
 // Run if called directly

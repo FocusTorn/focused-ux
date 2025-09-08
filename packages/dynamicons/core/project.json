@@ -7,12 +7,8 @@
         "build": {
             "dependsOn": ["@fux/dynamicons-assets:generate-assets"],
             "executor": "@nx/esbuild:esbuild",
-            "outputs": [
-                "{options.outputPath}"
-            ],
-            "inputs": [
-                "{projectRoot}/src/**/*"
-            ],
+            "outputs": [ "{options.outputPath}" ],
+            "inputs": [ "{projectRoot}/src/**/*" ],
             "options": {
                 "main": "packages/dynamicons/core/src/index.ts",
                 "outputPath": "packages/dynamicons/core/dist",

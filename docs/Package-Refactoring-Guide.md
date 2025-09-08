@@ -83,79 +83,81 @@ Rate the package complexity to plan effort:
 
 ### **Phase 2: Core Package Creation**
 
-1. **Create Core Package Structure**:
+1.  **Create Core Package Structure**:
 
-    ```
-    packages/{package}/core/
-    ├── src/
-    │   ├── _interfaces/          # Service interfaces
-    │   ├── _config/              # Configuration constants
-    │   ├── features/             # Feature-specific services
-    │   │   └── feature-name/
-    │   │       ├── _interfaces/  # Feature interfaces
-    │   │       └── services/     # Feature services
-    │   └── index.ts              # Package exports
-    ├── __tests__/
-    │   ├── _setup.ts             # Global test setup
-    │   ├── functional-tests/     # Main tests
-│   ├── unit/                 # Isolated tests
-│   └── coverage-tests/       # Coverage-only tests
-    ├── package.json              # Core package config
-    ├── project.json              # Nx build config
-    ├── tsconfig.json             # TypeScript config
-    ├── tsconfig.lib.json         # Library build config
-    ├── vitest.config.ts          # Test config
+        ```
+        packages/{package}/core/
+        ├── src/
+        │   ├── _interfaces/          # Service interfaces
+        │   ├── _config/              # Configuration constants
+        │   ├── features/             # Feature-specific services
+        │   │   └── feature-name/
+        │   │       ├── _interfaces/  # Feature interfaces
+        │   │       └── services/     # Feature services
+        │   └── index.ts              # Package exports
+        ├── __tests__/
+        │   ├── _setup.ts             # Global test setup
+        │   ├── functional-tests/     # Main tests
+
+    │ ├── unit/ # Isolated tests
+    │ └── coverage-tests/ # Coverage-only tests
+    ├── package.json # Core package config
+    ├── project.json # Nx build config
+    ├── tsconfig.json # TypeScript config
+    ├── tsconfig.lib.json # Library build config
+    ├── vitest.config.ts # Test config
     └── vitest.coverage.config.ts # Coverage test config
     ```
 
-2. **Implement Core Services**:
+2.  **Implement Core Services**:
     - Extract business logic from existing code
     - Create service interfaces
     - Implement direct dependency injection
     - Ensure no shared dependencies
 
-3. **Configure Build System**:
+3.  **Configure Build System**:
     - Set up `@nx/esbuild:esbuild` with `bundle: false`
     - Configure proper TypeScript settings
     - Set up test targets with simple mocking
 
 ### **Phase 3: Extension Package Refactoring**
 
-1. **Refactor Extension Package**:
+1.  **Refactor Extension Package**:
 
-    ```
-    packages/{package}/ext/
-    ├── src/
-    │   ├── adapters/             # VSCode API adapters
-    │   ├── _interfaces/          # Extension interfaces
-    │   ├── _config/              # Extension configuration
-    │   ├── services/             # Extension-specific services
-    │   ├── extension.ts          # Main extension entry point
-    │   └── index.ts              # Package exports
-    ├── __tests__/
-    │   ├── _setup.ts             # Global test setup
-    │   ├── functional-tests/     # Extension tests
-│   └── coverage-tests/       # Coverage tests
-    ├── assets/                   # Extension assets
-    ├── package.json              # Extension config
-    ├── project.json              # Nx build config
-    ├── tsconfig.json             # TypeScript config
-    ├── .vscodeignore             # VSIX packaging
-    ├── vitest.config.ts          # Test config
+        ```
+        packages/{package}/ext/
+        ├── src/
+        │   ├── adapters/             # VSCode API adapters
+        │   ├── _interfaces/          # Extension interfaces
+        │   ├── _config/              # Extension configuration
+        │   ├── services/             # Extension-specific services
+        │   ├── extension.ts          # Main extension entry point
+        │   └── index.ts              # Package exports
+        ├── __tests__/
+        │   ├── _setup.ts             # Global test setup
+        │   ├── functional-tests/     # Extension tests
+
+    │ └── coverage-tests/ # Coverage tests
+    ├── assets/ # Extension assets
+    ├── package.json # Extension config
+    ├── project.json # Nx build config
+    ├── tsconfig.json # TypeScript config
+    ├── .vscodeignore # VSIX packaging
+    ├── vitest.config.ts # Test config
     └── vitest.coverage.config.ts # Coverage test config
     ```
 
-2. **Implement VSCode Adapters**:
+2.  **Implement VSCode Adapters**:
     - Create adapters for all VSCode API usage
     - Implement thin wrapper around core services
     - Use direct service instantiation
 
-3. **Update Extension Entry Point**:
+3.  **Update Extension Entry Point**:
     - Register commands with proper error handling
     - Implement proper activation/deactivation
     - Use adapter pattern for VSCode APIs
 
-4. **Preserve VSCode Extension Configuration**:
+4.  **Preserve VSCode Extension Configuration**:
     - **CRITICAL**: Maintain all `contributes` sections in package.json (commands, views, menus, configuration)
     - **CRITICAL**: Preserve all `activationEvents` and extension metadata
     - **CRITICAL**: Keep all VSCode extension-specific configuration intact
@@ -649,6 +651,41 @@ The key is that each dependency should have a clear, justifiable purpose for tha
 - [ ] **VSCode API DECOUPLING COMPLETE** (local interfaces replace direct VSCode value imports and API calls)
 - [ ] Tests pass with new architecture
 - [ ] **EXTENSION CONSTRUCTOR PARAMETERS ARE CORRECT** (proper dependency order and types)
+
+## **Script-to-Package Conversion**
+
+### **Dynamicons Assets Case Study**
+
+**Before**: 12 standalone scripts with manual orchestration  
+**After**: Unified Nx core package with structured architecture
+
+### **Conversion Steps**
+
+1. **Create `src/` structure**: `orchestrators/`, `processors/`, `utils/`
+2. **Implement orchestrator pattern**: Central coordination logic
+3. **Extract processors**: Individual business logic components
+4. **Create utilities**: Error handling, validation, formatting
+5. **Update `project.json`**: Use `@nx/esbuild:esbuild` executor
+6. **Fix linting issues**: Systematic error resolution
+
+### **Metrics Achieved**
+
+- **Critical Errors**: 6 → 0 (100% reduction)
+- **Total Problems**: 93 → 19 (79% reduction)
+- **Type Safety**: 16 `any` types → 0 (100% elimination)
+
+### **Implementation Example**
+
+```typescript
+// src/orchestrators/asset-orchestrator.ts
+export class AssetOrchestrator {
+    private async executeProcessor(
+        processorName: string,
+        description: string,
+        processor: Processor // Proper interface, not 'any'
+    ): Promise<ScriptResult>
+}
+```
 
 ## **Lessons Learned**
 

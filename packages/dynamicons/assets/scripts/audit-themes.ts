@@ -7,7 +7,224 @@ import stripJsonCommentsModule from 'strip-json-comments'
 import { displayStructuredErrors } from './tree-formatter.js'
 
 // Handle both default and direct exports
-const stripJsonComments = (stripJsonCommentsModule as any).default || stripJsonCommentsModule
+const stripJsonComments = (stripJsonCommentsModule as { default?: (str: string) => string }).default || stripJsonCommentsModule
+
+/**
+ * Load assignments from model files
+ */
+async function loadModelAssignments(result: ThemeAuditResult, fileModelPath: string, folderModelPath: string, languageModelPath: string): Promise<void> {
+	try {
+		// Load file icon model
+		const fileModelContent = await fs.readFile(fileModelPath, 'utf-8')
+		const fileModel = JSON.parse(stripJsonComments(fileModelContent))
+		
+		if (fileModel.icons && Array.isArray(fileModel.icons)) {
+			for (const icon of fileModel.icons) {
+				if (icon.iconName) {
+					result.modelFileAssignments.push(icon.iconName)
+				}
+			}
+		}
+
+		// Load folder icon model
+		const folderModelContent = await fs.readFile(folderModelPath, 'utf-8')
+		const folderModel = JSON.parse(stripJsonComments(folderModelContent))
+		
+		if (folderModel.icons && Array.isArray(folderModel.icons)) {
+			for (const icon of folderModel.icons) {
+				if (icon.iconName) {
+					result.modelFolderAssignments.push(icon.iconName)
+				}
+			}
+		}
+
+		// Load language icon model
+		const languageModelContent = await fs.readFile(languageModelPath, 'utf-8')
+		const languageModel = JSON.parse(stripJsonComments(languageModelContent))
+		
+		if (languageModel.icons && Array.isArray(languageModel.icons)) {
+			for (const icon of languageModel.icons) {
+				if (icon.languageID) {
+					result.modelLanguageAssignments.push(icon.languageID)
+				}
+			}
+		}
+	} catch (_error) {
+		console.error('⚠️  Could not load model files:', _error)
+	}
+}
+
+/**
+ * Validate correlation between model assignments and generated theme files
+ */
+function validateModelToThemeCorrelation(result: ThemeAuditResult): void {
+	// Check for missing file assignments (in model but not in theme)
+	for (const modelAssignment of result.modelFileAssignments) {
+		const themeAssignment = `_${modelAssignment}`
+
+		if (!result.themeFileAssignments.includes(themeAssignment)) {
+			result.missingFileAssignments.push(modelAssignment)
+		}
+	}
+
+	// Check for missing folder assignments (in model but not in theme)
+	for (const modelAssignment of result.modelFolderAssignments) {
+		const baseThemeAssignment = `_folder-${modelAssignment}`
+		const openThemeAssignment = `_folder-${modelAssignment}-open`
+		
+		if (!result.themeFolderAssignments.includes(baseThemeAssignment)) {
+			result.missingFolderAssignments.push(`${modelAssignment} (base)`)
+		}
+		if (!result.themeFolderAssignments.includes(openThemeAssignment)) {
+			result.missingFolderAssignments.push(`${modelAssignment} (open)`)
+		}
+	}
+
+	// Check for missing language assignments (in model but not in theme)
+	for (const modelAssignment of result.modelLanguageAssignments) {
+		if (!result.themeLanguageAssignments.includes(modelAssignment)) {
+			result.missingLanguageAssignments.push(modelAssignment)
+		}
+	}
+
+	// Check for extra file assignments (in theme but not in model)
+	for (const themeAssignment of result.themeFileAssignments) {
+		const modelAssignment = themeAssignment.startsWith('_') ? themeAssignment.substring(1) : themeAssignment
+
+		// Skip core assignments that should always be present
+		if (modelAssignment === 'file') {
+			continue
+		}
+		if (!result.modelFileAssignments.includes(modelAssignment)) {
+			result.extraFileAssignments.push(themeAssignment)
+		}
+	}
+
+	// Check for extra folder assignments (in theme but not in model)
+	for (const themeAssignment of result.themeFolderAssignments) {
+		const cleanName = themeAssignment.startsWith('_') ? themeAssignment.substring(1) : themeAssignment
+
+		if (cleanName.startsWith('folder-')) {
+			const baseName = cleanName.substring(7) // remove 'folder-'
+
+			// Skip core assignments that should always be present
+			if (baseName === 'basic' || baseName === 'basic-open' || baseName === 'root' || baseName === 'root-open') {
+				continue
+			}
+			if (baseName.endsWith('-open')) {
+				const modelName = baseName.substring(0, baseName.length - 5) // remove '-open'
+
+				if (!result.modelFolderAssignments.includes(modelName)) {
+					result.extraFolderAssignments.push(themeAssignment)
+				}
+			} else {
+				if (!result.modelFolderAssignments.includes(baseName)) {
+					result.extraFolderAssignments.push(themeAssignment)
+				}
+			}
+		}
+	}
+
+	// Check for extra language assignments (in theme but not in model)
+	for (const themeAssignment of result.themeLanguageAssignments) {
+		if (!result.modelLanguageAssignments.includes(themeAssignment)) {
+			result.extraLanguageAssignments.push(themeAssignment)
+		}
+	}
+}
+
+/**
+ * Check for duplicate assignments
+ */
+function checkDuplicateAssignments(result: ThemeAuditResult): void {
+	// Check for duplicate file assignments in theme
+	const seenFileIcons = new Set<string>()
+
+	for (const icon of result.themeFileAssignments) {
+		if (seenFileIcons.has(icon)) {
+			result.duplicateFileAssignments.push(icon)
+		} else {
+			seenFileIcons.add(icon)
+		}
+	}
+
+	// Check for duplicate folder assignments in theme
+	const seenFolderIcons = new Set<string>()
+
+	for (const icon of result.themeFolderAssignments) {
+		if (seenFolderIcons.has(icon)) {
+			result.duplicateFolderAssignments.push(icon)
+		} else {
+			seenFolderIcons.add(icon)
+		}
+	}
+
+	// Check for duplicate language assignments in theme
+	const seenLanguageIcons = new Set<string>()
+
+	for (const icon of result.themeLanguageAssignments) {
+		if (seenLanguageIcons.has(icon)) {
+			result.duplicateLanguageAssignments.push(icon)
+		} else {
+			seenLanguageIcons.add(icon)
+		}
+	}
+}
+
+/**
+ * Check if theme validation is needed based on recent changes
+ */
+async function checkIfThemeValidationNeeded(): Promise<boolean> {
+	try {
+		const baseThemePath = path.resolve(process.cwd(), assetConstants.paths.distThemesDir, assetConstants.themeFiles.baseTheme)
+		const dynamiconsThemePath = path.resolve(process.cwd(), assetConstants.paths.distThemesDir, assetConstants.themeFiles.generatedTheme)
+		
+		// If theme files don't exist, validation is needed
+		try {
+			await fs.stat(baseThemePath)
+			await fs.stat(dynamiconsThemePath)
+		} catch {
+			return true // Theme files don't exist, validation needed
+		}
+		
+		// Get theme file timestamps
+		const baseThemeStat = await fs.stat(baseThemePath)
+		const dynamiconsThemeStat = await fs.stat(dynamiconsThemePath)
+		const latestThemeTime = Math.max(baseThemeStat.mtime.getTime(), dynamiconsThemeStat.mtime.getTime())
+		
+		// Check if theme files were modified recently (within last 2 minutes)
+		// This ensures audit runs after theme generation
+		const twoMinutesAgo = Date.now() - (2 * 60 * 1000)
+
+		if (latestThemeTime > twoMinutesAgo) {
+			return true // Themes were recently generated, validation needed
+		}
+		
+		// Check if model files are newer than theme files
+		const modelFiles = [
+			path.resolve(process.cwd(), assetConstants.paths.modelsDir, 'file_icons.model.json'),
+			path.resolve(process.cwd(), assetConstants.paths.modelsDir, 'folder_icons.model.json'),
+		]
+		
+		for (const modelFile of modelFiles) {
+			try {
+				const modelStat = await fs.stat(modelFile)
+
+				if (modelStat.mtime.getTime() > latestThemeTime) {
+					return true // Model file is newer than theme files, validation needed
+				}
+			} catch {
+				// Model file doesn't exist, validation needed
+				return true
+			}
+		}
+		
+		return false // No changes detected, validation not needed
+	} catch (_error) {
+		// If we can't determine, assume validation is needed
+		return true
+	}
+}
 
 /**
  * Theme audit result interface
@@ -61,7 +278,7 @@ export async function auditThemes(): Promise<ThemeAuditResult> {
 		extraLanguageAssignments: [],
 		duplicateFileAssignments: [],
 		duplicateFolderAssignments: [],
-		duplicateLanguageAssignments: []
+		duplicateLanguageAssignments: [],
 	}
 
 	try {
@@ -99,7 +316,8 @@ export async function auditThemes(): Promise<ThemeAuditResult> {
 				// Extract file icon assignments
 				for (const [key, value] of Object.entries(baseTheme.iconDefinitions)) {
 					if (typeof value === 'object' && value !== null && 'iconPath' in value) {
-						const iconPath = (value as any).iconPath
+						const iconPath = (value as { iconPath: string }).iconPath
+
 						if (iconPath && !iconPath.includes('folder-')) {
 							result.themeFileAssignments.push(key)
 						} else if (iconPath && iconPath.includes('folder-')) {
@@ -124,240 +342,11 @@ export async function auditThemes(): Promise<ThemeAuditResult> {
 
 		// Check for duplicate assignments
 		checkDuplicateAssignments(result)
-
-	} catch (error) {
-		console.error('❌ Theme audit failed:', error)
+	} catch (_error) {
+		console.error('❌ Theme audit failed:', _error)
 	}
 
 	return result
-}
-
-/**
- * Load assignments from model files
- */
-async function loadModelAssignments(result: ThemeAuditResult, fileModelPath: string, folderModelPath: string, languageModelPath: string): Promise<void> {
-	try {
-		// Load file icon model
-		const fileModelContent = await fs.readFile(fileModelPath, 'utf-8')
-		const fileModel = JSON.parse(stripJsonComments(fileModelContent))
-		
-		if (fileModel.icons && Array.isArray(fileModel.icons)) {
-			for (const icon of fileModel.icons) {
-				if (icon.iconName) {
-					result.modelFileAssignments.push(icon.iconName)
-				}
-			}
-		}
-
-
-
-		// Load folder icon model
-		const folderModelContent = await fs.readFile(folderModelPath, 'utf-8')
-		const folderModel = JSON.parse(stripJsonComments(folderModelContent))
-		
-		if (folderModel.icons && Array.isArray(folderModel.icons)) {
-			for (const icon of folderModel.icons) {
-				if (icon.iconName) {
-					result.modelFolderAssignments.push(icon.iconName)
-				}
-			}
-		}
-
-
-
-		// Load language icon model
-		const languageModelContent = await fs.readFile(languageModelPath, 'utf-8')
-		const languageModel = JSON.parse(stripJsonComments(languageModelContent))
-		
-		if (languageModel.icons && Array.isArray(languageModel.icons)) {
-			for (const icon of languageModel.icons) {
-				if (icon.languageID) {
-					result.modelLanguageAssignments.push(icon.languageID)
-				}
-			}
-		}
-
-
-	} catch (error) {
-		console.error('⚠️  Could not load model files:', error)
-	}
-}
-
-/**
- * Validate correlation between model assignments and generated theme files
- */
-function validateModelToThemeCorrelation(result: ThemeAuditResult): void {
-	// Check for missing file assignments (in model but not in theme)
-	for (const modelAssignment of result.modelFileAssignments) {
-		const themeAssignment = `_${modelAssignment}`
-		if (!result.themeFileAssignments.includes(themeAssignment)) {
-			result.missingFileAssignments.push(modelAssignment)
-		}
-	}
-
-	// Check for missing folder assignments (in model but not in theme)
-	for (const modelAssignment of result.modelFolderAssignments) {
-		const baseThemeAssignment = `_folder-${modelAssignment}`
-		const openThemeAssignment = `_folder-${modelAssignment}-open`
-		
-		if (!result.themeFolderAssignments.includes(baseThemeAssignment)) {
-			result.missingFolderAssignments.push(`${modelAssignment} (base)`)
-		}
-		if (!result.themeFolderAssignments.includes(openThemeAssignment)) {
-			result.missingFolderAssignments.push(`${modelAssignment} (open)`)
-		}
-	}
-
-	// Check for missing language assignments (in model but not in theme)
-	for (const modelAssignment of result.modelLanguageAssignments) {
-		if (!result.themeLanguageAssignments.includes(modelAssignment)) {
-			result.missingLanguageAssignments.push(modelAssignment)
-		}
-	}
-
-	// Check for extra file assignments (in theme but not in model)
-	for (const themeAssignment of result.themeFileAssignments) {
-		const modelAssignment = themeAssignment.startsWith('_') ? themeAssignment.substring(1) : themeAssignment
-		// Skip core assignments that should always be present
-		if (modelAssignment === 'file') {
-			continue
-		}
-		if (!result.modelFileAssignments.includes(modelAssignment)) {
-			result.extraFileAssignments.push(themeAssignment)
-		}
-	}
-
-	// Check for extra folder assignments (in theme but not in model)
-	for (const themeAssignment of result.themeFolderAssignments) {
-		const cleanName = themeAssignment.startsWith('_') ? themeAssignment.substring(1) : themeAssignment
-		if (cleanName.startsWith('folder-')) {
-			const baseName = cleanName.substring(7) // remove 'folder-'
-			// Skip core assignments that should always be present
-			if (baseName === 'basic' || baseName === 'basic-open' || baseName === 'root' || baseName === 'root-open') {
-				continue
-			}
-			if (baseName.endsWith('-open')) {
-				const modelName = baseName.substring(0, baseName.length - 5) // remove '-open'
-				if (!result.modelFolderAssignments.includes(modelName)) {
-					result.extraFolderAssignments.push(themeAssignment)
-				}
-			} else {
-				if (!result.modelFolderAssignments.includes(baseName)) {
-					result.extraFolderAssignments.push(themeAssignment)
-				}
-			}
-		}
-	}
-
-	// Check for extra language assignments (in theme but not in model)
-	for (const themeAssignment of result.themeLanguageAssignments) {
-		if (!result.modelLanguageAssignments.includes(themeAssignment)) {
-			result.extraLanguageAssignments.push(themeAssignment)
-		}
-	}
-}
-
-/**
- * Check for duplicate assignments
- */
-function checkDuplicateAssignments(result: ThemeAuditResult): void {
-	// Check for duplicate file assignments in theme
-	const seenFileIcons = new Set<string>()
-	for (const icon of result.themeFileAssignments) {
-		if (seenFileIcons.has(icon)) {
-			result.duplicateFileAssignments.push(icon)
-		} else {
-			seenFileIcons.add(icon)
-		}
-	}
-
-	// Check for duplicate folder assignments in theme
-	const seenFolderIcons = new Set<string>()
-	for (const icon of result.themeFolderAssignments) {
-		if (seenFolderIcons.has(icon)) {
-			result.duplicateFolderAssignments.push(icon)
-		} else {
-			seenFolderIcons.add(icon)
-		}
-	}
-
-	// Check for duplicate language assignments in theme
-	const seenLanguageIcons = new Set<string>()
-	for (const icon of result.themeLanguageAssignments) {
-		if (seenLanguageIcons.has(icon)) {
-			result.duplicateLanguageAssignments.push(icon)
-		} else {
-			seenLanguageIcons.add(icon)
-		}
-	}
-}
-
-/**
- * Validate themes and display results
- */
-/**
- * Check if theme validation is needed based on recent changes
- */
-async function checkIfThemeValidationNeeded(): Promise<boolean> {
-	try {
-		const baseThemePath = path.resolve(process.cwd(), assetConstants.paths.distThemesDir, assetConstants.themeFiles.baseTheme)
-		const dynamiconsThemePath = path.resolve(process.cwd(), assetConstants.paths.distThemesDir, assetConstants.themeFiles.generatedTheme)
-		
-		// If theme files don't exist, validation is needed
-		try {
-			await fs.stat(baseThemePath)
-			await fs.stat(dynamiconsThemePath)
-		} catch {
-			return true // Theme files don't exist, validation needed
-		}
-		
-		// Get theme file timestamps
-		const baseThemeStat = await fs.stat(baseThemePath)
-		const dynamiconsThemeStat = await fs.stat(dynamiconsThemePath)
-		const latestThemeTime = Math.max(baseThemeStat.mtime.getTime(), dynamiconsThemeStat.mtime.getTime())
-		
-		// Check if theme files were modified recently (within last 2 minutes)
-		// This ensures audit runs after theme generation
-		const twoMinutesAgo = Date.now() - (2 * 60 * 1000)
-		if (latestThemeTime > twoMinutesAgo) {
-			return true // Themes were recently generated, validation needed
-		}
-		
-		// Check if model files are newer than theme files
-		const modelFiles = [
-			path.resolve(process.cwd(), assetConstants.paths.modelsDir, 'file_icons.model.json'),
-			path.resolve(process.cwd(), assetConstants.paths.modelsDir, 'folder_icons.model.json')
-		]
-		
-		for (const modelFile of modelFiles) {
-			try {
-				const modelStat = await fs.stat(modelFile)
-				if (modelStat.mtime.getTime() > latestThemeTime) {
-					return true // Model file is newer than theme files
-				}
-			} catch {
-				return true // Model file doesn't exist, validation needed
-			}
-		}
-		
-		return false // No changes detected - themes are up to date
-	} catch (error) {
-		return true // If we can't determine, assume validation is needed
-	}
-}
-
-export async function validateThemesWithStatus(showSuccessMessage: boolean = true): Promise<{ isValid: boolean; wasSkipped: boolean }> {
-	const needsValidation = await checkIfThemeValidationNeeded()
-	
-	if (!needsValidation) {
-		if (showSuccessMessage) {
-			console.log('✅ Theme validation skipped - no recent changes detected')
-		}
-		return { isValid: true, wasSkipped: true }
-	}
-	
-	const isValid = await validateThemes()
-	return { isValid, wasSkipped: false }
 }
 
 export async function validateThemes(): Promise<boolean> {
@@ -383,15 +372,15 @@ export async function validateThemes(): Promise<boolean> {
 	}
 	
 	// Check if there are any validation errors to display in tree format
-	const totalErrors = auditResult.missingFileAssignments.length +
-		auditResult.missingFolderAssignments.length +
-		auditResult.missingLanguageAssignments.length +
-		auditResult.extraFileAssignments.length +
-		auditResult.extraFolderAssignments.length +
-		auditResult.extraLanguageAssignments.length +
-		auditResult.duplicateFileAssignments.length +
-		auditResult.duplicateFolderAssignments.length +
-		auditResult.duplicateLanguageAssignments.length
+	const totalErrors = auditResult.missingFileAssignments.length
+	  + auditResult.missingFolderAssignments.length
+	  + auditResult.missingLanguageAssignments.length
+	  + auditResult.extraFileAssignments.length
+	  + auditResult.extraFolderAssignments.length
+	  + auditResult.extraLanguageAssignments.length
+	  + auditResult.duplicateFileAssignments.length
+	  + auditResult.duplicateFolderAssignments.length
+	  + auditResult.duplicateLanguageAssignments.length
 	
 	if (totalErrors > 0) {
 		// Display errors in tree format
@@ -412,8 +401,8 @@ export async function validateThemes(): Promise<boolean> {
 				assignedIconNotFound: 'THEME: MISSING MODEL ASSIGNMENT',
 				duplicateAssignment: 'THEME: DUPLICATE ASSIGNMENT',
 				unassignedIcon: 'THEME: EXTRA ASSIGNMENT',
-				duplicateAssignmentId: 'THEME: DUPLICATE ASSIGNMENT ID'
-			}
+				duplicateAssignmentId: 'THEME: DUPLICATE ASSIGNMENT ID',
+			},
 		)
 		console.log('')
 		console.log(`❌ Theme validation failed. Please fix the errors above before proceeding.`)
@@ -429,12 +418,27 @@ export async function validateThemes(): Promise<boolean> {
 	return !hasErrors
 }
 
+export async function validateThemesWithStatus(showSuccessMessage: boolean = true): Promise<{ isValid: boolean, wasSkipped: boolean }> {
+	const needsValidation = await checkIfThemeValidationNeeded()
+	
+	if (!needsValidation) {
+		if (showSuccessMessage) {
+			console.log('✅ Theme validation skipped - no recent changes detected')
+		}
+		return { isValid: true, wasSkipped: true }
+	}
+	
+	const isValid = await validateThemes()
+
+	return { isValid, wasSkipped: false }
+}
+
 // CLI interface
 const _argv1 = process.argv[1] ?? ''
 
 if (_argv1.includes('audit-themes')) {
 	const args = process.argv.slice(2)
-	const verbose = args.includes('--verbose') || args.includes('-v')
+	const _verbose = args.includes('--verbose') || args.includes('-v')
 
 	// Run theme validation
 	validateThemes().then((isValid) => {

@@ -40,10 +40,11 @@ import fs, { promises as fsPromises } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import process from 'node:process'
+
 //= MISC ======================================================================================================
 // Lazy imports to avoid loading heavy dependencies when not needed
-let puppeteer: any = null
-let sharp: any = null
+let puppeteer: unknown = null
+let sharp: unknown = null
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -81,10 +82,12 @@ const ansii = { //>
 async function loadDependencies(): Promise<void> {
 	if (!puppeteer) {
 		const puppeteerModule = await import('puppeteer')
+
 		puppeteer = puppeteerModule.default
 	}
 	if (!sharp) {
 		const sharpModule = await import('sharp')
+
 		sharp = sharpModule.default
 	}
 }
@@ -93,8 +96,8 @@ async function createDirectory(directoryPath: string, silent: boolean = false): 
 	try {
 		await fsPromises.mkdir(directoryPath, { recursive: true })
 	}
-	catch (err: any) {
-		if (err.code !== 'EEXIST') {
+	catch (err: unknown) {
+		if (err && typeof err === 'object' && 'code' in err && err.code !== 'EEXIST') {
 			if (!silent)
 				console.error(`│  └─ ${ansii.red}ERROR:${ansii.none} creating directory ${path.relative(MONOREPO_ROOT, directoryPath)}:`, err)
 			throw err
@@ -126,8 +129,7 @@ async function convertSvgsToPngs( //>
 	size: number,
 	svgIconsDirAbs: string,
 	pngOutputDirAbs: string,
-	filter: (filename: string) => boolean = () =>
-		true,
+	filter: (filename: string) => boolean = () => true,
 	isLastInSection: boolean = false,
 	logPrefix: string = '│  ├─',
 	silent: boolean = false,
@@ -151,8 +153,7 @@ async function convertSvgsToPngs( //>
 
 	try {
 		const iconFiles = fs.readdirSync(svgIconsDirAbs).filter(
-			file =>
-				file.endsWith('.svg') && filter(file),
+			file => file.endsWith('.svg') && filter(file),
 		)
 
 		if (iconFiles.length === 0) {
@@ -221,8 +222,7 @@ function generateHtmlContent( //>
 
 	try {
 		if (fs.existsSync(pngIconsDirAbs)) {
-			files = fs.readdirSync(pngIconsDirAbs).filter(f =>
-				f.endsWith('.png'))
+			files = fs.readdirSync(pngIconsDirAbs).filter(f => f.endsWith('.png'))
 		}
 		else if (!silent) {
 			console.warn(
@@ -352,7 +352,7 @@ async function checkIfPreviewGenerationNeeded(iconsChanged: boolean = false): Pr
 		const expectedFiles = [
 			'File_icons_preview.png',
 			'Folder_icons_preview.png',
-			'Folder_Open_icons_preview.png'
+			'Folder_Open_icons_preview.png',
 		]
 		
 		for (const file of expectedFiles) {
@@ -364,7 +364,7 @@ async function checkIfPreviewGenerationNeeded(iconsChanged: boolean = false): Pr
 		}
 		
 		return false // All preview files exist and no changes detected
-	} catch (error) {
+	} catch (_error) {
 		return true // If we can't determine, assume generation is needed
 	}
 }
@@ -433,16 +433,14 @@ export async function generatePreviews( //>
 			ranAnyConversion = true
 	}
 	if (previewType === 'all' || previewType === 'folder') {
-		const folderConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_ICONS_PNG_DIR_ABS, file =>
-			!file.endsWith('-open.svg'), false, '│  ├─', silent)
+		const folderConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_ICONS_PNG_DIR_ABS, file => !file.endsWith('-open.svg'), false, '│  ├─', silent)
 
 		if (!folderConversionSuccess && fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))
 			success = false
 		if (fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))
 			ranAnyConversion = true
 
-		const folderOpenConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_OPEN_ICONS_PNG_DIR_ABS, file =>
-			file.endsWith('-open.svg'), true, '│  ├─', silent)
+		const folderOpenConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_OPEN_ICONS_PNG_DIR_ABS, file => file.endsWith('-open.svg'), true, '│  ├─', silent)
 
 		if (!folderOpenConversionSuccess && fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))
 			success = false
@@ -455,7 +453,7 @@ export async function generatePreviews( //>
 	if (!silent)
 		console.log(`├─ ${ansii.gold}Generating HTML & Capturing Screenshots${ansii.none}`)
 
-	let browser: any = null
+	let browser: unknown = null
 
 	try {
 		await loadDependencies()

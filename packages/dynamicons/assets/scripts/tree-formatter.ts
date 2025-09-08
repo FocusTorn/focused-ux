@@ -43,10 +43,11 @@ interface SectionTitles {
  * TreeFormatter - Handles all tree formatting logic with proper depth colors and prefix calculations
  */
 export class TreeFormatter {
+
 	private depthColors = {
-		1: ANSI.cyan,    // cyan for top-level groups (FILE, FOLDER, LANGUAGE)
-		2: ANSI.yellow,  // yellow for section headers (MODEL: ..., DIRECTORY: ...)
-		3: ANSI.reset,   // reset (no color) for actual items
+		1: ANSI.cyan, // cyan for top-level groups (FILE, FOLDER, LANGUAGE)
+		2: ANSI.yellow, // yellow for section headers (MODEL: ..., DIRECTORY: ...)
+		3: ANSI.reset, // reset (no color) for actual items
 	}
 
 	/**
@@ -59,7 +60,7 @@ export class TreeFormatter {
 			duplicateAssignment: 'MODEL: DUPLICATE ASSIGNMENT',
 			unassignedIcon: 'DIRECTORY: UNASSIGNED ICON',
 			duplicateAssignmentId: 'MODEL: DUPLICATE ASSIGNMENT ID',
-			...sectionTitles
+			...sectionTitles,
 		}
 		const nodes: TreeNode[] = []
 
@@ -69,7 +70,7 @@ export class TreeFormatter {
 				name: 'FILE',
 				depth: 1,
 				color: this.depthColors[1],
-				children: []
+				children: [],
 			}
 
 			if (arrays.orphanedFileAssignments?.length) {
@@ -80,8 +81,8 @@ export class TreeFormatter {
 					children: arrays.orphanedFileAssignments.map(name => ({
 						name,
 						depth: 3,
-						color: this.depthColors[3]
-					}))
+						color: this.depthColors[3],
+					})),
 				})
 			}
 
@@ -93,8 +94,8 @@ export class TreeFormatter {
 					children: arrays.duplicateFileIcons.map(name => ({
 						name,
 						depth: 3,
-						color: this.depthColors[3]
-					}))
+						color: this.depthColors[3],
+					})),
 				})
 			}
 
@@ -106,8 +107,8 @@ export class TreeFormatter {
 					children: arrays.orphanedFileIcons.map(name => ({
 						name,
 						depth: 3,
-						color: this.depthColors[3]
-					}))
+						color: this.depthColors[3],
+					})),
 				})
 			}
 
@@ -120,7 +121,7 @@ export class TreeFormatter {
 				name: 'FOLDER',
 				depth: 1,
 				color: this.depthColors[1],
-				children: []
+				children: [],
 			}
 
 			if (arrays.orphanedFolderAssignments?.length) {
@@ -131,8 +132,8 @@ export class TreeFormatter {
 					children: arrays.orphanedFolderAssignments.map(name => ({
 						name,
 						depth: 3,
-						color: this.depthColors[3]
-					}))
+						color: this.depthColors[3],
+					})),
 				})
 			}
 
@@ -144,8 +145,8 @@ export class TreeFormatter {
 					children: arrays.duplicateFolderIcons.map(name => ({
 						name,
 						depth: 3,
-						color: this.depthColors[3]
-					}))
+						color: this.depthColors[3],
+					})),
 				})
 			}
 
@@ -157,8 +158,8 @@ export class TreeFormatter {
 					children: arrays.orphanedFolderIcons.map(name => ({
 						name,
 						depth: 3,
-						color: this.depthColors[3]
-					}))
+						color: this.depthColors[3],
+					})),
 				})
 			}
 
@@ -171,7 +172,7 @@ export class TreeFormatter {
 				name: 'LANGUAGE',
 				depth: 1,
 				color: this.depthColors[1],
-				children: []
+				children: [],
 			}
 
 			if (arrays.orphanedLanguageAssignments?.length) {
@@ -182,8 +183,8 @@ export class TreeFormatter {
 					children: arrays.orphanedLanguageAssignments.map(name => ({
 						name,
 						depth: 3,
-						color: this.depthColors[3]
-					}))
+						color: this.depthColors[3],
+					})),
 				})
 			}
 
@@ -195,12 +196,12 @@ export class TreeFormatter {
 					children: arrays.duplicateLanguageIcons.map(name => ({
 						name,
 						depth: 3,
-						color: this.depthColors[3]
-					}))
+						color: this.depthColors[3],
+					})),
 				})
 			}
 
-					// Note: MODEL: INVALID LANGUAGE ID section removed as requested
+			// Note: MODEL: INVALID LANGUAGE ID section removed as requested
 
 			nodes.push(languageNode)
 		}
@@ -223,6 +224,7 @@ export class TreeFormatter {
 	 */
 	formatTree(data: TreeNode): string {
 		const lines: string[] = []
+
 		this.collectNodeLines(data, [], lines)
 		return lines.join('\n')
 	}
@@ -243,10 +245,12 @@ export class TreeFormatter {
 	}
 
 	private markLastChildren(node: TreeNode): void {
-		if (!node.children?.length) return
+		if (!node.children?.length)
+			return
 
 		for (let i = 0; i < node.children.length; i++) {
 			const child = node.children[i]
+
 			child.isLast = i === node.children.length - 1
 			this.markLastChildren(child)
 		}
@@ -260,7 +264,8 @@ export class TreeFormatter {
 
 		if (node.children?.length) {
 			const newParentFlags = [...parentLastFlags, node.isLast || false]
-			node.children.forEach(child => {
+
+			node.children.forEach((child) => {
 				this.outputNode(child, newParentFlags)
 			})
 		}
@@ -274,19 +279,20 @@ export class TreeFormatter {
 
 		if (node.children?.length) {
 			const newParentFlags = [...parentLastFlags, node.isLast || false]
-			node.children.forEach(child => {
+
+			node.children.forEach((child) => {
 				this.collectNodeLines(child, newParentFlags, lines)
 			})
 		}
 	}
 
 	private makePrefix(parentLastFlags: boolean[], isLastSelf: boolean): string {
-		const trunk = parentLastFlags.map(isLastParent =>
-			(isLastParent ? '   ' : '│  ')).join('')
+		const trunk = parentLastFlags.map(isLastParent => (isLastParent ? '   ' : '│  ')).join('')
 		const tail = isLastSelf ? '└─ ' : '├─ '
 
 		return `${trunk}${tail}`
 	}
+
 }
 
 /**
@@ -314,15 +320,16 @@ export function displayStructuredErrors(
 		console.log(`\n❌ THEME ERRORS (${themeErrors.length}):`)
 		themeErrors.forEach((error, index) => {
 			const prefix = index === themeErrors.length - 1 ? '└─' : '├─'
+
 			console.log(`   ${prefix} ${error}`)
 		})
 	}
 
 	// Calculate total model errors
-	const totalModelErrors = orphanedFileIcons.length + orphanedFolderIcons.length + 
-		orphanedLanguageIcons.length + duplicateFileIcons.length + duplicateFolderIcons.length + 
-		orphanedFileAssignments.length + orphanedFolderAssignments.length + 
-		orphanedLanguageAssignments.length + invalidLanguageIds.length
+	const totalModelErrors = orphanedFileIcons.length + orphanedFolderIcons.length
+	  + orphanedLanguageIcons.length + duplicateFileIcons.length + duplicateFolderIcons.length
+	  + orphanedFileAssignments.length + orphanedFolderAssignments.length
+	  + orphanedLanguageAssignments.length + invalidLanguageIds.length
 
 	if (totalModelErrors > 0) {
 		// Header in red

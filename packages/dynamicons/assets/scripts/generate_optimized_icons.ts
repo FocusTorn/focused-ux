@@ -169,8 +169,7 @@ async function optimizeIconsInDirectory( //>
 				if (!silent) {
 					// Standalone logging
 					const singleSection = (iconTypeArgForLogging === 'file' || iconTypeArgForLogging === 'folder') ? ' ' : '│'
-					const longestFileNameForPadding = files.reduce((longest, current) =>
-						(current.length > longest.length ? current : longest), '')
+					const longestFileNameForPadding = files.reduce((longest, current) => (current.length > longest.length ? current : longest), '')
 					const fileNamePadding = longestFileNameForPadding.replace(/\.svg$/, '').replace(/^(folder-)/, '').length + `${type}: `.length
 					const itemPrefix = fileCount === completedCount ? `${singleSection}    └───` : `${singleSection}    ├───`
 					const currentPadding = Math.max(0, fileNamePadding - cleanedFileName.length - `${type}: `.length)

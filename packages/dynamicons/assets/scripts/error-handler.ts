@@ -34,7 +34,7 @@ export enum ErrorType {
 	// System Errors
 	MEMORY_ERROR = 'MEMORY_ERROR',
 	TIMEOUT_ERROR = 'TIMEOUT_ERROR',
-	UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+	UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
 /**
@@ -44,7 +44,7 @@ export enum ErrorSeverity {
 	LOW = 'LOW',
 	MEDIUM = 'MEDIUM',
 	HIGH = 'HIGH',
-	CRITICAL = 'CRITICAL'
+	CRITICAL = 'CRITICAL',
 }
 
 /**
@@ -64,6 +64,7 @@ export interface ErrorContext {
  * Asset Generation Error Class
  */
 export class AssetGenerationError extends Error {
+
 	public readonly type: ErrorType
 	public readonly severity: ErrorSeverity
 	public readonly context: ErrorContext
@@ -76,7 +77,7 @@ export class AssetGenerationError extends Error {
 		severity: ErrorSeverity,
 		context: ErrorContext,
 		originalError?: Error,
-		recoverable: boolean = false
+		recoverable: boolean = false,
 	) {
 		super(message)
 		this.name = 'AssetGenerationError'
@@ -95,12 +96,12 @@ export class AssetGenerationError extends Error {
 		const typeColor = '\x1B[36m' // Cyan
 		const reset = '\x1B[0m'
 		
-		return `${severityColor}❌ ${this.message}${reset}\n` +
-			   `${typeColor}Type: ${this.type}${reset}\n` +
-			   `${typeColor}Severity: ${this.severity}${reset}\n` +
-			   `${typeColor}Operation: ${this.context.operation}${reset}\n` +
-			   (this.context.filePath ? `${typeColor}File: ${this.context.filePath}${reset}\n` : '') +
-			   (this.originalError ? `${typeColor}Original: ${this.originalError.message}${reset}\n` : '')
+		return `${severityColor}❌ ${this.message}${reset}\n`
+		  + `${typeColor}Type: ${this.type}${reset}\n`
+		  + `${typeColor}Severity: ${this.severity}${reset}\n`
+		  + `${typeColor}Operation: ${this.context.operation}${reset}\n`
+		  + `${this.context.filePath ? `${typeColor}File: ${this.context.filePath}${reset}\n` : ''
+		  }${this.originalError ? `${typeColor}Original: ${this.originalError.message}${reset}\n` : ''}`
 	}
 
 	private getSeverityColor(): string {
@@ -112,12 +113,14 @@ export class AssetGenerationError extends Error {
 			default: return '\x1B[31m' // Red
 		}
 	}
+
 }
 
 /**
  * Error Handler Class
  */
 export class ErrorHandler {
+
 	private static instance: ErrorHandler
 	private errorLog: AssetGenerationError[] = []
 	private backupPaths: Map<string, string> = new Map()
@@ -141,14 +144,14 @@ export class ErrorHandler {
 		operation: string,
 		originalError?: Error,
 		recoverable: boolean = false,
-		filePath?: string
+		filePath?: string,
 	): AssetGenerationError {
 		const context: ErrorContext = {
 			operation,
 			filePath,
 			timestamp: new Date(),
 			processId: process.pid,
-			workingDirectory: process.cwd()
+			workingDirectory: process.cwd(),
 		}
 
 		const error = new AssetGenerationError(
@@ -157,7 +160,7 @@ export class ErrorHandler {
 			severity,
 			context,
 			originalError,
-			recoverable
+			recoverable,
 		)
 
 		this.errorLog.push(error)
@@ -195,7 +198,7 @@ export class ErrorHandler {
 	/**
 	 * Handle critical errors - immediate exit
 	 */
-	private async handleCriticalError(error: AssetGenerationError): Promise<void> {
+	private async handleCriticalError(_error: AssetGenerationError): Promise<void> {
 		console.error('\x1B[41m\x1B[37mCRITICAL ERROR - TERMINATING PROCESS\x1B[0m')
 		await this.attemptRollback()
 		process.exit(1)
@@ -217,7 +220,7 @@ export class ErrorHandler {
 	/**
 	 * Handle medium severity errors - continue with warnings
 	 */
-	private async handleMediumSeverityError(error: AssetGenerationError): Promise<void> {
+	private async handleMediumSeverityError(_error: AssetGenerationError): Promise<void> {
 		console.error('\x1B[35mWarning: Continuing with potential issues\x1B[0m')
 		// Continue execution but log the warning
 	}
@@ -225,7 +228,7 @@ export class ErrorHandler {
 	/**
 	 * Handle low severity errors - log and continue
 	 */
-	private async handleLowSeverityError(error: AssetGenerationError): Promise<void> {
+	private async handleLowSeverityError(_error: AssetGenerationError): Promise<void> {
 		console.error('\x1B[33mNote: Minor issue detected, continuing\x1B[0m')
 		// Continue execution normally
 	}
@@ -241,11 +244,11 @@ export class ErrorHandler {
 				try {
 					await fs.copyFile(backupPath, originalPath)
 					console.error(`\x1B[32m✅ Restored: ${originalPath}\x1B[0m`)
-				} catch (restoreError) {
+				} catch (_restoreError) {
 					console.error(`\x1B[31m❌ Failed to restore: ${originalPath}\x1B[0m`)
 				}
 			}
-		} catch (rollbackError) {
+		} catch (_rollbackError) {
 			console.error('\x1B[31m❌ Rollback failed\x1B[0m')
 		}
 	}
@@ -256,6 +259,7 @@ export class ErrorHandler {
 	public async createBackup(filePath: string): Promise<void> {
 		try {
 			const backupPath = `${filePath}.backup.${Date.now()}`
+
 			await fs.copyFile(filePath, backupPath)
 			this.backupPaths.set(filePath, backupPath)
 		} catch (error) {
@@ -266,8 +270,9 @@ export class ErrorHandler {
 				'createBackup',
 				error instanceof Error ? error : undefined,
 				true,
-				filePath
+				filePath,
 			)
+
 			await this.handleError(backupError)
 		}
 	}
@@ -286,8 +291,9 @@ export class ErrorHandler {
 				ErrorSeverity.MEDIUM,
 				'validateExternalSource',
 				error instanceof Error ? error : undefined,
-				true
+				true,
 			)
+
 			await this.handleError(validationError)
 			return false
 		}
@@ -308,8 +314,9 @@ export class ErrorHandler {
 				'validateFileType',
 				undefined,
 				true,
-				filePath
+				filePath,
 			)
+
 			this.handleError(validationError)
 		}
 		
@@ -324,7 +331,7 @@ export class ErrorHandler {
 			assetConstants.paths.newIconsDir,
 			assetConstants.paths.fileIconsDir,
 			assetConstants.paths.folderIconsDir,
-			assetConstants.paths.distThemesDir
+			assetConstants.paths.distThemesDir,
 		]
 
 		for (const dir of requiredDirs) {
@@ -337,8 +344,9 @@ export class ErrorHandler {
 					ErrorSeverity.HIGH,
 					'validateRequiredDirectories',
 					error instanceof Error ? error : undefined,
-					false
+					false,
 				)
+
 				await this.handleError(validationError)
 				return false
 			}
@@ -352,7 +360,8 @@ export class ErrorHandler {
 	 */
 	public async checkDiskSpace(): Promise<boolean> {
 		try {
-			const stats = await fs.stat(assetConstants.paths.newIconsDir)
+			const _stats = await fs.stat(assetConstants.paths.newIconsDir)
+
 			// This is a simplified check - in production you'd want to check actual available space
 			return true
 		} catch (error) {
@@ -362,8 +371,9 @@ export class ErrorHandler {
 				ErrorSeverity.HIGH,
 				'checkDiskSpace',
 				error instanceof Error ? error : undefined,
-				false
+				false,
 			)
+
 			await this.handleError(diskError)
 			return false
 		}
@@ -381,7 +391,7 @@ export class ErrorHandler {
 			[ErrorSeverity.LOW]: 0,
 			[ErrorSeverity.MEDIUM]: 0,
 			[ErrorSeverity.HIGH]: 0,
-			[ErrorSeverity.CRITICAL]: 0
+			[ErrorSeverity.CRITICAL]: 0,
 		}
 
 		const byType: Record<ErrorType, number> = {} as Record<ErrorType, number>
@@ -394,7 +404,7 @@ export class ErrorHandler {
 		return {
 			total: this.errorLog.length,
 			bySeverity,
-			byType
+			byType,
 		}
 	}
 
@@ -417,16 +427,18 @@ export class ErrorHandler {
 				type: error.type,
 				severity: error.severity,
 				context: error.context,
-				recoverable: error.recoverable
-			}))
+				recoverable: error.recoverable,
+			})),
 		}, null, 2)
 	}
+
 }
 
 /**
  * Input Validator Class
  */
 export class InputValidator {
+
 	private errorHandler: ErrorHandler
 
 	constructor() {
@@ -440,10 +452,11 @@ export class InputValidator {
 		const validations = [
 			this.validateExternalSource(),
 			this.validateRequiredDirectories(),
-			this.checkDiskSpace()
+			this.checkDiskSpace(),
 		]
 
 		const results = await Promise.all(validations)
+
 		return results.every(result => result === true)
 	}
 
@@ -475,15 +488,18 @@ export class InputValidator {
 		const modelFiles = [
 			'file_icons.model.json',
 			'folder_icons.model.json',
-			'language_icons.model.json'
+			'language_icons.model.json',
 		]
 
 		for (const modelFile of modelFiles) {
 			const modelPath = path.join(assetConstants.paths.modelsDir, modelFile)
+
 			try {
 				await fs.access(modelPath)
+
 				const content = await fs.readFile(modelPath, 'utf-8')
 				const strippedContent = stripJsonComments(content)
+
 				JSON.parse(strippedContent) // Validate JSON format
 			} catch (error) {
 				const validationError = this.errorHandler.createError(
@@ -493,8 +509,9 @@ export class InputValidator {
 					'validateModelFiles',
 					error instanceof Error ? error : undefined,
 					false,
-					modelPath
+					modelPath,
 				)
+
 				await this.errorHandler.handleError(validationError)
 				return false
 			}
@@ -502,12 +519,14 @@ export class InputValidator {
 
 		return true
 	}
+
 }
 
 /**
  * Rollback Manager Class
  */
 export class RollbackManager {
+
 	private errorHandler: ErrorHandler
 	private operations: Array<{
 		operation: string
@@ -525,7 +544,7 @@ export class RollbackManager {
 	public registerOperation(
 		operation: string,
 		rollbackFn: () => Promise<void>,
-		description: string
+		description: string,
 	): void {
 		this.operations.push({ operation, rollbackFn, description })
 	}
@@ -547,8 +566,9 @@ export class RollbackManager {
 					ErrorSeverity.HIGH,
 					'executeRollback',
 					error instanceof Error ? error : undefined,
-					false
+					false,
 				)
+
 				await this.errorHandler.handleError(rollbackError)
 			}
 		}
@@ -560,6 +580,7 @@ export class RollbackManager {
 	public clearOperations(): void {
 		this.operations = []
 	}
+
 }
 
 // Export singleton instances

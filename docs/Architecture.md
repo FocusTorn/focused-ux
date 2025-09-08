@@ -496,6 +496,29 @@ export class UriAdapter implements IUriFactory {
 
 ---
 
+## **Asset Processing Packages**
+
+### **Dynamicons Assets Package**
+
+- **Pattern**: Core package with orchestrator pattern
+- **Structure**: `src/orchestrators/`, `src/processors/`, `src/utils/`
+- **Build Configuration**: Uses `@nx/esbuild:esbuild` with absolute paths
+- **Error Handling**: Centralized `ErrorHandler` utility class
+- **Type Safety**: No explicit `any` types, proper interfaces
+
+### **Implementation Example**
+
+```typescript
+// src/orchestrators/asset-orchestrator.ts
+export class AssetOrchestrator {
+    private async executeProcessor(
+        processorName: string,
+        description: string,
+        processor: Processor // Proper interface, not 'any'
+    ): Promise<ScriptResult>
+}
+```
+
 ## **Asset Processing Architecture**
 
 ### **Core Package Self-Containment**

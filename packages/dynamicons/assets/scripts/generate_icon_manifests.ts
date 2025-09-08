@@ -13,7 +13,7 @@ import stripJsonCommentsModule from 'strip-json-comments'
 import { assetConstants } from '../src/_config/dynamicons.constants.js'
 
 // Handle both default and direct exports
-const stripJsonComments = (stripJsonCommentsModule as any).default || stripJsonCommentsModule
+const stripJsonComments = (stripJsonCommentsModule as { default?: (str: string) => string }).default || stripJsonCommentsModule
 
 //--------------------------------------------------------------------------------------------------------------<<
 
@@ -121,7 +121,7 @@ interface ThemeManifest { //>
 	highContrast?: { fileExtensions?: Record<string, string>, fileNames?: Record<string, string> }
 } //<
 
-function readJsonFileSync<T = any>(filePath: string, encoding: BufferEncoding = 'utf-8'): T { //>
+function readJsonFileSync<T = unknown>(filePath: string, encoding: BufferEncoding = 'utf-8'): T { //>
 	const absolutePath = path.resolve(filePath)
 	const fileContent = fs.readFileSync(absolutePath, encoding)
 	const contentWithoutComments = stripJsonComments(fileContent.toString())
@@ -165,6 +165,7 @@ function generateMetadataForAssignedIcons( //>
 		if (icon.iconName) {
 			// Remove .svg extension for comparison
 			const iconName = icon.iconName.replace(/\.svg$/, '')
+
 			assignedLanguageIconNames.add(iconName)
 		}
 	})
@@ -187,6 +188,7 @@ function generateMetadataForAssignedIcons( //>
 					if (assignedFileIconNames.has(baseName)) {
 						const name = `_${baseName}`
 						const iconPath = path.posix.join(relativePathFromOutputThemesToOutputIcons, 'file_icons', file)
+
 						iconsData[name] = { iconPath }
 					}
 				}
@@ -203,6 +205,7 @@ function generateMetadataForAssignedIcons( //>
 					
 					// Handle folder icon naming convention (folder-{name} or folder-{name}-open)
 					let modelName = baseName
+
 					if (baseName.startsWith('folder-')) {
 						modelName = baseName.substring(7) // remove 'folder-'
 					}
@@ -214,6 +217,7 @@ function generateMetadataForAssignedIcons( //>
 					if (assignedFolderIconNames.has(modelName)) {
 						const name = `_${baseName}`
 						const iconPath = path.posix.join(relativePathFromOutputThemesToOutputIcons, 'folder_icons', file)
+
 						iconsData[name] = { iconPath }
 					}
 				}
@@ -239,6 +243,7 @@ function generateMetadataForAssignedIcons( //>
 					if (assignedLanguageIconNames.has(baseName)) {
 						const name = `_${baseName}`
 						const iconPath = path.posix.join(relativePathFromOutputThemesToOutputIcons, 'file_icons', file)
+
 						iconsData[name] = { iconPath }
 					}
 				}
@@ -404,6 +409,7 @@ function transformIcons( //>
 		
 		// Add language association
 		const iconName = iconEntry.iconName.replace(/\.svg$/, '')
+
 		result.languageIds[iconEntry.languageID] = `_${iconName}`
 	}
 
@@ -502,7 +508,7 @@ function checkOrphanedFolderIcons( //>
 	return orphanedIcons
 } //<
 
-function checkForOrphanedIcons( //>
+function _checkForOrphanedIcons( //>
 	fileIconsModel: FileIconsModel,
 	folderIconsModel: FolderIconsModel,
 	silent: boolean,

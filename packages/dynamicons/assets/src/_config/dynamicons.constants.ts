@@ -13,6 +13,8 @@ export const assetConstants = {
 		fileIconsDir: 'assets/icons/file_icons',
 		folderIconsDir: 'assets/icons/folder_icons',
 		distImagesDir: 'dist/assets/images/preview-images',
+		distPreviewImagesDir: 'dist/assets/images/preview-images',
+		distIconsDir: 'dist/assets/icons',
 		distThemesDir: 'dist/assets/themes',
 		modelsDir: 'src/models',
 	},

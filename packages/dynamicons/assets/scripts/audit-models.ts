@@ -2,12 +2,11 @@
 
 import { promises as fs } from 'fs'
 import path from 'path'
-import { assetConstants } from '../src/_config/dynamicons.constants.js'
 import stripJsonCommentsModule from 'strip-json-comments'
 import { displayStructuredErrors } from './tree-formatter.js'
 
 // Handle both default and direct exports
-const stripJsonComments = (stripJsonCommentsModule as any).default || stripJsonCommentsModule
+const stripJsonComments = (stripJsonCommentsModule as { default?: (str: string) => string }).default || stripJsonCommentsModule
 
 /**
  * Model audit result interface
@@ -60,28 +59,22 @@ export async function auditModels(): Promise<ModelAuditResult> {
 		const languageIconsDir = path.resolve(process.cwd(), 'assets/icons/language_icons')
 
 		try {
-			const fileIconFiles = (await fs.readdir(fileIconsDir)).filter(f =>
-				f.endsWith('.svg'))
+			const fileIconFiles = (await fs.readdir(fileIconsDir)).filter(f => f.endsWith('.svg'))
 			
-			const folderIconFiles = (await fs.readdir(folderIconsDir)).filter(f =>
-				f.endsWith('.svg'))
+			const folderIconFiles = (await fs.readdir(folderIconsDir)).filter(f => f.endsWith('.svg'))
 			
-			let languageIconFiles: string[] = []
+			let _languageIconFiles: string[] = []
 
 			try {
-				languageIconFiles = (await fs.readdir(languageIconsDir)).filter(f =>
-					f.endsWith('.svg'))
+				_languageIconFiles = (await fs.readdir(languageIconsDir)).filter(f => f.endsWith('.svg'))
 			} catch {
 				// Language icons directory not found, skip
 			}
 
 			// Extract icon names from model (including orphans field and default icons)
-			const modelFileIconNames = new Set(fileIconsModel.icons?.map((icon: any) =>
-				icon.iconName) || [])
-			const modelFolderIconNames = new Set(folderIconsModel.icons?.map((icon: any) =>
-				icon.iconName) || [])
-			const modelLanguageIconNames = new Set(languageIconsModel.icons?.map((icon: any) =>
-				icon.languageID) || [])
+			const modelFileIconNames = new Set(fileIconsModel.icons?.map((icon: { iconName: string }) => icon.iconName) || [])
+			const modelFolderIconNames = new Set(folderIconsModel.icons?.map((icon: { iconName: string }) => icon.iconName) || [])
+			const modelLanguageIconNames = new Set(languageIconsModel.icons?.map((icon: { languageID: string }) => icon.languageID) || [])
 
 			// Add default file/folder/rootFolder icons (like the old logic)
 			if (fileIconsModel.file?.iconName) {
@@ -162,20 +155,16 @@ export async function auditModels(): Promise<ModelAuditResult> {
 
 			// Language icons use file_icons directory, so check against file_icons for assignments
 			// Build available asset icon sets for assignment validation
-			const availableFileIconNames = new Set(fileIconFiles.map(f =>
-				path.basename(f, '.svg')))
+			const availableFileIconNames = new Set(fileIconFiles.map(f => path.basename(f, '.svg')))
 			
 			// For folder assignment validation, we need ALL folder icon names (base + open variants)
-			const availableFolderIconNames = new Set(folderIconFiles.map(f =>
-				path.basename(f, '.svg')))
+			const availableFolderIconNames = new Set(folderIconFiles.map(f => path.basename(f, '.svg')))
 			
 			// For orphaned folder detection, we only want base icons (excluding -open variants to avoid duplicates)
-			const availableFolderBaseIconNames = new Set(
+			const _availableFolderBaseIconNames = new Set(
 				folderIconFiles
-					.filter(f =>
-						!f.endsWith('-open.svg'))
-					.map(f =>
-						path.basename(f, '.svg')),
+					.filter(f => !f.endsWith('-open.svg'))
+					.map(f => path.basename(f, '.svg')),
 			)
 			
 			// Language icons are stored in file_icons directory
@@ -298,13 +287,13 @@ async function checkIfModelValidationNeeded(): Promise<boolean> {
 		const modelFiles = [
 			path.resolve(process.cwd(), 'src/models/file_icons.model.json'),
 			path.resolve(process.cwd(), 'src/models/folder_icons.model.json'),
-			path.resolve(process.cwd(), 'src/models/language_icons.model.json')
+			path.resolve(process.cwd(), 'src/models/language_icons.model.json'),
 		]
 		
 		const iconDirs = [
 			path.resolve(process.cwd(), 'assets/icons/file_icons'),
 			path.resolve(process.cwd(), 'assets/icons/folder_icons'),
-			path.resolve(process.cwd(), 'assets/icons/language_icons')
+			path.resolve(process.cwd(), 'assets/icons/language_icons'),
 		]
 		
 		// Check if any model files have been modified recently (within last 2 minutes)
@@ -313,9 +302,11 @@ async function checkIfModelValidationNeeded(): Promise<boolean> {
 		
 		// First check if any model files were modified recently
 		let modelFilesModified = false
+
 		for (const modelFile of modelFiles) {
 			try {
 				const modelStats = await fs.stat(modelFile)
+
 				if (modelStats.mtime.getTime() > twoMinutesAgo) {
 					modelFilesModified = true
 					break
@@ -334,10 +325,12 @@ async function checkIfModelValidationNeeded(): Promise<boolean> {
 		for (const iconDir of iconDirs) {
 			try {
 				const iconFiles = await fs.readdir(iconDir)
+
 				for (const iconFile of iconFiles) {
 					if (iconFile.endsWith('.svg')) {
 						const iconPath = path.join(iconDir, iconFile)
 						const iconStats = await fs.stat(iconPath)
+
 						if (iconStats.mtime.getTime() > fiveMinutesAgo) {
 							return true // Icon file was recently modified
 						}
@@ -349,7 +342,7 @@ async function checkIfModelValidationNeeded(): Promise<boolean> {
 		}
 		
 		return false // No recent changes detected
-	} catch (error) {
+	} catch (_error) {
 		return true // If we can't determine, assume validation is needed
 	}
 }
@@ -358,7 +351,7 @@ async function checkIfModelValidationNeeded(): Promise<boolean> {
  * Check if models have any errors and display them if found
  * Returns validation result and skip status
  */
-export async function validateModelsWithStatus(showSuccessMessage: boolean = true): Promise<{ isValid: boolean; wasSkipped: boolean }> {
+export async function validateModelsWithStatus(showSuccessMessage: boolean = true): Promise<{ isValid: boolean, wasSkipped: boolean }> {
 	// Check if validation is needed
 	const validationNeeded = await checkIfModelValidationNeeded()
 	
@@ -402,8 +395,8 @@ export async function validateModelsWithStatus(showSuccessMessage: boolean = tru
 				assignedIconNotFound: 'MODEL: ASSIGNED ICON NOT FOUND',
 				duplicateAssignment: 'MODEL: DUPLICATE ASSIGNMENT',
 				unassignedIcon: 'DIRECTORY: UNASSIGNED ICON',
-				duplicateAssignmentId: 'MODEL: DUPLICATE ASSIGNMENT ID'
-			}
+				duplicateAssignmentId: 'MODEL: DUPLICATE ASSIGNMENT ID',
+			},
 		)
 		console.log('')
 		console.log(`❌ Model validation failed. Please fix the errors above before proceeding.`)
@@ -465,8 +458,8 @@ export async function validateModels(showSuccessMessage: boolean = true): Promis
 				assignedIconNotFound: 'MODEL: ASSIGNED ICON NOT FOUND',
 				duplicateAssignment: 'MODEL: DUPLICATE ASSIGNMENT',
 				unassignedIcon: 'DIRECTORY: UNASSIGNED ICON',
-				duplicateAssignmentId: 'MODEL: DUPLICATE ASSIGNMENT ID'
-			}
+				duplicateAssignmentId: 'MODEL: DUPLICATE ASSIGNMENT ID',
+			},
 		)
 		console.log('')
 		console.log(`❌ Model validation failed. Please fix the errors above before proceeding.`)
@@ -527,7 +520,7 @@ export async function getInstalledLanguageIds(): Promise<string[]> {
 		console.log('  ... and hundreds more')
 
 		return exampleLanguageIds
-	} catch (error) {
+	} catch (_error) {
 		console.error('❌ Failed to parse VS Code language registry:', error)
 		return []
 	}
@@ -538,7 +531,7 @@ const _argv1 = process.argv[1] ?? ''
 
 if (_argv1.includes('audit-models')) {
 	const args = process.argv.slice(2)
-	const verbose = args.includes('--verbose') || args.includes('-v')
+	const _verbose = args.includes('--verbose') || args.includes('-v')
 
 	// Run model validation
 	validateModels(true).then((isValid) => {
@@ -551,4 +544,3 @@ if (_argv1.includes('audit-models')) {
 		process.exit(1)
 	})
 }
-

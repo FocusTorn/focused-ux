@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 import { promises as fs } from 'fs'
-import path from 'path'
 import { errorHandler, ErrorType, ErrorSeverity } from './error-handler.js'
 
 /**
  * Error Reporter - Comprehensive error analysis and reporting
  */
 export class ErrorReporter {
+
 	private errorHandler = errorHandler
 
 	/**
@@ -57,7 +57,7 @@ export class ErrorReporter {
 		report.push('ERROR TYPE BREAKDOWN')
 		report.push('-'.repeat(40))
 		Object.entries(summary.byType)
-			.sort(([,a], [,b]) => b - a) // Sort by count descending
+			.sort(([, a], [, b]) => b - a) // Sort by count descending
 			.forEach(([type, count]) => {
 				report.push(`${type.padEnd(30)}: ${count}`)
 			})
@@ -86,7 +86,7 @@ export class ErrorReporter {
 			total: number
 			bySeverity: Record<ErrorSeverity, number>
 			byType: Record<ErrorType, number>
-		}
+		},
 	): void {
 		if (summary.total === 0) {
 			report.push('✅ No errors detected - system is healthy')
@@ -172,8 +172,9 @@ export class ErrorReporter {
 				'saveReport',
 				error instanceof Error ? error : undefined,
 				true,
-				outputPath
+				outputPath,
 			)
+
 			await this.errorHandler.handleError(saveError)
 		}
 	}
@@ -185,7 +186,7 @@ export class ErrorReporter {
 		const errorLog = this.errorHandler.exportErrorLog()
 		
 		if (outputPath) {
-			fs.writeFile(outputPath, errorLog, 'utf-8').catch(error => {
+			fs.writeFile(outputPath, errorLog, 'utf-8').catch((error) => {
 				console.error(`Failed to export error log: ${error}`)
 			})
 		}
@@ -206,12 +207,12 @@ export class ErrorReporter {
 		nonRecoverable: number
 	} {
 		const summary = this.errorHandler.getErrorSummary()
-		const errors = this.errorHandler['errorLog'] // Access private property for detailed analysis
+		const errors = this.errorHandler.errorLog // Access private property for detailed analysis
 		
 		let recoverable = 0
 		let nonRecoverable = 0
 		
-		errors.forEach(error => {
+		errors.forEach((error) => {
 			if (error.recoverable) {
 				recoverable++
 			} else {
@@ -226,7 +227,7 @@ export class ErrorReporter {
 			medium: summary.bySeverity[ErrorSeverity.MEDIUM],
 			low: summary.bySeverity[ErrorSeverity.LOW],
 			recoverable,
-			nonRecoverable
+			nonRecoverable,
 		}
 	}
 
@@ -237,6 +238,7 @@ export class ErrorReporter {
 		this.errorHandler.clearErrorLog()
 		console.log('✅ Error log cleared')
 	}
+
 }
 
 /**
@@ -263,6 +265,7 @@ async function main(): Promise<void> {
 
 	if (args.includes('--stats')) {
 		const stats = reporter.getErrorStatistics()
+
 		console.log('Error Statistics:')
 		console.log(`  Total Errors: ${stats.total}`)
 		console.log(`  Critical: ${stats.critical}`)
@@ -277,6 +280,7 @@ async function main(): Promise<void> {
 	if (args.includes('--export')) {
 		const exportIndex = args.indexOf('--export')
 		const outputFile = args[exportIndex + 1] || 'error-log.json'
+
 		reporter.exportErrorLog(outputFile)
 		return
 	}
@@ -285,18 +289,20 @@ async function main(): Promise<void> {
 		const reportIndex = args.indexOf('--report')
 		const outputFile = args[reportIndex + 1]
 		const report = await reporter.generateReport(outputFile)
+
 		console.log(report)
 		return
 	}
 
 	// Default: show report in console
 	const report = await reporter.generateReport()
+
 	console.log(report)
 }
 
 // Run if called directly
 if (process.argv[1].endsWith('error-reporter.ts')) {
-	main().catch(error => {
+	main().catch((error) => {
 		console.error('Error reporter failed:', error)
 		process.exit(1)
 	})
