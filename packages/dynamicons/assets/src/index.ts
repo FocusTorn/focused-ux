@@ -13,4 +13,4 @@ export { validateModels } from './utils/model-validator.js'
 export { TreeFormatter } from './utils/tree-formatter.js'
 
 // Re-export constants for convenience
-export { assetConstants } from './_config/dynamicons.constants.js'
+export { assetConstants } from './_config/asset.constants.js'

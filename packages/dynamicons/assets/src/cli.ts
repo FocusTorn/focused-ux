@@ -2,6 +2,7 @@
 
 import path from 'path'
 import { AssetOrchestrator } from './orchestrators/asset-orchestrator.js'
+import { EnhancedAssetOrchestrator } from './orchestrators/enhanced-asset-orchestrator.js'
 import { IconProcessor } from './processors/icon-processor.js'
 import { ThemeProcessor } from './processors/theme-processor.js'
 import { PreviewProcessor } from './processors/preview-processor.js'
@@ -16,7 +17,8 @@ Processors:
   icons            Process Icons (staging, organization, optimization)
   themes           Generate Themes (base and dynamicons themes)
   previews         Generate Previews (preview images)
-  (no processor)   Run all processors in sequence
+  enhanced         Run enhanced orchestrator with sophisticated dependency logic
+  (no processor)   Run all processors in sequence (basic orchestrator)
 
 Options:
   --verbose, -v     Enable verbose output
@@ -24,13 +26,15 @@ Options:
   --help, -h        Show this help message
 
 Examples:
-  node dist/cli.js                    # Run all processors
+  node dist/cli.js                    # Run all processors (basic)
+  node dist/cli.js enhanced           # Run enhanced orchestrator with dependency logic
   node dist/cli.js icons              # Process icons only
   node dist/cli.js themes --verbose   # Generate themes with verbose output
   node dist/cli.js previews -vv       # Generate previews with very verbose output
   node dist/cli.js --verbose          # Run all processors with verbose output
 
 All processors use intelligent caching and will skip when no changes are detected.
+The enhanced orchestrator provides sophisticated dependency logic and cascading skips.
 `)
 }
 
@@ -61,8 +65,13 @@ async function main(): Promise<void> {
 	let result: { overallSuccess: boolean }
 
 	if (!processorName) {
-		// Run all processors
+		// Run all processors (basic orchestrator)
 		const orchestrator = new AssetOrchestrator(verbose, veryVerbose)
+
+		result = await orchestrator.generateAssets()
+	} else if (processorName === 'enhanced') {
+		// Run enhanced orchestrator with sophisticated dependency logic
+		const orchestrator = new EnhancedAssetOrchestrator(verbose, veryVerbose)
 
 		result = await orchestrator.generateAssets()
 	} else {

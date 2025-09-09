@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs'
 import path from 'path'
-import { assetConstants } from '../_config/dynamicons.constants.js'
+import { assetConstants } from '../_config/asset.constants.js'
 import { ErrorHandler, ErrorType, ErrorSeverity } from '../utils/error-handler.js'
 
 export class IconProcessor {
@@ -58,7 +58,7 @@ export class IconProcessor {
 				console.log('───────────────────────────────────────────────────────────')
 				console.log(`📁 File icons: ${assetConstants.paths.fileIconsDir}`)
 				console.log(`📁 Folder icons: ${assetConstants.paths.folderIconsDir}`)
-				console.log(`⚙️  Optimization: SVGO with ${assetConstants.processing.defaultOptimizationLevel} level`)
+				console.log(`⚙️  Optimization: SVGO with config from ${assetConstants.processing.defaultConfigPath}`)
 				console.log('🔄 Processing...')
 			}
 

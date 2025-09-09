@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs'
 import path from 'path'
-import { assetConstants } from '../_config/dynamicons.constants.js'
+import { assetConstants } from '../_config/asset.constants.js'
 import { validateModels } from '../utils/model-validator.js'
 import { ErrorHandler, ErrorType, ErrorSeverity } from '../utils/error-handler.js'
 import stripJsonCommentsModule from 'strip-json-comments'

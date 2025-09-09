@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs'
 import path from 'path'
-import { assetConstants } from '../_config/dynamicons.constants.js'
+import { assetConstants } from '../_config/asset.constants.js'
 
 export class SyncProcessor {
 

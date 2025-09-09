@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs'
 import fsSync from 'fs'
 import path from 'path'
-import { assetConstants } from '../_config/dynamicons.constants.js'
+import { assetConstants } from '../_config/asset.constants.js'
 
 // Lazy imports to avoid loading heavy dependencies when not needed
 let puppeteer: any = null
