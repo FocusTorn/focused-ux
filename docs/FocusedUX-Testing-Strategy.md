@@ -1,30 +1,48 @@
 # FocusedUX Testing Strategy v3
 
+## Package Classification
+
+The FocusedUX monorepo follows a **standardized package classification system** that determines testing strategies, build configurations, and architectural patterns.
+
+**📋 Reference**: See [Package Archetypes](./Package-Archetypes.md) for the complete single source of truth on package classification, including detailed descriptions, examples, and guidelines.
+
+### **Quick Reference**
+
+- **Direct TSX Executed** (`libs/tools/`) - Standalone utilities
+- **Consumable Package: Shared Utility** (`libs/`) - Shared utilities
+- **Consumable Package: Feature Utility** (`packages/{feature}/`) - Feature-specific utilities
+- **Consumable Package: Core Extension Feature Logic** (`packages/{feature-name}/core`) - Business logic
+- **Pre-Packaged Extension: Single Feature** (`packages/{feature-name}/ext`) - VSCode extensions
+- **Nx Alignment Generators** (`plugins/`) - 🚧 In Development
+- **Monolithic Orchestrator** - 📋 Planned
+
 ## Overview
 
 This document outlines the **comprehensive testing strategy** for the FocusedUX project, based on the **confirmed final Core/Extension Package Architecture** established through working implementations in Ghost Writer and Project Butler packages. This strategy provides **failsafe, one-stop-shop guidance** for implementing comprehensive testing patterns that follow the separation of business logic (core) from VSCode integration (extension).
 
 ## Package Architecture Pattern
 
-### Core Package (`@fux/package-name-core`)
+### Core Package (`@fux/{feature-name}-core`)
 
 - **Purpose**: Pure business logic, no VSCode dependencies
 - **Dependencies**: Minimal external dependencies (e.g., `js-yaml` for YAML parsing)
 - **No DI Container**: Services are directly instantiated with dependencies
 - **No Shared Dependencies**: Self-contained "guinea pig" packages
+- **Example**: `@fux/dynamicons-core`
 
-### Extension Package (`@fux/package-name-ext`)
+### Extension Package (`@fux/{feature-name}-ext`)
 
 - **Purpose**: Lightweight VSCode wrapper for core logic
 - **Dependencies**: Core package + VSCode APIs + `@fux/vscode-test-cli-config`
 - **No DI Container**: Direct service instantiation
 - **VSCode Adapters**: Abstract VSCode API calls
 - **Dual Testing Strategy**: Standard Vitest tests + VS Code integration tests
+- **Example**: `@fux/dynamicons-ext`
 
 ## Directory Structure
 
 ```
-packages/package-name/
+packages/{feature-name}/
 ├── core/
 │   ├── __tests__/
 │   │   ├── _setup.ts                    # Global test setup
@@ -172,7 +190,7 @@ export default mergeConfig(
 #### **TypeScript Configuration for Integration Tests**
 
 ```json
-// packages/package-name/ext/__tests__/tsconfig.test.json
+// packages/{feature-name}/ext/__tests__/tsconfig.test.json
 {
     "extends": "../../../../tsconfig.base.json",
     "compilerOptions": {
@@ -213,7 +231,7 @@ Integration tests are compiled to JavaScript for VS Code test runner compatibili
 #### Service Testing Pattern
 
 ```typescript
-// packages/package-name/core/__tests__/functional/ServiceName.service.test.ts
+// packages/{feature-name}/core/__tests__/functional/ServiceName.service.test.ts
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ServiceName } from '../../src/features/feature-name/services/ServiceName.service.js'
 import type {
@@ -262,7 +280,7 @@ describe('ServiceName', () => {
 #### Test Setup Pattern
 
 ```typescript
-// packages/package-name/core/__tests__/_setup.ts
+// packages/{feature-name}/core/__tests__/_setup.ts
 import { vi, beforeAll, afterAll, afterEach } from 'vitest'
 
 // Mock external dependencies
@@ -292,7 +310,7 @@ afterEach(() => {
 **Note**: Based on lessons learned from Dynamicons refactoring, extension tests must validate actual runtime behavior, not just mock interactions.
 
 ```typescript
-// packages/package-name/ext/__tests__/functional/extension.test.ts
+// packages/{feature-name}/ext/__tests__/functional/extension.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { activate, deactivate } from '../../src/extension.js'
 
@@ -357,7 +375,7 @@ describe('Extension', () => {
 #### Adapter Testing Pattern
 
 ```typescript
-// packages/package-name/ext/__tests__/functional/adapters/AdapterName.adapter.test.ts
+// packages/{feature-name}/ext/__tests__/functional/adapters/AdapterName.adapter.test.ts
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { AdapterName } from '../../../src/adapters/AdapterName.adapter.js'
 
@@ -389,7 +407,7 @@ describe('AdapterName', () => {
 #### Global Test Setup Pattern
 
 ```typescript
-// packages/package-name/ext/__tests__/_setup.ts
+// packages/{feature-name}/ext/__tests__/_setup.ts
 import { vi, beforeAll, afterAll, afterEach } from 'vitest'
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
@@ -524,7 +542,7 @@ export function createMockUri(path: string): vscode.Uri {
 ##### **Integration Test Structure**
 
 ```typescript
-// packages/package-name/ext/__tests__/integration/extension.test.ts
+// packages/{feature-name}/ext/__tests__/integration/extension.test.ts
 import * as assert from 'assert'
 import * as vscode from 'vscode'
 
@@ -548,7 +566,7 @@ suite('Extension Integration Test Suite', () => {
 ##### **Integration Test Configuration**
 
 ```typescript
-// packages/package-name/ext/__tests__/tsconfig.test.json
+// packages/{feature-name}/ext/__tests__/tsconfig.test.json
 {
     "extends": "../../../../tsconfig.base.json",
     "compilerOptions": {
@@ -574,7 +592,7 @@ suite('Extension Integration Test Suite', () => {
 ##### **VS Code Test Configuration**
 
 ```typescript
-// packages/package-name/ext/__tests__/.vscode-test.mjs
+// packages/{feature-name}/ext/__tests__/.vscode-test.mjs
 import { createVscodeTestConfig } from '@fux/vscode-test-cli-config'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -594,7 +612,7 @@ export default createVscodeTestConfig({
 ##### **Integration Test Entry Point**
 
 ```typescript
-// packages/package-name/ext/__tests__/integration-tests/index.ts
+// packages/{feature-name}/ext/__tests__/integration-tests/index.ts
 import * as path from 'path'
 import { runTests } from '@vscode/test-electron'
 
@@ -621,7 +639,7 @@ main()
 ### Functional Test Configuration
 
 ```typescript
-// packages/package-name/core/vitest.config.ts
+// packages/{feature-name}/core/vitest.config.ts
 import { defineConfig, mergeConfig } from 'vitest/config'
 import baseConfig from '../../../vitest.functional.base'
 
@@ -638,7 +656,7 @@ export default mergeConfig(
 ### Coverage Test Configuration
 
 ```typescript
-// packages/package-name/core/vitest.coverage.config.ts
+// packages/{feature-name}/core/vitest.coverage.config.ts
 import { defineConfig, mergeConfig } from 'vitest/config'
 import baseConfig from '../../../vitest.coverage.base'
 
@@ -658,7 +676,7 @@ export default mergeConfig(
 ### Extension Package Test Configuration
 
 ```typescript
-// packages/package-name/ext/vitest.config.ts
+// packages/{feature-name}/ext/vitest.config.ts
 import { defineConfig, mergeConfig } from 'vitest/config'
 import baseConfig from '../../../vitest.functional.base'
 
@@ -679,7 +697,7 @@ export default mergeConfig(
 ### Extension Package Coverage Configuration
 
 ```typescript
-// packages/package-name/ext/vitest.coverage.config.ts
+// packages/{feature-name}/ext/vitest.coverage.config.ts
 import { defineConfig, mergeConfig } from 'vitest/config'
 import functionalConfig from './vitest.config'
 import baseCoverageConfig from '../../../vitest.coverage.base'
@@ -697,7 +715,7 @@ export default mergeConfig(
 ### Core Package Project Configuration
 
 ```json
-// packages/package-name/core/project.json
+// packages/{feature-name}/core/project.json
 {
     "name": "@fux/package-name-core",
     "targets": {
@@ -705,16 +723,16 @@ export default mergeConfig(
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "options": {
-                "main": "packages/package-name/core/src/index.ts",
-                "outputPath": "packages/package-name/core/dist",
-                "tsConfig": "packages/package-name/core/tsconfig.lib.json",
+                "main": "packages/{feature-name}/core/src/index.ts",
+                "outputPath": "packages/{feature-name}/core/dist",
+                "tsConfig": "packages/{feature-name}/core/tsconfig.lib.json",
                 "platform": "node",
                 "format": ["esm"],
                 "bundle": false,
                 "sourcemap": true,
                 "target": "es2022",
                 "keepNames": true,
-                "declarationRootDir": "packages/package-name/core/src",
+                "declarationRootDir": "packages/{feature-name}/core/src",
                 "thirdParty": false,
                 "deleteOutputPath": true,
                 "external": ["vscode", "js-yaml"]
@@ -745,7 +763,7 @@ export default mergeConfig(
 ### Extension Package Project Configuration
 
 ```json
-// packages/package-name/ext/project.json
+// packages/{feature-name}/ext/project.json
 {
     "name": "@fux/package-name-ext",
     "projectType": "application",
@@ -755,20 +773,20 @@ export default mergeConfig(
             "outputs": ["{options.outputPath}"],
             "dependsOn": ["^build"],
             "options": {
-                "entryPoints": ["packages/package-name/ext/src/extension.ts"],
-                "outputPath": "packages/package-name/ext/dist",
+                "entryPoints": ["packages/{feature-name}/ext/src/extension.ts"],
+                "outputPath": "packages/{feature-name}/ext/dist",
                 "format": ["cjs"],
                 "metafile": true,
                 "platform": "node",
                 "bundle": true,
                 "external": ["vscode"],
                 "sourcemap": true,
-                "main": "packages/package-name/ext/src/extension.ts",
-                "tsConfig": "packages/package-name/ext/tsconfig.json",
+                "main": "packages/{feature-name}/ext/src/extension.ts",
+                "tsConfig": "packages/{feature-name}/ext/tsconfig.json",
                 "assets": [
                     {
                         "glob": "**/*",
-                        "input": "packages/package-name/ext/assets/",
+                        "input": "packages/{feature-name}/ext/assets/",
                         "output": "./assets/"
                     }
                 ]
@@ -794,7 +812,7 @@ export default mergeConfig(
             "executor": "nx:run-commands",
             "outputs": ["{projectRoot}/__tests__/_out-tsc"],
             "options": {
-                "commands": ["tsc -p packages/package-name/ext/__tests__/tsconfig.test.json"]
+                "commands": ["tsc -p packages/{feature-name}/ext/__tests__/tsconfig.test.json"]
             }
         },
         "test:integration": {
@@ -804,7 +822,7 @@ export default mergeConfig(
                 "commands": [
                     "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
                 ],
-                "cwd": "packages/package-name/ext"
+                "cwd": "packages/{feature-name}/ext"
             },
             "description": "Run VS Code extension integration tests with detailed output"
         },
@@ -815,7 +833,7 @@ export default mergeConfig(
                 "commands": [
                     "vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec"
                 ],
-                "cwd": "packages/package-name/ext"
+                "cwd": "packages/{feature-name}/ext"
             },
             "description": "Run VS Code extension integration tests with full output"
         }
@@ -841,20 +859,20 @@ gw ti          # → test:integration @fux/ghost-writer-ext
 "outputs": ["{options.outputPath}"],
 "dependsOn": ["^build"],
 "options": {
-"entryPoints": ["packages/package-name/ext/src/extension.ts"],
-"outputPath": "packages/package-name/ext/dist",
+"entryPoints": ["packages/{feature-name}/ext/src/extension.ts"],
+"outputPath": "packages/{feature-name}/ext/dist",
 "format": ["cjs"],
 "metafile": true,
 "platform": "node",
 "bundle": true,
 "external": ["vscode", "js-yaml"],
 "sourcemap": true,
-"main": "packages/package-name/ext/src/extension.ts",
-"tsConfig": "packages/package-name/ext/tsconfig.json",
+"main": "packages/{feature-name}/ext/src/extension.ts",
+"tsConfig": "packages/{feature-name}/ext/tsconfig.json",
 "assets": [
 {
 "glob": "**/*",
-"input": "packages/package-name/ext/assets/",
+"input": "packages/{feature-name}/ext/assets/",
 "output": "./assets/"
 }
 ],
@@ -1511,9 +1529,9 @@ This guide provides a **failsafe, one-stop-shop** approach to implementing compr
 
 ```bash
 # Create the complete testing directory structure
-mkdir -p packages/package-name/ext/__tests__/{functional,isolated-tests,integration-tests,coverage,_out-tsc}
-mkdir -p packages/package-name/ext/__tests__/integration-tests/suite
-mkdir -p packages/package-name/ext/__tests__/integration-tests/mocked-workspace
+mkdir -p packages/{feature-name}/ext/__tests__/{functional,isolated-tests,integration-tests,coverage,_out-tsc}
+mkdir -p packages/{feature-name}/ext/__tests__/integration-tests/suite
+mkdir -p packages/{feature-name}/ext/__tests__/integration-tests/mocked-workspace
 ```
 
 #### **Step 2: Configuration Files**
@@ -1521,7 +1539,7 @@ mkdir -p packages/package-name/ext/__tests__/integration-tests/mocked-workspace
 **1. Integration Test TypeScript Configuration**
 
 ```json
-// packages/package-name/ext/__tests__/tsconfig.test.json
+// packages/{feature-name}/ext/__tests__/tsconfig.test.json
 {
     "extends": "../../../../tsconfig.base.json",
     "compilerOptions": {
@@ -1542,7 +1560,7 @@ mkdir -p packages/package-name/ext/__tests__/integration-tests/mocked-workspace
 **2. VS Code Test Configuration**
 
 ```typescript
-// packages/package-name/ext/__tests__/.vscode-test.mjs
+// packages/{feature-name}/ext/__tests__/.vscode-test.mjs
 import { createVscodeTestConfig } from '@fux/vscode-test-cli-config'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -1562,7 +1580,7 @@ export default createVscodeTestConfig({
 **3. Standard Vitest Configuration**
 
 ```typescript
-// packages/package-name/ext/vitest.config.ts
+// packages/{feature-name}/ext/vitest.config.ts
 import { defineConfig, mergeConfig } from 'vitest/config'
 import baseConfig from '../../../vitest.functional.base'
 
@@ -1582,7 +1600,7 @@ export default mergeConfig(
 **1. Global Test Setup with Helpers**
 
 ```typescript
-// packages/package-name/ext/__tests__/_setup.ts
+// packages/{feature-name}/ext/__tests__/_setup.ts
 import { vi, beforeAll, afterAll, afterEach } from 'vitest'
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
@@ -1776,7 +1794,7 @@ export function createMockUri(path: string): vscode.Uri {
             "executor": "nx:run-commands",
             "outputs": ["{projectRoot}/__tests__/_out-tsc"],
             "options": {
-                "commands": ["tsc -p packages/package-name/ext/__tests__/tsconfig.test.json"]
+                "commands": ["tsc -p packages/{feature-name}/ext/__tests__/tsconfig.test.json"]
             }
         },
         "test:integration": {
@@ -1786,7 +1804,7 @@ export function createMockUri(path: string): vscode.Uri {
                 "commands": [
                     "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
                 ],
-                "cwd": "packages/package-name/ext"
+                "cwd": "packages/{feature-name}/ext"
             },
             "description": "Run VS Code extension integration tests with detailed output"
         },
@@ -1797,7 +1815,7 @@ export function createMockUri(path: string): vscode.Uri {
                 "commands": [
                     "vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec"
                 ],
-                "cwd": "packages/package-name/ext"
+                "cwd": "packages/{feature-name}/ext"
             },
             "description": "Run VS Code extension integration tests with full output"
         }
@@ -1810,7 +1828,7 @@ export function createMockUri(path: string): vscode.Uri {
 **1. Standard Extension Test**
 
 ```typescript
-// packages/package-name/ext/__tests__/functional/extension.test.ts
+// packages/{feature-name}/ext/__tests__/functional/extension.test.ts
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { activate, deactivate } from '../../src/extension'
 import * as vscode from 'vscode'
@@ -1862,7 +1880,7 @@ describe('Extension', () => {
 **2. Integration Test**
 
 ```typescript
-// packages/package-name/ext/__tests__/integration/extension.test.ts
+// packages/{feature-name}/ext/__tests__/integration/extension.test.ts
 import * as assert from 'assert'
 import * as vscode from 'vscode'
 

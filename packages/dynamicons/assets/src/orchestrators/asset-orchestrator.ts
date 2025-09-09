@@ -2,6 +2,7 @@ import { IconProcessor } from '../processors/icon-processor.js'
 import { ThemeProcessor } from '../processors/theme-processor.js'
 import { PreviewProcessor } from '../processors/preview-processor.js'
 import { ErrorHandler } from '../utils/error-handler.js'
+import path from 'path'
 
 interface Processor {
 	process: (verbose?: boolean) => Promise<boolean>
@@ -48,55 +49,65 @@ export class AssetOrchestrator {
 	async generateAssets(): Promise<OrchestrationResult> {
 		this.startTime = Date.now()
 		
-		if (this.verbose || this.veryVerbose) {
-			console.log('\n🎨 [ASSET GENERATION ORCHESTRATOR]')
-			console.log('═'.repeat(60))
-			console.log('📋 Workflow Steps:')
-			console.log('   1. 🔧 Process Icons (staging, organization, optimization)')
-			console.log('   2. 🎨 Generate Themes (base and dynamicons themes)')
-			console.log('   3. 🖼️  Generate Previews (preview images)')
-			console.log('═'.repeat(60))
-			console.log('ℹ️  Note: Using compiled TypeScript modules for better performance')
-			console.log('═'.repeat(60))
-		}
-
-		// Define the processors to execute in order
-		const processors = [
-			{ name: 'process-icons', description: 'Process Icons', processor: new IconProcessor() },
-			{ name: 'generate-themes', description: 'Generate Themes', processor: new ThemeProcessor() },
-			{ name: 'generate-previews', description: 'Generate Previews', processor: new PreviewProcessor() },
-		]
-
-		// Execute each processor sequentially
-		for (const { name, description, processor } of processors) {
-			const result = await this.executeProcessor(name, description, processor)
-
-			this.results.push(result)
-			
-			// Stop on first failure unless very verbose mode
-			if (!result.success && !this.veryVerbose) {
-				break
-			}
-		}
-
-		const totalDuration = Date.now() - this.startTime
-		const overallSuccess = this.results.every(r => r.success)
+		// Change to the assets package directory for proper file resolution
+		const originalCwd = process.cwd()
+		const assetsDir = path.resolve(path.dirname(process.argv[1]), '..')
+		process.chdir(assetsDir)
 		
-		const summary = {
-			passed: this.results.filter(r => r.success).length,
-			failed: this.results.filter(r => !r.success).length,
-			total: this.results.length,
-		}
+		try {
+			if (this.verbose || this.veryVerbose) {
+				console.log('\n🎨 [ASSET GENERATION ORCHESTRATOR]')
+				console.log('═'.repeat(60))
+				console.log('📋 Workflow Steps:')
+				console.log('   1. 🔧 Process Icons (staging, organization, optimization)')
+				console.log('   2. 🎨 Generate Themes (base and dynamicons themes)')
+				console.log('   3. 🖼️  Generate Previews (preview images)')
+				console.log('═'.repeat(60))
+				console.log('ℹ️  Note: Using compiled TypeScript modules for better performance')
+				console.log('═'.repeat(60))
+			}
 
-		const orchestrationResult: OrchestrationResult = {
-			overallSuccess,
-			results: this.results,
-			totalDuration,
-			summary,
-		}
+			// Define the processors to execute in order
+			const processors = [
+				{ name: 'process-icons', description: 'Process Icons', processor: new IconProcessor() },
+				{ name: 'generate-themes', description: 'Generate Themes', processor: new ThemeProcessor() },
+				{ name: 'generate-previews', description: 'Generate Previews', processor: new PreviewProcessor() },
+			]
 
-		this.displayFinalResults(orchestrationResult)
-		return orchestrationResult
+			// Execute each processor sequentially
+			for (const { name, description, processor } of processors) {
+				const result = await this.executeProcessor(name, description, processor)
+
+				this.results.push(result)
+				
+				// Stop on first failure unless very verbose mode
+				if (!result.success && !this.veryVerbose) {
+					break
+				}
+			}
+
+			const totalDuration = Date.now() - this.startTime
+			const overallSuccess = this.results.every(r => r.success)
+			
+			const summary = {
+				passed: this.results.filter(r => r.success).length,
+				failed: this.results.filter(r => !r.success).length,
+				total: this.results.length,
+			}
+
+			const orchestrationResult: OrchestrationResult = {
+				overallSuccess,
+				results: this.results,
+				totalDuration,
+				summary,
+			}
+
+			this.displayFinalResults(orchestrationResult)
+			return orchestrationResult
+		} finally {
+			// Restore original working directory
+			process.chdir(originalCwd)
+		}
 	}
 
 	/**
@@ -151,8 +162,11 @@ export class AssetOrchestrator {
 				if (output.some(line => line.includes('No changes detected'))) {
 					status = 'skipped'
 					reason = 'No changes detected'
-				} else {
+				} else if (success) {
 					status = 'ran'
+				} else {
+					status = 'failed'
+					reason = 'Processor returned failure'
 				}
 			} catch (error) {
 				success = false
@@ -244,7 +258,8 @@ export class AssetOrchestrator {
 	 * Display final orchestration results
 	 */
 	private displayFinalResults(result: OrchestrationResult): void {
-		console.log(`\n${'═'.repeat(60)}`)
+		const separator = '═'.repeat(100)
+		console.log(`\n${separator}`)
 		
 		if (result.overallSuccess) {
 			console.log('✅ ASSET GENERATION COMPLETED SUCCESSFULLY')
@@ -252,11 +267,23 @@ export class AssetOrchestrator {
 			console.log('❌ ASSET GENERATION FAILED')
 		}
 		
-		console.log('═'.repeat(60))
+		console.log(separator)
 		
-		console.log(`📊 Summary: ${result.summary.passed}/${result.summary.total} processors passed`)
-		console.log(`⏱️  Total Duration: ${result.totalDuration}ms`)
-		console.log('═'.repeat(60))
+		// Extract and display optimization results from Process Icons output
+		const processIconsResult = result.results.find(r => r.script.includes('Process Icons'))
+		if (processIconsResult && processIconsResult.success) {
+			// Extract optimization lines from output
+			const optimizationLines = processIconsResult.output.filter(line => 
+				line.includes('of') && line.includes('file icon:') && line.includes('->')
+			)
+			
+			// Display optimization results
+			optimizationLines.forEach(line => {
+				console.log(line)
+			})
+		}
+		
+		console.log(separator)
 		
 		// Show detailed results
 		console.log('📋 Detailed Results:')
@@ -289,7 +316,11 @@ export class AssetOrchestrator {
 				scriptResult.errors.forEach(error => console.log(`      ${error}`))
 			}
 		})
-		console.log('═'.repeat(60))
+		console.log(separator)
+		
+		console.log(`📊 Summary: ${result.summary.passed}/${result.summary.total} processors passed`)
+		console.log(`⏱️  Total Duration: ${result.totalDuration}ms`)
+		console.log(separator)
 	}
 
 	/**

@@ -64,6 +64,17 @@ export class IconProcessor {
 
 			const optimizationResult = await this.organizeAndOptimizeIcons(verbose)
 			
+			// Check if optimization failed
+			if (!optimizationResult.success) {
+				if (verbose) {
+					console.log('❌ Icon optimization failed')
+					console.log('───────────────────────────────────────────────────────────\n')
+				} else {
+					console.log('❌ Icon optimization failed')
+				}
+				return false
+			}
+			
 			if (optimizationResult.success) {
 				if (verbose) {
 					console.log(`✅ Optimized ${optimizationResult.optimizedCount} icons`)
@@ -204,6 +215,7 @@ export class IconProcessor {
 				
 				// Now run optimization on the newly organized icons
 				let optimizedCount = 0
+				let failedCount = 0
 				
 				// Separate file and folder icons for processing
 				const fileIcons = svgFiles.filter(f => !f.toLowerCase().startsWith(assetConstants.iconNaming.folderPrefix))
@@ -217,7 +229,8 @@ export class IconProcessor {
 
 					const fileResult = await this.optimizeStagedIcons(fileIcons, assetConstants.paths.fileIconsDir, 'file', verbose)
 
-					optimizedCount += fileResult
+					optimizedCount += fileResult.optimizedCount
+					failedCount += fileResult.failedCount
 				}
 				
 				// Optimize folder icons if we have any
@@ -228,7 +241,8 @@ export class IconProcessor {
 
 					const folderResult = await this.optimizeStagedIcons(folderIcons, assetConstants.paths.folderIconsDir, 'folder', verbose)
 
-					optimizedCount += folderResult
+					optimizedCount += folderResult.optimizedCount
+					failedCount += folderResult.failedCount
 				}
 				
 				// Add blank line after optimization statistics in non-verbose mode
@@ -236,8 +250,11 @@ export class IconProcessor {
 					console.log('')
 				}
 				
+				// Return success only if no optimizations failed
+				const success = failedCount === 0
+				
 				return {
-					success: true,
+					success,
 					optimizedCount,
 				}
 			} catch (_error) {
@@ -258,13 +275,27 @@ export class IconProcessor {
 		targetDir: string,
 		type: 'file' | 'folder',
 		verbose: boolean = false,
-	): Promise<number> {
+	): Promise<{ optimizedCount: number, failedCount: number }> {
 		let optimizedCount = 0
+		let failedCount = 0
 		
 		// Import exec for SVGO optimization
 		const { exec } = await import('node:child_process')
 		const { promisify } = await import('node:util')
 		const execAsync = promisify(exec)
+		
+		// Calculate maximum filename length for alignment (only in non-verbose mode)
+		let maxFilenameLength = 0
+
+		if (!verbose) {
+			const typeLabel = type === 'file' ? 'file icon' : 'folder icon'
+
+			for (const iconFile of iconFiles) {
+				const linePrefix = `${iconFiles.length} of ${iconFiles.length} ${typeLabel}: ${iconFile}`
+
+				maxFilenameLength = Math.max(maxFilenameLength, linePrefix.length)
+			}
+		}
 		
 		for (let i = 0; i < iconFiles.length; i++) {
 			const iconFile = iconFiles[i]
@@ -308,29 +339,37 @@ export class IconProcessor {
 						`${item} ( ${origSize} -> ${optSize} | ${reductionAmt} | ${percentChangeStr} )`,
 					)
 				} else {
-					// Non-verbose mode: show clean, simple formatting
+					// Non-verbose mode: capture optimization results for final summary with alignment
 					const typeLabel = type === 'file' ? 'file icon' : 'folder icon'
-
-					console.log(
-						`${String(i + 1)} of ${iconFiles.length} ${typeLabel}: ${iconFile}                       ( ${originalSize.toString().padStart(5)} -> ${optimizedSize.toString().padStart(5)} | ${sizeDifference.toString().padStart(5)} | ${percentageChange.toString().padStart(2)}% )`,
-					)
+					const linePrefix = `${String(i + 1)} of ${iconFiles.length} ${typeLabel}: ${iconFile}`
+					const padding = ' '.repeat(maxFilenameLength - linePrefix.length + 4)
+					const optimizationStats = `( ${originalSize.toString().padStart(5)} -> ${optimizedSize.toString().padStart(5)} | ${sizeDifference.toString().padStart(5)} | ${percentageChange.toString().padStart(2)}% )`
+					const optimizationLine = `${linePrefix}${padding}${optimizationStats}`
+					
+					// Store in output for final summary display
+					console.log(optimizationLine)
 				}
 				
 				// Replace original with optimized version
 				await fs.rename(tempPath, sourcePath)
 				optimizedCount++
 			} catch (_error) {
+				failedCount++
 				if (verbose) {
 					console.log(`     ├─── ${String(i + 1).padStart(3)} of ${iconFiles.length} ${type}: ${iconFile.padEnd(30)} ❌ Optimization failed: ${_error}`)
 				} else {
 					const typeLabel = type === 'file' ? 'file icon' : 'folder icon'
-
-					console.log(`${String(i + 1)} of ${iconFiles.length} ${typeLabel}: ${iconFile} ❌ Optimization failed: ${_error}`)
+					const linePrefix = `${String(i + 1)} of ${iconFiles.length} ${typeLabel}: ${iconFile}`
+					const padding = ' '.repeat(maxFilenameLength - linePrefix.length + 4)
+					const errorLine = `${linePrefix}${padding}❌ Optimization failed: ${_error}`
+					
+					// Store in output for final summary display
+					console.log(errorLine)
 				}
 			}
 		}
 		
-		return optimizedCount
+		return { optimizedCount, failedCount }
 	}
 
 }

@@ -1,5 +1,21 @@
 # FocusedUX Architecture
 
+## Package Classification
+
+The FocusedUX monorepo follows a **standardized package classification system** that determines architectural patterns, build configurations, and testing strategies.
+
+**📋 Reference**: See [Package Archetypes](./Package-Archetypes.md) for the complete single source of truth on package classification, including detailed architectural patterns, examples, and implementation guidelines.
+
+### **Quick Reference**
+
+- **Direct TSX Executed** (`libs/tools/`) - Standalone utilities
+- **Consumable Package: Shared Utility** (`libs/`) - Shared utilities
+- **Consumable Package: Feature Utility** (`packages/{feature}/`) - Feature-specific utilities
+- **Consumable Package: Core Extension Feature Logic** (`packages/{feature-name}/core`) - Business logic
+- **Pre-Packaged Extension: Single Feature** (`packages/{feature-name}/ext`) - VSCode extensions
+- **Nx Alignment Generators** (`plugins/`) - 🚧 In Development
+- **Monolithic Orchestrator** - 📋 Planned
+
 ## **Project Architecture**
 
 ### **File Organization**
