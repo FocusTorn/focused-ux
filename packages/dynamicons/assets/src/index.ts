@@ -1,6 +1,6 @@
 // Main entry point for the dynamicons assets package
-export { AssetOrchestrator } from './orchestrators/asset-orchestrator.js'
-export type { OrchestrationResult, ScriptResult } from './orchestrators/asset-orchestrator.js'
+export { EnhancedAssetOrchestrator } from './orchestrators/enhanced-asset-orchestrator.js'
+export type { OrchestrationResult, ScriptResult } from './orchestrators/enhanced-asset-orchestrator.js'
 
 export { IconProcessor } from './processors/icon-processor.js'
 export { ThemeProcessor } from './processors/theme-processor.js'
@@ -13,4 +13,4 @@ export { validateModels } from './utils/model-validator.js'
 export { TreeFormatter } from './utils/tree-formatter.js'
 
 // Re-export constants for convenience
-export { assetConstants } from './_config/dynamicons.constants.js'
+export { assetConstants } from './_config/asset.constants.js'

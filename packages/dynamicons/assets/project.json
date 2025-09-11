@@ -5,7 +5,7 @@
     "projectType": "library",
     "targets": {
         
-        "build": {
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "inputs": ["{projectRoot}/src/**/*"],
@@ -26,8 +26,36 @@
                 "external": [
                 ]
             }
-        },
-
+        }, //<
+        
+        "generate-assets": { //>
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "node dist/cli.js",
+                "cwd": "packages/dynamicons/assets"
+            },
+            "dependsOn": ["build"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/packages/dynamicons/assets/src/_config/dynamicons.constants.js",
+                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/new_icons/**/*",
+                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
+                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
+                "{workspaceRoot}/packages/dynamicons/assets/src/models/**/*.json",
+                "{workspaceRoot}/packages/dynamicons/assets/svgo.config.mjs"
+            ],
+            "outputs": [
+                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
+                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
+                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/themes/base.theme.json",
+                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/themes/dynamicons.theme.json",
+                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/File_icons_preview.png",
+                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/Folder_icons_preview.png",
+                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/Folder_Open_icons_preview.png"
+            ],
+            "description": "Generate all assets (icons, themes, previews) with orchestrated output"
+        }, //<
+        
         "build-with-assets": {
             "executor": "nx:run-commands",
             "options": {
@@ -58,131 +86,9 @@
             ],
             "description": "Build package and generate all assets in one command"
         },
-
-        "generate-assets": { //>
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "node dist/cli.js",
-                "cwd": "packages/dynamicons/assets"
-            },
-            "dependsOn": ["build"],
-            "inputs": [
-                "default",
-                "{workspaceRoot}/packages/dynamicons/assets/src/_config/dynamicons.constants.js",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/new_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/src/models/**/*.json",
-                "{workspaceRoot}/packages/dynamicons/assets/svgo.config.mjs"
-            ],
-            "outputs": [
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/themes/base.theme.json",
-                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/themes/dynamicons.theme.json",
-                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/File_icons_preview.png",
-                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/Folder_icons_preview.png",
-                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/Folder_Open_icons_preview.png"
-            ],
-            "description": "Generate all assets (icons, themes, previews) with orchestrated output"
-        }, //<
         
-        "process-icons": { //>
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "npx tsx scripts/process-icons.ts",
-                "cwd": "packages/dynamicons/assets"
-            },
-            "inputs": [
-                "default",
-                "{workspaceRoot}/packages/dynamicons/assets/src/_config/dynamicons.constants.js",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/new_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/svgo.config.mjs"
-            ],
-            "outputs": [
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*"
-            ],
-            "description": "Process icons from external source (stage, organize, optimize)"
-        }, //<
         
-        "audit-models": { //>
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "npx tsx scripts/audit-models.ts",
-                "cwd": "packages/dynamicons/assets"
-            },
-            "inputs": [
-                "default",
-                "{workspaceRoot}/packages/dynamicons/assets/src/models/**/*.json",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/language_icons/**/*"
-            ],
-            "outputs": [],
-            "description": "Audit icon models for validation and error reporting"
-        }, //<
-        
-        "generate-themes": { //>
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "npx tsx scripts/generate-themes.ts",
-                "cwd": "packages/dynamicons/assets"
-            },
-            "inputs": [
-                "default",
-                "{workspaceRoot}/packages/dynamicons/assets/src/models/**/*.json",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/language_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/src/_config/dynamicons.constants.js"
-            ],
-            "outputs": [
-                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/themes/base.theme.json",
-                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/themes/dynamicons.theme.json"
-            ],
-            "description": "Generate theme files (concise output by default, use --verbose for detailed output)"
-        }, //<
-        
-        "generate-previews": { //>
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "npx tsx scripts/generate-previews.ts",
-                "cwd": "packages/dynamicons/assets"
-            },
-            "inputs": [
-                "default",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
-                "{workspaceRoot}/packages/dynamicons/assets/src/_config/dynamicons.constants.js"
-            ],
-            "outputs": [
-                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/File_icons_preview.png",
-                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/Folder_icons_preview.png",
-                "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/Folder_Open_icons_preview.png"
-            ],
-            "description": "Generate preview images (concise output by default, use --verbose for detailed output)"
-        }, //<
-        
-        "sync-to-ext": { //>
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "npx tsx scripts/sync-to-ext.ts",
-                "cwd": "packages/dynamicons/assets"
-            },
-            "inputs": [
-                "default",
-                "{workspaceRoot}/packages/dynamicons/assets/dist/**/*"
-            ],
-            "outputs": [
-                "{workspaceRoot}/packages/dynamicons/ext/assets/**/*"
-            ],
-            "description": "Sync assets to extension package (concise output by default, use --verbose for detailed output)"
-        }, //<
-        
-        "check-types": { "extends": "check-types" },
+        // Standard ==================================================================================================================================
         
         "lint": { "extends": "lint" },
         "lint:full": { "extends": "lint:full" },
@@ -195,7 +101,24 @@
         
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" }
+        "clean:cache": { "extends": "clean:cache" },
+        
+        "test": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["build", "^build"]
+        }, //<
+        "test:full": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ]
+        } //<
         
     },
     "tags": ["scope:dynamicons", "type:assets"]
@@ -203,6 +126,101 @@
 
 //==============================================================================================
 // Orgiginal script based targets
+
+// "process-icons": { //>
+// "executor": "nx:run-commands",
+// "options": {
+//     "command": "npx tsx scripts/process-icons.ts",
+//     "cwd": "packages/dynamicons/assets"
+// },
+// "inputs": [
+//     "default",
+//     "{workspaceRoot}/packages/dynamicons/assets/src/_config/dynamicons.constants.js",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/new_icons/**/*",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
+//     "{workspaceRoot}/packages/dynamicons/assets/svgo.config.mjs"
+// ],
+// "outputs": [
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*"
+// ],
+// "description": "Process icons from external source (stage, organize, optimize)"
+// }, //<
+
+// "audit-models": { //>
+// "executor": "nx:run-commands",
+// "options": {
+//     "command": "npx tsx scripts/audit-models.ts",
+//     "cwd": "packages/dynamicons/assets"
+// },
+// "inputs": [
+//     "default",
+//     "{workspaceRoot}/packages/dynamicons/assets/src/models/**/*.json",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/language_icons/**/*"
+// ],
+// "outputs": [],
+// "description": "Audit icon models for validation and error reporting"
+// }, //<
+
+// "generate-themes": { //>
+// "executor": "nx:run-commands",
+// "options": {
+//     "command": "npx tsx scripts/generate-themes.ts",
+//     "cwd": "packages/dynamicons/assets"
+// },
+// "inputs": [
+//     "default",
+//     "{workspaceRoot}/packages/dynamicons/assets/src/models/**/*.json",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/language_icons/**/*",
+//     "{workspaceRoot}/packages/dynamicons/assets/src/_config/dynamicons.constants.js"
+// ],
+// "outputs": [
+//     "{workspaceRoot}/packages/dynamicons/assets/dist/assets/themes/base.theme.json",
+//     "{workspaceRoot}/packages/dynamicons/assets/dist/assets/themes/dynamicons.theme.json"
+// ],
+// "description": "Generate theme files (concise output by default, use --verbose for detailed output)"
+// }, //<
+
+// "generate-previews": { //>
+// "executor": "nx:run-commands",
+// "options": {
+//     "command": "npx tsx scripts/generate-previews.ts",
+//     "cwd": "packages/dynamicons/assets"
+// },
+// "inputs": [
+//     "default",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/file_icons/**/*",
+//     "{workspaceRoot}/packages/dynamicons/assets/assets/icons/folder_icons/**/*",
+//     "{workspaceRoot}/packages/dynamicons/assets/src/_config/dynamicons.constants.js"
+// ],
+// "outputs": [
+//     "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/File_icons_preview.png",
+//     "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/Folder_icons_preview.png",
+//     "{workspaceRoot}/packages/dynamicons/assets/dist/assets/images/preview-images/Folder_Open_icons_preview.png"
+// ],
+// "description": "Generate preview images (concise output by default, use --verbose for detailed output)"
+// }, //<
+
+// "sync-to-ext": { //>
+// "executor": "nx:run-commands",
+// "options": {
+//     "command": "npx tsx scripts/sync-to-ext.ts",
+//     "cwd": "packages/dynamicons/assets"
+// },
+// "inputs": [
+//     "default",
+//     "{workspaceRoot}/packages/dynamicons/assets/dist/**/*"
+// ],
+// "outputs": [
+//     "{workspaceRoot}/packages/dynamicons/ext/assets/**/*"
+// ],
+// "description": "Sync assets to extension package (concise output by default, use --verbose for detailed output)"
+// }, //<
 
 // "generate-assets": { //>
 // "executor": "nx:run-commands",

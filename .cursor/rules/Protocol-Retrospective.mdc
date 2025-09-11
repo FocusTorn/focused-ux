@@ -207,7 +207,7 @@
 - **MANDATORY**: Use PowerShell to get actual last modified time of files worked on
 - **Specific Files**: `.\scripts\Get-FileStats.ps1 -FilePaths @("file1.ts", "file2.js")`
 - **Project Directory**: `.\scripts\Get-FileStats.ps1 -Directories @("packages/project-name")`
-- **Format**: Use `[YYYY-MM-DD HH:MM:SS]` format for all Actions Log entry titles
+- **Format**: Use `[YYYY-MM-DD HH:MM:SS]` format for all Log entry date time stamps
 - **Example**: `### [2025-08-22 13:11:06] Dynamicons Test Performance Optimization`
 
 **CHANGELOG UPDATE PROTOCOL:**

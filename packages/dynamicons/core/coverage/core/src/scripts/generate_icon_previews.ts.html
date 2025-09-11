@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/335</span>
+                <span class='fraction'>0/340</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/335</span>
+                <span class='fraction'>0/340</span>
             </div>
         
             
@@ -506,7 +506,12 @@
 <a name='L441'></a><a href='#L441'>441</a>
 <a name='L442'></a><a href='#L442'>442</a>
 <a name='L443'></a><a href='#L443'>443</a>
-<a name='L444'></a><a href='#L444'>444</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L444'></a><a href='#L444'>444</a>
+<a name='L445'></a><a href='#L445'>445</a>
+<a name='L446'></a><a href='#L446'>446</a>
+<a name='L447'></a><a href='#L447'>447</a>
+<a name='L448'></a><a href='#L448'>448</a>
+<a name='L449'></a><a href='#L449'>449</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -628,6 +633,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -644,6 +650,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -731,6 +738,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -874,12 +882,14 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1065,7 +1075,8 @@ import type { Page, Browser } from 'puppeteer'
 <span class="cstat-no" title="statement not covered" >	size: number,</span>
 <span class="cstat-no" title="statement not covered" >	svgIconsDirAbs: string,</span>
 <span class="cstat-no" title="statement not covered" >	pngOutputDirAbs: string,</span>
-<span class="cstat-no" title="statement not covered" >	filter: (filename: string) =&gt; boolean = () =&gt; true,</span>
+<span class="cstat-no" title="statement not covered" >	filter: (filename: string) =&gt; boolean = () =&gt;</span>
+<span class="cstat-no" title="statement not covered" >		true,</span>
 <span class="cstat-no" title="statement not covered" >	isLastInSection: boolean = false,</span>
 <span class="cstat-no" title="statement not covered" >	logPrefix: string = '│  ├─',</span>
 <span class="cstat-no" title="statement not covered" >	silent: boolean = false,</span>
@@ -1089,7 +1100,8 @@ import type { Page, Browser } from 'puppeteer'
 &nbsp;
 <span class="cstat-no" title="statement not covered" >	try {</span>
 <span class="cstat-no" title="statement not covered" >		const iconFiles = fs.readdirSync(svgIconsDirAbs).filter(</span>
-<span class="cstat-no" title="statement not covered" >			file =&gt; file.endsWith('.svg') &amp;&amp; filter(file),</span>
+<span class="cstat-no" title="statement not covered" >			file =&gt;</span>
+<span class="cstat-no" title="statement not covered" >				file.endsWith('.svg') &amp;&amp; filter(file),</span>
 <span class="cstat-no" title="statement not covered" >		)</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >		if (iconFiles.length === 0) {</span>
@@ -1158,7 +1170,8 @@ import type { Page, Browser } from 'puppeteer'
 &nbsp;
 <span class="cstat-no" title="statement not covered" >	try {</span>
 <span class="cstat-no" title="statement not covered" >		if (fs.existsSync(pngIconsDirAbs)) {</span>
-<span class="cstat-no" title="statement not covered" >			files = fs.readdirSync(pngIconsDirAbs).filter(f =&gt; f.endsWith('.png'))</span>
+<span class="cstat-no" title="statement not covered" >			files = fs.readdirSync(pngIconsDirAbs).filter(f =&gt;</span>
+<span class="cstat-no" title="statement not covered" >				f.endsWith('.png'))</span>
 <span class="cstat-no" title="statement not covered" >		}</span>
 <span class="cstat-no" title="statement not covered" >		else if (!silent) {</span>
 <span class="cstat-no" title="statement not covered" >			console.warn(</span>
@@ -1316,14 +1329,16 @@ import type { Page, Browser } from 'puppeteer'
 <span class="cstat-no" title="statement not covered" >			ranAnyConversion = true</span>
 <span class="cstat-no" title="statement not covered" >	}</span>
 <span class="cstat-no" title="statement not covered" >	if (previewType === 'all' || previewType === 'folder') {</span>
-<span class="cstat-no" title="statement not covered" >		const folderConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_ICONS_PNG_DIR_ABS, file =&gt; !file.endsWith('-open.svg'), false, '│  ├─', silent)</span>
+<span class="cstat-no" title="statement not covered" >		const folderConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_ICONS_PNG_DIR_ABS, file =&gt;</span>
+<span class="cstat-no" title="statement not covered" >			!file.endsWith('-open.svg'), false, '│  ├─', silent)</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >		if (!folderConversionSuccess &amp;&amp; fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))</span>
 <span class="cstat-no" title="statement not covered" >			success = false</span>
 <span class="cstat-no" title="statement not covered" >		if (fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))</span>
 <span class="cstat-no" title="statement not covered" >			ranAnyConversion = true</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >		const folderOpenConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_OPEN_ICONS_PNG_DIR_ABS, file =&gt; file.endsWith('-open.svg'), true, '│  ├─', silent)</span>
+<span class="cstat-no" title="statement not covered" >		const folderOpenConversionSuccess = await convertSvgsToPngs(ICON_SIZE_FOR_PNG_CONVERSION, FOLDER_ICONS_SVG_DIR_ABS, FOLDER_OPEN_ICONS_PNG_DIR_ABS, file =&gt;</span>
+<span class="cstat-no" title="statement not covered" >			file.endsWith('-open.svg'), true, '│  ├─', silent)</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >		if (!folderOpenConversionSuccess &amp;&amp; fs.existsSync(FOLDER_ICONS_SVG_DIR_ABS))</span>
 <span class="cstat-no" title="statement not covered" >			success = false</span>
@@ -1399,7 +1414,7 @@ import type { Page, Browser } from 'puppeteer'
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-09-02T19:53:17.851Z
+                at 2025-09-10T21:00:35.278Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

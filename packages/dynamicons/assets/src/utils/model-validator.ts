@@ -56,10 +56,16 @@ function validateFileIconsModel(model: unknown, result: ValidationResult): void 
 			result.errors.push(`Icon ${index}: Missing or invalid "iconName"`)
 		}
 
-		if (!iconObj.fileExtensions) {
-			result.warnings.push(`Icon ${index}: No file extensions defined`)
-		} else if (!Array.isArray(iconObj.fileExtensions)) {
+		// Check if icon has either fileExtensions or fileNames (or both)
+		const hasFileExtensions = iconObj.fileExtensions && Array.isArray(iconObj.fileExtensions)
+		const hasFileNames = iconObj.fileNames && Array.isArray(iconObj.fileNames)
+		
+		if (!hasFileExtensions && !hasFileNames) {
+			result.warnings.push(`Icon ${index}: No file extensions or file names defined`)
+		} else if (iconObj.fileExtensions && !Array.isArray(iconObj.fileExtensions)) {
 			result.errors.push(`Icon ${index}: "fileExtensions" must be an array`)
+		} else if (iconObj.fileNames && !Array.isArray(iconObj.fileNames)) {
+			result.errors.push(`Icon ${index}: "fileNames" must be an array`)
 		}
 	})
 }

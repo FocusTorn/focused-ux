@@ -118,6 +118,7 @@
             "ALWAYS read .cursorrules ENTIRE DOCUMENT at the beginning of conversations and after summarizing chat context",
             "ALWAYS use PAE aliases for all project operations - NEVER fall back to direct nx commands",
             "ALWAYS attempt 'pae help' first to discover available aliases",
+            "ALWAYS wait for PAE profile loading messages before proceeding with help commands",
             "ALWAYS run builds before testing - NEVER skip build verification",
             "ALWAYS fix build errors immediately before proceeding",
             "ALWAYS check documentation first before creating new solutions",
@@ -412,7 +413,11 @@
                     "aliasDiscovery": "Always attempt 'pae help' first to discover available aliases",
                     "aliasUsage": "Use appropriate alias for operations (e.g., 'pae dc b' for dynamicons build)",
                     "fallbackProtocol": "Only use direct nx commands if no alias exists or alias fails",
-                    "documentation": "Document any missing aliases that should be added to PAE system"
+                    "documentation": "Document any missing aliases that should be added to PAE system",
+                    "profileLoadingWait": "MUST wait for 'FocusedUX project profile loaded' and 'Module loaded: PAE aliases' messages before proceeding",
+                    "retryOnEmptyOutput": "If 'pae help' produces no output or shows error, rerun the command after profile loading is complete",
+                    "profileLoadingIndicators": "Look for 'FocusedUX project profile loaded' and 'Module loaded: PAE aliases' in command output",
+                    "emptyOutputDetection": "If help command shows only 'pae <alias> <target> [flags]' or similar minimal output, rerun the command"
                 },
                 "buildBeforeTestCompliance": {
                     "buildFirst": "If directive involves testing, always run '{alias} b' first",
@@ -652,6 +657,12 @@
                         "violation": "Updating old log entries to reflect current tool names or patterns",
                         "prevention": "Preserve historical accuracy - references were correct at the time of entry",
                         "rationale": "Historical entries document the actual tools and patterns used when the work was performed"
+                    },
+                    "taskDuplicationPrevention": {
+                        "rule": "ALWAYS remove completed tasks from pending/current sections when moving to completion section",
+                        "violation": "Leaving completed tasks in both pending/current sections AND completion section",
+                        "prevention": "When adding tasks to completion section, immediately remove them from pending/current sections",
+                        "rationale": "Prevents task duplication and maintains clean organization - tasks should exist in only one section at a time"
                     }
                 },
                 "buildViolationPrevention": {

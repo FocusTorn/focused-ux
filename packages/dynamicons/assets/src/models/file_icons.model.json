@@ -27,7 +27,7 @@
         { "iconName": "coffee", "fileExtensions": ["coffee", "cson", "iced"] },
         {
             "iconName": "console",
-            "fileExtensions": ["sh", "ksh", "csh", "tcsh", "zsh", "bash", "bat", "cmd", "awk", "fish", "exp", "nu"],
+            // "fileExtensions": ["sh", "ksh", "csh", "tcsh", "zsh", "bash", "bat", "cmd", "awk", "fish", "exp", "nu"],
             "fileNames": ["commit-msg", "pre-commit", "pre-push", "post-merge"]
         },
         { "iconName": "cpp", "fileExtensions": ["cpp"] },
@@ -35,11 +35,11 @@
         { "iconName": "csharp", "fileExtensions": ["cs"] },
         { "iconName": "editorconfig", "fileNames": [".editorconfig"] },
         { "iconName": "eslint", "fileNames": [".eslintrc.json", "eslint.config.js"] },
-        { "iconName": "env", "fileNames": ["pyvenv.cfg"] },
-        { "iconName": "env-config", "fileNames": ["pyvenv.cfg"] },
+        { "iconName": "env", "fileNames": ["yvenv.cfg"] },
+        { "iconName": "env-config", "fileNames": ["pyvenv-config.cfg"] },
         { "iconName": "git", "fileNames": [".gitattributes"] },
         { "iconName": "git-ignore", "fileNames": [".gitignore"] },
-        { "iconName": "gulp", "fileNames": ["gulpfile.js", "gulpfile.js", "gulpfile.mjs", "gulpfile.ts", "gulpfile.cts", "gulpfile.mts", "gulpfile.babel.js"] },
+        { "iconName": "gulp", "fileNames": ["gulpfile.js", "gulpfile.mjs", "gulpfile.ts", "gulpfile.cts", "gulpfile.mts", "gulpfile.babel.js"] },
         { "iconName": "image", "fileExtensions": ["jpeg", "gif"] },
         { "iconName": "json", "fileExtensions": ["json"] },
         { "iconName": "javascript", "fileExtensions": ["js", "mjs"] },
@@ -67,11 +67,11 @@
         { "iconName": "python-file", "fileExtensions": ["py"] },
         { "iconName": "python", "fileExtensions": ["pyc", "whl"], "fileNames": ["requirements.txt", "pipfile", "manifest.in", "pylintrc", "py.typed"] },
         { "iconName": "readme", "fileNames": ["readme.md"] },
-        { "iconName": "shell", "fileExtensions": ["sh", "sh", "ksh", "csh", "tcsh"] },
+        { "iconName": "shell", "fileExtensions": ["sh", "ksh", "csh", "tcsh"] },
         { "iconName": "svg", "fileExtensions": ["svg"] },
         { "iconName": "svgo-config", "fileNames": ["svgo.config.mjs", "svgo.config.js", "svgo.config.yaml"] },
         { "iconName": "template", "fileNames": ["template.toml", "template.js", "template.ts", "template.sh", "template.yaml", "template.json"] },
-        { "iconName": "terminal", "fileExtensions": ["ps1", "psm1", "psd1", "ps1xml", "psc1", "pssc", "bat", "cmd", "awk", "fish", "exp", "nu"] },
+        { "iconName": "terminal", "fileExtensions": ["ps1", "psm1", "psd1", "ps1xml", "psc1", "pssc"] }, //, "bat", "cmd", "awk", "fish", "exp", "nu"
         { "iconName": "test", "fileExtensions": ["test.js", "test.ts"], "fileNames": [".vscode-test.mjs"] },
         { "iconName": "theme", "fileExtensions": ["theme.json"] },
         { "iconName": "typescript", "fileExtensions": ["ts"] },
@@ -90,8 +90,8 @@
         { "iconName": "vscode-ignore", "fileNames": [".vscodeignore"] },
         { "iconName": "webpack-config", "fileNames": ["webpack.config.js"] },
         { "iconName": "zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
-        // ,{ "name": "zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
-        //, { "name": "not-zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
+        // ,{ "iconName": "zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
+        // ,{ "iconName": "not-zip", "fileExtensions": ["zip", "tar", "7z", "rar"] }
         
     ],
     "unassigned": [
@@ -115,7 +115,6 @@
         "sack",
         "svgo",
         "txt",
-        "ulia",
         "cmake-alt",
         "cmake-cache-alt",
         "config",

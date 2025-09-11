@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="uuid-506d9a83-db06-4fa5-b14c-03d1cb22d61a" data-name="Row 9" xmlns="http://www.w3.org/2000/svg" width="16" height="16" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16 16">
+  <defs>
+    <filter id="uuid-4ff241c4-2b34-4cc0-a5dc-126962c9335f" x="21" y="-160" width="15" height="16.3" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feFlood flood-color="#fff" result="bg"/>
+      <feBlend in="SourceGraphic" in2="bg"/>
+    </filter>
+    <mask id="uuid-09ee70ce-1654-4cac-9ea7-8cd58f25a47a" data-name="mask" x="21" y="-160" width="15" height="16.3" maskUnits="userSpaceOnUse"/>
+    <filter id="uuid-1ef8ee76-e2b6-43dd-a028-c849b666b4ea" x="-80" y="-100" width="16" height="16" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feFlood flood-color="#fff" result="bg"/>
+      <feBlend in="SourceGraphic" in2="bg"/>
+    </filter>
+    <mask id="uuid-70605511-ab36-49b4-8788-d7109a079904" data-name="mask-1" x="-80" y="-100" width="16" height="16" maskUnits="userSpaceOnUse"/>
+    <filter id="uuid-25a94788-b63e-4d37-a3bc-6eb08654bf88" x="-160" y="0" width="17" height="17" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feFlood flood-color="#fff" result="bg"/>
+      <feBlend in="SourceGraphic" in2="bg"/>
+    </filter>
+    <mask id="uuid-4ba78710-8364-405d-9a2e-72573d4f555d" data-name="mask-2" x="-160" y="0" width="17" height="17" maskUnits="userSpaceOnUse"/>
+    <filter id="uuid-373a6c77-8084-4b2e-abf9-64fa24cdee98" x="-140" y="0" width="16" height="16" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feFlood flood-color="#fff" result="bg"/>
+      <feBlend in="SourceGraphic" in2="bg"/>
+    </filter>
+    <mask id="uuid-926eb618-54bc-470f-8acf-ffc13e9067c1" data-name="mask-3" x="-140" y="0" width="16" height="16" maskUnits="userSpaceOnUse"/>
+    <filter id="uuid-51a65a30-dfcd-47eb-8413-3e4ba362ec5f" x="-120" y="0" width="16" height="16" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feFlood flood-color="#fff" result="bg"/>
+      <feBlend in="SourceGraphic" in2="bg"/>
+    </filter>
+    <mask id="uuid-ac36299d-7117-4481-8fcf-715a353fe8d3" data-name="mask-4" x="-120" y="0" width="16" height="16" maskUnits="userSpaceOnUse"/>
+    <filter id="uuid-73dae468-b166-4d0d-ac85-4bbf2a3d56e0" x="-40" y="0" width="16" height="16" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feFlood flood-color="#fff" result="bg"/>
+      <feBlend in="SourceGraphic" in2="bg"/>
+    </filter>
+    <mask id="uuid-12df87c5-7296-4ed1-be13-58575b8f0af2" data-name="mask-5" x="-40" y="0" width="16" height="16" maskUnits="userSpaceOnUse"/>
+    <filter id="uuid-eb24a13e-0c85-4aa1-af22-0e8675726144" x="-20" y="0" width="16" height="16" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feFlood flood-color="#fff" result="bg"/>
+      <feBlend in="SourceGraphic" in2="bg"/>
+    </filter>
+    <mask id="uuid-e9a0428a-837a-41b6-aa50-22abb3e89dc1" data-name="mask-6" x="-20" y="0" width="16" height="16" maskUnits="userSpaceOnUse"/>
+    <filter id="uuid-064da394-2af3-4868-a0e5-2e8208b7f370" x="0" y="0" width="16" height="16" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feFlood flood-color="#fff" result="bg"/>
+      <feBlend in="SourceGraphic" in2="bg"/>
+    </filter>
+    <mask id="uuid-f6949efe-6906-4dcb-8180-301d67b19842" data-name="mask-7" x="0" y="0" width="16" height="16" maskUnits="userSpaceOnUse">
+      <g style="filter: url(#uuid-064da394-2af3-4868-a0e5-2e8208b7f370);">
+        <path d="m16,6h-8c-1.65,0-3,1.35-3,3v.45c-.61.46-1,1.19-1,1.99v1.12c0,.8.39,1.53,1,1.99v.45c0,.35.07.69.18,1h10.82V6Z"/>
+      </g>
+    </mask>
+  </defs>
+  <g id="uuid-69de1803-bbff-47a8-97d1-a2f99d343a39" data-name="Layer 137">
+    <g style="mask: url(#uuid-f6949efe-6906-4dcb-8180-301d67b19842);">
+      <g id="uuid-70177ff3-6cc3-4c08-a7c3-2dba21127049" data-name="Layer 123 copy 9">
+        <polygon points="6 6 13 10 13 9 8 0 7 0 6 6" style="fill: #ff2020;"/>
+        <polyline points="6 0 5 0 0 9 0 10 5 8" style="fill: #06b7ff;"/>
+        <polygon points="8 8 0 11 0 12 13 12 13 11 8 8" style="fill: lime;"/>
+      </g>
+    </g>
+    <g>
+      <path d="m15.58,10.95c-.65-.13-.58-.51-.58-.95v-1c0-.55-.45-1-1-1h-1.75c-.14,0-.25.11-.25.25v.5c0,.14.11.25.25.25h.75c.55,0,1,.45,1,1,0,0,0,2,1,2-1,0-1,2-1,2,0,.55-.45,1-1,1h-.75c-.14,0-.25.11-.25.25v.5c0,.14.11.25.25.25h1.75c.55,0,1-.45,1-1v-1c0-.44-.07-.82.58-.95.24-.05.42-.25.42-.49v-1.11c0-.24-.18-.44-.42-.49Z" style="fill: #ff0;"/>
+      <path d="m9.75,8h-1.75c-.55,0-1,.45-1,1v1c0,.44.07.82-.58.95-.24.05-.42.25-.42.49v1.11c0,.24.18.44.42.49.65.13.58.51.58.95v1c0,.55.45,1,1,1h1.75c.14,0,.25-.11.25-.25v-.5c0-.14-.11-.25-.25-.25h-.75c-.55,0-1-.45-1-1,0,0,0-2-1-2,1,0,1-2,1-2,0-.55.45-1,1-1h.75c.14,0,.25-.11.25-.25v-.5c0-.14-.11-.25-.25-.25Z" style="fill: #ff0;"/>
+    </g>
+  </g>
+</svg>
