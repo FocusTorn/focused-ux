@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90.42% </span>
+                <span class="strong">90.15% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>170/188</span>
+                <span class='fraction'>174/193</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90.42% </span>
+                <span class="strong">90.15% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>170/188</span>
+                <span class='fraction'>174/193</span>
             </div>
         
             
@@ -322,7 +322,12 @@
 <a name='L257'></a><a href='#L257'>257</a>
 <a name='L258'></a><a href='#L258'>258</a>
 <a name='L259'></a><a href='#L259'>259</a>
-<a name='L260'></a><a href='#L260'>260</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L260'></a><a href='#L260'>260</a>
+<a name='L261'></a><a href='#L261'>261</a>
+<a name='L262'></a><a href='#L262'>262</a>
+<a name='L263'></a><a href='#L263'>263</a>
+<a name='L264'></a><a href='#L264'>264</a>
+<a name='L265'></a><a href='#L265'>265</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -496,6 +501,8 @@
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">4x</span>
@@ -508,6 +515,7 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">5x</span>
@@ -566,9 +574,11 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -753,11 +763,13 @@ export class IconActionsService {
 &nbsp;
 		const prefix = dynamiconsConstants.associationKeyPrefixes[type]
 		const relevantMappings = Object.entries(mappings)
-			.filter(([key]) =&gt; key.startsWith(prefix))
-			.map(([key, value]) =&gt; ({
-				resource: key.substring(prefix.length),
-				icon: value,
-			}))
+			.filter(([key]) =&gt;
+				key.startsWith(prefix))
+			.map(([key, value]) =&gt;
+				({
+					resource: key.substring(prefix.length),
+					icon: value,
+				}))
 &nbsp;
 		if (relevantMappings.length === 0) {
 			this.window.showInformationMessage(`No ${type} icon assignments found.`)
@@ -765,7 +777,8 @@ export class IconActionsService {
 		}
 &nbsp;
 		const message = relevantMappings
-			.map(m =&gt; `${m.resource} → ${m.icon}`)
+			.map(m =&gt;
+				`${m.resource} → ${m.icon}`)
 			.join('\n')
 &nbsp;
 		this.window.showInformationMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} Icon Assignments:\n${message}`)
@@ -822,14 +835,16 @@ export class IconActionsService {
 &nbsp;
 				if (currentTheme === 'dynamicons-theme') <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
 <span class="cstat-no" title="statement not covered" >					await workbenchConfig.update('iconTheme', 'vs-seti-file-icons', true)</span>
-<span class="cstat-no" title="statement not covered" >					await new Promise(resolve =&gt; setTimeout(resolve, 25))</span>
+<span class="cstat-no" title="statement not covered" >					await new Promise(resolve =&gt;</span>
+<span class="cstat-no" title="statement not covered" >						setTimeout(resolve, 25))</span>
 <span class="cstat-no" title="statement not covered" >					await workbenchConfig.update('iconTheme', 'dynamicons-theme', true)</span>
 <span class="cstat-no" title="statement not covered" >				}</span>
 			}
 			else {
 			// Fallback to command execution if workspace adapter not available
 				await this.commands.executeCommand('workbench.action.selectIconTheme', 'vs-seti-file-icons')
-				await new Promise(resolve =&gt; setTimeout(resolve, 25))
+				await new Promise(resolve =&gt;
+					setTimeout(resolve, 25))
 				await this.commands.executeCommand('workbench.action.selectIconTheme', 'dynamicons-theme')
 			}
 		}
@@ -847,7 +862,7 @@ export class IconActionsService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-09-02T19:53:17.851Z
+                at 2025-09-10T21:00:35.278Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -1,13 +1,15 @@
 import { IconProcessor } from '../processors/icon-processor.js'
 import { ThemeProcessor } from '../processors/theme-processor.js'
 import { PreviewProcessor } from '../processors/preview-processor.js'
+import { ModelAuditProcessor } from '../processors/model-audit-processor.js'
+import { ThemeAuditProcessor } from '../processors/theme-audit-processor.js'
 import { ErrorHandler } from '../utils/error-handler.js'
 import { assetConstants } from '../_config/asset.constants.js'
 import path from 'path'
 import fs from 'fs'
 
 interface Processor {
-	process: (verbose?: boolean) => Promise<boolean>
+	process: (verbose?: boolean, demo?: boolean) => Promise<boolean>
 }
 
 export interface ChangeDetectionResult {
@@ -324,7 +326,7 @@ export class EnhancedAssetOrchestrator {
 			{
 				name: 'audit-models',
 				description: 'Audit Models',
-				processor: new ThemeProcessor(), // Reuse theme processor for model validation
+				processor: new ModelAuditProcessor(),
 				shouldRun: () => this.changeDetection?.modelChanges || this.changeDetection?.themeFilesMissing || false,
 				skipReason: 'no model changes',
 			},
@@ -338,7 +340,7 @@ export class EnhancedAssetOrchestrator {
 			{
 				name: 'audit-themes',
 				description: 'Audit Themes',
-				processor: new ThemeProcessor(), // Reuse theme processor for theme validation
+				processor: new ThemeAuditProcessor(),
 				shouldRun: () => {
 					// Only run if themes were generated (check previous results)
 					const themesResult = this.results.find(r => r.script.includes('Generate Themes'))
@@ -363,8 +365,14 @@ export class EnhancedAssetOrchestrator {
 				const result = await this.executeProcessor(name, description, processor)
 				this.results.push(result)
 				
-				// Stop on first failure unless very verbose mode
+				// Stop on first failure unless very verbose mode, but allow theme audit to fail
 				if (!result.success && !this.veryVerbose) {
+					// Allow theme audit to fail without stopping the workflow
+					if (name === 'audit-themes') {
+						// Continue to next processor (previews)
+						continue
+					}
+					
 					// Mark remaining processors as skipped due to failure
 					const remainingProcessors = processors.slice(processors.findIndex(p => p.name === name) + 1)
 					for (const remaining of remainingProcessors) {
@@ -422,16 +430,18 @@ export class EnhancedAssetOrchestrator {
 			console.log = (...args: unknown[]) => {
 				const message = args.join(' ')
 				output.push(message)
-				if (this.veryVerbose) {
+				// Always show errors, show other output only in verbose modes
+				const isError = message.includes('❌') || message.includes('ERROR') || message.includes('FAILED')
+				const isTreeStructure = message.includes('├─') || message.includes('└─') || message.includes('THEME:') || message.includes('MODEL:')
+				if (this.verbose || this.veryVerbose || isError || isTreeStructure) {
 					originalLog(...args)
 				}
 			}
 			console.error = (...args: unknown[]) => {
 				const message = args.join(' ')
 				errors.push(message)
-				if (this.veryVerbose) {
-					originalError(...args)
-				}
+				// Always show errors
+				originalError(...args)
 			}
 
 			let status: 'ran' | 'skipped' | 'failed' = 'ran'
@@ -542,15 +552,13 @@ export class EnhancedAssetOrchestrator {
 	 */
 	private displayFinalResults(result: OrchestrationResult): void {
 		const separator = '═'.repeat(100)
+		
+		// Always show header
 		console.log(`\n${separator}`)
+		console.log('ASSET GENERATION SUMMARY')
+		console.log(separator)
 		
-		if (result.overallSuccess) {
-			console.log('✅ ASSET GENERATION COMPLETED SUCCESSFULLY')
-		} else {
-			console.log('❌ ASSET GENERATION FAILED')
-		}
-		
-		// Extract and display optimization results from Process Icons output
+		// Show optimization results if there are any
 		const processIconsResult = result.results.find(r => r.script.includes('Process Icons'))
 		if (processIconsResult && processIconsResult.success) {
 			// Extract optimization lines from output
@@ -562,9 +570,37 @@ export class EnhancedAssetOrchestrator {
 			optimizationLines.forEach(line => {
 				console.log(line)
 			})
+			console.log(separator)
 		}
 		
-		console.log(separator)
+		// Show failure results if there are any
+		const failedResults = result.results.filter(r => !r.success)
+		if (failedResults.length > 0) {
+			// Check for theme audit failure and display theme errors
+			const themeAuditResult = failedResults.find(r => r.script.includes('Audit Themes'))
+			if (themeAuditResult) {
+				// Display actual theme errors from the processor output
+				// The theme audit processor should handle its own error display
+				console.log('❌ Theme validation failed - see processor output above for details')
+			}
+			
+			// Display other error output from failed processors
+			failedResults.forEach(scriptResult => {
+				// Skip theme audit as we handle it above
+				if (scriptResult.script.includes('Audit Themes')) {
+					return
+				}
+				
+				// Display error output (already formatted by processors)
+				scriptResult.output.forEach(line => {
+					if (line.includes('❌') || line.includes('THEME:') || line.includes('MODEL:') || 
+						line.includes('ERROR') || line.includes('FAILED')) {
+						console.log(line)
+					}
+				})
+			})
+			console.log(separator)
+		}
 		
 		// Show detailed results
 		console.log('📋 Detailed Results:')

@@ -14,7 +14,7 @@ export class IconProcessor {
 	/**
 	 * Process Icons - Complete workflow from external source to optimized output
 	 */
-	async process(verbose: boolean = false): Promise<boolean> {
+	async process(verbose: boolean = false, _demo: boolean = false): Promise<boolean> {
 		if (verbose) {
 			console.log('\n🔄 [ICON PROCESSING WORKFLOW]')
 			console.log('═══════════════════════════════════════════════════════════════')

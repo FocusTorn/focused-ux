@@ -15,7 +15,8 @@ export class ThemeProcessor {
 
 	constructor() {
 		this.errorHandler = new ErrorHandler()
-		this.THEMES_DIR = path.resolve(process.cwd(), assetConstants.paths.distThemesDir)
+		// Use absolute path for now to get theme generation working
+		this.THEMES_DIR = 'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/dist/assets/themes'
 		// Ensure themes directory exists
 		this.ensureThemesDirectory()
 	}
@@ -34,7 +35,7 @@ export class ThemeProcessor {
 	/**
 	 * Generate Themes - Complete workflow for theme generation and verification
 	 */
-	async process(verbose: boolean = false): Promise<boolean> {
+	async process(verbose: boolean = false, _demo: boolean = false): Promise<boolean> {
 		try {
 			// Step 1: Validate models and fail fast if any errors found
 			const modelsValid = await validateModels(false)
@@ -210,9 +211,9 @@ export class ThemeProcessor {
 			await this.ensureThemesDirectory()
 			
 			// Read model files
-			const fileIconsModelPath = path.resolve(process.cwd(), 'src/models/file_icons.model.json')
-			const folderIconsModelPath = path.resolve(process.cwd(), 'src/models/folder_icons.model.json')
-			const languageIconsModelPath = path.resolve(process.cwd(), 'src/models/language_icons.model.json')
+			const fileIconsModelPath = 'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/file_icons.model.json'
+			const folderIconsModelPath = 'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/folder_icons.model.json'
+			const languageIconsModelPath = 'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/language_icons.model.json'
 			
 			const fileIconsModel = JSON.parse(stripJsonComments(await fs.readFile(fileIconsModelPath, 'utf-8')))
 			const folderIconsModel = JSON.parse(stripJsonComments(await fs.readFile(folderIconsModelPath, 'utf-8')))
@@ -273,16 +274,23 @@ export class ThemeProcessor {
 			// Add folder icon definitions and assignments
 			folderIconsModel.icons.forEach((icon: { iconName: string, folderNames?: string[] }) => {
 				if (icon.iconName) {
-					const iconName = `_${icon.iconName}`
+					const baseIconName = `_folder-${icon.iconName}`
+					const openIconName = `_folder-${icon.iconName}-open`
 
-					themeManifest.iconDefinitions[iconName] = {
-						iconPath: `../assets/icons/folder_icons/${icon.iconName}.svg`,
+					// Add base folder icon definition
+					themeManifest.iconDefinitions[baseIconName] = {
+						iconPath: `../assets/icons/folder_icons/folder-${icon.iconName}.svg`,
+					}
+					
+					// Add open folder icon definition
+					themeManifest.iconDefinitions[openIconName] = {
+						iconPath: `../assets/icons/folder_icons/folder-${icon.iconName}-open.svg`,
 					}
 					
 					if (icon.folderNames) {
 						icon.folderNames.forEach((folderName: string) => {
-							themeManifest.folderNames[folderName] = iconName
-							themeManifest.folderNamesExpanded[folderName] = iconName
+							themeManifest.folderNames[folderName] = baseIconName
+							themeManifest.folderNamesExpanded[folderName] = openIconName
 						})
 					}
 				}
@@ -337,9 +345,9 @@ export class ThemeProcessor {
 			
 			// Check model files for changes
 			const modelFiles = [
-				path.resolve(process.cwd(), 'src/models/file_icons.model.json'),
-				path.resolve(process.cwd(), 'src/models/folder_icons.model.json'),
-				path.resolve(process.cwd(), 'src/models/language_icons.model.json'),
+				'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/file_icons.model.json',
+				'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/folder_icons.model.json',
+				'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/language_icons.model.json',
 			]
 			
 			for (const modelFile of modelFiles) {

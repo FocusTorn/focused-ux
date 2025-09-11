@@ -81,7 +81,10 @@ export class ErrorHandler {
 			}
 			console.log('─'.repeat(50))
 		} else {
-			console.log(`${severityIcon} ${error.message} (${error.context})`)
+			// Use red color for HIGH and CRITICAL severity errors
+			const colorCode = error.severity === ErrorSeverity.HIGH || error.severity === ErrorSeverity.CRITICAL ? '\x1b[31m' : ''
+			const resetCode = error.severity === ErrorSeverity.HIGH || error.severity === ErrorSeverity.CRITICAL ? '\x1b[0m' : ''
+			console.log(`${severityIcon} ${colorCode}${error.message} (${error.context})${resetCode}`)
 		}
 
 		// Log to file if critical
@@ -142,7 +145,7 @@ export class ErrorHandler {
 			case ErrorSeverity.MEDIUM:
 				return '🟡'
 			case ErrorSeverity.HIGH:
-				return '🟠'
+				return '❌'
 			case ErrorSeverity.CRITICAL:
 				return '🔴'
 			default:

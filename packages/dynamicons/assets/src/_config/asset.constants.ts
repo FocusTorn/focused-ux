@@ -12,6 +12,7 @@ export const assetConstants = {
 		newIconsDir: 'assets/icons/new_icons',
 		fileIconsDir: 'assets/icons/file_icons',
 		folderIconsDir: 'assets/icons/folder_icons',
+		languageIconsDir: 'assets/icons/file_icons', // Language icons use the same directory as file icons
 		distImagesDir: 'dist/assets/images/preview-images',
 		distPreviewImagesDir: 'dist/assets/images/preview-images',
 		distIconsDir: 'dist/assets/icons',

@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">98.8% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>78/78</span>
+                <span class='fraction'>83/84</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">98.8% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>78/78</span>
+                <span class='fraction'>83/84</span>
             </div>
         
             
@@ -200,7 +200,13 @@
 <a name='L135'></a><a href='#L135'>135</a>
 <a name='L136'></a><a href='#L136'>136</a>
 <a name='L137'></a><a href='#L137'>137</a>
-<a name='L138'></a><a href='#L138'>138</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -267,6 +273,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -290,7 +297,11 @@
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">9x</span>
@@ -314,6 +325,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -403,7 +415,8 @@ export class IconPickerService implements IIconPickerService {
 		if (assignableToType === 'folder' || !assignableToType) {
 			// console.log(`[IconPickerService] showAvailableIconsQuickPick - Loading folder icons...`)
 &nbsp;
-			const folderFilter = <span class="fstat-no" title="function not covered" >(name: string) =&gt; !name.endsWith(`${dynamiconsConstants.defaults.openFolderIconSuffix}.svg`)</span>
+			const folderFilter = <span class="fstat-no" title="function not covered" >(name: string) =&gt;</span>
+<span class="cstat-no" title="statement not covered" >				!name.endsWith(`${dynamiconsConstants.defaults.openFolderIconSuffix}.svg`)</span>
 &nbsp;
 			folderIconOptions = await this.iconDiscovery.getIconOptionsFromDirectory(folderIconsDir, 'folder', folderFilter)
 			// console.log(`[IconPickerService] showAvailableIconsQuickPick - Folder icons loaded:`, folderIconOptions.length)
@@ -426,11 +439,15 @@ export class IconPickerService implements IIconPickerService {
 			}
 		}
 &nbsp;
-		const filterFn = currentFilter || (() =&gt; true)
+		const filterFn = currentFilter || (() =&gt;
+			true)
 &nbsp;
-		fileIconOptions = fileIconOptions.filter(item =&gt; filterFn(item.iconNameInDefinitions))
-		folderIconOptions = folderIconOptions.filter(item =&gt; filterFn(item.iconNameInDefinitions))
-		userIconOptions = userIconOptions.filter(item =&gt; filterFn(item.iconNameInDefinitions))
+		fileIconOptions = fileIconOptions.filter(item =&gt;
+			filterFn(item.iconNameInDefinitions))
+		folderIconOptions = folderIconOptions.filter(item =&gt;
+			filterFn(item.iconNameInDefinitions))
+		userIconOptions = userIconOptions.filter(item =&gt;
+			filterFn(item.iconNameInDefinitions))
 &nbsp;
 		// console.log(`[IconPickerService] showAvailableIconsQuickPick - After filtering:`, { fileIconOptions: fileIconOptions.length, folderIconOptions: folderIconOptions.length, userIconOptions: userIconOptions.length })
 &nbsp;
@@ -451,7 +468,8 @@ export class IconPickerService implements IIconPickerService {
 &nbsp;
 		// console.log(`[IconPickerService] showAvailableIconsQuickPick - Combined options:`, combinedIconOptions.length)
 &nbsp;
-		const dataItems = combinedIconOptions.filter(item =&gt; 'iconNameInDefinitions' in item) as ICoreQuickPickItem[]
+		const dataItems = combinedIconOptions.filter(item =&gt;
+			'iconNameInDefinitions' in item) as ICoreQuickPickItem[]
 &nbsp;
 		// console.log(`[IconPickerService] showAvailableIconsQuickPick - Data items:`, dataItems.length)
 &nbsp;
@@ -481,7 +499,7 @@ export class IconPickerService implements IIconPickerService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-09-02T19:53:17.851Z
+                at 2025-09-10T21:00:35.278Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

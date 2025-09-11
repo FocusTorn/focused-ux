@@ -13,6 +13,7 @@ This protocol defines the comprehensive structure and content requirements for a
 - **Complete Conversation Coverage**: Action logs MUST reflect the ENTIRE conversation from initial prompt to completion, not just since summary creation
 - **Multi-Package Conversations**: If conversation spans multiple packages, each package's feature docs MUST be updated in the same comprehensive manner
 - **Chronological Accuracy**: Document events in the order they occurred, including all failed attempts and corrections
+- **Task Tracker Synchronization**: Both Actions Log entries and Task Tracker updates MUST reference the complete conversation from the very first prompt, not just recent completions
 
 #### **Data Verification Protocol**
 
@@ -28,6 +29,8 @@ This protocol defines the comprehensive structure and content requirements for a
 - **Completion Confirmation**: User must confirm work is actually complete before documentation
 - **Scope Definition**: Clearly define what should be documented based on user direction
 - **Success Focus**: Document successful outcomes and conversation elements that directly enabled success
+- **Documentation-Only Changes Excluded**: Documentation-only changes (updating docs, comments, README files) should NOT be tracked in completed tasks or actions log
+- **Code/Implementation Focus**: Only track changes that involve actual code implementation, bug fixes, feature additions, or architectural changes
 
 #### **Multi-Package Documentation Protocol**
 
@@ -37,6 +40,24 @@ This protocol defines the comprehensive structure and content requirements for a
 - **Consistent Structure**: All package-specific logs must follow the same 12-section structure
 - **Main Log Reference**: Package-specific logs should reference the main Actions Log entry for context
 
+#### **Task Tracker Integration Protocol**
+
+- **Automatic Updates**: Action log entries MUST automatically update the corresponding task tracker file
+- **Completed Tasks**: Move completed tasks from "Pending Tasks" to "Completed Tasks" section with timestamp
+- **New Tasks**: Add any new tasks identified during the conversation to "Pending Tasks" section
+- **Future Enhancements**: Add new proposed enhancements to "Future Enhancement Suggestions" section
+- **Conversation Reference**: All task tracker updates MUST reference the complete conversation from first prompt
+- **Consolidation**: Maintain consolidated "Future Enhancement Suggestions" section that aggregates all suggestions
+- **Deduplication**: When new enhancements are proposed, add them to consolidated list if unique, or add sub-bullets to existing items
+
+#### **Default Action Log Structure Protocol**
+
+- **Completed Tasks Placement**: Completed tasks MUST be placed underneath the "Future Enhancement Suggestions" section
+- **Combined Format**: Use simple flat list format with `- [x]` checkboxes for completed tasks
+- **No Duplicates**: Ensure only one "Completed Tasks" section exists per action log
+- **Chronological Order**: List completed tasks in chronological order of completion
+- **Comprehensive Coverage**: Include ALL completed tasks from the entire conversation, not just recent ones
+
 #### **Conversation Analysis Protocol**
 
 - **Systematic Review**: Review every turn of the conversation from initial user request to completion
@@ -44,6 +65,50 @@ This protocol defines the comprehensive structure and content requirements for a
 - **Success Analysis**: Document what core principles or patterns led to efficient and correct outcomes
 - **Failure Analysis**: Document where approach failed, root causes, and how user feedback corrected behavior
 - **Actionable Lessons**: Extract the most critical, transferable lessons from the interaction
+
+### **Mandatory Task Tracker Updates**
+
+Every action log entry MUST also update the corresponding task tracker file with the following process:
+
+#### **Task Tracker Update Process**
+
+1. **Read Current Task Tracker**: Load the current task tracker file (`packages/{package-name}/_docs/{package-name}-task-tracker.md`)
+2. **Identify Completed Tasks**: Review the conversation to identify all tasks that were completed (exclude documentation-only changes)
+3. **Move Completed Tasks**: Move completed tasks from "Pending Tasks" to "Completed Tasks" section with current timestamp
+4. **Add New Tasks**: Add any new tasks identified during the conversation to "Pending Tasks" section (exclude documentation-only tasks)
+5. **Update Future Enhancements**: Add new proposed enhancements to "Future Enhancement Suggestions" section
+6. **Maintain Consolidation**: Ensure the consolidated "Future Enhancement Suggestions" section aggregates all suggestions
+7. **Reference Complete Conversation**: All updates must reference the entire conversation from first prompt
+8. **Exclude Documentation Changes**: Do not track documentation-only changes (updating docs, comments, README files) in task tracker
+
+#### **Task Tracker Format Requirements**
+
+- **Completed Tasks**: Use format `- [YYYY-MM-DD HH:MM:SS]` with `- [x]` checkboxes for individual tasks
+- **Pending Tasks**: Use format `- [ ]` checkboxes for incomplete tasks
+- **Future Enhancements**: Use bold categories with sub-bullets for specific suggestions
+- **Chronological Order**: List completed tasks in chronological order of completion
+- **No Duplicates**: Ensure no duplicate tasks exist across sections
+
+#### **What Should Be Tracked**
+
+**Include in Completed Tasks and Actions Log:**
+
+- Code implementation changes (new features, bug fixes, refactoring)
+- Architectural changes (package structure, build system modifications)
+- Configuration changes (project.json, package.json, build configs)
+- Test implementation (unit tests, integration tests, test frameworks)
+- Performance improvements (optimizations, caching implementations)
+- Error handling improvements (validation, error recovery)
+- CLI/API changes (new commands, parameter changes)
+
+**Exclude from Completed Tasks and Actions Log:**
+
+- Documentation updates (README files, comments, doc strings)
+- Markdown file changes (guides, tutorials, explanations)
+- Comment-only changes (code comments, inline documentation)
+- Formatting changes (whitespace, indentation, style)
+- Documentation reorganization (moving docs, renaming files)
+- Protocol file updates (unless they involve actual implementation changes)
 
 ### **Mandatory Sections**
 
@@ -225,6 +290,15 @@ Before finalizing any action log entry, verify:
 - [ ] Prevention strategies are actionable and specific
 - [ ] Multi-package conversations have package-specific logs created
 - [ ] Package-specific logs follow same comprehensive structure
+- [ ] **Task Tracker Updated**: Corresponding task tracker file has been updated with completed tasks, new tasks, and future enhancements
+- [ ] **Completed Tasks Moved**: All completed tasks moved from "Pending Tasks" to "Completed Tasks" with timestamps
+- [ ] **New Tasks Added**: Any new tasks identified during conversation added to "Pending Tasks"
+- [ ] **Future Enhancements Updated**: New proposed enhancements added to "Future Enhancement Suggestions"
+- [ ] **Conversation Reference**: All task tracker updates reference the complete conversation from first prompt
+- [ ] **No Duplicates**: No duplicate tasks exist across sections
+- [ ] **Proper Formatting**: Task tracker uses correct checkbox format and chronological ordering
+- [ ] **Documentation Changes Excluded**: Documentation-only changes (README, comments, docs) are NOT tracked in completed tasks or actions log
+- [ ] **Code/Implementation Focus**: Only actual code implementation, bug fixes, features, and architectural changes are tracked
 
 ### **Examples**
 
@@ -288,6 +362,37 @@ Before finalizing any action log entry, verify:
 
 - How asset processing changes affected core package structure
 - How build configuration changes impacted extension package dependencies
+
+#### **Good Task Tracker Integration**
+
+**Actions Log Entry**: `packages/dynamicons/_docs/assets-actions-log.md`
+
+- Comprehensive entry covering entire conversation from first prompt
+- Completed tasks moved to "Completed Tasks" section with timestamps
+- New tasks added to "Pending Tasks" section
+- Future enhancements added to "Future Enhancement Suggestions"
+
+**Task Tracker Updates**: `packages/dynamicons/_docs/assets-task-tracker.md`
+
+- **Completed Tasks Section**:
+    - [2025-09-08 06:06:54]
+        - [x] Script cleanup and consolidation
+        - [x] Package architecture conversion (scripts → core package)
+        - [x] Build system integration (@nx/esbuild:esbuild)
+    - [2025-09-09 08:44:17]
+        - [x] Create test setup file with proper mocking and helpers
+        - [x] Add granular CLI control for individual processors
+        - [x] Implement sophisticated cascading dependency logic
+
+- **Pending Tasks Section**:
+    - [ ] Implement proper audit processors
+    - [ ] Add rollback logic
+    - [ ] Test different scenarios
+
+- **Future Enhancement Suggestions**:
+    - **Performance and Optimization**: Nx caching integration, parallel processing
+    - **Reliability and Error Handling**: Rollback system, validation pipeline
+    - **Monitoring and Analytics**: Performance monitoring, asset versioning
 
 #### **Good Performance Metrics**
 

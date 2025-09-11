@@ -7,11 +7,11 @@
         { "iconName": "build", "folderNames": ["build", "_build"] },
         { "iconName": "config", "folderNames": ["config", "_config", "configs", "configuration", ".arduino15", ".user"] },
         { "iconName": "c", "folderNames": ["c"] },
-        { "iconName": "book", "folderNames": [".logs", "docs", "documents", "documentation"] },
-        { "iconName": "cardboard-box", "folderNames": ["_assets", "assets", "resources", "assets"] },
-        { "iconName": "cp", "folderNames": ["cp", "cpp"] },
+        { "iconName": "book", "folderNames": [".logs"] },
+        { "iconName": "cardboard-box", "folderNames": ["_assets", "assets", "resources"] },
+        { "iconName": "cp", "folderNames": ["cp"] },
         { "iconName": "cmake", "folderNames": ["CMakeFiles", ".cmake"] },
-        { "iconName": "cpp", "folderNames": ["cp"] },
+        { "iconName": "cpp", "folderNames": ["cpp"] },
         { "iconName": "core-alt", "folderNames": ["core"] },
         { "iconName": "env", "folderNames": [".venv"] },
         { "iconName": "eslint", "folderNames": [".eslint"] },
@@ -52,6 +52,12 @@
         { "iconName": "vscode", "folderNames": [".vscode"] },
         { "iconName": "webpack", "folderNames": [".devcontainer"] },
         { "iconName": "yarn", "folderNames": [".yarn"] }
+
+        // ,{ "iconName": "yarn", "folderNames": [".yarn"] }
+        // ,{ "iconName": "not-yarn", "folderNames": [".yarn"] }
+        
+        
+        
     ],
     "unassigned": [
         "arduino",

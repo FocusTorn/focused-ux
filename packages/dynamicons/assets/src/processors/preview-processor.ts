@@ -26,7 +26,7 @@ export class PreviewProcessor {
 	/**
 	 * Generate preview images from SVG icons
 	 */
-	async process(verbose: boolean = false): Promise<boolean> {
+	async process(verbose: boolean = false, _demo: boolean = false): Promise<boolean> {
 		// Check if preview generation is needed
 		const needsGeneration = await this.checkIfPreviewGenerationNeeded()
 		
@@ -48,7 +48,7 @@ export class PreviewProcessor {
 		console.log(`  Folder icons: ${assetConstants.paths.folderIconsDir}`)
 		console.log(`  Output: ${assetConstants.paths.distPreviewImagesDir}`)
 		
-		return await this.generatePreviews('all', verbose)
+		return await this.generatePreviews('all', !verbose)
 	}
 
 	/**
