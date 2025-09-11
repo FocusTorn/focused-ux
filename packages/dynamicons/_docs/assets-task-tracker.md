@@ -74,15 +74,13 @@ This section consolidates all enhancement suggestions from individual entries. W
 - **Considered and deemed unnecessary**:
     - **Asset Versioning**: Versioning system to support rollback and comparison is not needed as any errors causing a critical failure need to be remediated and assets regenerated.
     - **Rollback Logic**: Implement rollback behavior for partial failures as documented in execution flow scenarios
+    - **Change Detection**: ✅ **ALREADY OPTIMIZED** - The original orchestrator already implements sophisticated change detection (checkIconChanges, checkModelChanges, checkThemeFilesMissing, checkPreviewImagesMissing) that only runs processors when needed
+    - **Nx Caching Leverage**: ❌ **NOT A VALUE-ADD** - Nx caching approach abandoned as it doesn't provide benefits over the existing orchestrator. The orchestrator already has better change detection than Nx can provide for external files outside the workspace
 
 - **Performance Enhancements**:
     - **Parallel Processing**: Implement concurrent processing of independent asset types (icons, themes, previews) for faster execution
     - **Batch Processing**: Support batch processing of multiple asset sets or configurations
     - **Large-Scale Processing**: Add capabilities for processing large icon sets (1000+ icons) efficiently
-
-- **Redundancy Reduction**:
-    - **Change Detection**: Implement file watching and incremental processing to only regenerate assets when source files change
-    - **Nx Caching Leverage**: Utilize Nx's intelligent caching system for asset processing steps to avoid redundant work
 
 - **Asset Optimization**:
     - **Advanced Optimization**: Add more sophisticated optimization strategies beyond SVGO (WebP conversion, responsive variants)
