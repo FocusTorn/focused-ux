@@ -10,21 +10,25 @@
             "outputs": ["{options.outputPath}"],
             "dependsOn": ["^build", "@fux/dynamicons-assets:generate-assets"],
             "options": {
-                "entryPoints": ["packages/dynamicons/ext/src/extension.ts"],
-                "outputPath": "packages/dynamicons/ext/dist",
-                "format": ["cjs"],
-                "metafile": true,
+
+                "main": "packages/dynamicons/ext/src/extension.ts",
+                "tsConfig": "packages/dynamicons/ext/tsconfig.json",
+                "entryPoints": [
+                    "packages/dynamicons/ext/src/extension.ts"
+                ],
+
                 "platform": "node",
-                "bundle": true,
+                "format": ["cjs"],
+                "outputPath": "packages/dynamicons/ext/dist",
                 "external": [
                     "vscode",
                     "strip-json-comments",
                     "@fux/dynamicons-assets"
                 ],
-                "sourcemap": true,
-                "main": "packages/dynamicons/ext/src/extension.ts",
-                "tsConfig": "packages/dynamicons/ext/tsconfig.json",
-                "thirdParty": true
+                
+                "metafile": true,
+                "bundle": true,
+                "sourcemap": true
             }
         }, //<
         

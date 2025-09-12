@@ -1,15 +1,13 @@
 {
     "extends": "../../../tsconfig.base.json",
-
     "include": ["src/**/*"],
     "exclude": ["node_modules", "**/*.test.ts", "__tests__/**/*", "dist/**/*"],
-
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
-        "composite": true
+        "composite": true,
+        "noEmit": true
     },
-
     "references": [
         {
             "path": "../assets"

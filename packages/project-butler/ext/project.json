@@ -10,26 +10,25 @@
             "outputs": ["{options.outputPath}"],
             "dependsOn": ["^build"],
             "options": {
-                "entryPoints": ["packages/project-butler/ext/src/extension.ts"],
-                "outputPath": "packages/project-butler/ext/dist",
-                "format": ["cjs"],
-                "metafile": true,
+
+                "main": "packages/project-butler/ext/src/extension.ts",
+                "tsConfig": "packages/project-butler/ext/tsconfig.json",
+                "entryPoints": [
+                    "packages/project-butler/ext/src/extension.ts"
+                ],
+                
                 "platform": "node",
-                "bundle": true,
+                "format": ["cjs"],
+                "outputPath": "packages/project-butler/ext/dist",
                 "external": [
                     "vscode",
                     "js-yaml"
                 ],
-                "sourcemap": true,
-                "main": "packages/project-butler/ext/src/extension.ts",
-                "tsConfig": "packages/project-butler/ext/tsconfig.json"
-                // ,"assets": [
-                //     {
-                //         "glob": "**/*",
-                //         "input": "packages/project-butler/ext/assets/",
-                //         "output": "./assets/"
-                //     }
-                // ]
+                
+                "metafile": true,
+                "bundle": true,
+                "sourcemap": true
+                
             }
         },
 

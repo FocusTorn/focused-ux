@@ -12,6 +12,30 @@ $script:FUX_PROFILE_LOADED = $true
 
 
 
+function cat {
+    [CmdletBinding(DefaultParameterSetName='Path', SupportsShouldProcess=$false)]
+    param(
+        [Parameter(ParameterSetName='Path', Position=0, ValueFromPipeline=$false)]
+        [string[]] $Path,
+
+        [Parameter(ParameterSetName='LiteralPath', ValueFromPipelineByPropertyName=$true)]
+        [string[]] $LiteralPath,
+
+        [Parameter(ValueFromPipeline=$true)]
+        $InputObject
+    )
+
+    # If called with args like `cat file.txt`, delegate to Get-Content
+    if ($PSBoundParameters.ContainsKey('Path') -or $PSBoundParameters.ContainsKey('LiteralPath')) {
+        return Get-Content @PSBoundParameters
+    }
+
+    # Pipeline-only usage: act as pass-through and warn once per invocation
+    begin { Write-Host "Note: '| cat' is a pass-through here." -ForegroundColor Yellow }
+    process { $_ }
+}
+
+
 # . "$PSScriptRoot\..\..\libs\tools\aka\ps\aka.ps1"
 
 
