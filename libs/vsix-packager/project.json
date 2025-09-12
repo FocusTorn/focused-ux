@@ -1,7 +1,7 @@
 {
-    "name": "@fux/vscode-test-cli-config",
+    "name": "@fux/vsix-packager",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "libs/vscode-test-cli-config/src",
+    "sourceRoot": "libs/tools/vsix-packager/src",
     "projectType": "library",
     "targets": {
         "build": {
@@ -10,9 +10,9 @@
                 "{options.outputPath}"
             ],
             "options": {
-                "main": "libs/vscode-test-cli-config/src/index.ts",
-                "outputPath": "libs/vscode-test-cli-config/dist",
-                "tsConfig": "libs/vscode-test-cli-config/tsconfig.lib.json",
+                "main": "libs/vsix-packager/src/index.ts",
+                "outputPath": "libs/vsix-packager/dist",
+                "tsConfig": "libs/vsix-packager/tsconfig.lib.json",
                 "platform": "node",
                 "format": [
                     "esm"
@@ -32,9 +32,5 @@
             "extends": "clean"
         }
     },
-    "tags": [
-        "lib",
-        "util",
-        "tools"
-    ]
+    "tags": ["type:tool", "scope:vsix-packager"]
 }

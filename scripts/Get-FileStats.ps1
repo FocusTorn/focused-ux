@@ -149,3 +149,10 @@ $result = [PSCustomObject]@{
 
 # Return the result object
 return $result
+
+<#
+--- DEPRECATED (commented out): Modified version kept for reference ---
+
+REPLACED PREVIOUS CONTENT
+
+#>

@@ -8,7 +8,7 @@
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build", "@fux/dynamicons-assets:generate-assets", "sync-assets-staging"],
+            "dependsOn": ["^build", "@fux/dynamicons-assets:generate-assets"],
             "options": {
                 "entryPoints": ["packages/dynamicons/ext/src/extension.ts"],
                 "outputPath": "packages/dynamicons/ext/dist",
@@ -18,7 +18,8 @@
                 "bundle": true,
                 "external": [
                     "vscode",
-                    "strip-json-comments"
+                    "strip-json-comments",
+                    "@fux/dynamicons-assets"
                 ],
                 "sourcemap": true,
                 "main": "packages/dynamicons/ext/src/extension.ts",
@@ -27,50 +28,39 @@
             }
         }, //<
         
-        "generate-and-sync-assets": {
+        // Original script-based packaging (commented out in favor of tool-based approach)
+        // "package": { //>
+        //     "executor": "nx:run-commands",
+        //     "dependsOn": ["build"],
+        //     "options": {
+        //         "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages"
+        //     }
+        // }, //<
+        "package:devog": { //>
             "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/dist/assets"],
-            "dependsOn": ["@fux/dynamicons-assets:generate-assets"],
-            "options": {
-                "command": "npx tsx ../../dynamicons/assets/scripts/sync-to-ext.ts --target dynamicons-ext",
-                "cwd": "{projectRoot}"
-            },
-            "description": "Generate all assets and sync to extension package"
-        },
-        "prepackage": {
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/dist/assets"],
             "dependsOn": ["build"],
-            "options": {
-                "command": "robocopy assets-staging dist/assets /E /NFL /NDL /NJH /NJS /NC /NS /NP",
-                "cwd": "{projectRoot}"
-            },
-            "description": "Build extension and sync assets for packaging/debugging"
-        },
-        "sync-assets-staging": {
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/assets-staging"],
-            "options": {
-                "command": "npx tsx scripts/sync-to-ext.ts --target dynamicons-ext --staging",
-                "cwd": "{workspaceRoot}/packages/dynamicons/assets"
-            },
-            "description": "Sync assets to staging directory (outside dist)"
-        },
-        "package": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": ["prepackage"],
-            "options": {
-                "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages"
-            }
-        }, //<
-        "package:dev": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": ["prepackage"],
             "options": {
                 "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages --dev",
                 "outputPath": "vsix_packages"
             }
         }, //<
+        
+        // New tool-based packaging targets (direct execution with tsx)
+        "package": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "npx tsx libs/tools/vsix-packager/src/index.ts packages/dynamicons/ext vsix_packages"
+            }
+        }, //<
+        "package:dev": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build"],
+            "options": {
+                "command": "npx tsx libs/tools/vsix-packager/src/index.ts packages/dynamicons/ext vsix_packages --dev"
+            }
+        },
+        
         "publish": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["package"],

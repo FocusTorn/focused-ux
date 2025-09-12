@@ -3,6 +3,14 @@
     "version": "0.0.0",
     "type": "module",
     "private": true,
+    "exports": {
+        "./themes/*": "./dist/assets/themes/*",
+        "./icons/*": "./dist/assets/icons/*",
+        "./images/*": "./dist/assets/images/*",
+        "./logo": "./assets/logo.jpeg",
+        "./themes/focused-ux-colors": "./dist/assets/themes/focused-ux-colors.theme.json",
+        "./themes/dynamicons": "./dist/assets/themes/dynamicons.theme.json"
+    },
     "devDependencies": {
         "@nx/eslint": "^21.4.1",
         "@nx/vite": "^21.4.1",

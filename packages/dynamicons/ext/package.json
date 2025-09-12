@@ -7,6 +7,7 @@
     "version": "0.2.0",
     "dependencies": {
         "@fux/dynamicons-core": "workspace:*",
+        "@fux/dynamicons-assets": "workspace:*",
         "strip-json-comments": "^5.0.2"
     },
     "devDependencies": {
@@ -27,14 +28,14 @@
             {
                 "label": "Focused UX Color Theme",
                 "uiTheme": "vs-dark",
-                "path": "assets/themes/focused-ux-colors.theme.json"
+                "path": "./node_modules/@fux/dynamicons-assets/dist/assets/themes/focused-ux-colors.theme.json"
             }
         ],
         "iconThemes": [
             {
                 "id": "dynamicons-theme",
                 "label": "Dynamicons",
-                "path": "./assets/themes/dynamicons.theme.json",
+                "path": "./node_modules/@fux/dynamicons-assets/dist/assets/themes/dynamicons.theme.json",
                 "_watch": true
             }
         ],
@@ -145,7 +146,7 @@
     "activationEvents": [
         "onStartupFinished"
     ],
-    "icon": "assets/logo.jpeg",
+    "icon": "./assets/logo.jpeg",
     "categories": [
         "Themes"
     ],

@@ -358,6 +358,9 @@ importers:
 
   packages/dynamicons/ext:
     dependencies:
+      '@fux/dynamicons-assets':
+        specifier: workspace:*
+        version: link:../assets
       '@fux/dynamicons-core':
         specifier: workspace:*
         version: link:../core

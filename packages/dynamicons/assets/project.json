@@ -22,7 +22,7 @@
                 "keepNames": true,
                 "declarationRootDir": "packages/dynamicons/assets/src",
                 "thirdParty": false,
-                "deleteOutputPath": true,
+                "deleteOutputPath": false,
                 "external": [
                 ]
             }
@@ -86,7 +86,6 @@
             ],
             "description": "Build package and generate all assets in one command"
         },
-        
         
         // Standard ==================================================================================================================================
         

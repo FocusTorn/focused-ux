@@ -20,13 +20,13 @@ import {
 	CommonUtilsAdapter,
 	UriAdapter,
 } from './adapters/index.js'
+import { AssetPathResolver } from './utils/asset-path-resolver.js'
 
 const EXT_NAME = 'dynamicons'
 const CONFIG_PREFIX = dynamiconsConstants.configPrefix
 const COMMANDS = dynamiconsConstants.commands
 const ICON_THEME_ID = dynamiconsConstants.iconThemeId
 const CONFIG_KEYS = dynamiconsConstants.configKeys
-const ASSETS_PATHS = dynamiconsConstants.assets
 const DEFAULT_FILENAMES = dynamiconsConstants.defaults
 
 // Prevent multiple activations
@@ -41,9 +41,9 @@ async function getGeneratedThemePath(context: ExtensionContext, workspace: any):
 		DEFAULT_FILENAMES.generatedThemeFilenameDefault,
 	)
 
-	const baseUri = context.extensionUri
-	
-	const fullUri = Uri.joinPath(baseUri, ASSETS_PATHS.themesPath, generatedThemeFileName || '')
+	// Use asset path resolver to get the theme path from the assets package
+	const themePath = AssetPathResolver.getThemePath(generatedThemeFileName || '')
+	const fullUri = Uri.file(themePath)
 	
 	if (!fullUri || fullUri.fsPath.trim() === '') {
 		throw new Error('Generated theme URI is empty or invalid')
@@ -59,9 +59,9 @@ async function getBaseThemePath(context: ExtensionContext, workspace: any): Prom
 		DEFAULT_FILENAMES.baseThemeFilenameDefault,
 	)
 
-	const baseUri = context.extensionUri
-
-	const fullUri = Uri.joinPath(baseUri, ASSETS_PATHS.themesPath, baseThemeFileName || '')
+	// Use asset path resolver to get the theme path from the assets package
+	const themePath = AssetPathResolver.getThemePath(baseThemeFileName || '')
+	const fullUri = Uri.file(themePath)
 	
 	if (!fullUri || fullUri.fsPath.trim() === '') {
 		throw new Error('Base theme URI is empty or invalid')
@@ -71,28 +71,26 @@ async function getBaseThemePath(context: ExtensionContext, workspace: any): Prom
 }
 
 async function ensureThemeAssets(context: ExtensionContext, fileSystem: any, uriAdapter: any, window: any): Promise<void> {
-	const themesDirUri = uriAdapter.joinPath(uriAdapter.create(context.extensionUri), ASSETS_PATHS.themesPath)
+	// With direct imports from assets package, we don't need to ensure local assets
+	// The assets are available directly from the @fux/dynamicons-assets package
+	// This function is kept for compatibility but no longer needs to create local assets
+	
 	const baseThemeUri = await getBaseThemePath(context, new WorkspaceAdapter())
 	const generatedThemeUri = await getGeneratedThemePath(context, new WorkspaceAdapter())
 
-	try {
-		await fileSystem.access(themesDirUri)
-	}
-	catch {
-		await fileSystem.mkdir(themesDirUri, { recursive: true })
-	}
-
-	const defaultBaseManifest = {
-		iconDefinitions: {
-			_file: { iconPath: './icons/file.svg' },
-		},
-		file: '_file',
-	}
-
+	// Check if base theme exists in assets package
 	try {
 		await fileSystem.access(baseThemeUri)
 	}
 	catch {
+		// If base theme doesn't exist in assets package, create a default one
+		const defaultBaseManifest = {
+			iconDefinitions: {
+				_file: { iconPath: './icons/file.svg' },
+			},
+			file: '_file',
+		}
+
 		await fileSystem.writeFile(baseThemeUri, `${JSON.stringify(defaultBaseManifest, null, 4)}\n`)
 
 		await window.showInformationMessage(
@@ -100,6 +98,7 @@ async function ensureThemeAssets(context: ExtensionContext, fileSystem: any, uri
 		)
 	}
 
+	// Generated theme will be created by the theme generation process
 	try {
 		await fileSystem.access(generatedThemeUri)
 	}
