@@ -62,6 +62,9 @@
         },
         {
             "path": "./packages/dynamicons/assets"
+        },
+        {
+            "path": "./libs/vsix-packager"
         }
     ]
 }

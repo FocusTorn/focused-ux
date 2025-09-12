@@ -1,4 +1,12 @@
 {
+    
+    "files.exclude": {
+        
+        "tmp/deploy/*/node_modules": false,
+        "node_modules/**": true,
+        
+    },
+    
     "eslint.useFlatConfig": true,
     "eslint.workingDirectories": ["./"],
     "eslint.format.enable": true,
@@ -49,9 +57,7 @@
     "eslint.lintTask.enable": true,
     "eslint.run": "onType",
     "eslint.codeActionsOnSave.mode": "all",
-    "files.exclude": {
-        "**/node_modules/**": true
-    },
+
     "terminal.integrated.profiles.windows": {
         "FUX PowerShell": {
             "source": "PowerShell",

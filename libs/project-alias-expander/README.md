@@ -87,6 +87,14 @@ The PowerShell module is automatically regenerated in these scenarios:
 
 ## Usage
 
+### Quick-start and pitfalls
+
+- **List available aliases and targets**: `pae help`
+- **Run with PAE**: `pae <alias> <target>` (e.g., `pae dce package:dev`)
+- **Run without PAE**: `nx run <project>:<target>` (e.g., `nx run @fux/dynamicons-ext:package:dev`)
+- **PowerShell note**: Don’t pipe PAE output to `cat`. Use `pae help` directly without `| cat`.
+- **Missing alias**: If you see `Alias 'xyz' is not defined`, the alias doesn’t exist. Check the tables below or update `libs/project-alias-expander/config.json` to add it.
+
 ### Basic Syntax
 
 ```bash

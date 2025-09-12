@@ -22,14 +22,14 @@
                 ],
                 "sourcemap": true,
                 "main": "packages/project-butler/ext/src/extension.ts",
-                "tsConfig": "packages/project-butler/ext/tsconfig.json",
-                "assets": [
-                    {
-                        "glob": "**/*",
-                        "input": "packages/project-butler/ext/assets/",
-                        "output": "./assets/"
-                    }
-                ]
+                "tsConfig": "packages/project-butler/ext/tsconfig.json"
+                // ,"assets": [
+                //     {
+                //         "glob": "**/*",
+                //         "input": "packages/project-butler/ext/assets/",
+                //         "output": "./assets/"
+                //     }
+                // ]
             }
         },
 

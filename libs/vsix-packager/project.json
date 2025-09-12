@@ -1,7 +1,7 @@
 {
     "name": "@fux/vsix-packager",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "libs/tools/vsix-packager/src",
+    "sourceRoot": "libs/vsix-packager/src",
     "projectType": "library",
     "targets": {
         "build": {
@@ -24,6 +24,35 @@
                 "thirdParty": false,
                 "deleteOutputPath": false
             }
+        },
+        "cli": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "options": {
+                "main": "libs/vsix-packager/src/cli/index.ts",
+                "outputPath": "libs/vsix-packager/dist",
+                "tsConfig": "libs/vsix-packager/tsconfig.lib.json",
+                "platform": "node",
+                "format": [
+                    "esm"
+                ],
+                "bundle": false,
+                "sourcemap": true,
+                "target": "es2022",
+                "keepNames": true,
+                "thirdParty": false,
+                "deleteOutputPath": false
+            }
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": [
+                "{options.reportsDirectory}"
+            ],
+            "dependsOn": ["^build"],
+            "options": {}
         },
         "lint": {
             "extends": "lint"

@@ -45,19 +45,27 @@
             }
         }, //<
         
-        // New tool-based packaging targets (direct execution with tsx)
+        // New library-based packaging targets (build CLI then run)
         "package": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "npx tsx libs/tools/vsix-packager/src/index.ts packages/dynamicons/ext vsix_packages"
+                "commands": [
+                    "nx run @fux/vsix-packager:cli",
+                    "node libs/vsix-packager/dist/cli/index.js packages/dynamicons/ext vsix_packages"
+                ],
+                "parallel": false
             }
         }, //<
         "package:dev": {
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
             "options": {
-                "command": "npx tsx libs/tools/vsix-packager/src/index.ts packages/dynamicons/ext vsix_packages --dev"
+                "commands": [
+                    "nx run @fux/vsix-packager:cli",
+                    "node libs/vsix-packager/dist/cli/index.js packages/dynamicons/ext vsix_packages --dev"
+                ],
+                "parallel": false
             }
         },
         
