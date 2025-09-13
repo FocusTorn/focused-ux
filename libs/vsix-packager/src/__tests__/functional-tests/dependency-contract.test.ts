@@ -5,13 +5,13 @@ import { join, resolve } from 'node:path'
 
 describe('vsix-packager dependency contract', () => {
     const workspaceRoot = resolve(process.cwd())
-    const extDir = 'packages/dynamicons/ext'
+    const extDir = 'packages/project-butler/ext'
     const outDir = 'vsix_packages_test'
     const outAbs = join(workspaceRoot, outDir)
 
     it('packages with external runtime deps staged (strip-json-comments present)', () => {
         // Build extension first to ensure dist exists
-        execSync('nx run @fux/dynamicons-ext:build', { stdio: 'inherit' })
+        execSync('nx run @fux/project-butler-ext:build', { stdio: 'inherit' })
         // Build CLI
         execSync('nx run @fux/vsix-packager:cli', { stdio: 'inherit' })
         // Clean output
@@ -26,5 +26,9 @@ describe('vsix-packager dependency contract', () => {
         expect(existsSync(expectedVsix)).toBe(true)
     })
 })
+
+
+
+
 
 

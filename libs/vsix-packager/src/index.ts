@@ -1,5 +1,8 @@
 import { resolve, join } from 'node:path'
 import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, unlinkSync } from 'node:fs'
+import { createRequire } from 'node:module'
+
+const requireCjs = createRequire(import.meta.url)
 import { execSync, spawnSync } from 'node:child_process'
 
 export interface PackagerOptions {
@@ -37,8 +40,24 @@ function finishProgress(): void {
     process.stderr.write(`\r${' '.repeat(120)}\r\n`)
 }
 
+function loadPackagerConfig(workspaceRoot: string): any {
+    try {
+        const configPath = join(workspaceRoot, 'libs', 'vsix-packager', 'config.json')
+        if (existsSync(configPath)) {
+            const raw = readFileSync(configPath, 'utf-8')
+            const parsed = JSON.parse(raw)
+            // Debug: show config summary
+            console.log(`[vsix-packager] Loaded config raw: ${raw}`)
+            console.log(`[vsix-packager] Loaded config: deploy=${parsed?.pathing?.['deploy-output']?.path ?? 'n/a'}, extract=${parsed?.pathing?.['vsix-contents']?.extract ?? false}, extractPath=${parsed?.pathing?.['vsix-contents']?.path ?? 'n/a'}`)
+            return parsed
+        }
+    } catch {}
+    return null
+}
+
 export function packageExtension(options: PackagerOptions): PackagerResult {
     const workspaceRoot = resolve(process.cwd())
+    const cfg = loadPackagerConfig(workspaceRoot)
     const packageDir = join(workspaceRoot, options.extensionDir)
     const packageJsonPath = join(packageDir, 'package.json')
     const originalPackageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
@@ -46,8 +65,12 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
     const vsixBaseName: string = originalPackageJson.name
     const outputVsixName = vsixBaseName.startsWith('fux-') ? vsixBaseName.slice(4) : vsixBaseName
 
-    const deployDir = join(workspaceRoot, 'tmp', 'deploy', vsixBaseName)
-    const finalOutputDir = join(workspaceRoot, options.outputDir)
+    const baseHash = process.env.NX_TASK_HASH ? process.env.NX_TASK_HASH.slice(0, 9) : 'local'
+    const uniqueId = `${baseHash}-${process.pid}-${Math.floor(Math.random() * 1_000_000)}`
+    const deployBase = cfg?.pathing?.['deploy-output']?.path || join('tmp', 'deploy')
+    const deployDir = join(workspaceRoot, deployBase, `${vsixBaseName}-${uniqueId}`)
+    const configuredVsixOut = cfg?.pathing?.['vsix-package-output'] || null
+    const finalOutputDir = join(workspaceRoot, options.outputDir || configuredVsixOut || 'vsix_packages')
 
     let vsixFilename = `${outputVsixName}-${originalVersion}.vsix`
 
@@ -122,8 +145,20 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
     const vsixOutputPath = join(finalOutputDir, vsixFilename)
     const vscodeignorePath = join(deployDir, '.vscodeignore')
     const originalVscodeignore = existsSync(vscodeignorePath) ? readFileSync(vscodeignorePath, 'utf-8') : ''
-    const tempVscodeignore = `${originalVscodeignore}\nnode_modules/**\n`
-    writeFileSync(vscodeignorePath, tempVscodeignore)
+    if (originalVscodeignore !== '') {
+        const filtered = originalVscodeignore
+            .split(/\r?\n/)
+            .filter((line) => {
+                const trimmed = line.trim()
+                if (trimmed === '' || trimmed.startsWith('#')) return true
+                // Drop rules that exclude dist or node_modules so they are INCLUDED in VSIX
+                if (/^dist\/?(\*\*)?$/.test(trimmed)) return false
+                if (/^node_modules\/?(\*\*)?$/.test(trimmed)) return false
+                return true
+            })
+            .join('\n')
+        writeFileSync(vscodeignorePath, filtered)
+    }
 
     let result = spawnSync('vsce', ['package', '--no-dependencies', '-o', vsixOutputPath], {
         cwd: deployDir,
@@ -153,6 +188,34 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
     } else if (existsSync(vscodeignorePath)) {
         try { unlinkSync(vscodeignorePath) } catch {}
     }
+
+    // Optionally extract VSIX contents for inspection
+    try {
+        const extractCfg = cfg?.pathing?.['vsix-contents']
+        console.log(`[vsix-packager] Extraction config present: ${!!extractCfg}, extract=${extractCfg?.extract === true}`)
+        if (extractCfg?.extract === true) {
+            // Lazy-load adm-zip to avoid cost if not extracting
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const AdmZip = requireCjs('adm-zip')
+            const zip = new AdmZip(vsixOutputPath)
+            const extractBase = extractCfg.path || '.vpack/contents'
+            const extractDir = join(workspaceRoot, extractBase, `${outputVsixName}`)
+            mkdirSync(extractDir, { recursive: true })
+            zip.extractAllTo(extractDir, true)
+            console.log(`Extracted VSIX contents to: ${extractDir}`)
+        }
+    } catch (err) {
+        console.error('VSIX extraction skipped due to error:', err)
+    }
+
+    // Cleanup deploy dir if not persistent
+    try {
+        const persistent = cfg?.pathing?.['deploy-output']?.persistant
+        if (persistent === false) {
+            const { sync: rimrafSync } = requireCjs('rimraf')
+            rimrafSync(deployDir)
+        }
+    } catch {}
 
     updateProgress(7, 'Done')
     finishProgress()

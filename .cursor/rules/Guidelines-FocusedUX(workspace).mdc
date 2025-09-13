@@ -13,7 +13,6 @@ alwaysApply: true
 1. **Read Rules** → Always read this file first (natural habit)
 2. **Discover Tools** → Run `pae help` to see available commands
 3. **Check Docs** → Look in `docs/` before creating solutions
-4. **Build First** → Run `{alias} b` before testing
 
 ### Documentation First Protocol
 
@@ -21,6 +20,8 @@ alwaysApply: true
 - **Reference existing patterns** directly in responses
 - **Execute documented solutions** without additional analysis
 - **Prevent violations** by never creating solutions when documentation exists
+- **Testing Strategy**: ALWAYS check `docs/FocusedUX-Testing-Strategy.md` before creating any test setup
+- **Architecture Patterns**: ALWAYS check `docs/Architecture.md` before creating any package structure
 
 ### Personality Activation
 
@@ -135,7 +136,7 @@ alwaysApply: true
 
 ### When I see "build" → I think "run build first"
 
-### When I see "test" → I think "build then test"
+### When I see "test" → I think "run tests"
 
 ### When I see "pae" → I think "check available aliases"
 
@@ -175,6 +176,7 @@ alwaysApply: true
 - Documentation questions → "Check docs/ before creating"
 - Package confusion → "Check package type and path"
 - **Creating solutions without checking docs** → "STOP! Check docs/ first - this is a critical violation"
+- **Creating test setups without checking testing strategy** → "STOP! Check docs/FocusedUX-Testing-Strategy.md first - this is a critical violation"
 
 ### Pattern Recognition
 

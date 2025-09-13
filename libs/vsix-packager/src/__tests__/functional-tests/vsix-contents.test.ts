@@ -11,12 +11,12 @@ const pipe = promisify(pipeline)
 
 describe('vsix-packager vsix contents', () => {
     const workspaceRoot = resolve(process.cwd())
-    const extDir = 'packages/dynamicons/ext'
+    const extDir = 'packages/project-butler/ext'
     const outDir = 'vsix_packages_test'
     const outAbs = join(workspaceRoot, outDir)
 
     it('creates a VSIX file', async () => {
-        execSync('nx run @fux/dynamicons-ext:build', { stdio: 'inherit' })
+        execSync('nx run @fux/project-butler-ext:build', { stdio: 'inherit' })
         execSync('nx run @fux/vsix-packager:cli', { stdio: 'inherit' })
         if (existsSync(outAbs)) rmSync(outAbs, { recursive: true, force: true })
         execSync(`node libs/vsix-packager/dist/cli/index.js ${extDir} ${outDir}`, { stdio: 'inherit' })
@@ -27,5 +27,9 @@ describe('vsix-packager vsix contents', () => {
         expect(existsSync(expectedVsix)).toBe(true)
     })
 })
+
+
+
+
 
 

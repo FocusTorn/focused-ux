@@ -1,0 +1,87 @@
+{
+    "name": "fux-project-butler",
+    "displayName": "F-UX: Project Butler",
+    "description": "A VSCode extension for project management utilities including package.json formatting, terminal management, backup creation, and Poetry shell integration.",
+    "publisher": "NewRealityDesigns",
+    "repository": "https://github.com/FocusTorn/focused-ux",
+    "version": "0.1.0-dev.965130348",
+    "devDependencies": {
+        "@fux/vscode-test-cli-config": "workspace:*",
+        "@types/js-yaml": "^4.0.9",
+        "@types/mocha": "^10.0.6",
+        "@types/node": "^24.0.10",
+        "@types/vscode": "^1.99.3",
+        "@vitest/coverage-v8": "^3.2.4",
+        "@vscode/test-cli": "^0.0.11",
+        "@vscode/test-electron": "^2.5.2",
+        "glob": "^10.3.10",
+        "mocha": "^10.3.0",
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4"
+    },
+    "contributes": {
+        "commands": [
+            {
+                "command": "fux-project-butler.formatPackageJson",
+                "title": "Project Butler: Format Package.json",
+                "category": "Project Butler"
+            },
+            {
+                "command": "fux-project-butler.updateTerminalPath",
+                "title": "Project Butler: CD to Here",
+                "category": "Project Butler"
+            },
+            {
+                "command": "fux-project-butler.createBackup",
+                "title": "Project Butler: Create Backup",
+                "category": "Project Butler"
+            },
+            {
+                "command": "fux-project-butler.enterPoetryShell",
+                "title": "Project Butler: Enter Poetry Shell",
+                "category": "Project Butler"
+            }
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "submenu": "fux-project-butler.submenu",
+                    "when": "true",
+                    "group": "navigation"
+                }
+            ],
+            "fux-project-butler.submenu": [
+                {
+                    "command": "fux-project-butler.formatPackageJson",
+                    "when": "resourceExtname == .json && resourceFilename == package.json"
+                },
+                {
+                    "command": "fux-project-butler.updateTerminalPath",
+                    "when": "true"
+                },
+                {
+                    "command": "fux-project-butler.createBackup",
+                    "when": "true"
+                },
+                {
+                    "command": "fux-project-butler.enterPoetryShell",
+                    "when": "true"
+                }
+            ]
+        },
+        "submenus": [
+            {
+                "id": "fux-project-butler.submenu",
+                "label": "Project Butler"
+            }
+        ]
+    },
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "engines": {
+        "vscode": "^1.99.3"
+    },
+    "private": true,
+    "main": "./dist/extension.cjs"
+}

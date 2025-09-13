@@ -1,11 +1,20 @@
 {
     "mcpServers": {
-        "nx-mcp": {
+        "nx-mcp_dlx_og": {
             "command": "pnpm",
             "args": [
                 "dlx",
                 "nx-mcp@latest"
             ]
+        },
+        "nx-mcp_local_og": {
+            "command": "pnpm",
+            "args": ["exec", "nx-mcp"]
+        },
+        "nx-mcp": {
+            "command": "nx-mcp",
+            "args": []
         }
+        
     }
 }

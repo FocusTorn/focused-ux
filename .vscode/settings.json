@@ -58,10 +58,4 @@
     "eslint.run": "onType",
     "eslint.codeActionsOnSave.mode": "all",
 
-    "terminal.integrated.profiles.windows": {
-        "FUX PowerShell": {
-            "source": "PowerShell",
-            "args": ["-NoExit", "-Command", ". .vscode/shell/profile.ps1"]
-        }
-    }
 }

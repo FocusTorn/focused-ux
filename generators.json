@@ -1,9 +1,0 @@
-{
-    "generators": {
-        "trial": {
-            "factory": "./dist/plugins/trial/src/generators/trial/trial",
-            "schema": "./dist/plugins/trial/src/generators/trial/schema.json",
-            "description": "trial generator"
-        }
-    }
-}

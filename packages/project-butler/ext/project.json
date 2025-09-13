@@ -34,22 +34,27 @@
 
         "package": {
             "executor": "nx:run-commands",
-            "dependsOn": [
-                "build"
-            ],
+            "dependsOn": ["build"],
             "options": {
-                "command": "node scripts/create-vsix.js packages/project-butler/ext vsix_packages"
-            }
+                "commands": [
+                    "nx run @fux/vsix-packager:cli",
+                    "node libs/vsix-packager/dist/cli/index.js packages/project-butler/ext vsix_packages"
+                ],
+                "parallel": false
+            },
+            "outputs": ["{workspaceRoot}/vsix_packages"]
         },
         "package:dev": {
             "executor": "nx:run-commands",
-            "dependsOn": [
-                "build"
-            ],
+            "dependsOn": ["build"],
             "options": {
-                "command": "node scripts/create-vsix.js packages/project-butler/ext vsix_packages --dev",
-                "outputPath": "vsix_packages"
-            }
+                "commands": [
+                    "nx run @fux/vsix-packager:cli",
+                    "node libs/vsix-packager/dist/cli/index.js packages/project-butler/ext vsix_packages --dev"
+                ],
+                "parallel": false
+            },
+            "outputs": ["{workspaceRoot}/vsix_packages"]
         },
         "publish": {
             "executor": "nx:run-commands",

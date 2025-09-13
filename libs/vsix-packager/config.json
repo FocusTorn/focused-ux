@@ -1,0 +1,7 @@
+{
+    "pathing": {
+        "deploy-output": { "path": ".vpack/deploy", "persistant": false },
+        "vsix-contents": { "path": ".vpack/contents", "extract": false },
+        "vsix-package-output": "vsix_packages"
+    }
+}

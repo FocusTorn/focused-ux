@@ -7,6 +7,32 @@
     "settings": {
         
         
+        "terminal.integrated.profiles.windows": {
+            "FUX": { //>
+                "source": "PowerShell",
+                "args": ["-NoExit", "-Command", ". .vscode/shell/profile.ps1"],
+            }, //<
+            "FUX Git Bash": { //>
+            "path": "C:/Program Files/Git/bin/bash.exe",
+            "args": [
+                "--login",
+                "-i",
+                "-c",
+                ". ./.vscode/shell/profile.sh; exec bash --login -i"
+            ]
+        }, //<
+        },
+
+        "terminal.integrated.automationProfile.windows": {
+            "path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+        },
+
+        "terminal.integrated.defaultProfile.windows": "FUX Git Bash",
+        
+        
+        
+        
+        
         "search.exclude": {
             "**/node_modules": true,
             "**/.turbo": true,
@@ -25,17 +51,5 @@
         "typescript.tsdk": "node_modules\\typescript\\lib",
         "workbench.settings.openDefaultSettings": false,
 
-        "terminal.integrated.profiles.windows": {
-            "FUX": {
-                "source": "PowerShell",
-                "args": ["-NoExit", "-Command", ". .vscode/shell/profile.ps1"],
-            },
-        },
-
-        "terminal.integrated.automationProfile.windows": {
-            "path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
-        },
-
-        "terminal.integrated.defaultProfile.windows": "FUX",
     },
 }
