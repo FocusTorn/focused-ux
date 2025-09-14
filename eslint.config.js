@@ -421,23 +421,49 @@ export default combine(
 			'toml/indent': ['warn', 4],
 		},
 	}, //<
-	{ name: 'focused-ux/json-rules', //>
-		files: ['**/*.json'],
-		rules: {
-			'jsonc/indent': ['warn', 4],
-			'jsonc/quotes': ['warn', 'double'],
-			'jsonc/no-dupe-keys': 'error',
-		},
-	}, //<
-	{ name: 'focused-ux/jsonc-rules', //>
-		files: ['**/*.jsonc'],
-		rules: {
-			'jsonc/indent': ['warn', 4],
-			'jsonc/quotes': ['warn', 'double'],
-			'jsonc/no-dupe-keys': 'error',
-		},
-	}, //<
+	
+    // { name: 'focused-ux/json-rules', //>
+	// 	files: ['**/*.json'],
+	// 	rules: {
+	// 		'jsonc/quotes': ['warn', 'double'],
+	// 		'jsonc/no-dupe-keys': 'error',
+            
+    //         // 'jsonc/indent': ['warn', 4],
+    //         "jsonc/indent": "off",
+    //         "jsonc/object-curly-newline": "off",
+    //         "jsonc/object-property-newline": "off",
+    //         "jsonc/array-element-newline": "off",
+    //         "jsonc/array-bracket-newline": "off",
+    //         "jsonc/array-bracket-spacing": "off",
+    //         "jsonc/object-curly-spacing": "off",
+    //         "jsonc/key-spacing": "off",
+    //         "jsonc/comma-style": "off"
+            
+	// 	},
+	// }, //<
+	
+    
+    // { name: 'focused-ux/jsonc-rules', //>
+	// 	files: ['**/*.jsonc'],
+	// 	rules: {
+			
+	// 		'jsonc/quotes': ['warn', 'double'],
+	// 		'jsonc/no-dupe-keys': 'error',
+            
+            
+    //         // 'jsonc/indent': ['warn', 4],
+    //         "jsonc/indent": "off",
+    //         "jsonc/object-curly-newline": "off",
+    //         "jsonc/object-property-newline": "off",
+    //         "jsonc/array-element-newline": "off",
+    //         "jsonc/array-bracket-newline": "off",
+    //         "jsonc/array-bracket-spacing": "off",
+    //         "jsonc/object-curly-spacing": "off",
+    //         "jsonc/key-spacing": "off",
+    //         "jsonc/comma-style": "off"
+            
+            
+	// 	},
+	// }, //<
 
-	// Note: Nx module boundaries rule temporarily disabled due to rule name issues
-	// The main performance optimizations (import rules, TypeScript rules) are active
 )
