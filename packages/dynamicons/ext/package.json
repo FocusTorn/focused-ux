@@ -11,7 +11,6 @@
         "strip-json-comments": "^5.0.2"
     },
     "devDependencies": {
-        "@fux/vscode-test-cli-config": "workspace:*",
         "@types/mocha": "^10.0.6",
         "@types/node": "^24.0.10",
         "@types/vscode": "^1.99.3",

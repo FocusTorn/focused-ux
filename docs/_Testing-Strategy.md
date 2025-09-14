@@ -469,3 +469,100 @@ export default createVscodeTestConfig({
 3. **Thin Extension Wrappers** - Business logic in core only
 4. **Simple Testing** - Clear separation of concerns
 5. **Individual Exports** - Tree-shaking optimization
+
+## VS Code Test Helper Integration (Preferred)
+
+Purpose: use the monorepo helper (`@fux/vscode-test-cli-config`) for integration tests without pulling it into extension builds.
+
+- Why
+    - Keep extension builds fast and stable (no unintended graph edges)
+    - Keep the helper strictly test-only
+
+- Do (Preferred pattern)
+    - Do not add a TS project reference to `libs/vscode-test-cli-config` in extension `tsconfig.json`
+    - Do not list `@fux/vscode-test-cli-config` in the extension's `devDependencies`
+    - Build the helper right before integration tests
+    - Import the helper from its built dist in `.vscode-test.mjs`
+    - Point `files` and `setupFiles` to your compiled test output (often under `__tests__/_out-tsc/suite`)
+
+- Example: project.json (extension)
+
+```json
+{
+    "targets": {
+        "test:compile": {
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/__tests__/_out-tsc"],
+            "options": {
+                "commands": ["tsc -p packages/<feature>/ext/__tests__/tsconfig.test.json"]
+            }
+        },
+        "test:integration": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build", "test:compile"],
+            "options": {
+                "commands": [
+                    "nx run @fux/vscode-test-cli-config:build",
+                    "vscode-test --config .vscode-test.mjs"
+                ],
+                "cwd": "packages/<feature>/ext"
+            }
+        }
+    }
+}
+```
+
+- Example: `.vscode-test.mjs`
+
+```js
+import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Import helper from built dist to avoid adding a package/devDep edge
+const helperUrl = new URL('../../../libs/vscode-test-cli-config/dist/index.js', import.meta.url)
+const { createVscodeTestConfig } = await import(helperUrl.href)
+
+export default createVscodeTestConfig({
+    packageName: 'fux-<feature>',
+    extensionDevelopmentPath: __dirname,
+    workspaceFolder: './__tests__/integration-tests/mocked-workspace',
+    files: './__tests__/_out-tsc/suite/**/*.test.js',
+    setupFiles: './__tests__/_out-tsc/suite/index.js',
+})
+```
+
+- Example: `__tests__/tsconfig.test.json`
+
+```json
+{
+    "extends": "../../../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./_out-tsc",
+        "rootDir": "./integration-tests",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "types": ["node", "mocha"],
+        "composite": false,
+        "declaration": false,
+        "sourceMap": true,
+        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo"
+    },
+    "include": ["integration-tests/**/*.ts"]
+}
+```
+
+- Anti-patterns (avoid)
+    - Static import of `@fux/vscode-test-cli-config` in extension source or `.vscode-test.mjs`
+    - Adding `@fux/vscode-test-cli-config` to extension `devDependencies`
+    - TS project references to `libs/vscode-test-cli-config` in extension `tsconfig.json`
+    - Relying on `"^build"` to incidentally build the helper
+
+- Migration steps
+    - Remove TS reference to `libs/vscode-test-cli-config` from extension `tsconfig.json`
+    - Remove `@fux/vscode-test-cli-config` from extension `devDependencies`
+    - Add a pre-step to build the helper in `test:integration*` commands
+    - Switch `.vscode-test.mjs` to import helper from its built dist
+    - Adjust `files`/`setupFiles` to the compiled `suite` paths if used

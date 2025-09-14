@@ -11,9 +11,6 @@
     "references": [
         {
             "path": "../core"
-        },
-        {
-            "path": "../../../libs/vscode-test-cli-config"
         }
     ]
 }

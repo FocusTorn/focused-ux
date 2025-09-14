@@ -1,5 +1,5 @@
 import { resolve, join } from 'node:path'
-import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, unlinkSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, unlinkSync, readdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
 
 const requireCjs = createRequire(import.meta.url)
@@ -30,7 +30,10 @@ function spinnerRender(): void {
 
 function spinnerStart(text: string): void {
     spinnerText = text
-    if (!spinnerEnabled) return
+    if (!spinnerEnabled) {
+        process.stderr.write(`[packager] ${spinnerText}\n`)
+        return
+    }
     if (spinnerTimer) {
         clearInterval(spinnerTimer)
         spinnerTimer = null
@@ -41,7 +44,10 @@ function spinnerStart(text: string): void {
 
 function spinnerTick(text?: string): void {
     if (text) spinnerText = text
-    if (!spinnerEnabled) return
+    if (!spinnerEnabled) {
+        process.stderr.write(`[packager] ${spinnerText}\n`)
+        return
+    }
     spinnerRender()
 }
 
@@ -91,10 +97,18 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
 
     spinnerStart('Preparing deployment directory')
     // Clean handled by caller if needed; ensure directories exist
-    if (overwrite && existsSync(deployDir)) {
+    if (overwrite) {
         try {
             const { sync: rimrafSync } = requireCjs('rimraf')
-            rimrafSync(deployDir)
+            const deployRoot = join(workspaceRoot, deployBase)
+            if (existsSync(deployRoot)) {
+                const entries = readdirSync(deployRoot, { withFileTypes: true })
+                for (const entry of entries) {
+                    if (entry.isDirectory() && entry.name.startsWith(`${vsixBaseName}-`)) {
+                        try { rimrafSync(join(deployRoot, entry.name)) } catch {}
+                    }
+                }
+            }
         } catch {}
     }
     mkdirSync(deployDir, { recursive: true })

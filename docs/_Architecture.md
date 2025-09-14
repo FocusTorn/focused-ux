@@ -683,3 +683,10 @@ Core packages MUST process assets to their own `dist/assets` directory and NEVER
 - Process only changed assets for incremental builds
 - Maintain full processing capability for complete rebuilds
 - Support both incremental and full processing modes
+
+### VS Code Integration Test Helper (Note)
+
+- The monorepo helper `@fux/vscode-test-cli-config` is a test-only dependency.
+- Do not create build graph edges from extensions to this helper (no TS project refs, no devDependency in extensions).
+- Preferred pattern: build the helper as a pre-step in integration test targets and import it from its built dist in `.vscode-test.mjs`.
+- Benefit: keeps extension builds fast and predictable while preserving consistent test configuration.

@@ -8,7 +8,12 @@
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build", "@fux/dynamicons-assets:generate-assets"],
+
+            "dependsOn": [ //"^build", "@fux/dynamicons-assets:generate-assets"],
+                { "projects": ["@fux/dynamicons-core"], "target": "build", "params": "ignore" },
+                "@fux/dynamicons-assets:generate-assets"
+            ],
+
             "options": {
 
                 "main": "packages/dynamicons/ext/src/extension.ts",
@@ -127,7 +132,10 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build", "test:compile"],
             "options": {
-                "command": "vscode-test --config .vscode-test.mjs",
+                "commands": [
+                    "nx run @fux/vscode-test-cli-config:build",
+                    "vscode-test --config .vscode-test.mjs"
+                ],
                 "cwd": "packages/dynamicons/ext"
             },
             "configurations": {},
@@ -137,7 +145,10 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build", "test:compile"],
             "options": {
-                "command": "vscode-test --config .vscode-test.mjs --coverage",
+                "commands": [
+                    "nx run @fux/vscode-test-cli-config:build",
+                    "vscode-test --config .vscode-test.mjs --coverage"
+                ],
                 "cwd": "packages/dynamicons/ext"
             },
             "configurations": {},

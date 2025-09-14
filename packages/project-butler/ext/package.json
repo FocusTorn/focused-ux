@@ -10,7 +10,6 @@
         "js-yaml": "^4.1.0"
     },
     "devDependencies": {
-        "@fux/vscode-test-cli-config": "workspace:*",
         "@types/js-yaml": "^4.0.9",
         "@types/mocha": "^10.0.6",
         "@types/node": "^24.0.10",

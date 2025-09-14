@@ -8,7 +8,9 @@
         "build": {
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build"],
+            "dependsOn": [ // "^build"],
+                { "projects": ["@fux/project-butler-core"], "target": "build", "params": "ignore" }
+            ],
             "options": {
 
                 "main": "packages/project-butler/ext/src/extension.ts",
@@ -101,9 +103,13 @@
         
         "test:integration": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["build", "test:compile"],
+            "dependsOn": [
+                "build",
+                "test:compile"
+            ],
             "options": {
                 "commands": [
+                    "nx run @fux/vscode-test-cli-config:build",
                     // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
                     "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
                 ],
@@ -114,9 +120,13 @@
          
         "test:integration:noisy": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["build", "test:compile"],
+            "dependsOn": [
+                "build",
+                "test:compile"
+            ],
             "options": {
                 "commands": [
+                    "nx run @fux/vscode-test-cli-config:build",
                     // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
                     "vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec"
                 ],

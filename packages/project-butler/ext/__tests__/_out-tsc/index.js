@@ -33,6 +33,6 @@ exports.mochaHooks = {
         console.log('--- Teardown complete ---');
         // A small delay to ensure VS Code processes can settle before the test runner exits.
         await new Promise(resolve => setTimeout(resolve, 500));
-    }
+    },
 };
 //# sourceMappingURL=index.js.map
