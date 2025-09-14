@@ -15,29 +15,43 @@ export interface PackagerResult {
     vsixPath: string
 }
 
-const steps = [
-    'Preparing deployment directory',
-    'Preparing package.json',
-    'Copying build artifacts',
-    'Resolving dependencies',
-    'Constructing node_modules',
-    'Packaging VSIX',
-    'Cleanup',
-]
+const SPINNER_FRAMES = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏']
+let spinnerTimer: ReturnType<typeof setInterval> | null = null
+let spinnerIndex = 0
+let spinnerText = ''
+const spinnerEnabled = typeof process.stderr.isTTY === 'boolean' ? process.stderr.isTTY : false
 
-function updateProgress(step: number, message = ''): void {
-    const stepName = steps[step - 1] || 'Unknown'
-    const percentage = Math.round((step / steps.length) * 100)
-    const bar = '█'.repeat(Math.floor(percentage / 10)) + '░'.repeat(10 - Math.floor(percentage / 10))
-    const text = `VSIX Packaging |${bar}| ${percentage}% | ${step}/${steps.length} | ${stepName}`
-    process.stderr.write(`\r${text.padEnd(80)}`)
-    if (message) {
-        // Write an additional short note in verbose scenarios if needed later
-    }
+function spinnerRender(): void {
+    const frame = SPINNER_FRAMES[spinnerIndex]
+    const line = `${frame} ${spinnerText}`
+    process.stderr.write(`\r${line.padEnd(80)}`)
+    spinnerIndex = (spinnerIndex + 1) % SPINNER_FRAMES.length
 }
 
-function finishProgress(): void {
-    process.stderr.write(`\r${' '.repeat(120)}\r\n`)
+function spinnerStart(text: string): void {
+    spinnerText = text
+    if (!spinnerEnabled) return
+    if (spinnerTimer) {
+        clearInterval(spinnerTimer)
+        spinnerTimer = null
+    }
+    spinnerRender()
+    spinnerTimer = setInterval(spinnerRender, 80)
+}
+
+function spinnerTick(text?: string): void {
+    if (text) spinnerText = text
+    if (!spinnerEnabled) return
+    spinnerRender()
+}
+
+function spinnerStop(finalText?: string): void {
+    if (spinnerTimer) {
+        clearInterval(spinnerTimer)
+        spinnerTimer = null
+    }
+    const endLine = finalText ? `✔ ${finalText}` : `✔ ${spinnerText}`
+    process.stderr.write(`\r${endLine.padEnd(80)}\n`)
 }
 
 function loadPackagerConfig(workspaceRoot: string): any {
@@ -67,22 +81,31 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
     const baseHash = process.env.NX_TASK_HASH ? process.env.NX_TASK_HASH.slice(0, 9) : 'local'
     const uniqueId = `${baseHash}-${process.pid}-${Math.floor(Math.random() * 1_000_000)}`
     const deployBase = cfg?.pathing?.['deploy-output']?.path || join('tmp', 'deploy')
-    const deployDir = join(workspaceRoot, deployBase, `${vsixBaseName}-${uniqueId}`)
+    const overwrite = cfg?.pathing?.['deploy-output']?.overwrite === true
+    const deployDirName = overwrite ? `${vsixBaseName}-local` : `${vsixBaseName}-${uniqueId}`
+    const deployDir = join(workspaceRoot, deployBase, deployDirName)
     const configuredVsixOut = cfg?.pathing?.['vsix-package-output'] || null
     const finalOutputDir = join(workspaceRoot, options.outputDir || configuredVsixOut || 'vsix_packages')
 
     let vsixFilename = `${outputVsixName}-${originalVersion}.vsix`
 
-    updateProgress(1, 'Cleaning and creating directories')
+    spinnerStart('Preparing deployment directory')
     // Clean handled by caller if needed; ensure directories exist
+    if (overwrite && existsSync(deployDir)) {
+        try {
+            const { sync: rimrafSync } = requireCjs('rimraf')
+            rimrafSync(deployDir)
+        } catch {}
+    }
     mkdirSync(deployDir, { recursive: true })
     mkdirSync(finalOutputDir, { recursive: true })
 
-    updateProgress(2, 'Prepare package.json for staging')
+    spinnerTick('Preparing package.json')
     const finalPackageJson = { ...originalPackageJson }
     if (options.dev) {
         const taskHash = process.env.NX_TASK_HASH
         if (!taskHash) {
+            spinnerStop('Failed')
             throw new Error('NX_TASK_HASH environment variable not found for dev build.')
         }
         const shortHash = taskHash.slice(0, 9)
@@ -90,10 +113,10 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
         vsixFilename = `${outputVsixName}-dev.vsix`
         finalPackageJson.version = finalVersion
     }
-    delete finalPackageJson.dependencies
+    // Keep dependencies so vsce includes production node_modules in the package.
     writeFileSync(join(deployDir, 'package.json'), JSON.stringify(finalPackageJson, null, 4))
 
-    updateProgress(3, 'Copy build artifacts and assets')
+    spinnerTick('Copying build artifacts')
     const assetsToCopy = ['dist', 'assets', 'README.md', 'LICENSE.txt', 'CHANGELOG.md', '.vscodeignore']
     for (const asset of assetsToCopy) {
         const source = join(packageDir, asset)
@@ -103,7 +126,7 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
         }
     }
 
-    updateProgress(4, 'Resolve production dependency tree via pnpm list')
+    spinnerTick('Resolving dependencies')
     const pnpmListOutput = execSync(`pnpm list --prod --json --depth=Infinity`, {
         cwd: packageDir,
         encoding: 'utf-8',
@@ -111,7 +134,7 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
     })
     const pnpmList = JSON.parse(pnpmListOutput)
 
-    updateProgress(5, 'Construct node_modules from resolved deps (skip link:)')
+    spinnerTick('Constructing node_modules')
     const deployNodeModules = join(deployDir, 'node_modules')
     mkdirSync(deployNodeModules, { recursive: true })
     const projectDeps = pnpmList.length > 0 ? pnpmList[0].dependencies : undefined
@@ -134,29 +157,32 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
                         }
                     }
                 }
+                // animate during large copy operations
+                spinnerTick('Constructing node_modules')
                 if (depInfo.dependencies) copyDependencyTree(depInfo.dependencies, processed)
             }
         }
     }
     copyDependencyTree(projectDeps)
 
-    updateProgress(6, 'Package with vsce')
+    spinnerTick('Packaging VSIX')
     const vsixOutputPath = join(finalOutputDir, vsixFilename)
     const vscodeignorePath = join(deployDir, '.vscodeignore')
     const originalVscodeignore = existsSync(vscodeignorePath) ? readFileSync(vscodeignorePath, 'utf-8') : ''
     if (originalVscodeignore !== '') {
-        const filtered = originalVscodeignore
-            .split(/\r?\n/)
-            .filter((line) => {
-                const trimmed = line.trim()
-                if (trimmed === '' || trimmed.startsWith('#')) return true
-                // Drop rules that exclude dist or node_modules so they are INCLUDED in VSIX
-                if (/^dist\/?(\*\*)?$/.test(trimmed)) return false
-                if (/^node_modules\/?(\*\*)?$/.test(trimmed)) return false
-                return true
-            })
-            .join('\n')
-        writeFileSync(vscodeignorePath, filtered)
+        const lines = originalVscodeignore.split(/\r?\n/)
+        const kept = lines.filter((line) => {
+            const trimmed = line.trim()
+            if (trimmed === '' || trimmed.startsWith('#')) return true
+            if (/^dist\/?(\*\*)?$/.test(trimmed)) return false
+            if (/^node_modules\/?(\*\*)?$/.test(trimmed)) return false
+            return true
+        })
+        const ensure = ['!dist/**', '!node_modules/**']
+        const merged = [...kept, ...ensure]
+        writeFileSync(vscodeignorePath, merged.join('\n'))
+    } else {
+        writeFileSync(vscodeignorePath, ['!dist/**', '!node_modules/**'].join('\n'))
     }
 
     let result = spawnSync('vsce', ['package', '--no-dependencies', '-o', vsixOutputPath], {
@@ -171,13 +197,13 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
         try {
             execSync(vsceCommand, { cwd: deployDir, encoding: 'utf-8', timeout: 300000, env: { ...process.env, NODE_NO_WARNINGS: '1', NODE_OPTIONS: '--no-warnings' } })
         } catch (err) {
-            finishProgress()
+            spinnerStop('Failed')
             throw err
         }
     }
 
     if (!existsSync(vsixOutputPath)) {
-        finishProgress()
+        spinnerStop('Failed')
         throw new Error(`vsce completed but VSIX was not created at: ${vsixOutputPath}`)
     }
 
@@ -201,23 +227,23 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
             const extractDir = join(workspaceRoot, extractBase, `${outputVsixName}`)
             mkdirSync(extractDir, { recursive: true })
             zip.extractAllTo(extractDir, true)
-            console.log(`Extracted VSIX contents to: ${extractDir}`)
+            // console.log(`Extracted VSIX contents to: ${extractDir}`)
         }
     } catch (err) {
-        console.error('VSIX extraction skipped due to error:', err)
+        // console.error('VSIX extraction skipped due to error:', err)
     }
 
     // Cleanup deploy dir if not persistent
     try {
-        const persistent = cfg?.pathing?.['deploy-output']?.persistant
+        const persistent = cfg?.pathing?.['deploy-output']?.persistent ?? cfg?.pathing?.['deploy-output']?.persistant
         if (persistent === false) {
             const { sync: rimrafSync } = requireCjs('rimraf')
             rimrafSync(deployDir)
         }
     } catch {}
 
-    updateProgress(7, 'Done')
-    finishProgress()
+    spinnerTick('Cleanup')
+    spinnerStop('Done')
     return { vsixPath: vsixOutputPath }
 }
 

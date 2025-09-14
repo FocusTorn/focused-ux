@@ -10,14 +10,10 @@ describe('vsix-packager dependency contract', () => {
     const outAbs = join(workspaceRoot, outDir)
 
     it('packages with external runtime deps staged (strip-json-comments present)', () => {
-        // Build extension first to ensure dist exists
-        execSync('nx run @fux/project-butler-ext:build', { stdio: 'inherit' })
-        // Build CLI
-        execSync('nx run @fux/vsix-packager:cli', { stdio: 'inherit' })
         // Clean output
         if (existsSync(outAbs)) rmSync(outAbs, { recursive: true, force: true })
-        // Run packaging
-        execSync(`node libs/vsix-packager/dist/cli/index.js ${extDir} ${outDir}`, { stdio: 'inherit' })
+        // Run packaging via Nx target (dependsOn ensures builds)
+        execSync(`nx run @fux/project-butler-ext:package`, { stdio: 'inherit' })
 
         // Find output file path by convention
         const pkgJson = require(join(workspaceRoot, extDir, 'package.json'))

@@ -131,7 +131,7 @@
         "alias": "@fux/project-alias-expander",
         "obs": "@fux/observability",
         "vsct": "@fux/vscode-test-cli-config",
-        "vsix": "@fux/vsix-packager"
+        "vpack": "@fux/vsix-packager"
         
     }
 }

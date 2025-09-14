@@ -2,7 +2,7 @@
 packages/dynamicons/ext/assets-staging
 dc-assets-backup
 
-
+.agentic
 
 #= COMPILED OUTPUT ==========================================
 dist
@@ -69,3 +69,10 @@ vite.config.*.timestamp*
 vitest.config.*.timestamp*
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+.vpack
+
+# git ls-files -ci --exclude-standard
+# git rm -r --cached _reports/coverage
+# git rm -r --cached -- ':(glob)**/_reports/coverage/**'
+

@@ -16,15 +16,21 @@ describe('vsix-packager vsix contents', () => {
     const outAbs = join(workspaceRoot, outDir)
 
     it('creates a VSIX file', async () => {
-        execSync('nx run @fux/project-butler-ext:build', { stdio: 'inherit' })
-        execSync('nx run @fux/vsix-packager:cli', { stdio: 'inherit' })
         if (existsSync(outAbs)) rmSync(outAbs, { recursive: true, force: true })
-        execSync(`node libs/vsix-packager/dist/cli/index.js ${extDir} ${outDir}`, { stdio: 'inherit' })
+        execSync(`nx run @fux/project-butler-ext:package`, { stdio: 'inherit' })
 
         const pkgJson = JSON.parse(readFileSync(join(workspaceRoot, extDir, 'package.json'), 'utf-8'))
         const vsixBase = pkgJson.name.startsWith('fux-') ? pkgJson.name.slice(4) : pkgJson.name
         const expectedVsix = join(outAbs, `${vsixBase}-${pkgJson.version}.vsix`)
         expect(existsSync(expectedVsix)).toBe(true)
+
+        // Also assert that extracted contents include node_modules/js-yaml (extraction enabled in config)
+        const extractedRoot = join(workspaceRoot, '.vpack', 'contents', vsixBase, 'extension')
+        // If extraction path exists, verify node_modules
+        if (existsSync(extractedRoot)) {
+            const jsYamlPkg = join(extractedRoot, 'node_modules', 'js-yaml', 'package.json')
+            expect(existsSync(jsYamlPkg)).toBe(true)
+        }
     })
 })
 

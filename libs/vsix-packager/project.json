@@ -46,6 +46,14 @@
                 "deleteOutputPath": false
             }
         },
+        "run": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["cli"],
+            "options": {
+                "command": "node libs/vsix-packager/dist/cli/index.js {args}" ,
+                "parallel": false
+            }
+        },
         "test": {
             "executor": "@nx/vite:test",
             "outputs": [

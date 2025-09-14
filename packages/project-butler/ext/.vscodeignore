@@ -23,7 +23,7 @@
 out-tsc/**
 tests/**
 dist/
-node_modules/
+# node_modules/
 .DS_Store
 *.log
 .nyc_output
