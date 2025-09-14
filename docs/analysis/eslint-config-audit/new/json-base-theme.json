@@ -1,0 +1,17 @@
+{
+  "linterOptions": {
+    "reportUnusedDisableDirectives": 1
+  },
+  "rules": {},
+  "plugins": [
+    "@",
+    "jsonc:eslint-plugin-jsonc@2.20.1"
+  ],
+  "language": "@/js",
+  "languageOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2026,
+    "parser": "jsonc-eslint-parser@2.4.0",
+    "parserOptions": {}
+  }
+}

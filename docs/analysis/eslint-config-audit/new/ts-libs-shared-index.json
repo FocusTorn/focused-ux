@@ -1,0 +1,225 @@
+{
+  "linterOptions": {
+    "reportUnusedDisableDirectives": 1
+  },
+  "rules": {
+    "license-header/header": [
+      0
+    ],
+    "license/unknown": [
+      0
+    ],
+    "no-console": [
+      0,
+      {}
+    ],
+    "no-unused-vars": [
+      0
+    ],
+    "antfu/curly": [
+      0
+    ],
+    "space-in-parens": [
+      1,
+      "never"
+    ],
+    "unicorn/prefer-module": [
+      0
+    ],
+    "unicorn/prefer-node-protocol": [
+      0
+    ],
+    "node/prefer-global/process": [
+      0
+    ],
+    "antfu/consistent-list-newline": [
+      0
+    ],
+    "comma-spacing": [
+      1,
+      {
+        "before": false,
+        "after": true
+      }
+    ],
+    "no-extra-semi": [
+      1
+    ],
+    "operator-linebreak": [
+      1,
+      "before"
+    ],
+    "unused-imports/no-unused-vars": [
+      1,
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "caughtErrors": "all",
+        "caughtErrorsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "ts/no-explicit-any": [
+      1
+    ],
+    "style/implicit-arrow-linebreak": [
+      1,
+      "below"
+    ],
+    "style/max-statements-per-line": [
+      0
+    ],
+    "style/no-tabs": [
+      0
+    ],
+    "style/spaced-comment": [
+      0
+    ],
+    "style/indent": [
+      1,
+      "tab"
+    ],
+    "style/no-mixed-spaces-and-tabs": [
+      1,
+      "smart-tabs"
+    ],
+    "style/no-multiple-empty-lines": [
+      1,
+      {
+        "max": 1,
+        "maxBOF": 0,
+        "maxEOF": 0
+      }
+    ],
+    "style/no-trailing-spaces": [
+      1,
+      {
+        "skipBlankLines": true,
+        "ignoreComments": true
+      }
+    ],
+    "style/semi": [
+      1,
+      "never"
+    ],
+    "style/padded-blocks": [
+      1,
+      {
+        "blocks": "never",
+        "classes": "always"
+      },
+      {
+        "allowSingleLineBlocks": true
+      }
+    ],
+    "style/padding-line-between-statements": [
+      1,
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": [
+          "const",
+          "let",
+          "var"
+        ]
+      },
+      {
+        "blankLine": "always",
+        "prev": [
+          "const",
+          "let",
+          "var"
+        ],
+        "next": "*"
+      },
+      {
+        "blankLine": "any",
+        "prev": [
+          "const",
+          "let",
+          "var"
+        ],
+        "next": [
+          "const",
+          "let",
+          "var"
+        ]
+      }
+    ],
+    "style/brace-style": [
+      0
+    ],
+    "style/function-call-argument-newline": [
+      1,
+      "consistent"
+    ],
+    "style/function-paren-newline": [
+      1,
+      "multiline-arguments"
+    ],
+    "style/array-element-newline": [
+      0
+    ],
+    "style/object-property-newline": [
+      0
+    ],
+    "import/no-unresolved": [
+      0
+    ],
+    "import/no-cycle": [
+      0
+    ],
+    "import/extensions": [
+      0
+    ],
+    "import/no-duplicates": [
+      1
+    ],
+    "import/order": [
+      0
+    ],
+    "ts/explicit-function-return-type": [
+      0
+    ],
+    "style/arrow-spacing": [
+      1,
+      {
+        "before": true,
+        "after": true
+      }
+    ],
+    "ts/no-use-before-define": [
+      0
+    ]
+  },
+  "plugins": [
+    "@",
+    "style",
+    "ts:@typescript-eslint/eslint-plugin@8.43.0",
+    "import",
+    "unicorn:eslint-plugin-unicorn@61.0.2",
+    "antfu:antfu@3.1.1",
+    "unused-imports:unused-imports",
+    "@seahax/wrap",
+    "@nx",
+    "eslintComments",
+    "node:eslint-plugin-n@17.22.0",
+    "jsdoc"
+  ],
+  "language": "@/js",
+  "languageOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2026,
+    "parser": "typescript-eslint/parser@8.39.1",
+    "parserOptions": {
+      "project": {
+        "0": "./tsconfig.base.json",
+        "1": "./libs/shared/tsconfig.json",
+        "2": "./packages/project-butler/tsconfig.json",
+        "3": "./packages/dynamicons/tsconfig.json"
+      },
+      "tsconfigRootDir": "D:\\_dev\\!Projects\\_fux\\_FocusedUX"
+    }
+  }
+}

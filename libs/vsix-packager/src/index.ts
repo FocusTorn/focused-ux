@@ -46,9 +46,8 @@ function loadPackagerConfig(workspaceRoot: string): any {
         if (existsSync(configPath)) {
             const raw = readFileSync(configPath, 'utf-8')
             const parsed = JSON.parse(raw)
-            // Debug: show config summary
-            console.log(`[vsix-packager] Loaded config raw: ${raw}`)
-            console.log(`[vsix-packager] Loaded config: deploy=${parsed?.pathing?.['deploy-output']?.path ?? 'n/a'}, extract=${parsed?.pathing?.['vsix-contents']?.extract ?? false}, extractPath=${parsed?.pathing?.['vsix-contents']?.path ?? 'n/a'}`)
+            // console.log(`[vsix-packager] Loaded config raw: ${raw}`)
+            // console.log(`[vsix-packager] Loaded config: deploy=${parsed?.pathing?.['deploy-output']?.path ?? 'n/a'}, extract=${parsed?.pathing?.['vsix-contents']?.extract ?? false}, extractPath=${parsed?.pathing?.['vsix-contents']?.path ?? 'n/a'}`)
             return parsed
         }
     } catch {}
@@ -192,7 +191,7 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
     // Optionally extract VSIX contents for inspection
     try {
         const extractCfg = cfg?.pathing?.['vsix-contents']
-        console.log(`[vsix-packager] Extraction config present: ${!!extractCfg}, extract=${extractCfg?.extract === true}`)
+        // console.log(`[vsix-packager] Extraction config present: ${!!extractCfg}, extract=${extractCfg?.extract === true}`)
         if (extractCfg?.extract === true) {
             // Lazy-load adm-zip to avoid cost if not extracting
             // eslint-disable-next-line @typescript-eslint/no-var-requires

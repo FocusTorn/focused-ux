@@ -316,8 +316,8 @@ export default [
 			'jsonc/quotes': ['warn', 'double'],
 			'jsonc/no-dupe-keys': 'error',
             
-			'jsonc/indent': ['warn', 4],
-			// "jsonc/indent": "off",
+			// 'jsonc/indent': ['warn', 4],
+			"jsonc/indent": "off",
 			"jsonc/object-curly-newline": "off",
 			"jsonc/object-property-newline": "off",
 			"jsonc/array-element-newline": "off",
