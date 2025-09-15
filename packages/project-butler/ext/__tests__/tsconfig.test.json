@@ -20,9 +20,6 @@
         
 
 
-    },
-    "include": [
-        "integration-tests/**/*.ts"
-    ]
+    }
     
 }

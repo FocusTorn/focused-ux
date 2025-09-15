@@ -7,7 +7,7 @@ export default defineConfig({
 			provider: 'v8',
 			reporter: ['text', 'html', 'json-summary', 'json'],
 			include: [
-				'__tests__/functional-tests/*.{test,test-cov}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+				'__tests__/**/*.{test,test-cov}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
 			],
 			exclude: [
 				'**/_interfaces/**',

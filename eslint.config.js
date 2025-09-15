@@ -1,5 +1,7 @@
 // IMPORTS ------------------------------------------------>> 
 
+// import antfuPlugin from 'eslint-plugin-antfu'
+
 import seahaxWrapPlugin from '@seahax/eslint-plugin-wrap'
 import nxPlugin from '@nx/eslint'
 
@@ -10,15 +12,13 @@ import importPlugin from 'eslint-plugin-import'
 import unicornPlugin from 'eslint-plugin-unicorn'
 import stylisticPlugin from '@stylistic/eslint-plugin'
 import tsPlugin from '@typescript-eslint/eslint-plugin'
-import tsParser from '@typescript-eslint/parser'
 import jsoncPlugin from 'eslint-plugin-jsonc'
 import jsoncParser from 'jsonc-eslint-parser'
-import markdownPlugin from 'eslint-plugin-markdown'
+import markdownPlugin from '@eslint/markdown'
 import ymlPlugin from 'eslint-plugin-yml'
 import yamlParser from 'yaml-eslint-parser'
 import tomlPlugin from 'eslint-plugin-toml'
 import tomlParser from 'toml-eslint-parser'
-import antfuPlugin from 'eslint-plugin-antfu'
 import unusedImportsPlugin from 'eslint-plugin-unused-imports'
 import fuxFormat from './.eslint/plugins/fux-format/index.js'
 

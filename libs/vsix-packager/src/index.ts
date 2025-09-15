@@ -129,7 +129,9 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
         vsixFilename = `${outputVsixName}-dev.vsix`
         finalPackageJson.version = finalVersion
     }
-    // Keep dependencies so vsce includes production node_modules in the package.
+    // Align with original script behavior: remove dependency fields so vsce doesn't attempt dependency pruning/installation.
+    try { delete (finalPackageJson as any).dependencies } catch {}
+    try { delete (finalPackageJson as any).devDependencies } catch {}
     writeFileSync(join(deployDir, 'package.json'), JSON.stringify(finalPackageJson, null, 4))
 
     spinnerTick('Copying build artifacts')
@@ -201,7 +203,7 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
         writeFileSync(vscodeignorePath, ['!dist/**', '!node_modules/**'].join('\n'))
     }
 
-    let result = spawnSync('vsce', ['package', '--no-dependencies', '-o', vsixOutputPath], {
+    let result = spawnSync('vsce', ['package', '-o', vsixOutputPath], {
         cwd: deployDir,
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe'],
@@ -209,7 +211,7 @@ export function packageExtension(options: PackagerOptions): PackagerResult {
         timeout: 300000,
     })
     if (result.error || result.status !== 0) {
-        const vsceCommand = `vsce package --no-dependencies -o "${vsixOutputPath}" 2>&1`
+        const vsceCommand = `vsce package -o "${vsixOutputPath}" 2>&1`
         try {
             execSync(vsceCommand, { cwd: deployDir, encoding: 'utf-8', timeout: 300000, env: { ...process.env, NODE_NO_WARNINGS: '1', NODE_OPTIONS: '--no-warnings' } })
         } catch (err) {

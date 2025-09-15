@@ -6,5 +6,10 @@ export default mergeConfig(
 	mergeConfig(functionalConfig, baseCoverageConfig),
 	defineConfig({
 		// Any package-specific overrides for coverage can go here
+		test: {
+			include: [
+				'__tests__/**/*.{test,test-cov}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+			],
+		},
 	}),
 )

@@ -6,6 +6,9 @@ export default mergeConfig(
 	defineConfig({
 		test: {
 			setupFiles: ['./__tests__/_setup.ts'],
+			include: [
+				'__tests__/functional/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+			],
 		},
 	}),
 )

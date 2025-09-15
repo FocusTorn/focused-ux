@@ -43,6 +43,13 @@
         }
     },
     "dependencies": {
+        "@nx/devkit": "21.4.1",
         "tslib": "^2.3.0"
-    }
+    },
+    "executors": "./executors.json",
+    "files": [
+        "dist",
+        "!**/*.tsbuildinfo",
+        "executors.json"
+    ]
 }

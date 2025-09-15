@@ -1,17 +1,13 @@
 {
     "extends": "../../tsconfig.base.json",
-    
-    "include": ["src/**/*.ts"],
-    
     "compilerOptions": {
-        // "baseUrl": ".", // not used unless with browser AMD loaders
+        "baseUrl": ".",
         "rootDir": "src",
-        "outDir": "./out-tsc/lib/lib",
-        
-        "tsBuildInfoFile": "./out-tsc/lib/tsconfig.lib.tsbuildinfo",
-
+        "outDir": "dist",
+        "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
         "emitDeclarationOnly": false,
-        
+        "types": ["node"]
     },
+    "include": ["src/**/*.ts"],
     "references": []
 }

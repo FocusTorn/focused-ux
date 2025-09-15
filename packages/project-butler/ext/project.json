@@ -5,7 +5,7 @@
     "projectType": "application",
     "targets": {
 
-        "build": {
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "dependsOn": [ // "^build"],
@@ -32,131 +32,49 @@
                 "sourcemap": true
                 
             }
-        },
-
-        "package": {
+        }, //<
+        "package": { //>
             "executor": "@fux/vpack:pack",
             "dependsOn": ["build", "@fux/vsix-packager:build"],
             "options": {
                 "targetPath": "{projectRoot}"
             }
-        },
-        "package:dev": {
-            "executor": "@fux/vpack:pack",
-            "dependsOn": ["build", "@fux/vsix-packager:build"],
+        }, //<
+       "package:dev": {
+            "executor": "nx:run-commands",
+            "inputs": ["production", "^production", "{workspaceRoot}/libs/vsix-packager/dist/cli/index.js"],
+            "outputs": ["{options.outputPath}"],
+            
+            "dependsOn": ["build", "@fux/vsix-packager:cli"],
             "options": {
-                "targetPath": "{projectRoot}",
-                "dev": true
-            }
+                "commands": [
+                    "node libs/vsix-packager/dist/cli/index.js {projectRoot} vsix_packages --dev"
+                ],
+                "outputPath": "vsix_packages"
+            },
+            "cache": false
         },
-        "publish": {
+        "publish": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["package"],
             "options": {
                 "command": "vsce publish",
                 "cwd": "{projectRoot}"
             }
-        },
-        
-        "check-types": { "extends": "check-types" },
+        }, //<
         
         "lint": { "extends": "lint" },
         "lint:full": { "extends": "lint:full" },
         
-        //         "lint": {
-        //       "executor": "@nx/eslint:lint",
-        //       "options": {
-        //         "lintFilePatterns": [
-        //           "{projectRoot}/**/*.ts",
-        //           "{projectRoot}/**/*.tsx",
-        //           "{projectRoot}/**/*.js",
-        //           "{projectRoot}/**/*.jsx",
-        //           "{projectRoot}/**/*.json",
-        //           "{projectRoot}/**/*.jsonc"
-        //         ]
-        //       }
-        //     },
-        //     "lint:full": {
-        //       "executor": "@nx/eslint:lint"
-        //     }
-        //   }
-        
-        
-        
-        
-        
         "validate": { "extends": "validate" },
         "validate:full": { "extends": "validate:full" },
+        
         "audit": { "extends": "audit" },
         "audit:full": { "extends": "audit:full" },
         
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
-        
-        
-        // Orriginal testing targets
-        // "test": { //>
-        //     "executor": "@nx/vite:test",
-        //     "outputs": ["{options.reportsDirectory}"],
-        //     "dependsOn": ["^build"]
-        // }, //<
-        // "test:full": { //>
-        //     "executor": "@nx/vite:test",
-        //     "outputs": ["{options.reportsDirectory}"],
-        //     "dependsOn": [
-        //         {
-        //             "dependencies": true,
-        //             "target": "test",
-        //             "params": "forward"
-        //         }
-        //     ]
-        // }, //<
-        // // Integrations tests
-        // "test:compile": { //>
-        //     "executor": "nx:run-commands",
-        //     "outputs": ["{projectRoot}/__tests__/_out-tsc"],
-        //     "options": {
-        //         "commands": [
-        //             // "rimraf ./__tests__/_out-tsc/suite",
-        //             "tsc -p packages/project-butler/ext/__tests__/tsconfig.test.json"
-        //         ]
-        //     }
-        // }, //<
-        // "test:integration": { //>
-        //     "executor": "nx:run-commands",
-        //     "dependsOn": [
-        //         "build",
-        //         "test:compile"
-        //     ],
-        //     "options": {
-        //         "commands": [
-        //             "nx run @fux/vscode-test-cli-config:build",
-        //             // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
-        //             "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
-        //         ],
-        //         "cwd": "packages/project-butler/ext"
-        //     },
-        //     "description": "Run VS Code extension integration tests with detailed output"
-        // }, //<
-        // "test:integration:noisy": { //>
-        //     "executor": "nx:run-commands",
-        //     "dependsOn": [
-        //         "build",
-        //         "test:compile"
-        //     ],
-        //     "options": {
-        //         "commands": [
-        //             "nx run @fux/vscode-test-cli-config:build",
-        //             // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
-        //             "vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec"
-        //         ],
-        //         "cwd": "packages/project-butler/ext"
-        //     },
-        //     "description": "Run VS Code extension integration tests with detailed output"
-        // } //<
-        
-        
         
         
         // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -167,29 +85,66 @@
             "outputs": ["{options.reportsDirectory}"],
             "dependsOn": ["build", "^build"],
             "options": {
-                "configFile": "packages/project-butler/core/vitest.config.ts",
+                "configFile": "{projectRoot}/vitest.config.ts",
+                "reportsDirectory": "{projectRoot}/__tests__/_reports/functional",
                 "passWithNoTests": true
             }
         }, //<
-        "test:coverage-test": { // run {functional,coverage}-tests, with coverage report //>
+        "test:coverage-tests": { // run {functional,coverage}-tests, with coverage report //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
             "dependsOn": ["build", "^build"],
             "options": {
-                "configFile": "packages/project-butler/core/vitest.coverage.config.ts",
-                "reportsDirectory": "packages/project-butler/core/__tests__/_reports/coverage",
+                "configFile": "{projectRoot}/vitest.coverage.config.ts",
+                "reportsDirectory": "{projectRoot}/__tests__/_reports/coverage",
                 "passWithNoTests": true
             }
         }, //<
-        
-        // Only needed in an ext package
-        "test:full": { // run {functional,integration}-tests  //>
-            // Only needed in an ext package
-        }, //<
-        "test:full:coverage-tests": { // run {functional,coverage,integration}-tests , with coverage report //>
-            // Only needed in an ext package        
-        }, //<
 
+        //= Integration testing ================================================= 
+        "test:compile": { //>
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/__tests__/_out-tsc"],
+            "options": {
+                "commands": [
+                // "rimraf ./__tests__/_out-tsc/suite",
+                    "tsc -p packages/project-butler/ext/__tests__/tsconfig.test.json"
+                ]
+            }
+        }, //<
+        "test:integration": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": [
+                "build",
+                "test:compile"
+            ],
+            "options": {
+                "commands": [
+                    "nx run @fux/vscode-test-cli-config:build",
+                    "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
+                ],
+                "cwd": "packages/project-butler/ext"
+            },
+            "description": "Run VS Code extension integration tests with detailed output"
+        }, //<
+        "test:integration:noisy": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": [
+                "build",
+                "test:compile"
+            ],
+            "options": {
+                "commands": [
+                    "nx run @fux/vscode-test-cli-config:build",
+                    // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
+                    "vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec"
+                ],
+                "cwd": "packages/project-butler/ext"
+            },
+            "description": "Run VS Code extension integration tests with detailed output"
+        }, //<
+        
+        
         // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
         // │       These run test suites on the package that contain them and full dependency chain       │
         // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
@@ -204,7 +159,7 @@
                 }
             ],
             "options": {
-                "configFile": "packages/project-butler/core/vitest.config.ts",
+                "configFile": "{projectRoot}/vitest.config.ts",
                 "passWithNoTests": true
             }
         }, //<
@@ -214,32 +169,38 @@
             "dependsOn": [
                 {
                     "dependencies": true,
-                    "target": "test:coverage-test",
+                    "target": "test:coverage-tests",
                     "params": "forward"
                 }
             ],
             "options": {
-                "configFile": "packages/project-butler/core/vitest.coverage.config.ts",
-                "reportsDirectory": "packages/project-butler/core/__tests__/_reports/coverage",
+                "configFile": "{projectRoot}/vitest.coverage.config.ts",
+                "reportsDirectory": "{projectRoot}/__tests__/_reports/coverage",
                 "passWithNoTests": true
             }
-        }, //<
-        
-        // Only needed in an ext package
-        "test:deps:full": { // run {functional,integration}-tests  //>
-            // Only needed in an ext package        
-        }, //<
-        "test:deps:full:coverage-tests": { // run {functional,coverage,integration}-tests , with coverage report //>
-            // Only needed in an ext package        
         } //<
-
-        
-        
-        
-        
         
     },
-    "tags": [
-        "ext"
-    ]
+    
+    "tags": [ "ext" ]
 }
+
+// Orriginal testing targets
+// "test": { //>
+//     "executor": "@nx/vite:test",
+//     "outputs": ["{options.reportsDirectory}"],
+//     "dependsOn": ["^build"]
+// }, //<
+// "test:full": { //>
+//     "executor": "@nx/vite:test",
+//     "outputs": ["{options.reportsDirectory}"],
+//     "dependsOn": [
+//         {
+//             "dependencies": true,
+//             "target": "test",
+//             "params": "forward"
+//         }
+//     ]
+// }, //<
+
+        

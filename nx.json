@@ -1,9 +1,5 @@
 {
     "targetDefaults": {
-        "@fux/vsix-packager:pack": {
-            "cache": true,
-            "outputs": ["{workspaceRoot}/vsix_packages"]
-        },
         "@nx/esbuild:esbuild": {
             "cache": true,
             "inputs": ["production", "^production"],
