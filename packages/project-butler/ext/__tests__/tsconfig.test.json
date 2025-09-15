@@ -3,16 +3,23 @@
     "compilerOptions": {
         "outDir": "./_out-tsc",
         "rootDir": "./integration-tests",
+
+        
+        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo",
+        "declarationDir": "./dist/__types__",
+        "declaration": false,
+        "sourceMap": true,
+        
         "module": "CommonJS",
         "moduleResolution": "node",
         "types": [
             "node",
-            "mocha"
+            "mocha",
+            "vitest"
         ],
-        "composite": false,
-        "declaration": false,
-        "sourceMap": true,
-        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo"
+        
+
+
     },
     "include": [
         "integration-tests/**/*.ts"

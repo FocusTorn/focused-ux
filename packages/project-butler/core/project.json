@@ -47,12 +47,65 @@
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
        
-        "test": { //>
+        
+        // Orriginal
+        // "test": { //>
+        //     "executor": "@nx/vite:test",
+        //     "outputs": ["{options.reportsDirectory}"],
+        //     "dependsOn": ["build", "^build"]
+        // }, //<
+        // "test:full": { //>
+        //     "executor": "@nx/vite:test",
+        //     "outputs": ["{options.reportsDirectory}"],
+        //     "dependsOn": [
+        //         {
+        //             "dependencies": true,
+        //             "target": "test",
+        //             "params": "forward"
+        //         }
+        //     ]
+        // } //<
+       
+        
+        
+        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+        // │           The below targets run test suites only on the package that contains them           │
+        // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
+        "test": { // run just functional-tests //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"]
+            "dependsOn": ["build", "^build"],
+            "options": {
+                
+                // "configFile": "packages/project-butler/core/vitest.config.ts",
+                "configFile": "{projectRoot}/vitest.config.ts",
+                
+                "passWithNoTests": true
+            }
         }, //<
-        "test:full": { //>
+        "test:coverage-test": { // run {functional,coverage}-tests, with coverage report //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["build", "^build"],
+            "options": {
+                "configFile": "packages/project-butler/core/vitest.coverage.config.ts",
+                "reportsDirectory": "packages/project-butler/core/__tests__/_reports/coverage",
+                "passWithNoTests": true
+            }
+        }, //<
+        
+        // Only needed in an ext package
+        "test:full": { // run {functional,integration}-tests  //>
+            // Only needed in an ext package
+        }, //<
+        "test:full:coverage-tests": { // run {functional,coverage,integration}-tests , with coverage report //>
+            // Only needed in an ext package        
+        }, //<
+
+        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+        // │       These run test suites on the package that contain them and full dependency chain       │
+        // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
+        "test:deps": { // run just functional-tests //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
             "dependsOn": [
@@ -61,11 +114,41 @@
                     "target": "test",
                     "params": "forward"
                 }
-            ]
+            ],
+            "options": {
+                "configFile": "packages/project-butler/core/vitest.config.ts",
+                "passWithNoTests": true
+            }
+        }, //<
+        "test:deps:coverage-tests": { // run {functional,coverage}-tests, with coverage report //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test:coverage-test",
+                    "params": "forward"
+                }
+            ],
+            "options": {
+                "configFile": "packages/project-butler/core/vitest.coverage.config.ts",
+                "reportsDirectory": "packages/project-butler/core/__tests__/_reports/coverage",
+                "passWithNoTests": true
+            }
+        }, //<
+        
+        // Only needed in an ext package
+        "test:deps:full": { // run {functional,integration}-tests  //>
+            // Only needed in an ext package        
+        }, //<
+        "test:deps:full:coverage-tests": { // run {functional,coverage,integration}-tests , with coverage report //>
+            // Only needed in an ext package        
         } //<
-       
+
     },
-    "tags": [
-        "core"
-    ]
+    
+    "tags": [ "core" ]
 }
+
+
+// {projectRoot}

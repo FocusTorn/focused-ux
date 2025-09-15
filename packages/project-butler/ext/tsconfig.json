@@ -1,16 +1,15 @@
 {
     "extends": "../../../tsconfig.base.json",
-    "include": ["src/**/*"],
-    "exclude": ["node_modules", "**/*.test.ts", "__tests__/**/*", "dist/**/*"],
+
+    "include": ["src/**/*.ts"],
+    
+    "exclude": [ "node_modules", "**/*.test.ts", "__tests__/**/*", "dist/**/*" ],
+    
+    "references": [ { "path": "../core" } ],
+    
     "compilerOptions": {
-        "outDir": "./dist",
-        "rootDir": "./src",
-        "composite": true,
-        "noEmit": true
+        "noEmit": true,
     },
-    "references": [
-        {
-            "path": "../core"
-        }
-    ]
+    
+
 }

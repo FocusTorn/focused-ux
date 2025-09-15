@@ -1,7 +1,7 @@
 {
     "extends": "./tsconfig.base.json",
     "compilerOptions": {
-        "tsBuildInfoFile": "./out-tsc/tsconfig.tsbuildinfo"
+        "tsBuildInfoFile": "./out-tsc-root/tsconfig.tsbuildinfo"
     },
     "files": [],
     "include": [],
@@ -65,6 +65,9 @@
         },
         {
             "path": "./libs/vsix-packager"
+        },
+        {
+            "path": "./plugins/vpack"
         }
     ]
 }

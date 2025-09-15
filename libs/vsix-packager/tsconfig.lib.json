@@ -7,9 +7,9 @@
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
         "tsBuildInfoFile": "./out-tsc/lib/tsconfig.lib.tsbuildinfo",
-        "baseUrl": ".",
+        // "baseUrl": ".", // not used unless with browser AMD loaders
         "rootDir": "src",
-        "outDir": "./out-tsc/lib",
+        "outDir": "./out-tsc/lib/lib",
         "composite": true
     },
     "include": [

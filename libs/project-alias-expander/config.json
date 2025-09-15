@@ -1,7 +1,6 @@
 {
     "targets": {
         "b": "build",
-        "pp": "prepackage",
         "p": "package",
         "pd": "package:dev",
         "pub": "publish",
@@ -23,7 +22,7 @@
         
         "ti": "test:integration",
         
-        "tf": "test:full",
+        "td": "test:full",
         "tfw": "test:full --watch",
         "tfc": "test:full --coverage",
 

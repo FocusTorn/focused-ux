@@ -1,29 +1,50 @@
 {
+    
+    
     "compilerOptions": {
-        "target": "ES2022",
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
+        
+        
+        
+        
+        // PACKAGE CHANGED ==============================================
+
+        "types": ["node"],
+        "declaration": true,
+        "declarationMap": true,
+        "composite": true,
+        "sourceMap": true,
+        // "baseUrl": ".", // not used unless with browser AMD loaders
+        
+        // LANGUAGE & ENVIRONMENT =======================================
         "lib": ["ES2022", "DOM"],
+        "target": "ES2022",
         "skipLibCheck": true,
-        "strict": true,
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitOverride": true,
-        "noImplicitReturns": true,
+        "useDefineForClassFields": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "sourceMap": true,
-        "noEmitOnError": true,
-        "composite": true,
+
+        // MODULES ======================================================
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
         "allowSyntheticDefaultImports": true,
-        "allowJs": false,
-        "importHelpers": true,
-        "downlevelIteration": true,
-        "useDefineForClassFields": true,
-        "baseUrl": ".",
+        "forceConsistentCasingInFileNames": true,
+        
+        // TYPECHECKING =================================================
+        "strict": true,
+        "allowUnreachableCode": false,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        
+        // EMIT =========================================================
+        "noEmitOnError": true,
+        "downlevelIteration": true, //iteration primitives used more accurately in ES5
+        "importHelpers": true, // downlevel helper tslib imported not generated
+        // "outFile": "", // Only if module is None, System, or AMD
+        // "sourceRoot": "", //debugger finds .ts when not relative source locations
         
     }
 }

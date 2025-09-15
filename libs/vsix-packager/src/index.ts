@@ -1,4 +1,4 @@
-import { resolve, join } from 'node:path'
+import { resolve, join, isAbsolute } from 'node:path'
 import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, unlinkSync, readdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
 
@@ -77,7 +77,9 @@ function loadPackagerConfig(workspaceRoot: string): any {
 export function packageExtension(options: PackagerOptions): PackagerResult {
     const workspaceRoot = resolve(process.cwd())
     const cfg = loadPackagerConfig(workspaceRoot)
-    const packageDir = join(workspaceRoot, options.extensionDir)
+    const packageDir = isAbsolute(options.extensionDir)
+        ? options.extensionDir
+        : join(workspaceRoot, options.extensionDir)
     const packageJsonPath = join(packageDir, 'package.json')
     const originalPackageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
     const originalVersion: string = originalPackageJson.version

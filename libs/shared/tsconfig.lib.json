@@ -1,7 +1,7 @@
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "baseUrl": ".",
+        // "baseUrl": ".", // not used unless with browser AMD loaders
         "outDir": "dist",
         "rootDir": "src",
 
@@ -10,7 +10,7 @@
         "declarationMap": false,
         "sourceMap": false,
         "composite": true,
-        "types": ["node"],
+        
         "paths": {
             "@fux/shared": ["./src"]
         }

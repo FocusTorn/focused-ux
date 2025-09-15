@@ -41,7 +41,6 @@ import { checkNoDynamicImports, checkNoVSCodeValueImports, checkRequiredFiles } 
 // Increase the listener limit to prevent the warning from the script runner.
 process.setMaxListeners(20)
 
-
 // Load aliases from pnpm_aliases.json
 function loadAliases() {
 	const aliasesPath = path.join(ROOT, '.vscode', 'shell', 'pnpm_aliases.json')
@@ -135,8 +134,10 @@ function showHelp() {
 
 	const packagesDir = path.join(ROOT, 'packages')
 	const allPackages = fs.readdirSync(packagesDir, { withFileTypes: true })
-		.filter(dirent => dirent.isDirectory() && !dirent.name.startsWith('template-'))
-		.map(dirent => dirent.name)
+		.filter(dirent =>
+			dirent.isDirectory() && !dirent.name.startsWith('template-'))
+		.map(dirent =>
+			dirent.name)
 		.sort()
 
 	for (const pkg of allPackages) {
@@ -150,8 +151,10 @@ function showHelp() {
 
 	if (fs.existsSync(libsDir)) {
 		const allLibs = fs.readdirSync(libsDir, { withFileTypes: true })
-			.filter(dirent => dirent.isDirectory() && dirent.name !== 'tools')
-			.map(dirent => dirent.name)
+			.filter(dirent =>
+				dirent.isDirectory() && dirent.name !== 'tools')
+			.map(dirent =>
+				dirent.name)
 			.sort()
 
 		for (const lib of allLibs) {
@@ -210,13 +213,16 @@ function main(): number {
 
 	if (fs.existsSync(packagesDir)) {
 		const packageDirs = fs.readdirSync(packagesDir, { withFileTypes: true })
-			.filter(dirent => dirent.isDirectory() && !dirent.name.startsWith('template-'))
+			.filter(dirent =>
+				dirent.isDirectory() && !dirent.name.startsWith('template-'))
 
 		for (const pkgDir of packageDirs) {
 			const pkgPath = path.join(packagesDir, pkgDir.name)
 			const subDirs = fs.readdirSync(pkgPath, { withFileTypes: true })
-				.filter(dirent => dirent.isDirectory())
-				.map(dirent => dirent.name)
+				.filter(dirent =>
+					dirent.isDirectory())
+				.map(dirent =>
+					dirent.name)
 
 			for (const subDir of subDirs) {
 				allPackages.push(`${pkgDir.name}-${subDir}`)
@@ -227,8 +233,10 @@ function main(): number {
 	// Get all libs (excluding tools)
 	const allLibs = fs.existsSync(libsDir)
 		? fs.readdirSync(libsDir, { withFileTypes: true })
-			.filter(dirent => dirent.isDirectory() && dirent.name !== 'tools')
-			.map(dirent => dirent.name)
+			.filter(dirent =>
+				dirent.isDirectory() && dirent.name !== 'tools')
+			.map(dirent =>
+				dirent.name)
 		: []
 
 	// Tool packages are direct execution scripts, not buildable packages
@@ -303,8 +311,10 @@ function main(): number {
 				if (fs.existsSync(featureDir) && fs.statSync(featureDir).isDirectory()) {
 					// Get all subdirectories in the feature directory
 					const subDirs = fs.readdirSync(featureDir, { withFileTypes: true })
-						.filter(dirent => dirent.isDirectory())
-						.map(dirent => dirent.name)
+						.filter(dirent =>
+							dirent.isDirectory())
+						.map(dirent =>
+							dirent.name)
 
 					for (const subDir of subDirs) {
 						const fullProjectName = `${featureName}-${subDir}`
@@ -514,7 +524,7 @@ process.exitCode = main()
 // }
 
 // function showHelp() {
-// 	console.log('AKA - Feature Structure Auditor')
+// 	console.log('Feature Structure Auditor')
 // 	console.log('')
 // 	console.log('Usage:')
 // 	console.log('  audit <project1> [project2] [project3] ... [options]')

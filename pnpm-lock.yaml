@@ -422,9 +422,6 @@ importers:
         specifier: ^5.0.2
         version: 5.0.3
     devDependencies:
-      '@fux/vscode-test-cli-config':
-        specifier: workspace:*
-        version: link:../../../libs/vscode-test-cli-config
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.10
@@ -559,9 +556,6 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
     devDependencies:
-      '@fux/vscode-test-cli-config':
-        specifier: workspace:*
-        version: link:../../../libs/vscode-test-cli-config
       '@types/js-yaml':
         specifier: ^4.0.9
         version: 4.0.9
@@ -604,6 +598,14 @@ importers:
       tslib:
         specifier: ^2.3.0
         version: 2.8.1
+
+  plugins/vpack:
+    dependencies:
+      tslib:
+        specifier: ^2.3.0
+        version: 2.8.1
+
+  plugins/vpack_og: {}
 
 packages:
 

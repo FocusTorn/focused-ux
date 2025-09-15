@@ -4,11 +4,11 @@
     "include": ["src/**/*.ts"],
    
     "compilerOptions": {
-        "baseUrl": ".",
+        // "baseUrl": ".", // not used unless with browser AMD loaders
         "rootDir": "src",
-        "outDir": "./out-tsc/lib",
+        "outDir": "./out-tsc/lib/lib",
         "tsBuildInfoFile": "./out-tsc/lib/tsconfig.lib.tsbuildinfo",
-        "types": ["node"],
+        
         "declaration": true,
         "declarationMap": true,
         "composite": true

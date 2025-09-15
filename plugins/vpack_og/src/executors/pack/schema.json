@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "title": "vpack_og pack executor options",
+    "type": "object",
+    "properties": {
+        "targetPath": { "type": "string", "description": "Extension root path (projectRoot)" },
+        "outputPath": { "type": "string", "description": "VSIX output dir; falls back to config.json" },
+        "dev": { "type": "boolean", "description": "Use dev versioning with NX_TASK_HASH" }
+    },
+    "required": ["targetPath"],
+    "additionalProperties": true
+}
+

@@ -2,15 +2,25 @@
     "extends": "../../../tsconfig.base.json",
     
     "include": ["src/**/*.ts"],
+    "exclude": [ "node_modules", "**/*.test.ts", "__tests__/**/*", "dist/**/*" ],
     
     "compilerOptions": {
-        "baseUrl": ".",
-        "rootDir": "src",
-        "outDir": "./out-tsc/lib",
-        "tsBuildInfoFile": "./out-tsc/lib/tsconfig.lib.tsbuildinfo",
-        "types": ["node"],
-        "declaration": true,
-        "declarationMap": true,
-        "composite": true
+        "outDir": "./out-tsc/lib/",
+        "declarationDir": "./dist/__types__",
+        "rootDir": "./src",
+        "tsBuildInfoFile": "./out-tsc/lib/tsconfig.lib.tsbuildinfo"
     }
+    
 }
+
+
+
+
+
+
+// "include": ["src/**/*.ts"],
+
+// "baseUrl": ".", // not used unless with browser AMD loaders
+// "rootDir": "src",
+// "outDir": "./out-tsc/lib/",
+// "tsBuildInfoFile": "./out-tsc/lib/tsconfig.lib.tsbuildinfo",
