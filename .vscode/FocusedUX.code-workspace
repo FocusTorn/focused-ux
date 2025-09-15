@@ -8,23 +8,32 @@
         
         
         "terminal.integrated.profiles.windows": {
-            "FUX": { //>
-                "source": "PowerShell",
-                "args": ["-NoExit", "-Command", ". .vscode/shell/profile.ps1"],
-            }, //<
+        
+        //     "FUX": { //>
+        //         "source": "PowerShell",
+        //         "args": ["-NoExit", "-command", ". .vscode/shell/profile.ps1"],
+        //     }, //<
+        
             "FUX Git Bash": { //>
-            "path": "C:/Program Files/Git/bin/bash.exe",
-            "args": [
-                "--login",
-                "-i",
-                "-c",
-                ". ./.vscode/shell/profile.sh; exec bash --login -i"
-            ]
-        }, //<
+                "path": "C:/Program Files/Git/bin/bash.exe",
+                "args": [
+                    "--login",
+                    "-i",
+                    "-c",
+                    ". ./.vscode/shell/profile.sh; exec bash --login -i"
+                ]
+            }, //<
         },
 
         "terminal.integrated.automationProfile.windows": {
             "path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+            "args": [
+                "-NoLogo",
+                "-NoProfile",
+                "-NoExit",
+                "-File",
+            
+            ]
         },
 
         "terminal.integrated.defaultProfile.windows": "FUX Git Bash",
