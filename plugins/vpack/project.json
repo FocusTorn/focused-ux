@@ -1,0 +1,34 @@
+{
+    "name": "@fux/vpack",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "plugins/vpack/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": [ "{options.outputPath}" ],
+            "options": {
+                "rootDir": "plugins/vpack/src",
+                "outputPath": "plugins/vpack/dist",
+                "main": "plugins/vpack/src/index.ts",
+                "tsConfig": "plugins/vpack/tsconfig.lib.json",
+
+                "generatePackageJson": false,
+                
+                "assets": [
+                    {
+                        "input": "./plugins/vpack/src",
+                        "glob": "**/!(*.ts)",
+                        "output": "."
+                    },
+                    {
+                        "input": "./plugins/vpack/src",
+                        "glob": "**/*.d.ts",
+                        "output": "."
+                    }
+                ]
+            }
+        }
+    }
+  
+}

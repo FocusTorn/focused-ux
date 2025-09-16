@@ -10,7 +10,7 @@
 
         "types": ["node"],
         "declaration": true,
-        "declarationMap": true,
+        // "declarationMap": true,
         "composite": true,
         "sourceMap": true,
         // "baseUrl": ".", // not used unless with browser AMD loaders

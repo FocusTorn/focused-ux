@@ -1,0 +1,34 @@
+{
+    "name": "@fux/recommended",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "plugins/recommended/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": [ "{options.outputPath}" ],
+            "options": {
+                "rootDir": "plugins/recommended/src",
+                "outputPath": "plugins/recommended/dist",
+                "main": "plugins/recommended/src/index.ts",
+                "tsConfig": "plugins/recommended/tsconfig.lib.json",
+
+                "generatePackageJson": false,
+                
+                "assets": [
+                    {
+                        "input": "./plugins/recommended/src",
+                        "glob": "**/!(*.ts)",
+                        "output": "."
+                    },
+                    {
+                        "input": "./plugins/recommended/src",
+                        "glob": "**/*.d.ts",
+                        "output": "."
+                    }
+                ]
+            }
+        }
+    }
+  
+}
