@@ -24,12 +24,6 @@
             "cache": true,
             "syncGenerators": ["@nx/js:typescript-sync"]
         },
-        "package:dev": {
-            "cache": false,
-            "dependsOn": ["build"],
-            "inputs": ["production", "^production", "{workspaceRoot}/scripts/create-vsix.js"],
-            "outputs": ["{options.outputPath}"]
-        },
         "publish": {
             "dependsOn": ["build"]
         },

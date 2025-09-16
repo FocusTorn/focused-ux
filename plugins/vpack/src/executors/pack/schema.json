@@ -2,8 +2,49 @@
     "$schema": "https://json-schema.org/schema",
     "version": 2,
     "title": "Pack executor",
-    "description": "",
+    "description": "Packages a VS Code extension into a VSIX with curated node_modules and optional extraction.",
     "type": "object",
-    "properties": {},
-    "required": []
+    "properties": {
+        "targetPath": {
+            "type": "string",
+            "description": "Workspace-relative or absolute path to the extension root."
+        },
+        "targetName": {
+            "type": "string",
+            "description": "Nx project name of the extension if targetPath is not provided."
+        },
+        "main": {
+            "type": "string",
+            "description": "Optional main file path (informational)."
+        },
+        "outputPath": {
+            "type": "string",
+            "description": "Directory for output VSIX (defaults to config.json vsix-package-output)."
+        },
+        "keepDeploy": {
+            "type": "boolean",
+            "description": "Keep staged deploy directory after packaging (defaults from config.json persistent)."
+        },
+        "deployPath": {
+            "type": "string",
+            "description": "Base directory for deploy staging (defaults to config.json)."
+        },
+        "freshDeploy": {
+            "type": "boolean",
+            "description": "Clean previous deploy for this package (defaults from config.json overwrite)."
+        },
+        "extractContents": {
+            "type": "boolean",
+            "description": "Extract VSIX contents after packaging (defaults from config.json)."
+        },
+        "contentsPath": {
+            "type": "string",
+            "description": "Directory to extract VSIX contents to (defaults to config.json)."
+        },
+        "dev": {
+            "type": "boolean",
+            "description": "Build a dev VSIX (adds -dev suffix and version with NX_TASK_HASH)."
+        }
+    },
+    "additionalProperties": false
 }

@@ -2,7 +2,7 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import { createHash } from 'crypto'
 
-export interface ChangeDetectionResult {
+interface ChangeDetectionResult {
 	hasChanges: boolean
 	reason: string
 	lastModified: number
@@ -10,7 +10,7 @@ export interface ChangeDetectionResult {
 	hash?: string
 }
 
-export interface FileChangeInfo {
+interface FileChangeInfo {
 	path: string
 	mtime: number
 	size: number
@@ -18,6 +18,7 @@ export interface FileChangeInfo {
 }
 
 export class ChangeDetector {
+
 	private cacheDir: string
 	private cacheFile: string
 
@@ -152,13 +153,15 @@ export class ChangeDetector {
 			const fullPath = path.join(directory, entry.name)
 			
 			// Check exclude patterns
-			if (excludePatterns.some(pattern => this.matchesPattern(fullPath, pattern))) {
+			if (excludePatterns.some(pattern =>
+				this.matchesPattern(fullPath, pattern))) {
 				continue
 			}
 
 			if (entry.isDirectory()) {
 				// Recursively process subdirectories
 				const subFiles = await this.getFileInfo(fullPath, pattern, excludePatterns)
+
 				files.push(...subFiles)
 			} else if (entry.isFile()) {
 				try {
@@ -188,6 +191,7 @@ export class ChangeDetector {
 	private async loadPreviousFileInfo(): Promise<FileChangeInfo[]> {
 		try {
 			const content = await fs.readFile(this.cacheFile, 'utf-8')
+
 			return JSON.parse(content)
 		} catch {
 			return [] // No previous cache
@@ -213,8 +217,10 @@ export class ChangeDetector {
 		previous: FileChangeInfo[]
 	): { hasChanges: boolean, reason: string, lastModified: number, hash: string } {
 		// Create maps for easier comparison
-		const currentMap = new Map(current.map(f => [f.path, f]))
-		const previousMap = new Map(previous.map(f => [f.path, f]))
+		const currentMap = new Map(current.map(f =>
+			[f.path, f]))
+		const previousMap = new Map(previous.map(f =>
+			[f.path, f]))
 
 		// Check for added or modified files
 		for (const [path, currentFile] of currentMap) {
@@ -252,7 +258,9 @@ export class ChangeDetector {
 		}
 
 		// No changes detected
-		const lastModified = current.length > 0 ? Math.max(...current.map(f => f.mtime)) : 0
+		const lastModified = current.length > 0 ? Math.max(...current.map(f =>
+			f.mtime)) : 0
+
 		return {
 			hasChanges: false,
 			reason: 'No changes detected',
@@ -265,8 +273,11 @@ export class ChangeDetector {
 	 * Calculate hash for entire file set
 	 */
 	private calculateSetHash(files: FileChangeInfo[]): string {
-		const sortedFiles = files.sort((a, b) => a.path.localeCompare(b.path))
-		const content = sortedFiles.map(f => `${f.path}:${f.hash}`).join('\n')
+		const sortedFiles = files.sort((a, b) =>
+			a.path.localeCompare(b.path))
+		const content = sortedFiles.map(f =>
+			`${f.path}:${f.hash}`).join('\n')
+
 		return createHash('sha256').update(content).digest('hex')
 	}
 
@@ -280,6 +291,7 @@ export class ChangeDetector {
 			.replace(/\*/g, '[^/]*')
 			.replace(/\?/g, '.')
 		const regex = new RegExp(`^${regexPattern}$`)
+
 		return regex.test(path)
 	}
 
@@ -300,4 +312,5 @@ export class ChangeDetector {
 	getCacheFilePath(): string {
 		return this.cacheFile
 	}
+
 }

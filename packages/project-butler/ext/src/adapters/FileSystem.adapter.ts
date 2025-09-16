@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { Buffer } from 'node:buffer'
 
-export interface IFileSystemAdapter {
+interface IFileSystemAdapter {
 	readFile: (path: string) => Promise<string>
 	writeFile: (path: string, content: string) => Promise<void>
 	stat: (path: string) => Promise<{ type: 'file' | 'directory' }>

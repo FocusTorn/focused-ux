@@ -11,7 +11,7 @@ const stripJsonComments = (stripJsonCommentsModule as { default?: (str: string) 
 /**
  * Theme audit result interface
  */
-export interface ThemeAuditResult {
+interface ThemeAuditResult {
 	baseThemeExists: boolean
 	dynamiconsThemeExists: boolean
 	themesIdentical: boolean
@@ -873,7 +873,8 @@ export class ThemeAuditProcessor {
 			]
 
 			// Filter out empty categories
-			const nonEmptyCategories = errorCategories.filter(category => category.hasItems)
+			const nonEmptyCategories = errorCategories.filter(category =>
+				category.hasItems)
 
 			// Display tree structure
 			nonEmptyCategories.forEach((category, categoryIndex) => {

@@ -1,6 +1,6 @@
 // IMPORTS ------------------------------------------------>> 
 
-// import antfuPlugin from 'eslint-plugin-antfu'
+import antfuPlugin from 'eslint-plugin-antfu'
 
 import seahaxWrapPlugin from '@seahax/eslint-plugin-wrap'
 import nxPlugin from '@nx/eslint'
@@ -12,6 +12,7 @@ import importPlugin from 'eslint-plugin-import'
 import unicornPlugin from 'eslint-plugin-unicorn'
 import stylisticPlugin from '@stylistic/eslint-plugin'
 import tsPlugin from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
 import jsoncPlugin from 'eslint-plugin-jsonc'
 import jsoncParser from 'jsonc-eslint-parser'
 import markdownPlugin from '@eslint/markdown'
@@ -92,6 +93,9 @@ import fuxFormat from './.eslint/plugins/fux-format/index.js'
 
 export default [
 	{   ignores: [ //>
+        
+		'**/*.md',
+        
 		'**/dist/**',
 		'**/.output/**',
 		'**/_out-tsc/**',
@@ -101,7 +105,6 @@ export default [
 		'pnpm-lock.yaml',
 		'**/package-lock.json',
 		'**/yarn.lock',
-		'**/*.md',
 		'**/CHANGELOG.md',
 		'**/README.md',
 		'**/.eslintcache',
@@ -136,15 +139,17 @@ export default [
 		files: ['**/*.{js,jsx,ts,tsx}'],
 		languageOptions: {
 			parser: tsParser,
-			parserOptions: {
-				project: [
-					'./tsconfig.base.json',
-					'./libs/shared/tsconfig.json',
-					'./packages/project-butler/tsconfig.json',
-					'./packages/dynamicons/tsconfig.json',
-				],
-				tsconfigRootDir: process.cwd(),
-			},
+			parserOptions: { project: null }
+
+			// parserOptions: {
+			// 	project: [
+			// 		'./tsconfig.base.json',
+			// 		'./libs/shared/tsconfig.json',
+			// 		'./packages/project-butler/tsconfig.json',
+			// 		'./packages/dynamicons/tsconfig.json',
+			// 	],
+			// 	tsconfigRootDir: process.cwd(),
+			// },
 		},
 		plugins: {
 			style: stylisticPlugin,

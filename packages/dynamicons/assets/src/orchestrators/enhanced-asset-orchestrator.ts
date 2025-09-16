@@ -12,7 +12,7 @@ interface Processor {
 	process: (verbose?: boolean, demo?: boolean) => Promise<boolean>
 }
 
-export interface ChangeDetectionResult {
+interface ChangeDetectionResult {
 	iconChanges: boolean
 	modelChanges: boolean
 	themeFilesMissing: boolean
@@ -44,6 +44,7 @@ export interface OrchestrationResult {
 }
 
 export class EnhancedAssetOrchestrator {
+
 	private verbose: boolean = false
 	private veryVerbose: boolean = false
 	private results: ScriptResult[] = []
@@ -66,6 +67,7 @@ export class EnhancedAssetOrchestrator {
 		// Change to the assets package directory for proper file resolution
 		const originalCwd = process.cwd()
 		const assetsDir = path.resolve(path.dirname(process.argv[1]), '..')
+
 		process.chdir(assetsDir)
 		
 		try {
@@ -100,11 +102,14 @@ export class EnhancedAssetOrchestrator {
 			await this.executeProcessorsWithDependencies()
 
 			const totalDuration = Date.now() - this.startTime
-			const overallSuccess = this.results.every(r => r.success)
+			const overallSuccess = this.results.every(r =>
+				r.success)
 			
 			const summary = {
-				passed: this.results.filter(r => r.success).length,
-				failed: this.results.filter(r => !r.success).length,
+				passed: this.results.filter(r =>
+					r.success).length,
+				failed: this.results.filter(r =>
+					!r.success).length,
 				total: this.results.length,
 			}
 
@@ -140,6 +145,7 @@ export class EnhancedAssetOrchestrator {
 		try {
 			// Check external source availability (using asset constants)
 			const externalSourceDir = assetConstants.externalIconSource
+
 			if (!fs.existsSync(externalSourceDir)) {
 				result.externalSourceAvailable = false
 				result.criticalError = 'External source directory not found'
@@ -157,7 +163,6 @@ export class EnhancedAssetOrchestrator {
 
 			// Check for missing preview images
 			result.previewImagesMissing = await this.checkPreviewImagesMissing()
-
 		} catch (error) {
 			result.criticalError = error instanceof Error ? error.message : String(error)
 		}
@@ -177,11 +182,14 @@ export class EnhancedAssetOrchestrator {
 		}
 
 		// Check if there are new SVG files in external source that aren't in new_icons yet
-		const externalFiles = fs.readdirSync(externalSourceDir).filter(f => f.endsWith('.svg'))
-		const stagedFiles = fs.readdirSync(newIconsDir).filter(f => f.endsWith('.svg'))
+		const externalFiles = fs.readdirSync(externalSourceDir).filter(f =>
+			f.endsWith('.svg'))
+		const stagedFiles = fs.readdirSync(newIconsDir).filter(f =>
+			f.endsWith('.svg'))
 		
 		// If external source has files not yet staged, icons need processing
-		return externalFiles.some(file => !stagedFiles.includes(file))
+		return externalFiles.some(file =>
+			!stagedFiles.includes(file))
 	}
 
 	/**
@@ -196,8 +204,10 @@ export class EnhancedAssetOrchestrator {
 		}
 
 		// Check if any model file is newer than theme files
-		const modelFiles = fs.readdirSync(modelsDir).filter(f => f.endsWith('.json'))
-		const themeFiles = fs.readdirSync(themesDir).filter(f => f.endsWith('.json'))
+		const modelFiles = fs.readdirSync(modelsDir).filter(f =>
+			f.endsWith('.json'))
+		const themeFiles = fs.readdirSync(themesDir).filter(f =>
+			f.endsWith('.json'))
 		
 		if (themeFiles.length === 0) {
 			return true // Force generation if no theme files exist
@@ -205,17 +215,21 @@ export class EnhancedAssetOrchestrator {
 
 		// Get the newest model file timestamp
 		let newestModelTime = 0
+
 		for (const modelFile of modelFiles) {
 			const modelPath = path.join(modelsDir, modelFile)
 			const stats = fs.statSync(modelPath)
+
 			newestModelTime = Math.max(newestModelTime, stats.mtime.getTime())
 		}
 
 		// Get the oldest theme file timestamp
 		let oldestThemeTime = Infinity
+
 		for (const themeFile of themeFiles) {
 			const themePath = path.join(themesDir, themeFile)
 			const stats = fs.statSync(themePath)
+
 			oldestThemeTime = Math.min(oldestThemeTime, stats.mtime.getTime())
 		}
 
@@ -236,7 +250,8 @@ export class EnhancedAssetOrchestrator {
 			return true
 		}
 
-		return expectedThemeFiles.some(file => !fs.existsSync(path.join(themesDir, file)))
+		return expectedThemeFiles.some(file =>
+			!fs.existsSync(path.join(themesDir, file)))
 	}
 
 	/**
@@ -250,7 +265,8 @@ export class EnhancedAssetOrchestrator {
 			return true
 		}
 
-		return expectedPreviewFiles.some(file => !fs.existsSync(path.join(previewsDir, file)))
+		return expectedPreviewFiles.some(file =>
+			!fs.existsSync(path.join(previewsDir, file)))
 	}
 
 	/**
@@ -320,21 +336,24 @@ export class EnhancedAssetOrchestrator {
 				name: 'process-icons',
 				description: 'Process Icons',
 				processor: new IconProcessor(),
-				shouldRun: () => this.changeDetection?.iconChanges || false,
+				shouldRun: () =>
+					this.changeDetection?.iconChanges || false,
 				skipReason: 'no new icons',
 			},
 			{
 				name: 'audit-models',
 				description: 'Audit Models',
 				processor: new ModelAuditProcessor(),
-				shouldRun: () => this.changeDetection?.modelChanges || this.changeDetection?.themeFilesMissing || false,
+				shouldRun: () =>
+					this.changeDetection?.modelChanges || this.changeDetection?.themeFilesMissing || false,
 				skipReason: 'no model changes',
 			},
 			{
 				name: 'generate-themes',
 				description: 'Generate Themes',
 				processor: new ThemeProcessor(),
-				shouldRun: () => this.changeDetection?.modelChanges || this.changeDetection?.themeFilesMissing || false,
+				shouldRun: () =>
+					this.changeDetection?.modelChanges || this.changeDetection?.themeFilesMissing || false,
 				skipReason: 'no model changes',
 			},
 			{
@@ -343,7 +362,9 @@ export class EnhancedAssetOrchestrator {
 				processor: new ThemeAuditProcessor(),
 				shouldRun: () => {
 					// Only run if themes were generated (check previous results)
-					const themesResult = this.results.find(r => r.script.includes('Generate Themes'))
+					const themesResult = this.results.find(r =>
+						r.script.includes('Generate Themes'))
+
 					return themesResult?.success || false
 				},
 				skipReason: 'themes not generated',
@@ -352,7 +373,8 @@ export class EnhancedAssetOrchestrator {
 				name: 'generate-previews',
 				description: 'Generate Previews',
 				processor: new PreviewProcessor(),
-				shouldRun: () => this.changeDetection?.iconChanges || this.changeDetection?.previewImagesMissing || false,
+				shouldRun: () =>
+					this.changeDetection?.iconChanges || this.changeDetection?.previewImagesMissing || false,
 				skipReason: 'no icon changes',
 			},
 		]
@@ -363,6 +385,7 @@ export class EnhancedAssetOrchestrator {
 			
 			if (shouldExecute) {
 				const result = await this.executeProcessor(name, description, processor)
+
 				this.results.push(result)
 				
 				// Stop on first failure unless very verbose mode, but allow theme audit to fail
@@ -374,7 +397,9 @@ export class EnhancedAssetOrchestrator {
 					}
 					
 					// Mark remaining processors as skipped due to failure
-					const remainingProcessors = processors.slice(processors.findIndex(p => p.name === name) + 1)
+					const remainingProcessors = processors.slice(processors.findIndex(p =>
+						p.name === name) + 1)
+
 					for (const remaining of remainingProcessors) {
 						this.results.push({
 							script: `${remaining.description} (${remaining.name})`,
@@ -429,16 +454,20 @@ export class EnhancedAssetOrchestrator {
 			
 			console.log = (...args: unknown[]) => {
 				const message = args.join(' ')
+
 				output.push(message)
+
 				// Always show errors, show other output only in verbose modes
 				const isError = message.includes('❌') || message.includes('ERROR') || message.includes('FAILED')
 				const isTreeStructure = message.includes('├─') || message.includes('└─') || message.includes('THEME:') || message.includes('MODEL:')
+
 				if (this.verbose || this.veryVerbose || isError || isTreeStructure) {
 					originalLog(...args)
 				}
 			}
 			console.error = (...args: unknown[]) => {
 				const message = args.join(' ')
+
 				errors.push(message)
 				// Always show errors
 				originalError(...args)
@@ -452,7 +481,8 @@ export class EnhancedAssetOrchestrator {
 				success = await processor.process(this.verbose)
 				
 				// Check for skip conditions
-				if (output.some(line => line.includes('No changes detected'))) {
+				if (output.some(line =>
+					line.includes('No changes detected'))) {
 					status = 'skipped'
 					reason = 'No changes detected'
 				} else if (success) {
@@ -538,12 +568,14 @@ export class EnhancedAssetOrchestrator {
 		
 		if (!result.success && result.errors.length > 0) {
 			console.log('   Errors:')
-			result.errors.forEach(error => console.log(`   ${error}`))
+			result.errors.forEach(error =>
+				console.log(`   ${error}`))
 		}
 		
 		if (this.veryVerbose && result.output.length > 0) {
 			console.log('   Output:')
-			result.output.forEach(line => console.log(`   ${line}`))
+			result.output.forEach(line =>
+				console.log(`   ${line}`))
 		}
 	}
 
@@ -559,12 +591,13 @@ export class EnhancedAssetOrchestrator {
 		console.log(separator)
 		
 		// Show optimization results if there are any
-		const processIconsResult = result.results.find(r => r.script.includes('Process Icons'))
+		const processIconsResult = result.results.find(r =>
+			r.script.includes('Process Icons'))
+
 		if (processIconsResult && processIconsResult.success) {
 			// Extract optimization lines from output
-			const optimizationLines = processIconsResult.output.filter(line => 
-				line.includes('of') && line.includes('file icon:') && line.includes('->')
-			)
+			const optimizationLines = processIconsResult.output.filter(line =>
+				line.includes('of') && line.includes('file icon:') && line.includes('->'))
 			
 			// Display optimization results (already in correct format)
 			optimizationLines.forEach(line => {
@@ -574,10 +607,14 @@ export class EnhancedAssetOrchestrator {
 		}
 		
 		// Show failure results if there are any
-		const failedResults = result.results.filter(r => !r.success)
+		const failedResults = result.results.filter(r =>
+			!r.success)
+
 		if (failedResults.length > 0) {
 			// Check for theme audit failure and display theme errors
-			const themeAuditResult = failedResults.find(r => r.script.includes('Audit Themes'))
+			const themeAuditResult = failedResults.find(r =>
+				r.script.includes('Audit Themes'))
+
 			if (themeAuditResult) {
 				// Display actual theme errors from the processor output
 				// The theme audit processor should handle its own error display
@@ -593,8 +630,8 @@ export class EnhancedAssetOrchestrator {
 				
 				// Display error output (already formatted by processors)
 				scriptResult.output.forEach(line => {
-					if (line.includes('❌') || line.includes('THEME:') || line.includes('MODEL:') || 
-						line.includes('ERROR') || line.includes('FAILED')) {
+					if (line.includes('❌') || line.includes('THEME:') || line.includes('MODEL:')
+						|| line.includes('ERROR') || line.includes('FAILED')) {
 						console.log(line)
 					}
 				})
@@ -630,7 +667,8 @@ export class EnhancedAssetOrchestrator {
 			
 			if (!scriptResult.success && scriptResult.errors.length > 0) {
 				console.log('      Errors:')
-				scriptResult.errors.forEach(error => console.log(`      ${error}`))
+				scriptResult.errors.forEach(error =>
+					console.log(`      ${error}`))
 			}
 		})
 		console.log(separator)
@@ -645,15 +683,19 @@ export class EnhancedAssetOrchestrator {
 	 */
 	getResults(): OrchestrationResult {
 		return {
-			overallSuccess: this.results.every(r => r.success),
+			overallSuccess: this.results.every(r =>
+				r.success),
 			results: this.results,
 			totalDuration: Date.now() - this.startTime,
 			summary: {
-				passed: this.results.filter(r => r.success).length,
-				failed: this.results.filter(r => !r.success).length,
+				passed: this.results.filter(r =>
+					r.success).length,
+				failed: this.results.filter(r =>
+					!r.success).length,
 				total: this.results.length,
 			},
 			changeDetection: this.changeDetection!,
 		}
 	}
+
 }

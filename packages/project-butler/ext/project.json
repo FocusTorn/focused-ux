@@ -40,20 +40,22 @@
                 "targetPath": "{projectRoot}"
             }
         }, //<
-       "package:dev": {
-            "executor": "nx:run-commands",
-            "inputs": ["production", "^production", "{workspaceRoot}/libs/vsix-packager/dist/cli/index.js"],
+    
+        "package:dev": {
+            "executor": "@fux/vpack:pack",
             "outputs": ["{options.outputPath}"],
-            
-            "dependsOn": ["build", "@fux/vsix-packager:cli"],
             "options": {
-                "commands": [
-                    "node libs/vsix-packager/dist/cli/index.js {projectRoot} vsix_packages --dev"
-                ],
-                "outputPath": "vsix_packages"
-            },
-            "cache": false
+                "targetPath": "{projectRoot}",
+                "outputPath": "vsix_packages",
+                "keepDeploy": true,
+                "deployPath": ".vpack/deploy",
+                "freshDeploy": true,
+                "extractContents": true,
+                "contentsPath": ".vpack/contents",
+                "dev": true
+            }
         },
+    
         "publish": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["package"],
@@ -204,3 +206,17 @@
 // }, //<
 
         
+//    "package:dev:orrogonal": { //>
+//         "executor": "nx:run-commands",
+//         "inputs": ["production", "^production", "{workspaceRoot}/libs/vsix-packager/dist/cli/index.js"],
+//         "outputs": ["{options.outputPath}"],
+            
+//         "dependsOn": ["build", "@fux/vsix-packager:cli"],
+//         "options": {
+//             "commands": [
+//                 "node libs/vsix-packager/dist/cli/index.js {projectRoot} vsix_packages --dev"
+//             ],
+//             "outputPath": "vsix_packages"
+//         },
+//         "cache": false
+//     }, //<

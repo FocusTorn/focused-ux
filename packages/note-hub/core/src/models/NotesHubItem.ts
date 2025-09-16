@@ -9,7 +9,7 @@ import type {
 	TreeItemLabel,
 } from '../_interfaces/INotesHubItem.js'
 
-export interface ITreeItem {
+interface ITreeItem {
 	label: string | TreeItemLabel | undefined
 	resourceUri?: IUri
 	description?: string | boolean
@@ -19,7 +19,7 @@ export interface ITreeItem {
 	collapsibleState: number | undefined
 }
 
-export interface IThemeColor {
+interface IThemeColor {
 	readonly id: string
 }
 

@@ -6,19 +6,13 @@
     "repository": "https://github.com/FocusTorn/focused-ux",
     "version": "0.2.0",
     "dependencies": {
-        "@fux/dynamicons-core": "workspace:*",
         "@fux/dynamicons-assets": "workspace:*",
-        "strip-json-comments": "^5.0.2"
+        "@fux/dynamicons-core": "workspace:*"
     },
     "devDependencies": {
-        "@types/mocha": "^10.0.6",
         "@types/node": "^24.0.10",
         "@types/vscode": "^1.99.3",
         "@vscode/test-cli": "^0.0.11",
-        "@vscode/test-electron": "^2.5.2",
-        "@vitest/coverage-v8": "^3.2.4",
-        "glob": "^10.3.10",
-        "mocha": "^10.3.0",
         "typescript": "^5.8.3",
         "vitest": "^3.2.4"
     },

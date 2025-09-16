@@ -11,7 +11,7 @@ const stripJsonComments = (stripJsonCommentsModule as { default?: (str: string) 
 /**
  * Model audit result interface
  */
-export interface ModelAuditResult {
+interface ModelAuditResult {
 	orphanedFileIcons: string[]
 	orphanedFolderIcons: string[]
 	orphanedLanguageIcons: string[]
@@ -30,6 +30,7 @@ export interface ModelAuditResult {
  * Model Audit Processor - Validates model files and asset directories for consistency
  */
 export class ModelAuditProcessor {
+
 	private errorHandler: ErrorHandler
 
 	constructor() {
@@ -70,9 +71,8 @@ export class ModelAuditProcessor {
 			
 			// Check if there are any errors
 			const totalErrors = this.calculateTotalErrors(auditResult)
-		
 
-		if (totalErrors > 0) {
+			if (totalErrors > 0) {
 				// Display errors using tree formatter
 				TreeFormatter.displayStructuredErrors(
 					[], // themeErrors (not used for model audit)
@@ -175,7 +175,6 @@ export class ModelAuditProcessor {
 			await this.auditOrphanedIcons(result, fileIconsModel, folderIconsModel, languageIconsModel, fileIconsDir, folderIconsDir, languageIconsDir)
 			await this.auditOrphanedAssignments(result, fileIconsModel, folderIconsModel, languageIconsModel, fileIconsDir, folderIconsDir, languageIconsDir)
 			await this.auditDuplicateAssignments(result, fileIconsModel, folderIconsModel, languageIconsModel)
-
 		} catch (error) {
 			// If we can't read models or assets, return empty result
 			console.warn('⚠️ Could not complete model audit:', error instanceof Error ? error.message : String(error))
@@ -190,6 +189,7 @@ export class ModelAuditProcessor {
 	private async loadModelFile(filePath: string): Promise<any> {
 		try {
 			const content = await fs.readFile(filePath, 'utf-8')
+
 			return JSON.parse(stripJsonComments(content))
 		} catch {
 			return { icons: [] }
@@ -202,7 +202,9 @@ export class ModelAuditProcessor {
 	private async loadAssetDirectory(dirPath: string): Promise<string[]> {
 		try {
 			const files = await fs.readdir(dirPath)
-			return files.filter(f => f.endsWith('.svg'))
+
+			return files.filter(f =>
+				f.endsWith('.svg'))
 		} catch {
 			return []
 		}
@@ -228,6 +230,7 @@ export class ModelAuditProcessor {
 		// Check for orphaned file icons
 		for (const file of fileIconsDir) {
 			const iconName = path.basename(file, '.svg')
+
 			if (!iconName.endsWith('-alt') || iconName === 'pycache-alt') {
 				if (!modelFileIconNames.has(iconName)) {
 					result.orphanedFileIcons.push(iconName)
@@ -238,8 +241,10 @@ export class ModelAuditProcessor {
 		// Check for orphaned folder icons
 		for (const file of folderIconsDir) {
 			const iconName = path.basename(file, '.svg')
+
 			if (!iconName.endsWith('-open') && !iconName.endsWith('-alt')) {
 				const baseName = iconName.startsWith('folder-') ? iconName.substring(7) : iconName
+
 				if (!modelFolderIconNames.has(baseName)) {
 					result.orphanedFolderIcons.push(baseName)
 				}
@@ -262,9 +267,12 @@ export class ModelAuditProcessor {
 		languageIconsDir: string[],
 	): Promise<void> {
 		// Build available asset sets
-		const availableFileIconNames = new Set(fileIconsDir.map(f => path.basename(f, '.svg')))
-		const availableFolderIconNames = new Set(folderIconsDir.map(f => path.basename(f, '.svg')))
-		const availableLanguageIconNames = new Set(languageIconsDir.map(f => path.basename(f, '.svg')))
+		const availableFileIconNames = new Set(fileIconsDir.map(f =>
+			path.basename(f, '.svg')))
+		const availableFolderIconNames = new Set(folderIconsDir.map(f =>
+			path.basename(f, '.svg')))
+		const availableLanguageIconNames = new Set(languageIconsDir.map(f =>
+			path.basename(f, '.svg')))
 		
 		// Check file icon assignments
 		for (const icon of fileIconsModel.icons || []) {
@@ -302,6 +310,7 @@ export class ModelAuditProcessor {
 		for (const icon of languageIconsModel.icons || []) {
 			if (icon.iconName) {
 				const iconName = icon.iconName.replace('.svg', '')
+
 				if (!availableLanguageIconNames.has(iconName)) {
 					result.orphanedLanguageAssignments.push(icon.iconName)
 				}
@@ -320,6 +329,7 @@ export class ModelAuditProcessor {
 	): Promise<void> {
 		// Check for duplicate file icon names
 		const seenFileIconNames = new Set<string>()
+
 		for (const icon of fileIconsModel.icons || []) {
 			if (icon.iconName) {
 				if (seenFileIconNames.has(icon.iconName)) {
@@ -332,6 +342,7 @@ export class ModelAuditProcessor {
 
 		// Check for duplicate folder icon names
 		const seenFolderIconNames = new Set<string>()
+
 		for (const icon of folderIconsModel.icons || []) {
 			if (icon.iconName) {
 				if (seenFolderIconNames.has(icon.iconName)) {
@@ -344,6 +355,7 @@ export class ModelAuditProcessor {
 
 		// Check for duplicate language icon IDs
 		const seenLanguageIconIds = new Set<string>()
+
 		for (const icon of languageIconsModel.icons || []) {
 			if (icon.languageID) {
 				if (seenLanguageIconIds.has(icon.languageID)) {
@@ -356,6 +368,7 @@ export class ModelAuditProcessor {
 
 		// Check for duplicate folder name assignments
 		const folderNameToIcons = new Map<string, string[]>()
+
 		for (const icon of folderIconsModel.icons || []) {
 			if (icon.folderNames && Array.isArray(icon.folderNames)) {
 				for (const folderName of icon.folderNames) {
@@ -376,6 +389,7 @@ export class ModelAuditProcessor {
 
 		// Check for duplicate file name assignments
 		const fileNameToIcons = new Map<string, string[]>()
+
 		for (const icon of fileIconsModel.icons || []) {
 			if (icon.fileNames && Array.isArray(icon.fileNames)) {
 				for (const fileName of icon.fileNames) {
@@ -396,6 +410,7 @@ export class ModelAuditProcessor {
 
 		// Check for duplicate file extension assignments
 		const fileExtensionToIcons = new Map<string, string[]>()
+
 		for (const icon of fileIconsModel.icons || []) {
 			if (icon.fileExtensions && Array.isArray(icon.fileExtensions)) {
 				for (const fileExtension of icon.fileExtensions) {
@@ -443,10 +458,12 @@ export class ModelAuditProcessor {
 
 		// Add orphans and unassigned
 		if (model.orphans) {
-			model.orphans.forEach((orphan: string) => iconSet.add(orphan))
+			model.orphans.forEach((orphan: string) =>
+				iconSet.add(orphan))
 		}
 		if (model.unassigned) {
-			model.unassigned.forEach((unassigned: string) => iconSet.add(unassigned))
+			model.unassigned.forEach((unassigned: string) =>
+				iconSet.add(unassigned))
 		}
 
 		return iconSet
@@ -536,4 +553,5 @@ export class ModelAuditProcessor {
 			+ result.orphanedLanguageAssignments.length
 			+ result.invalidLanguageIds.length
 	}
+
 }

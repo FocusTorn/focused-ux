@@ -1,6 +1,6 @@
 import * as path from 'node:path'
 
-export interface IPathAdapter {
+interface IPathAdapter {
 	dirname: (filePath: string) => string
 	basename: (filePath: string) => string
 	join: (...paths: string[]) => string

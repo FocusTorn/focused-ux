@@ -17,8 +17,8 @@ export interface ITreeItemFactory {
 	getCollapsibleStateExpanded: () => TreeItemCollapsibleState
 }
 
-// Re-export the shared TreeItemFactory for convenience
-export type { TreeItemFactory } from '@fux/shared'
+// // Re-export the shared TreeItemFactory for convenience
+// export type { TreeItemFactory } from '@fux/shared'
 
 export class FileExplorerItem implements IFileExplorerItem {
 

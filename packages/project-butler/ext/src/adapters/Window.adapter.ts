@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-export interface IWindowAdapter {
+interface IWindowAdapter {
 	showInformationMessage: (message: string) => Promise<void>
 	showWarningMessage: (message: string) => Promise<void>
 	showErrorMessage: (message: string) => Promise<void>

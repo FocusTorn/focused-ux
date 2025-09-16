@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-export interface IWorkspaceAdapter {
+interface IWorkspaceAdapter {
 	getWorkspaceRoot: () => string | undefined
 }
 

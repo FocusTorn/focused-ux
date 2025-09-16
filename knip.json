@@ -1,12 +1,214 @@
 {
     "$schema": "https://unpkg.com/knip@latest/schema.json",
+    
+    "workspaces": {
+        
+        ".": { //>
+            "project": [
+                "scripts/**/*.{ts,js,mjs,cjs}"
+            ],
+            "entry": [
+                "scripts/*.{ts,js,mjs,cjs}"
+            ],
+            "ignore": [
+                "eslint.config.js",
+                "eslint.config.js.bak",
+                "prettier.config.cjs",
+                "vitest.*.ts",
+                "tsconfig*.json",
+                "knip.json",
+                "nx.json",
+                "package.json",
+                "pnpm-lock.yaml",
+                "docs/**",
+                ".vpack/**",
+                "vsix_packages/**"
+            ]
+        }, //<
+        
+        
+        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+        // │                                             LIBS                                             │
+        // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
+        "libs/project-alias-expander": { //>
+            "project": ["src/**/*.ts"],
+            "ignoreDependencies": ["adm-zip"]
+        }, //<
+
+        
+        "libs/vsix-packager": { //>
+            "project": ["src/**/*.ts"],
+            "ignoreDependencies": ["adm-zip"]
+        }, //<
+
+        
+        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+        // │                                           PACKAGES                                           │
+        // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
+        "packages/dynamicons/core": { //>
+            "project": [ "src/**/*.ts" ],    
+            "entry": [ "src/index.ts" ],
+            "ignore": [
+                "assets/**",
+                "dist/**",
+                "out-tsc/**"
+            ]
+        }, //<
+        "packages/dynamicons/assets": { //>
+            "project": [ "src/**/*.ts" ],
+            "entry": [ "src/index.ts", "src/cli.ts" ],
+            "ignore": [ 
+                "assets/**",
+                "dist/**",
+                "out-tsc/**"
+            ]
+
+        }, //<
+        "packages/dynamicons/ext": { //>
+            "project": [ "src/**/*.ts" ],
+            "entry": [ "src/index.ts"],
+            "ignore": [
+                "assets/**",
+                "dist/**",
+                "out-tsc/**"
+            ]
+        }, //<
+        
+        "packages/project-butler/core": { //>
+            "project": [ "src/**/*.ts" ],
+            "entry": [ "src/index.ts" ],
+            "ignore": [
+                "assets/**",
+                "dist/**",
+                "out-tsc/**"
+            ]
+        }, //<
+        "packages/project-butler/ext": { //>
+            "project": [ "src/**/*.ts" ],
+            "entry": [ "src/extension.ts" ],
+            "ignore": [
+                "assets/**",
+                "dist/**",
+                "out-tsc/**"
+            ]
+        }, //<
+        
+        "packages/note-hub/core": { //>
+            "project": [ "src/**/*.ts" ],
+            "entry": [ "src/index.ts" ],
+            "ignore": [
+                "assets/**",
+                "dist/**",
+                "out-tsc/**"
+            ]
+        }, //<
+        "packages/note-hub/ext": { //>
+            "project": [ "src/**/*.ts" ],
+            "entry": [ "src/index.ts" ],
+            "ignore": [
+                "assets/**",
+                "dist/**",
+                "out-tsc/**"
+            ]
+        }, //<
+    
+        "packages/ghost-writer/core": { //>
+            "project": [ "src/**/*.ts" ],
+            "entry": [ "src/index.ts" ],
+            "ignore": [
+                "assets/**",
+                "dist/**",
+                "out-tsc/**"
+            ]
+        }, //<
+        "packages/ghost-writer/ext": { //>
+            "project": [ "src/**/*.ts" ],
+            "entry": [ "src/index.ts" ],
+            "ignore": [
+                "assets/**",
+                "dist/**",
+                "out-tsc/**"
+            ]
+        }, //<
+        
+        
+        // ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+        // │                                            PLUGINS                                             │
+        // └────────────────────────────────────────────────────────────────────────────────────────────────┘                
+        "plugins/recommened": { //>
+            "project": [ "src/**/*.ts" ],
+            "entry": [ "src/index.ts" ],
+            "ignore": [
+                "assets/**",
+                "dist/**",
+                "out-tsc/**"
+            ]
+        }, //<
+        "plugins/vpack": { //>
+            "project": [ "src/**/*.ts" ],
+            "entry": [ "src/index.ts" ],
+            "ignore": [
+                "assets/**",
+                "dist/**",
+                "out-tsc/**"
+            ]
+        } //<
+
+        
+        // ┌──────────────────────────────────────────────────────────────────────────────────────┐
+        // │                                   WORK IN PROGRESS                                   │
+        // └──────────────────────────────────────────────────────────────────────────────────────┘                
+        // "libs/observability": { //>
+        //     "project": [ "src/**/*.ts" ],
+        //     "entry": [ "src/index.ts" ],
+        //     "ignore": [
+        //         "assets/**",
+        //         "dist/**",
+        //         "out-tsc/**"
+        //     ]
+        // }, //<
+    
+    },
+    
+    
+    // ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    // │                                                  GLOBAL                                                  │
+    // └──────────────────────────────────────────────────────────────────────────────────────────────────────────┘        
+    
     "entry": [],
     "project": [],
-    "ignoreDependencies": ["strip-json-comments", "rimraf", "@nx/devkit", "ora"],
-    "ignoreBinaries": ["vsce"],
-    "ignore": [
+    "ignoreDependencies": [
+        "@fux/vpack"
+        // "strip-json-comments",
+        // "rimraf",
+        // "@nx/devkit",
+        // "ora"
+    ],
+    "ignoreBinaries": [
+        "vsce",
+        "tsx",
+        "powershell" // for vsc-test-cli
         
-        "**/_scripts/**/*",
+    ],
+    "ignore": [
+        "**/scripts/**/*", // Temporary
+        "libs/shared/**", // Temporary - will be removed from project
+        "libs/mockly/**", // Temporary - will be removed from project
+        "libs/mockly/**", // Temporary - will be removed from project
+        
+        "packages/context-cherry-picker/ext/package.json", // Temporary
+        
+        "plugins/recommended/**", // Not finished
+        "libs/observability/**", // Not finished
+        
+        
+        "plugins/**/schema.d.ts",
+        
+        
+        
+        
+        
+        
         
         
         "**/*removed*/**/*",
@@ -22,12 +224,12 @@
         "coverage/**",
         "assets/**",
 
-        "packages/project-butler/core/src/_interfaces/IFileSystem.ts",
-        "packages/project-butler/core/src/_interfaces/IProcess.ts",
-        "libs/shared/src/_interfaces/ICommonUtilsService.ts",
-        "libs/shared/src/_interfaces/IPathUtilsService.ts",
-        "libs/shared/src/_interfaces/IWindow.ts",
-        "libs/shared/src/_interfaces/IWorkspace.ts"
+        "libs/shared/**",
+        "libs/mockly/**"
+        // "libs/shared/src/_interfaces/ICommonUtilsService.ts",
+        // "libs/shared/src/_interfaces/IPathUtilsService.ts",
+        // "libs/shared/src/_interfaces/IWindow.ts",
+        // "libs/shared/src/_interfaces/IWorkspace.ts"
     ]
 
     // --reporter

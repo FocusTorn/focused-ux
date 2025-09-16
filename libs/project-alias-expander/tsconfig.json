@@ -1,13 +1,11 @@
 {
     "extends": "../../tsconfig.base.json",
+    
+    "include": ["src/**/*"],
+    "exclude": ["dist", "coverage", "**/*.test.ts"],
+    
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
-        "declaration": true,
-        "declarationMap": true,
-        "sourceMap": true
-    },
-    "include": ["src/**/*"],
-    "exclude": ["dist", "coverage", "**/*.test.ts", "**/*.spec.ts"],
-    "files": ["src/cli.ts"]
+    }
 }

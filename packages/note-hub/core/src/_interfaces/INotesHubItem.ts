@@ -20,7 +20,7 @@ export interface IUriFactory {
 	joinPath: (base: IUri, ...paths: string[]) => IUri
 }
 
-export interface IThemeColor {
+interface IThemeColor {
 	readonly id: string
 }
 export interface IThemeIcon {

@@ -123,15 +123,23 @@
             "name": "note-hub",
             "suffix": "ext"
         },
+        
+        //= Utilities =========================================================== 
         "mockly": "@fux/mockly",
         "shared": "@fux/shared",
-        "audit": "@fux/structure-auditor",
-        "cmo": "@fux/cursor-memory-optimizer",
-        "alias": "@fux/project-alias-expander",
+        
+        //== Repo Utility Packages ============================================== 
+        "vp": "@fux/vsix-packager",
         "obs": "@fux/observability",
         "vsct": "@fux/vscode-test-cli-config",
-        "vpack": "@fux/vsix-packager"
+        "alias": "@fux/project-alias-expander",
         
+        //= TSX Executed CLI tools ============================================== 
+        "audit": "@fux/structure-auditor",
+        "cmo": "@fux/cursor-memory-optimizer",
+        
+        //= Plugins ============================================================= 
+        "vpack": "@fux/vpack"
     }
 }
 // Test comment

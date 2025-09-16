@@ -1,5 +1,7 @@
 import { promises as fs } from 'fs'
 import path from 'path'
+import { optimize } from 'svgo'
+import { pathToFileURL } from 'node:url'
 import { assetConstants } from '../_config/asset.constants.js'
 import { ErrorHandler, ErrorType, ErrorSeverity } from '../utils/error-handler.js'
 
@@ -309,10 +311,16 @@ export class IconProcessor {
 				// Create temporary path for optimization
 				const tempPath = path.join(targetDir, `${iconFile}.tmp`)
 				
-				// Run SVGO optimization using the project's config file
-				const svgoCommand = `svgo --config svgo.config.mjs -i "${sourcePath}" -o "${tempPath}"`
+				// Run SVGO optimization using the project's config file (CLI disabled in favor of JS API)
+				// const svgoCommand = `svgo --config svgo.config.mjs -i "${sourcePath}" -o "${tempPath}"`
+				// await execAsync(svgoCommand)
 
-				await execAsync(svgoCommand)
+				// Use SVGO JS API so dependency is visible to static analysis and avoids shelling out
+				const configFile = path.resolve(process.cwd(), assetConstants.processing.defaultConfigPath)
+				const { default: svgoConfig } = await import(pathToFileURL(configFile).href)
+				const inputSvg = await fs.readFile(sourcePath, 'utf8')
+				const { data: optimizedSvg } = optimize(inputSvg, { path: sourcePath, ...(svgoConfig ?? {}) })
+				await fs.writeFile(tempPath, optimizedSvg)
 				
 				// Get optimized file size
 				const optimizedStats = await fs.stat(tempPath)

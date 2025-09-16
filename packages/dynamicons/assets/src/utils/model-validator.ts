@@ -4,7 +4,7 @@ import stripJsonCommentsModule from 'strip-json-comments'
 // Handle both default and direct exports
 const stripJsonComments = (stripJsonCommentsModule as { default?: (str: string) => string }).default || stripJsonCommentsModule
 
-export interface ValidationResult {
+interface ValidationResult {
 	valid: boolean
 	errors: string[]
 	warnings: string[]
@@ -210,10 +210,12 @@ async function validateModelFile(filePath: string, name: string, silent: boolean
 				console.log(`✅ ${name}: Valid`)
 			} else {
 				console.log(`❌ ${name}: Invalid`)
-				result.errors.forEach(error => console.log(`   • ${error}`))
+				result.errors.forEach(error =>
+					console.log(`   • ${error}`))
 			}
 			if (result.warnings.length > 0) {
-				result.warnings.forEach(warning => console.log(`   ⚠️  ${warning}`))
+				result.warnings.forEach(warning =>
+					console.log(`   ⚠️  ${warning}`))
 			}
 		}
 
@@ -224,7 +226,8 @@ async function validateModelFile(filePath: string, name: string, silent: boolean
 		
 		if (!silent) {
 			console.log(`❌ ${name}: File error`)
-			result.errors.forEach(error => console.log(`   • ${error}`))
+			result.errors.forEach(error =>
+				console.log(`   • ${error}`))
 		}
 
 		return result

@@ -44,7 +44,8 @@
     },
     "dependencies": {
         "@nx/devkit": "21.4.1",
-        "tslib": "^2.3.0"
+        "adm-zip": "^0.5.12",
+        "rimraf": "^5.0.10"
     },
     "executors": "./executors.json",
     "files": [
