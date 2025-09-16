@@ -24,3 +24,5 @@ suite('Extension Test Suite', () => {
 		}
 	})
 })
+
+

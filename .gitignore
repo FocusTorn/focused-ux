@@ -7,7 +7,11 @@ dc-assets-backup
 #= COMPILED OUTPUT ==========================================
 dist
 tmp
-out-tsc
+
+out-tsc/
+_out-tsc/
+
+
 *.tsbuildinfo
 vsix_packages
 

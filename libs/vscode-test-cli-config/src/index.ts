@@ -52,6 +52,7 @@ export function createVscodeTestConfig(options: FuxVSCodeTestConfigOptions) {
 		files,
 		workspaceFolder,
 		setupFiles,
+		extensionDevelopmentPath,
 		env: {
 			VSCODE_TEST: '1',
 		},

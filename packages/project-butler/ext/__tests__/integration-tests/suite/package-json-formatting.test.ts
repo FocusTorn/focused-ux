@@ -7,7 +7,7 @@ suite('Package.json Formatting Test Suite', () => {
 	let testWorkspaceRoot = ''
 	let packageJsonPath = ''
 	let originalPackageJsonContent = ''
-  
+	 
 	suiteSetup(() => {
 		testWorkspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || ''
 		assert.ok(testWorkspaceRoot, 'Test workspace should be available')
@@ -112,3 +112,5 @@ suite('Package.json Formatting Test Suite', () => {
 		)
 	}) //<
 })
+
+

@@ -5,7 +5,7 @@ import * as path from 'node:path'
 suite('Terminal Management Test Suite', () => {
 	let testWorkspaceRoot = ''
 	let testFilePath = ''
-  
+	 
 	suiteSetup(() => {
 		testWorkspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || ''
 		assert.ok(testWorkspaceRoot, 'Test workspace should be available')
@@ -80,3 +80,5 @@ suite('Terminal Management Test Suite', () => {
 		)
 	}) //<
 })
+
+

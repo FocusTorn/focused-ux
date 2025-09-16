@@ -106,11 +106,10 @@
         //= Integration testing ================================================= 
         "test:compile": { //>
             "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/__tests__/_out-tsc"],
+            "outputs": ["{projectRoot}/__tests__/integration-tests/_out-tsc"],
             "options": {
                 "commands": [
-                // "rimraf ./__tests__/_out-tsc/suite",
-                    "tsc -p packages/project-butler/ext/__tests__/tsconfig.test.json"
+                    "tsc -p packages/project-butler/ext/__tests__/integration-tests/tsconfig.test.json"
                 ]
             }
         }, //<
@@ -122,8 +121,7 @@
             ],
             "options": {
                 "commands": [
-                    "nx run @fux/vscode-test-cli-config:build",
-                    "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
+                    "powershell -Command \"& {vscode-test --config __tests__/integration-tests/.vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
                 ],
                 "cwd": "packages/project-butler/ext"
             },
@@ -137,9 +135,8 @@
             ],
             "options": {
                 "commands": [
-                    "nx run @fux/vscode-test-cli-config:build",
                     // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
-                    "vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec"
+                    "vscode-test --config __tests__/integration-tests/.vscode-test.mjs --verbose --timeout 20000 --reporter spec"
                 ],
                 "cwd": "packages/project-butler/ext"
             },

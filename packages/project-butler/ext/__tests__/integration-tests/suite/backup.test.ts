@@ -6,7 +6,7 @@ import * as fs from 'node:fs'
 suite('Backup Test Suite', () => {
 	let testFile = ''
 	let testWorkspaceRoot = ''
-  
+	 
 	suiteSetup(() => {
 		testWorkspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || ''
 		assert.ok(testWorkspaceRoot, 'Test workspace should be available')
@@ -104,3 +104,5 @@ suite('Backup Test Suite', () => {
 		)
 	}) //<
 })
+
+
