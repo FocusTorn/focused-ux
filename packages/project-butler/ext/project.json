@@ -119,6 +119,7 @@
                 "build",
                 "test:compile"
             ],
+            "cache": false,
             "options": {
                 "commands": [
                     "powershell -Command \"& {vscode-test --config __tests__/integration-tests/.vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
@@ -133,6 +134,7 @@
                 "build",
                 "test:compile"
             ],
+            "cache": false,
             "options": {
                 "commands": [
                     // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
