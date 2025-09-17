@@ -5,8 +5,6 @@
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
     "version": "0.1.0",
-    "private": true,
-    "main": "./dist/index.cjs",
     "dependencies": {
         "@fux/ghost-writer-core": "workspace:*"
     },
@@ -95,5 +93,6 @@
     "engines": {
         "vscode": "^1.99.3"
     },
-    "license": "MIT"
+    "private": true,
+    "main": "./dist/extension.cjs"
 }

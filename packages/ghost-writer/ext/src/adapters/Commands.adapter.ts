@@ -1,18 +1,14 @@
-import type { commands as vscodeCommands, Disposable, ExtensionContext } from 'vscode'
+import * as vscode from 'vscode'
+import type { ICommandsAdapter } from '@fux/ghost-writer-core'
 
-export class CommandsAdapter {
-
-	constructor(
-		private readonly commands: typeof vscodeCommands,
-		private readonly context: ExtensionContext,
-	) {}
+export class CommandsAdapter implements ICommandsAdapter {
 
 	registerCommand(
 		command: string,
 		callback: (...args: any[]) => any,
 		thisArg?: any,
-	): Disposable {
-		return this.commands.registerCommand(command, callback, thisArg)
+	): vscode.Disposable {
+		return vscode.commands.registerCommand(command, callback, thisArg)
 	}
 
 }

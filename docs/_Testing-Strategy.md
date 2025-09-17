@@ -197,10 +197,23 @@ describe('Extension', () => {
 })
 ```
 
-### Integration Testing
+### Extension Integration Testing
+
+**Structure:**
+
+```
+__tests__/integration-tests/
+├── suite/                    # Test files
+├── mocked-workspace/         # Test workspace files
+├── tsconfig.test.json        # TypeScript config for tests
+├── .vscode-test.mjs          # VS Code test configuration
+└── _readme.md               # Integration test documentation
+```
+
+**Test Configuration:**
 
 ```typescript
-// __tests__/integration/extension.test.ts
+// __tests__/integration-tests/suite/extension.integration.test.ts
 import * as assert from 'assert'
 import * as vscode from 'vscode'
 
@@ -209,7 +222,39 @@ suite('Extension Integration Test Suite', () => {
         const commands = await vscode.commands.getCommands()
         assert.ok(commands.includes('fux-package-name.commandName'))
     })
+
+    test('Should activate without errors', async () => {
+        // Verify extension can be activated
+        assert.ok(true, 'Extension should activate successfully')
+    })
 })
+```
+
+**Project.json Integration Test Targets:**
+
+```json
+{
+    "test:compile": {
+        "executor": "nx:run-commands",
+        "outputs": ["{projectRoot}/__tests__/integration-tests/_out-tsc"],
+        "options": {
+            "commands": [
+                "tsc -p packages/{feature}/ext/__tests__/integration-tests/tsconfig.test.json"
+            ]
+        }
+    },
+    "test:integration": {
+        "executor": "nx:run-commands",
+        "dependsOn": ["build", "test:compile"],
+        "cache": false,
+        "options": {
+            "commands": [
+                "powershell -Command \"& {vscode-test --config __tests__/integration-tests/.vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
+            ],
+            "cwd": "packages/{feature}/ext"
+        }
+    }
+}
 ```
 
 ## 🚨 Anti-Patterns & Violations

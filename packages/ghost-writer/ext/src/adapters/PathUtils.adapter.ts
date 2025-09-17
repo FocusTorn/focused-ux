@@ -1,7 +1,7 @@
 import * as path from 'node:path'
-import type { IPathUtilsService } from '@fux/ghost-writer-core'
+import type { IPathUtilsAdapter } from '@fux/ghost-writer-core'
 
-export class PathUtilsAdapter implements IPathUtilsService {
+export class PathUtilsAdapter implements IPathUtilsAdapter {
 
 	getDottedPath(from: string, to: string): string | undefined {
 		try {

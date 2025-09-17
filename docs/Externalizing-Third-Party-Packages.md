@@ -26,6 +26,27 @@ Third-party packages are externalized (not bundled) into the main extension bund
 - **Dependencies**: Core package + VSCode APIs + minimal runtime dependencies
 - **Build**: `@nx/esbuild:esbuild` with `bundle: true`, `format: ["cjs"]`
 - **Externalization**: All dependencies externalized in build configuration
+- **Entry Point**: Direct `extension.ts` entry (no index.ts wrapper)
+- **Packaging**: Uses `@fux/vpack:pack` executor for modern packaging
+
+## Adapter Pattern Standards
+
+### Extension Adapters
+
+**Preferred Adapter Pattern:**
+
+- **No constructor injection** - Adapters should not require dependencies in constructor
+- **Direct API calls** - Adapters should call VSCode APIs directly
+- **Context setters** - Use setter methods for context-dependent adapters (e.g., StorageAdapter)
+- **Local interfaces** - Define interfaces within each adapter file
+- **Comprehensive testing** - All adapters should have complete test coverage
+
+**Benefits:**
+
+- **Simpler architecture** - Less complexity and dependency management
+- **Better testability** - Easier to write comprehensive tests
+- **Proven approach** - Consistent pattern across all packages
+- **Complete coverage** - All adapters have tests
 
 ## How It Works
 

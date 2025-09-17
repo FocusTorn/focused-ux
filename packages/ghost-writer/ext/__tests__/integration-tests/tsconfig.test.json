@@ -1,0 +1,20 @@
+{
+    "extends": "../../../../../tsconfig.base.json",
+    
+    "include": ["./suite/**/*.ts"],
+    "exclude": [
+        "./_out-tsc/**",
+        "../functional-tests/**",
+        "../coverage-tests/**",
+        "../isolated-tests/**",
+        "../_setup.ts"
+    ],
+    
+    "compilerOptions": {
+        "rootDir": "./",
+        "outDir": "./_out-tsc",
+        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo",
+        "module": "CommonJS",
+        "types": ["node", "vitest"] // "mocha"
+    }
+}

@@ -1,6 +1,7 @@
 import type { IPackageJsonFormattingService, IPackageJsonConfig, IPackageJsonData } from '../_interfaces/IPackageJsonFormattingService.js'
 import type { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter.js'
 import type { IYamlAdapter } from '../_interfaces/IYamlAdapter.js'
+import { CONFIG_FILE_NAME, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../_config/constants.js'
 
 // These interfaces are defined in the _interfaces directory
 
@@ -13,14 +14,14 @@ export class PackageJsonFormattingService implements IPackageJsonFormattingServi
 
 	async formatPackageJson(packageJsonPath: string, workspaceRoot: string): Promise<void> {
 		// Read the master order from .FocusedUX config
-		const configPath = `${workspaceRoot}/.FocusedUX`
+		const configPath = `${workspaceRoot}/${CONFIG_FILE_NAME}`
 		let configContent: string
 
 		try {
 			configContent = await this.fileSystem.readFile(configPath)
 		}
 		catch (err: any) {
-			throw new Error(`Could not read '.FocusedUX' file: ${err.message}`)
+			throw new Error(`${ERROR_MESSAGES.CONFIG_FILE_NOT_FOUND}: ${err.message}`)
 		}
 
 		let config: IPackageJsonConfig
@@ -29,7 +30,7 @@ export class PackageJsonFormattingService implements IPackageJsonFormattingServi
 			config = this.yaml.load(configContent)
 		}
 		catch (err: any) {
-			throw new Error(`Failed to parse YAML from '.FocusedUX': ${err.message}`)
+			throw new Error(`${ERROR_MESSAGES.CONFIG_PARSE_ERROR}: ${err.message}`)
 		}
 
 		// Read from ProjectButler configuration
@@ -49,10 +50,16 @@ export class PackageJsonFormattingService implements IPackageJsonFormattingServi
 			packageContent = await this.fileSystem.readFile(packageJsonPath)
 		}
 		catch (err: any) {
-			throw new Error(`Failed to read package.json: ${err.message}`)
+			throw new Error(`${ERROR_MESSAGES.PACKAGE_JSON_NOT_FOUND}: ${err.message}`)
 		}
 
-		const packageData: IPackageJsonData = JSON.parse(packageContent)
+		let packageData: IPackageJsonData
+		try {
+			packageData = JSON.parse(packageContent)
+		}
+		catch (err: any) {
+			throw new Error(`${ERROR_MESSAGES.PACKAGE_JSON_PARSE_ERROR}: ${err.message}`)
+		}
 		const originalKeys = Object.keys(packageData)
 
 		// Validate and collect unknown top-level keys

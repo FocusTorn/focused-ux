@@ -13,8 +13,11 @@
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",
-        "declarationDir": "./dist/__types__",
         "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
     }
+
 }
+
+
+
 

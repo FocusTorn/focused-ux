@@ -1,39 +1,49 @@
 {
     "name": "@fux/project-butler-core",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/project-butler/core/src",
-    "projectType": "library",
+    "tags": [ "core" ],
     "targets": {
         
+        // ORIGINAL BUILD TARGET - COMMENTED OUT FOR DEBUGGING
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
-            "outputs": [
-                "{options.outputPath}"
-            ],
+            "outputs": [ "{options.outputPath}" ],
             "options": {
                 "main": "packages/project-butler/core/src/index.ts",
                 "outputPath": "packages/project-butler/core/dist",
-                "tsConfig": "packages/project-butler/core/tsconfig.json",
-                
-                
-                "platform": "node",
-                "target": "es2022",
-                "format": [ "esm" ],
-                
-                "bundle": false,
-
                 "declarationRootDir": "packages/project-butler/core/src",
-                "sourcemap": true,
                 
-                
-                "deleteOutputPath": true,
-
+                "format": [ "esm" ],
+                "bundle": false,
                 "external": [
                     "vscode",
                     "js-yaml"
                 ]
             }
         }, //<
+
+        // // DEBUG BUILD TARGET - FULL CONFIGURATION
+        // "build": { //>
+        //     "executor": "@nx/esbuild:esbuild",
+        //     "outputs": [ "{options.outputPath}" ],
+        //     "options": {
+        //         "main": "packages/project-butler/core/src/index.ts",
+        //         "outputPath": "packages/project-butler/core/dist",
+        //         "format": [ "esm" ],
+        //         "bundle": false,
+        //         "external": [
+        //             "vscode",
+        //             "js-yaml"
+        //         ],
+        //         // "tsConfig": "packages/project-butler/core/tsconfig.json",
+        //         "sourcemap": true,
+        //         "platform": "node",
+        //         "target": "es2022",
+        //         "esbuildOptions": {
+        //             "outdir": "packages/project-butler/core/dist"
+        //         },
+        //         "declarationRootDir": "packages/project-butler/core/src"
+        //     }
+        // }, //<
         
         "lint": { "extends": "lint" },
         "lint:full": { "extends": "lint:full" },
@@ -47,7 +57,6 @@
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
-        
         
         // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
         // │                                    Single package testing                                    │
@@ -63,7 +72,9 @@
         
     },
     
-    "tags": [ "core" ]
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/project-butler/core/src",
+    "projectType": "library"
 }
 
 

@@ -461,16 +461,48 @@ packages/{feature}/core/
 
 ### **Extension Package Structure**
 
+**Preferred Flat Structure:**
+
 ```
 packages/{feature}/ext/
 ├── src/
-│   ├── adapters/             # Local VSCode adapters
-│   ├── extension.ts          # VSCode integration
-│   └── index.ts
+│   ├── adapters/             # All VSCode adapters in flat structure
+│   ├── _config/              # Constants and configuration (if needed)
+│   └── extension.ts          # Main extension logic (direct entry point)
 ├── __tests__/
-│   └── functional-tests/     # Test VSCode integration
-└── package.json              # Dependencies on core package only
+│   ├── functional-tests/     # Main adapter and service tests
+│   ├── integration-tests/    # VS Code extension integration tests
+│   │   ├── suite/            # Test files
+│   │   ├── mocked-workspace/ # Test workspace files
+│   │   ├── tsconfig.test.json # TypeScript config for tests
+│   │   └── .vscode-test.mjs  # VS Code test configuration
+│   └── coverage-tests/       # Coverage reports
+└── package.json              # VSCode extension manifest
 ```
+
+**Key Architectural Principles:**
+
+- **Direct entry point** - No index.ts wrapper, use extension.ts directly
+- **Flat adapter structure** - All adapters in single directory
+- **Integration test structure** - Complete VS Code testing setup
+- **Modern packaging** - Use @fux/vpack:pack executor
+
+### **Adapter Pattern Standards**
+
+**Preferred Adapter Pattern:**
+
+- **No constructor injection** - Adapters should not require dependencies in constructor
+- **Direct API calls** - Adapters should call VSCode APIs directly
+- **Context setters** - Use setter methods for context-dependent adapters (e.g., StorageAdapter)
+- **Local interfaces** - Define interfaces within each adapter file
+- **Comprehensive testing** - All adapters should have complete test coverage
+
+**Benefits:**
+
+- **Simpler architecture** - Less complexity and dependency management
+- **Better testability** - Easier to write comprehensive tests
+- **Proven approach** - Consistent pattern across all packages
+- **Complete coverage** - All adapters have tests
 
 ## **Migration Guide**
 

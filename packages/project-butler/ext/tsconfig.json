@@ -6,13 +6,14 @@
     "exclude": [
         "node_modules",
         "**/*.test.ts",
-        "__tests__/**/*","dist/**/*"
+        "__tests__/**/*",
+        "dist/**/*"
     ],
     
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
-        "composite": true
+        "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
     },
 
     "references": [

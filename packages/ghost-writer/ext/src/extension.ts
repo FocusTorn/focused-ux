@@ -14,11 +14,12 @@ export function activate(context: ExtensionContext): void {
 	console.log(`[${constants.extension.name}] Activating...`)
 
 	// Create adapters
-	const storageAdapter = new StorageAdapter(context)
-	const windowAdapter = new WindowAdapter(vscode.window)
+	const storageAdapter = new StorageAdapter()
+	storageAdapter.setContext(context)
+	const windowAdapter = new WindowAdapter()
 	const pathUtilsAdapter = new PathUtilsAdapter()
-	const workspaceAdapter = new WorkspaceAdapter(vscode.workspace)
-	const commandsAdapter = new CommandsAdapter(vscode.commands, context)
+	const workspaceAdapter = new WorkspaceAdapter()
+	const commandsAdapter = new CommandsAdapter()
 	const positionAdapter = new PositionAdapter()
 
 	// Create core services

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { activate, deactivate } from '../../src/index.js'
+import { activate, deactivate } from '../../src/extension.js'
 
 describe('Ghost Writer Extension', () => {
 	let mockContext: any

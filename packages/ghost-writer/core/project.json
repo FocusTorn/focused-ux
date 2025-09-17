@@ -1,22 +1,25 @@
 {
     "name": "@fux/ghost-writer-core",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/ghost-writer/core/src",
-    "projectType": "library",
+    "tags": [ "core" ],
     "targets": {
+        
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
+            "outputs": [ "{options.outputPath}" ],
             "options": {
+                
                 "main": "packages/ghost-writer/core/src/index.ts",
+                "outputPath": "packages/ghost-writer/core/dist",
+                
+                "format": [ "esm" ],
                 "bundle": false,
+                
                 "external": [
                     "vscode",
                     "typescript"
                 ]
             }
         }, //<
-        
         
         "lint": { "extends": "lint" },
         "lint:full": { "extends": "lint:full" },
@@ -31,26 +34,6 @@
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
         
-        // "test": { //>
-        //     "executor": "@nx/vite:test",
-        //     "outputs": ["{options.reportsDirectory}"],
-        //     "dependsOn": ["build", "^build"]
-        // }, //<
-        // "test:full": { //>
-        //     "executor": "@nx/vite:test",
-        //     "outputs": ["{options.reportsDirectory}"],
-        //     "dependsOn": [
-        //         {
-        //             "dependencies": true,
-        //             "target": "test",
-        //             "params": "forward"
-        //         }
-        //     ]
-        // } //<
-    
-        
-        
-        
         // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
         // │                                    Single package testing                                    │
         // └──────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -63,9 +46,9 @@
         "test:deps": { "extends": "test:deps" },
         "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" }
         
-        
-        
-        
     },
-    "tags": ["core"]
+    
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/ghost-writer/core/src",
+    "projectType": "library"
 }

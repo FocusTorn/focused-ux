@@ -1,11 +1,10 @@
-import type { workspace as vscodeWorkspace, WorkspaceConfiguration } from 'vscode'
+import * as vscode from 'vscode'
+import type { IWorkspaceAdapter } from '@fux/ghost-writer-core'
 
-export class WorkspaceAdapter {
+export class WorkspaceAdapter implements IWorkspaceAdapter {
 
-	constructor(private readonly workspace: typeof vscodeWorkspace) {}
-
-	getConfiguration(section: string): WorkspaceConfiguration {
-		return this.workspace.getConfiguration(section)
+	getConfiguration(section: string): vscode.WorkspaceConfiguration {
+		return vscode.workspace.getConfiguration(section)
 	}
 
 }

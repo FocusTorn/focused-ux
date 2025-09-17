@@ -1,18 +1,6 @@
 {
     "extends": "../../../../../tsconfig.base.json",
-    "compilerOptions": {
-        "outDir": "./_out-tsc",
-        "rootDir": "./",
-        "module": "CommonJS",
-        "moduleResolution": "node",
-        "types": ["node", "mocha"],
-        // "composite": false,
-        // "declaration": false,
-        // "declarationMap": false,
-
-        "sourceMap": true,
-        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo"
-    },
+    
     "include": ["./suite/**/*.ts"],
     "exclude": [
         "./_out-tsc/**",
@@ -20,7 +8,14 @@
         "../coverage-tests/**",
         "../isolated-tests/**",
         "../_setup.ts"
-    ]
+    ],
+    
+    "compilerOptions": {
+        "rootDir": "./",
+        "outDir": "./_out-tsc",
+        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo",
+        "types": ["node", "mocha"]
+    }
 }
 
 

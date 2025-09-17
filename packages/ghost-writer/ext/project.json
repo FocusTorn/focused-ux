@@ -9,8 +9,8 @@
             "outputs": ["{options.outputPath}"],
             "dependsOn": ["^build"],
             "options": {
-                "main": "packages/ghost-writer/ext/src/index.ts",
-                "entryPoints": ["packages/ghost-writer/ext/src/index.ts"],
+                "main": "packages/ghost-writer/ext/src/extension.ts",
+                "entryPoints": ["packages/ghost-writer/ext/src/extension.ts"],
                 "outputPath": "packages/ghost-writer/ext/dist",
                 
                 "tsConfig": "packages/ghost-writer/ext/tsconfig.json",
@@ -36,20 +36,13 @@
         }, //<
         
         "package": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "executor": "@fux/vpack:pack",
+            "dependsOn": ["build", "@fux/vsix-packager:build"],
             "options": {
-                "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages"
+                "targetPath": "{projectRoot}"
             }
         }, //<
-        "package:dev": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
-            "options": {
-                "command": "node scripts/create-vsix.js packages/ghost-writer/ext vsix_packages --dev",
-                "outputPath": "vsix_packages"
-            }
-        }, //<
+        "package:dev": { "extends": "package:dev" },
         "publish": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["package"],
@@ -74,56 +67,38 @@
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
         
-        // "test": { //>
-        //     "executor": "@nx/vite:test",
-        //     "outputs": ["{options.reportsDirectory}"],
-        //     "dependsOn": ["^build"]
-        // }, //<
-        // "test:full": { //>
-        //     "executor": "@nx/vite:test",
-        //     "outputs": ["{options.reportsDirectory}"],
-        //     "dependsOn": [
-        //         {
-        //             "dependencies": true,
-        //             "target": "test",
-        //             "params": "forward"
-        //         }
-        //     ]
-        // } //<
-    
+        "lint": { "extends": "lint" },
+        "lint:full": { "extends": "lint:full" },
         
-        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-        // │           The below targets run test suites only on the package that contains them           │
-        // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
-        "test": { // run just functional-tests //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "reportsDirectory": "{projectRoot}/__tests__/_reports/functional",
-                "passWithNoTests": true
-            }
-        }, //<
-        "test:coverage-tests": { // run {functional,coverage}-tests, with coverage report //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.coverage.config.ts",
-                "reportsDirectory": "{projectRoot}/__tests__/_reports/coverage",
-                "passWithNoTests": true
-            }
-        }, //<
+        "validate": { "extends": "validate" },
+        "validate:full": { "extends": "validate:full" },
+        
+        "audit": { "extends": "audit" },
+        "audit:full": { "extends": "audit:full" },
 
-        //= Integration testing ================================================= 
+        
+        //= Cleaning ============================================================ 
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+        
+        
+        //= Single Package Testing ============================================== 
+        "test": { "extends": "test" },
+        "test:coverage-tests": { "extends": "test:coverage-tests" },
+        
+        //= Dependency Chain Testing ============================================ 
+        "test:deps": { "extends": "test:deps" },
+        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" },
+        
+        //= Integration Testing ================================================= 
+        
         "test:compile": { //>
             "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/__tests__/_out-tsc"],
+            "outputs": ["{projectRoot}/__tests__/integration-tests/_out-tsc"],
             "options": {
                 "commands": [
-                // "rimraf ./__tests__/_out-tsc/suite",
-                    "tsc -p packages/project-butler/ext/__tests__/tsconfig.test.json"
+                    "tsc -p packages/ghost-writer/ext/__tests__/integration-tests/tsconfig.test.json"
                 ]
             }
         }, //<
@@ -133,12 +108,12 @@
                 "build",
                 "test:compile"
             ],
+            "cache": false,
             "options": {
                 "commands": [
-                    "nx run @fux/vscode-test-cli-config:build",
-                    "powershell -Command \"& {vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
+                    "powershell -Command \"& {vscode-test --config __tests__/integration-tests/.vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
                 ],
-                "cwd": "packages/project-butler/ext"
+                "cwd": "packages/ghost-writer/ext"
             },
             "description": "Run VS Code extension integration tests with detailed output"
         }, //<
@@ -148,51 +123,15 @@
                 "build",
                 "test:compile"
             ],
+            "cache": false,
             "options": {
                 "commands": [
-                    "nx run @fux/vscode-test-cli-config:build",
-                    // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
-                    "vscode-test --config .vscode-test.mjs --verbose --timeout 20000 --reporter spec"
+                    // "rimraf ../../../.vscode-test/user-data/fux-ghost-writer",
+                    "vscode-test --config __tests__/integration-tests/.vscode-test.mjs --verbose --timeout 20000 --reporter spec"
                 ],
-                "cwd": "packages/project-butler/ext"
+                "cwd": "packages/ghost-writer/ext"
             },
             "description": "Run VS Code extension integration tests with detailed output"
-        }, //<
-        
-        
-        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-        // │       These run test suites on the package that contain them and full dependency chain       │
-        // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
-        "test:deps": { // run just functional-tests //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test",
-                    "params": "forward"
-                }
-            ],
-            "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "passWithNoTests": true
-            }
-        }, //<
-        "test:deps:coverage-tests": { // run {functional,coverage}-tests, with coverage report //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test:coverage-tests",
-                    "params": "forward"
-                }
-            ],
-            "options": {
-                "configFile": "{projectRoot}/vitest.coverage.config.ts",
-                "reportsDirectory": "{projectRoot}/__tests__/_reports/coverage",
-                "passWithNoTests": true
-            }
         } //<
         
         

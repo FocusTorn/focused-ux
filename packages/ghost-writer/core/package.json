@@ -12,10 +12,10 @@
     "private": true,
     "type": "module",
     "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "types": "./dist/packages/ghost-writer/core/src/index.d.ts",
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
+            "types": "./dist/packages/ghost-writer/core/src/index.d.ts",
             "import": "./dist/index.js",
             "default": "./dist/index.js"
         }

@@ -6,6 +6,5 @@ export default mergeConfig(
 	mergeConfig(functionalConfig, baseCoverageConfig),
 	defineConfig({
 		// Any package-specific overrides for coverage can go here
-		
 	}),
 )

@@ -10,5 +10,5 @@
         "emitDeclarationOnly": false
         
         // "baseUrl": ".", // not used unless with browser AMD loaders
-    },
+    }
 }

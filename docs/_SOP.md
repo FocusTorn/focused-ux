@@ -190,23 +190,25 @@ packages/package-name/core/
 
 ### **Extension Package Structure**
 
+**Preferred Flat Structure:**
+
 ```
 packages/package-name/ext/
 ├── src/
-│   ├── adapters/             # VSCode API adapters
-│   ├── _interfaces/          # Extension interfaces
-│   ├── _config/              # Extension configuration
-│   ├── services/             # Extension-specific services
-│   ├── extension.ts          # Main extension entry point
-│   └── index.ts              # Package exports
+│   ├── adapters/             # All VSCode adapters in flat structure
+│   ├── _config/              # Configuration constants (if needed)
+│   └── extension.ts          # Main extension entry point (direct entry)
 ├── __tests__/
-│   ├── _setup.ts             # Global test setup
 │   ├── functional-tests/     # Main test directory
 │   │   ├── _readme.md        # Functional test docs
 │   │   ├── extension.test.ts # Main extension test
-│   │   └── adapters/         # Adapter tests
-│   ├── unit/                 # Specific isolated tests
-│   │   └── _readme.md        # Unit test docs
+│   │   └── *.adapter.test.ts # Adapter tests
+│   ├── integration-tests/    # VS Code extension integration tests
+│   │   ├── suite/            # Test files
+│   │   ├── mocked-workspace/ # Test workspace files
+│   │   ├── tsconfig.test.json # TypeScript config for tests
+│   │   ├── .vscode-test.mjs  # VS Code test configuration
+│   │   └── _readme.md        # Integration test docs
 │   └── coverage-tests/       # Coverage reports
 │       └── _readme.md        # Coverage docs
 ├── assets/                   # Extension assets
@@ -217,6 +219,13 @@ packages/package-name/ext/
 ├── vitest.config.ts          # Test config
 └── vitest.coverage.config.ts # Coverage test config
 ```
+
+**Key Architectural Principles:**
+
+- **Direct entry point** - No index.ts wrapper, use extension.ts directly
+- **Flat adapter structure** - All adapters in single directory
+- **Integration test structure** - Complete VS Code testing setup
+- **Modern packaging** - Use @fux/vpack:pack executor
 
 ## **Build Configuration**
 

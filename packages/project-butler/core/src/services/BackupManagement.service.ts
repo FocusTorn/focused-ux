@@ -1,6 +1,7 @@
 import type { IBackupManagementService, IBackupOptions } from '../_interfaces/IBackupManagementService.js'
 import type { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter.js'
 import type { IPathAdapter } from '../_interfaces/IPathAdapter.js'
+import { BACKUP_SUFFIX } from '../_config/constants.js'
 
 // These interfaces are defined in the _interfaces directory
 
@@ -21,7 +22,7 @@ export class BackupManagementService implements IBackupManagementService {
 		let fileExists = false
 
 		do {
-			backupFileName = `${baseName}.bak${backupNumber > 1 ? backupNumber : ''}`
+			backupFileName = `${baseName}${BACKUP_SUFFIX}${backupNumber > 1 ? backupNumber : ''}`
 			destinationPath = this.path.join(directory, backupFileName)
 			try {
 				await this.fileSystem.stat(destinationPath)

@@ -12,4 +12,7 @@ export * from './services/BackupManagement.service.js'
 export * from './services/PoetryShell.service.js'
 export * from './services/ProjectButlerManager.service.js'
 
+// Constants
+export * from './_config/constants.js'
+
 // Core package exports all services and interfaces for use by the extension

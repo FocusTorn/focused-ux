@@ -1,6 +1,7 @@
 import type { IPoetryShellService, IPoetryShellCommand } from '../_interfaces/IPoetryShellService.js'
 import type { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter.js'
 import type { IPathAdapter } from '../_interfaces/IPathAdapter.js'
+import { POETRY_SHELL_COMMAND } from '../_config/constants.js'
 
 // These interfaces are defined in the _interfaces directory
 
@@ -18,10 +19,10 @@ export class PoetryShellService implements IPoetryShellService {
 			const stats = await this.fileSystem.stat(filePath)
 			const pathToSend = stats.type === 'directory' ? filePath : this.path.dirname(filePath)
 
-			command = `cd "${pathToSend}" && poetry shell`
+			command = `cd "${pathToSend}" && ${POETRY_SHELL_COMMAND}`
 		}
 		else {
-			command = 'poetry shell'
+			command = POETRY_SHELL_COMMAND
 		}
 		
 		return {

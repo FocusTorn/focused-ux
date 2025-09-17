@@ -8,24 +8,18 @@
         "build"   : { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
-            "dependsOn": [ // "^build"],
-                {
-                    "projects": ["@fux/project-butler-core"],
-                    "target": "build",
-                    "params": "ignore"
-                }
-            ],
+            "dependsOn": [{ //>
+                "projects": ["@fux/project-butler-core"],
+                "target": "build",
+                "params": "ignore"
+            }], //<
             "options": {
-
                 "main": "packages/project-butler/ext/src/extension.ts",
                 "tsConfig": "packages/project-butler/ext/tsconfig.json",
-                "entryPoints": [
-                    "packages/project-butler/ext/src/extension.ts"
-                ],
+                "outputPath": "packages/project-butler/ext/dist",                
                 
-                "platform": "node",
                 "format": ["cjs"],
-                "outputPath": "packages/project-butler/ext/dist",
+
                 "external": [
                     "vscode",
                     "js-yaml"
