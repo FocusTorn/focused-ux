@@ -2,6 +2,7 @@ packages:
     - 'packages/*/*'
     - 'libs/*'
     - 'plugins/*'
+    - '!_inactive/**'
 onlyBuiltDependencies:
     - '@swc/core'
     - '@vscode/vsce-sign'

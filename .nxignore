@@ -1,4 +1,9 @@
-# Build outputs and compiled files
+# Archived and inactive projects
+_inactive/**
+_removed/**
+_test-source/**
+
+# Build outputs
 dist/
 **/dist/
 out-tsc/
@@ -17,8 +22,7 @@ node_modules/
 .pnp
 .pnp.js
 
-# Nx cache and workspace data
-.nx/
+# Nx cache (already handled by Nx internally)
 .nx/cache/
 .nx/workspace-data/
 
@@ -46,11 +50,7 @@ node_modules/
 Thumbs.db
 *.pem
 
-# Project-specific
-docs/workflows
-_inactive/
-_removed/
-_test-source/
+# Project-specific archives
 dc-assets-backup/
 mockly-vsc/
 libs/vscode-test-cli-config/.vscode-test/
@@ -62,3 +62,6 @@ vitest.config.*.timestamp*
 # Notes and temporary docs
 **/*.notesHub*
 /.fux_note-hub/
+
+# Documentation workflows
+docs/workflows/

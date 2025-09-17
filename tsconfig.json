@@ -46,9 +46,6 @@
             "path": "./libs/vscode-test-cli-config"
         },
         {
-            "path": "./libs/tools/prune-nx-cache"
-        },
-        {
             "path": "./libs/project-alias-expander"
         },
         {
@@ -58,13 +55,7 @@
             "path": "./plugins/recommended"
         },
         {
-            "path": "./libs/observability"
-        },
-        {
             "path": "./packages/dynamicons/assets"
-        },
-        {
-            "path": "./libs/vsix-packager"
         },
         {
             "path": "./plugins/vpack"

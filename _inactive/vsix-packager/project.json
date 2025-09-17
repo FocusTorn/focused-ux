@@ -1,6 +1,7 @@
 {
-    "name": "@fux/vsix-packager",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "name": "@fux/inactive-vsix-packager",
+    // "name": "@fux/vsix-packager",
+    // "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "libs/vsix-packager/src",
     "projectType": "library",
     "targets": {
