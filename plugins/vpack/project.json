@@ -4,16 +4,22 @@
     "sourceRoot": "plugins/vpack/src",
     "projectType": "library",
     "targets": {
-        "build": {
-            "executor": "@nx/js:tsc",
-            "outputs": [ "{options.outputPath}" ],
+        
+        
+        "build": { //>
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": [
+                "{options.outputPath}"
+            ],
             "options": {
-                "rootDir": "plugins/vpack/src",
-                "outputPath": "plugins/vpack/dist",
+                
                 "main": "plugins/vpack/src/index.ts",
                 "tsConfig": "plugins/vpack/tsconfig.lib.json",
+                
+                // "outputPath": "plugins/vpack/dist",
+                // "declarationRootDir": "packages/project-butler/core/src",
 
-                "generatePackageJson": false,
+                "bundle": false,
                 
                 "assets": [
                     {
@@ -28,7 +34,34 @@
                     }
                 ]
             }
-        }
+
+        } //<
+        
+        // "build": {
+        //     "executor": "@nx/js:tsc",
+        //     "outputs": [ "{options.outputPath}" ],
+        //     "options": {
+        //         "rootDir": "plugins/vpack/src",
+        //         "outputPath": "plugins/vpack/dist",
+        //         "main": "plugins/vpack/src/index.ts",
+        //         "tsConfig": "plugins/vpack/tsconfig.lib.json",
+
+        //         "generatePackageJson": false,
+                
+        //         "assets": [
+        //             {
+        //                 "input": "./plugins/vpack/src",
+        //                 "glob": "**/!(*.ts)",
+        //                 "output": "."
+        //             },
+        //             {
+        //                 "input": "./plugins/vpack/src",
+        //                 "glob": "**/*.d.ts",
+        //                 "output": "."
+        //             }
+        //         ]
+        //     }
+        // }
     }
   
 }

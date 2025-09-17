@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ConsoleLoggerService } from '../../src/features/console-logger/services/ConsoleLogger.service.js'
+import { ConsoleLoggerService } from '../../src/services/ConsoleLogger.service.js'
 
 describe('ConsoleLoggerService', () => {
 	let consoleLoggerService: ConsoleLoggerService

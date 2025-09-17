@@ -3,13 +3,21 @@
 
     "include": ["src/**/*.ts"],
     
-    "exclude": [ "node_modules", "**/*.test.ts", "__tests__/**/*", "dist/**/*" ],
-    
-    "references": [ { "path": "../core" } ],
+    "exclude": [
+        "node_modules",
+        "**/*.test.ts",
+        "__tests__/**/*","dist/**/*"
+    ],
     
     "compilerOptions": {
-        "noEmit": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "composite": true
     },
-    
 
+    "references": [
+        {
+            "path": "../core"
+        }
+    ]
 }

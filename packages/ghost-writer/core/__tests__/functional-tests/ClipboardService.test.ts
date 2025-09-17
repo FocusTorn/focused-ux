@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { ClipboardService } from '../../src/features/clipboard/services/Clipboard.service.js'
-import type { IStorageService, StoredFragment } from '../../src/features/clipboard/_interfaces/IClipboardService.js'
+import { ClipboardService } from '../../src/services/Clipboard.service.js'
+import type { IStorageService, StoredFragment } from '../../src/_interfaces/IClipboardService.js'
 
 // Mock storage service
 class MockStorageService implements IStorageService {

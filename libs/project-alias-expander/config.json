@@ -1,147 +1,132 @@
 {
     "targets": {
-        "b": "build",
-        "p": "package",
-        "pd": "package:dev",
+        //= Prepare ============================================================= 
+        "b"  : "build",
+        "p"  : "package",
+        "pd" : "package:dev",
         "pub": "publish",
-
-        "l": "lint",
+        //= Linting ============================================================= 
+        "l" : "lint",
         "lf": "lint:full",
-
-        "tsc": "check-types",
-
-        "v": "validate",
-        "vf": "validate:full",
-        
-        "a": "audit",
-        "af": "audit:full",
-
-        "t": "test",
-        "tw": "test --watch",
-        "tc": "test --coverage",
-        
-        "ti": "test:integration",
-        
-        "td": "test:full",
-        "tfw": "test:full --watch",
-        "tfc": "test:full --coverage",
-
-        "c": "clean",
+        //= Testing ============================================================= 
+        "t"  : "test",
+        "tc" : "test:coverage-tests",
+        "td" : "test:deps",
+        "tdc": "test:deps:coverage-tests",
+        "ti" : "test:integration",
+        //= Cleaning ============================================================ 
+        "c" : "clean",
         "cc": "clean:cache",
         "cd": "clean:dist",
-        
-        "s": "status",
-        "o": "optimize",
-        "m": "monitor"
+        //= Adherance =========================================================== 
+        "v" : "validate",
+        "vf": "validate:full",
+        "a" : "audit",
+        "af": "audit:full",
+        //= Feature Specific - CMO ============================================== 
+        "s" : "status",
+        "o" : "optimize",
+        "m" : "monitor"
     },
-
     "not-nx-targets": {
         "esv": "npx esbuild-visualizer --metadata"
     },
-
     "expandables": {
         "f": "fix",
         "s": "skip-nx-cache",
         "v": "verbose",
         "d": "debug",
-        
         "watch": "watch",
         "stream": "output-style=stream",
         "tui": "output-style=tui",
-
         "echo": "pae-echo"
     },
-    
     "packages": {
-        "ccp": {
+        "ccp" : { //>
             "name": "context-cherry-picker",
             "suffix": "ext",
             "full": true
-        },
-        "ccpc": {
+        }, //<
+        "ccpc": { //>
             "name": "context-cherry-picker",
             "suffix": "core"
-        },
-        "ccpe": {
+        }, //<
+        "ccpe": { //>
             "name": "context-cherry-picker",
             "suffix": "ext"
-        },
-        "dc": {
+        }, //<
+        "dc"  : { //>
             "name": "dynamicons",
             "suffix": "ext",
             "full": true
-        },
-        "dca": {
+        }, //<
+        "dca" : { //>
             "name": "dynamicons",
             "suffix": "assets"
-        },
-        
-        "dcc": {
+        }, //<
+        "dcc" : { //>
             "name": "dynamicons",
             "suffix": "core"
-        },
-        "dce": {
+        }, //<
+        "dce" : { //>
             "name": "dynamicons",
             "suffix": "ext"
-        },
-        "gw": {
+        }, //<
+        "gw"  : { //>
             "name": "ghost-writer",
             "suffix": "ext",
             "full": true
-        },
-        "gwc": {
+        }, //<
+        "gwc" : { //>
             "name": "ghost-writer",
             "suffix": "core"
-        },
-        "gwe": {
+        }, //<
+        "gwe" : { //>
             "name": "ghost-writer",
             "suffix": "ext"
-        },
-        "pb": {
+        }, //<
+        "pb"  : { //>
             "name": "project-butler",
             "suffix": "ext",
             "full": true
-        },
-        "pbc": {
+        }, //<
+        "pbc" : { //>
             "name": "project-butler",
             "suffix": "core"
-        },
-        "pbe": {
+        }, //<
+        "pbe" : { //>
             "name": "project-butler",
             "suffix": "ext"
-        },
-        "nh": {
+        }, //<
+        "nh"  : { //>
             "name": "note-hub",
             "suffix": "ext",
             "full": true
-        },
-        "nhc": {
+        }, //<
+        "nhc" : { //>
             "name": "note-hub",
             "suffix": "core"
-        },
-        "nhe": {
+        }, //<
+        "nhe" : { //>
             "name": "note-hub",
             "suffix": "ext"
-        },
+        }, //<
         
         //= Utilities =========================================================== 
         "mockly": "@fux/mockly",
         "shared": "@fux/shared",
         
         //== Repo Utility Packages ============================================== 
-        "vp": "@fux/vsix-packager",
-        "obs": "@fux/observability",
-        "vsct": "@fux/vscode-test-cli-config",
+        "vp"   : "@fux/vsix-packager",
+        "obs"  : "@fux/observability",
+        "vsct" : "@fux/vscode-test-cli-config",
         "alias": "@fux/project-alias-expander",
         
         //= TSX Executed CLI tools ============================================== 
         "audit": "@fux/structure-auditor",
-        "cmo": "@fux/cursor-memory-optimizer",
+        "cmo"  : "@fux/cursor-memory-optimizer",
         
         //= Plugins ============================================================= 
         "vpack": "@fux/vpack"
     }
 }
-// Test comment
-// Another test comment
-// Test comment for new build structasdure

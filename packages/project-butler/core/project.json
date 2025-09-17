@@ -13,18 +13,21 @@
             "options": {
                 "main": "packages/project-butler/core/src/index.ts",
                 "outputPath": "packages/project-butler/core/dist",
-                "tsConfig": "packages/project-butler/core/tsconfig.lib.json",
+                "tsConfig": "packages/project-butler/core/tsconfig.json",
+                
+                
                 "platform": "node",
-                "format": [
-                    "esm"
-                ],
-                "bundle": false,
-                "sourcemap": true,
                 "target": "es2022",
-                "keepNames": true,
+                "format": [ "esm" ],
+                
+                "bundle": false,
+
                 "declarationRootDir": "packages/project-butler/core/src",
-                "thirdParty": false,
+                "sourcemap": true,
+                
+                
                 "deleteOutputPath": true,
+
                 "external": [
                     "vscode",
                     "js-yaml"
@@ -44,73 +47,24 @@
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
-       
+        
         
         // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-        // │           The below targets run test suites only on the package that contains them           │
-        // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
-        "test": { // run just functional-tests //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
-            "options": {
-                
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "passWithNoTests": true
-            }
-        }, //<
-        "test:coverage-tests": { // run {functional,coverage}-tests, with coverage report //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.coverage.config.ts",
-                "reportsDirectory": "{projectRoot}/__tests__/_reports/coverage",
-                "passWithNoTests": true
-            }
-        }, //<
-
+        // │                                    Single package testing                                    │
+        // └──────────────────────────────────────────────────────────────────────────────────────────────┘
+        "test": { "extends": "test" },
+        "test:coverage-tests": { "extends": "test:coverage-tests" },
         
         // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-        // │       These run test suites on the package that contain them and full dependency chain       │
+        // │                                       Dependency chain                                       │
         // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
-        "test:deps": { // run just functional-tests //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test",
-                    "params": "forward"
-                }
-            ],
-            "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "passWithNoTests": true
-            }
-        }, //<
-        "test:deps:coverage-tests": { // run {functional,coverage}-tests, with coverage report //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test:coverage-tests",
-                    "params": "forward"
-                }
-            ],
-            "options": {
-                "configFile": "{projectRoot}/vitest.coverage.config.ts",
-                "reportsDirectory": "{projectRoot}/__tests__/_reports/coverage",
-                "passWithNoTests": true
-            }
-        } //<
+        "test:deps": { "extends": "test:deps" },
+        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" }
         
     },
     
     "tags": [ "core" ]
 }
-
 
 
 // Orriginal
@@ -130,4 +84,3 @@
 //         }
 //     ]
 // } //<
-       

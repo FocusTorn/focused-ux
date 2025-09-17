@@ -1,6 +1,6 @@
-import type { StoredFragment } from '../../clipboard/_interfaces/IClipboardService.js'
+import type { StoredFragment } from '../_interfaces/IClipboardService.js'
 import type { IImportGeneratorService } from '../_interfaces/IImportGeneratorService.js'
-import type { IPathUtilsService, ICommonUtilsService } from '../../../_interfaces/IUtilServices.js'
+import type { IPathUtilsService, ICommonUtilsService } from '../_interfaces/IUtilServices.js'
 
 export class ImportGeneratorService implements IImportGeneratorService {
 

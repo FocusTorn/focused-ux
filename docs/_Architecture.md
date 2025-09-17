@@ -148,6 +148,23 @@ Is the package intended to be a VS Code extension?
 - **External Dependencies**: All runtime dependencies must be externalized
 - **TypeScript Config**: Uses `tsconfig.lib.json` for build, `tsconfig.json` for IDE support
 
+### **Package-Specific Exceptions**
+
+While the architecture follows consistent patterns, some packages have legitimate exceptions based on their specific functionality:
+
+#### **Runtime Dependencies**
+
+- **Ghost Writer Core**: Uses TypeScript as a runtime dependency for AST parsing and code generation
+    - **Rationale**: ConsoleLoggerService requires TypeScript's compiler API for parsing and analyzing code structure
+    - **Implementation**: `import * as ts from 'typescript'` in ConsoleLogger.service.ts
+    - **Externalization**: TypeScript is externalized in build configuration
+    - **Pattern**: This is the only package requiring TypeScript at runtime
+
+#### **Package Structure Variations**
+
+- **Flat Structure (Preferred)**: Project Butler Core uses a flat structure with all interfaces in `_interfaces/` and services in `services/`
+- **Feature-Based Structure**: Some packages may use feature-based organization, but flat structure is preferred for simplicity
+
 ### **Extension Package Build Configuration**
 
 - **Executor**: `@nx/esbuild:esbuild` (MANDATORY)
@@ -409,12 +426,34 @@ Is the package intended to be a VS Code extension?
 
 ### **Core Package Structure**
 
+**Preferred Flat Structure (Project Butler Core Pattern):**
+
 ```
 packages/{feature}/core/
 ├── src/
-│   ├── _interfaces/          # Define interfaces only
-│   ├── services/             # Business logic
-│   └── index.ts
+│   ├── _interfaces/          # All interfaces centralized
+│   ├── services/             # All services in flat structure
+│   ├── _config/              # Constants and configuration
+│   └── index.ts              # Simple barrel exports
+├── __tests__/
+│   ├── functional-tests/     # Main integration tests
+│   ├── isolated-tests/       # Unit tests
+│   └── coverage-tests/       # Coverage reports
+└── package.json              # Minimal dependencies
+```
+
+**Alternative Feature-Based Structure:**
+
+```
+packages/{feature}/core/
+├── src/
+│   ├── _interfaces/          # Global interfaces
+│   ├── _config/              # Configuration constants
+│   ├── features/             # Feature-based organization
+│   │   └── feature-name/
+│   │       ├── _interfaces/  # Feature interfaces
+│   │       └── services/     # Feature services
+│   └── index.ts              # Individual exports for tree-shaking
 ├── __tests__/
 │   └── functional-tests/     # Test business logic in isolation
 └── package.json              # No shared dependencies

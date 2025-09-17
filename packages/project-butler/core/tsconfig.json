@@ -3,17 +3,18 @@
     
     "include": ["src/**/*.ts"],
     
-    "exclude": [ "node_modules", "**/*.test.ts", "__tests__/**/*", "dist/**/*" ],
+    "exclude": [
+        "node_modules",
+        "**/*.test.ts",
+        "__tests__/**/*",
+        "dist/**/*"
+    ],
     
-    "references": [{ "path": "./tsconfig.lib.json" }],
+    "compilerOptions": {
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "declarationDir": "./dist/__types__",
+        "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
+    }
 }
-
-
-// "outDir": "./out-tsc",
-// "rootDir": "./src",
-// "composite": true,
-// "tsBuildInfoFile": "./out-tsc/tsconfig.tsbuildinfo"
-// "declaration": true,
-// "declarationMap": true,
-// "declarationDir": "./dist/types"
 

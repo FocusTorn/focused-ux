@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { ImportGeneratorService } from '../../src/features/import-generator/services/ImportGenerator.service.js'
+import { ImportGeneratorService } from '../../src/services/ImportGenerator.service.js'
 import type { IPathUtilsService, ICommonUtilsService } from '../../src/_interfaces/IUtilServices.js'
-import type { StoredFragment } from '../../src/features/clipboard/_interfaces/IClipboardService.js'
+import type { StoredFragment } from '../../src/_interfaces/IClipboardService.js'
 
 // Mock path utils service
 class MockPathUtilsService implements IPathUtilsService {

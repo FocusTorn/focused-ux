@@ -72,7 +72,7 @@ const service = new CoreService(adapter)
                 "outputPath": "packages/{feature}/core/dist",
                 "bundle": false,
                 "format": ["esm"],
-                "external": ["vscode", "js-yaml"]
+                "external": ["vscode", "js-yaml", "typescript"]
             }
         },
         "test": {
@@ -82,6 +82,8 @@ const service = new CoreService(adapter)
     }
 }
 ```
+
+**Note**: Include `"typescript"` in external array only if the package uses TypeScript as a runtime dependency (e.g., Ghost Writer Core for AST parsing).
 
 ### Extension Package project.json
 
@@ -566,3 +568,127 @@ export default createVscodeTestConfig({
     - Add a pre-step to build the helper in `test:integration*` commands
     - Switch `.vscode-test.mjs` to import helper from its built dist
     - Adjust `files`/`setupFiles` to the compiled `suite` paths if used
+
+---
+
+## Integration Testing Reference (Package-Agnostic)
+
+This is a neutral, copy-pasteable reference that matches our current working setup without naming a specific package.
+
+### Directory layout (extension)
+
+```
+packages/{feature}/ext/
+├── __tests__/
+│   ├── integration-tests/
+│   │   ├── mocked-workspace/
+│   │   │   └── package.json
+│   │   ├── suite/
+│   │   │   ├── extension.integration.test.ts
+│   │   │   ├── backup.integration.test.ts
+│   │   │   ├── package-json-formatting.integration.test.ts
+│   │   │   ├── terminal-management.integration.test.ts
+│   │   │   └── poetry-shell.integration.test.ts
+│   │   ├── tsconfig.test.json
+│   │   └── .vscode-test.mjs
+│   └── _setup.ts
+└── src/
+    └── extension.ts
+```
+
+Notes:
+
+- Compile to a local folder beside the suite: `packages/{feature}/ext/__tests__/integration-tests/_out-tsc/suite`.
+- Keep `suite/index.ts` for mocha root hooks only; do not import tests from it to avoid duplicate loads.
+- Prefer explicit `files: []` list in `.vscode-test.mjs` or a tight glob like `./_out-tsc/suite/**/*.integration.test.js`.
+- You can use `version: 'insiders'` (needed for proposal APIs) or `version: 'stable'` when proposals aren’t needed.
+- Add `skipExtensionDependencies: true` to avoid scanning/auto-installing extension dependencies for speed.
+
+### project.json (extension targets)
+
+```json
+{
+    "targets": {
+        "test:compile": {
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/__tests__/integration-tests/_out-tsc"],
+            "options": {
+                "commands": [
+                    "tsc -p packages/{feature}/ext/__tests__/integration-tests/tsconfig.test.json"
+                ]
+            }
+        },
+        "test:integration": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build", "test:compile"],
+            "cache": false,
+            "options": {
+                "commands": [
+                    "vscode-test --config __tests__/integration-tests/.vscode-test.mjs --verbose --timeout 20000 --reporter spec"
+                ],
+                "cwd": "packages/{feature}/ext"
+            }
+        }
+    }
+}
+```
+
+### tsconfig (integration)
+
+```json
+// packages/{feature}/ext/__tests__/integration-tests/tsconfig.test.json
+{
+    "extends": "../../../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./_out-tsc",
+        "rootDir": "./",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "types": ["node", "mocha"],
+        "composite": false,
+        "declaration": false,
+        "declarationMap": false,
+        "sourceMap": true,
+        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo"
+    },
+    "include": ["./suite/**/*.ts"],
+    "exclude": ["./_out-tsc/**"]
+}
+```
+
+### .vscode-test.mjs (integration)
+
+```js
+// packages/{feature}/ext/__tests__/integration-tests/.vscode-test.mjs
+import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Resolve extension root (two levels up from integration-tests)
+const extensionRoot = path.resolve(__dirname, '..', '..')
+
+// Import helper from built dist to avoid adding a package/devDep edge
+const helperUrl = new URL(
+    '../../../../../libs/vscode-test-cli-config/dist/index.js',
+    import.meta.url
+)
+const { createVscodeTestConfig } = await import(helperUrl.href)
+
+export default createVscodeTestConfig({
+    packageName: 'fux-{feature}',
+    extensionDevelopmentPath: extensionRoot,
+    workspaceFolder: './mocked-workspace',
+    files: './_out-tsc/suite/**/*.integration.test.js',
+    setupFiles: './_out-tsc/suite/index.js',
+    skipExtensionDependencies: true,
+    // version: 'insiders' | 'stable'
+})
+```
+
+### Tips
+
+- Disable Nx cache for `test:integration` to avoid replaying stale logs.
+- Use explicit `files: []` if you want deterministic ordering.
+- For maximal speed locally, you can set `useInstallation: { fromMachine: true }` in the test config; favor managed downloads (insiders/stable) in CI for hermetic runs.

@@ -40,11 +40,13 @@ In the `project.json` file, third-party packages are listed in the `external` ar
     "build": {
         "executor": "@nx/esbuild:esbuild",
         "options": {
-            "external": ["vscode", "dependency1", "dependency2"]
+            "external": ["vscode", "dependency1", "dependency2", "typescript"]
         }
     }
 }
 ```
+
+**Note**: Include `"typescript"` in external array only if the package uses TypeScript as a runtime dependency (e.g., Ghost Writer Core for AST parsing).
 
 **Extension Package:**
 

@@ -138,6 +138,29 @@ nx_workspace
 
 ### **Core Package Structure**
 
+**Preferred Flat Structure (Project Butler Core Pattern):**
+
+```
+packages/package-name/core/
+├── src/
+│   ├── _interfaces/          # All interfaces centralized
+│   ├── services/             # All services in flat structure
+│   ├── _config/              # Constants and configuration
+│   └── index.ts              # Simple barrel exports
+├── __tests__/
+│   ├── _setup.ts             # Global test setup
+│   ├── functional-tests/     # Main integration tests
+│   ├── isolated-tests/       # Unit tests
+│   └── coverage-tests/       # Coverage reports
+├── package.json              # Core package config
+├── project.json              # Nx build config
+├── tsconfig.json             # TypeScript config
+├── vitest.config.ts          # Test config
+└── vitest.coverage.config.ts # Coverage test config
+```
+
+**Alternative Feature-Based Structure:**
+
 ```
 packages/package-name/core/
 ├── src/
@@ -522,6 +545,18 @@ export interface IFeatureService {
 ```
 
 **Export Pattern:**
+
+**Preferred Barrel Exports (Project Butler Core Pattern):**
+
+```typescript
+// packages/package-name/core/src/index.ts
+// Simple barrel exports
+export * from './_interfaces/IFeatureService.js'
+export * from './services/Feature.service.js'
+export * from './_config/constants.js'
+```
+
+**Alternative Individual Exports:**
 
 ```typescript
 // packages/package-name/core/src/index.ts

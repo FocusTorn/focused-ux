@@ -1,15 +1,6 @@
 {
     
-    "files.exclude": {
-        
-        "tmp/deploy/*/node_modules": false,
-        "node_modules/**": true,
-        
-    },
-    
-    "eslint.useFlatConfig": true,
-    "eslint.workingDirectories": ["./"],
-    "eslint.format.enable": true,
+   
     "prettier.configPath": "prettier.config.cjs",
     "prettier.experimentalTernaries": true,
     "prettier.requireConfig": true,
@@ -45,17 +36,39 @@
         "editor.codeActionsOnSave": {
             "source.fixAll.eslint": "explicit"
         }
-    },
-    "eslint.validate": [
-        "javascript",
-        "javascriptreact",
-        "typescript",
-        "typescriptreact",
-        "json",
-        "jsonc"
-    ],
-    "eslint.lintTask.enable": true,
-    "eslint.run": "onType",
-    "eslint.codeActionsOnSave.mode": "all",
+    }
+    // "eslint.run": "onType",
+    // "eslint.codeActionsOnSave.mode": "all",
+    // "eslint.useFlatConfig": true,
+    // "eslint.format.enable": true,
+    // "eslint.validate": [
+    //     "javascript",
+    //     "javascriptreact",
+    //     "typescript",
+    //     "typescriptreact",
+    //     "json",
+    //     "jsonc"
+    // ],
+    // "eslint.options": {
+    //     "overrideConfigFile": "./eslint.config.js"
+    // },
+    // "eslint.workingDirectories": [
+    //     {
+    //         "directory": "./",
+    //         "changeProcessCWD": true
+    //     }
+    // ],
+    // "eslint.workspaceFolder": true,
+    // "eslint.enable": true,
+    // "eslint.lintTask.enable": true,
+    // "eslint.probe": [
+    //     "javascript",
+    //     "javascriptreact", 
+    //     "typescript",
+    //     "typescriptreact",
+    //     "json",
+    //     "jsonc"
+    // ]
+    
 
 }

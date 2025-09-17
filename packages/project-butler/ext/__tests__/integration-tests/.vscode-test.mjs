@@ -19,14 +19,15 @@ export default createVscodeTestConfig({
     workspaceFolder: './mocked-workspace',
     // Point to compiled JS relative to this config file location
     files: [
-        './_out-tsc/suite/extension.test.js',
-        './_out-tsc/suite/backup.test.js',
-        './_out-tsc/suite/package-json-formatting.test.js',
-        './_out-tsc/suite/terminal-management.test.js',
-        './_out-tsc/suite/poetry-shell.test.js'
+        './_out-tsc/suite/extension.integration.test.js',
+        './_out-tsc/suite/backup.integration.test.js',
+        './_out-tsc/suite/package-json-formatting.integration.test.js',
+        './_out-tsc/suite/terminal-management.integration.test.js',
+        './_out-tsc/suite/poetry-shell.integration.test.js'
     ],
     setupFiles: './_out-tsc/suite/index.js',
     skipExtensionDependencies: true,
+    // version: 'stable',
 })
 
 

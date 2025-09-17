@@ -7,9 +7,14 @@ export default defineConfig({
 		
 		reporters: ['default'],
 		include: [
-			'__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+			'__tests__/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
 		],
-		exclude: ['**/*.d.ts', '**/*.config.*', '**/__tests__/_reports/**'],
+		exclude: [
+			'**/*.d.ts',
+			'**/*.config.*',
+			'**/__tests__/_reports/**',
+			'**/__tests__/integration-tests/**',
+		],
         
 		globals: true,
 		environment: 'node',

@@ -9,26 +9,30 @@ The Ghost Writer core package contains pure business logic for code generation a
 ### **Core Services**
 
 1. **ClipboardService**
-   - **Purpose**: Manages temporary storage of code fragments
-   - **Dependencies**: IStorageService (injected)
-   - **Responsibilities**: Store, retrieve, and clear code fragments
+    - **Purpose**: Manages temporary storage of code fragments
+    - **Dependencies**: IStorageService (injected)
+    - **Responsibilities**: Store, retrieve, and clear code fragments
 
 2. **ImportGeneratorService**
-   - **Purpose**: Generates import statements based on code fragments
-   - **Dependencies**: IPathUtilsService, ICommonUtilsService (injected)
-   - **Responsibilities**: Analyze code fragments and generate appropriate import statements
+    - **Purpose**: Generates import statements based on code fragments
+    - **Dependencies**: IPathUtilsService, ICommonUtilsService (injected)
+    - **Responsibilities**: Analyze code fragments and generate appropriate import statements
 
 3. **ConsoleLoggerService**
-   - **Purpose**: Generates console.log statements for debugging
-   - **Dependencies**: None (pure business logic)
-   - **Responsibilities**: Generate log statements with context information
+    - **Purpose**: Generates console.log statements for debugging
+    - **Dependencies**: TypeScript compiler API (runtime dependency)
+    - **Responsibilities**: Generate log statements with context information
 
 ### **Service Interfaces**
 
 All services implement interfaces defined in `_interfaces/` directory:
+
 - `IClipboardService`
 - `IImportGeneratorService`
 - `IConsoleLoggerService`
+- `IStorageService`
+- `IPathUtilsService`
+- `ICommonUtilsService`
 
 ### **Dependency Injection Strategy**
 
@@ -41,28 +45,21 @@ All services implement interfaces defined in `_interfaces/` directory:
 
 ```
 src/
-├── _interfaces/           # Service interfaces
+├── _interfaces/           # All service interfaces centralized
 ├── _config/              # Constants and configuration
-├── features/             # Feature-based organization
-│   ├── clipboard/
-│   │   ├── _interfaces/
-│   │   └── services/
-│   ├── import-generator/
-│   │   ├── _interfaces/
-│   │   └── services/
-│   └── console-logger/
-│       ├── _interfaces/
-│       └── services/
+├── services/             # All services in flat structure
 └── index.ts              # Public exports
 ```
 
 ## **Dependency Management**
 
 ### **External Dependencies**
-- **typescript**: Moved to devDependencies (build-time only)
-- **@fux/shared**: Removed - core package should be self-contained
+
+- **typescript**: Runtime dependency (used by ConsoleLoggerService)
+- **@types/node**: Dev dependency for Node.js types
 
 ### **Internal Dependencies**
+
 - All dependencies injected via interfaces
 - No direct imports of external services
 - Pure business logic with no VSCode dependencies
@@ -70,15 +67,17 @@ src/
 ## **Testing Strategy**
 
 ### **Test Organization**
+
 ```
 __tests__/
 ├── _setup.ts             # Global test setup
-├── functional/           # Main integration tests
-├── unit/                 # Isolated service tests
-└── coverage/             # Coverage-only tests
+├── functional-tests/      # Main integration tests
+├── isolated-tests/       # Unit tests
+└── coverage-tests/       # Coverage-only tests
 ```
 
 ### **Testing Approach**
+
 - **Mockly Integration**: Use Mockly for any VSCode API mocking
 - **Direct Instantiation**: Test services with direct dependency injection
 - **Real Behavior Validation**: Test actual runtime behavior, not just mocks
@@ -87,11 +86,13 @@ __tests__/
 ## **Build Configuration**
 
 ### **Nx Configuration**
+
 - **Executor**: `@nx/esbuild:esbuild` with `bundle: false`
 - **Output**: ESM format with declarations
-- **External**: All VSCode and shared dependencies externalized
+- **External**: VSCode and TypeScript dependencies externalized
 
 ### **TypeScript Configuration**
+
 - **tsconfig.json**: Base configuration
 - **tsconfig.lib.json**: Library build configuration
 - **Project References**: Proper TypeScript project references
@@ -103,19 +104,26 @@ __tests__/
 - ✅ **Direct Instantiation**: No DI containers
 - ✅ **Interface-Based**: All dependencies via interfaces
 - ✅ **Testable**: Easy to test with mocks
+- ✅ **Flat Structure**: Simple, maintainable organization
+- ✅ **Standard Exports**: Clean barrel exports like PBC
 
 ## **Migration Strategy**
 
-1. **Remove Shared Dependencies**: Move all shared functionality to adapters
-2. **Create Service Interfaces**: Define clear interfaces for all dependencies
-3. **Implement Direct Injection**: Replace DI container with direct instantiation
-4. **Update Tests**: Create comprehensive test suite with Mockly
-5. **Fix Build Configuration**: Correct TypeScript and Nx configurations
+1. ✅ **Centralize Interfaces**: All interfaces in `_interfaces/` directory
+2. ✅ **Flatten Services**: All services in `services/` directory
+3. ✅ **Update Exports**: Simple barrel exports like PBC
+4. ✅ **Fix Package.json**: Standard ESM configuration
+5. ✅ **Update Build Config**: Proper externalization
+6. ✅ **Update Tests**: Import paths updated for new structure
 
 ## **Success Criteria**
 
-- [ ] Core package has zero shared dependencies
-- [ ] All services use direct dependency injection
-- [ ] All tests pass with proper coverage
-- [ ] Build system works correctly
-- [ ] Package is self-contained and testable 
+- ✅ Core package has zero shared dependencies
+- ✅ All services use direct dependency injection
+- ✅ All interfaces centralized in `_interfaces/`
+- ✅ All services in flat `services/` structure
+- ✅ Simple barrel exports like PBC
+- ✅ Standard package.json configuration
+- ✅ Proper build externalization
+- ✅ Tests updated for new structure
+- ✅ Package is self-contained and testable

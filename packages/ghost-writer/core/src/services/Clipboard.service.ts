@@ -1,5 +1,5 @@
-import type { IStorageService } from '../../../_interfaces/IStorageService.js'
-import { ghostWriterConstants } from '../../../_config/constants.js'
+import type { IStorageService } from '../_interfaces/IStorageService.js'
+import { ghostWriterConstants } from '../_config/constants.js'
 import type { IClipboardService, StoredFragment } from '../_interfaces/IClipboardService.js'
 
 export class ClipboardService implements IClipboardService {

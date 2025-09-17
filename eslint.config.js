@@ -1,13 +1,13 @@
 // IMPORTS ------------------------------------------------>> 
 
-import antfuPlugin from 'eslint-plugin-antfu'
+// import antfuPlugin from 'eslint-plugin-antfu'
 
 import seahaxWrapPlugin from '@seahax/eslint-plugin-wrap'
 import nxPlugin from '@nx/eslint'
 
 import eslintComments from 'eslint-plugin-eslint-comments'
 import nPlugin from 'eslint-plugin-n'
-import jsdocPlugin from 'eslint-plugin-jsdoc'
+// import jsdocPlugin from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
 import unicornPlugin from 'eslint-plugin-unicorn'
 import stylisticPlugin from '@stylistic/eslint-plugin'
@@ -21,6 +21,7 @@ import yamlParser from 'yaml-eslint-parser'
 import tomlPlugin from 'eslint-plugin-toml'
 import tomlParser from 'toml-eslint-parser'
 import unusedImportsPlugin from 'eslint-plugin-unused-imports'
+
 import fuxFormat from './.eslint/plugins/fux-format/index.js'
 
 //----------------------------------------------------------------------------<<
@@ -92,6 +93,16 @@ import fuxFormat from './.eslint/plugins/fux-format/index.js'
 // } //<
 
 export default [
+	// Performance optimizations
+	{
+		name: 'performance/cache',
+		settings: {
+			cache: true,
+			cacheLocation: '.eslintcache',
+			cacheStrategy: 'content'
+		}
+	},
+
 	{   ignores: [ //>
         
 		'**/*.md',
@@ -139,14 +150,11 @@ export default [
 		files: ['**/*.{js,jsx,ts,tsx}'],
 		languageOptions: {
 			parser: tsParser,
-			parserOptions: { project: null }
-
-			// parserOptions: {
-			// 	project: [
-			// 		'./tsconfig.base.json',
-			// 		'./libs/shared/tsconfig.json',
-			// 		'./packages/project-butler/tsconfig.json',
-			// 		'./packages/dynamicons/tsconfig.json',
+			parserOptions: {
+				project: null,
+				ecmaVersion: 'latest',
+				sourceType: 'module'
+			}
 			// 	],
 			// 	tsconfigRootDir: process.cwd(),
 			// },
@@ -156,13 +164,13 @@ export default [
 			ts: tsPlugin,
 			import: importPlugin,
 			unicorn: unicornPlugin,
-			antfu: antfuPlugin,
+			// antfu: antfuPlugin,
 			'unused-imports': unusedImportsPlugin,
 			'@seahax/wrap': seahaxWrapPlugin,
 			'@nx': nxPlugin,
 			eslintComments,
 			node: nPlugin,
-			jsdoc: jsdocPlugin,
+			// jsdoc: jsdocPlugin,
 			'fux-format': fuxFormat,
 		},
 		rules: {
@@ -177,8 +185,20 @@ export default [
 			'unicorn/prefer-module': 'off',
 			'unicorn/prefer-node-protocol': 'off',
 			'node/prefer-global/process': 'off',
-			'antfu/consistent-list-newline': 'off',
-
+            
+			// 'antfu/consistent-list-newline': 'off',
+			// Array formatting
+			'style/array-bracket-newline': ['warn', 'consistent'],
+			'style/array-element-newline': ['warn', 'consistent'],
+  
+			// Object formatting  
+			'style/object-curly-newline': 'off',
+			'style/object-property-newline': ['warn', 'consistent'],
+  
+			// Function formatting
+			'style/function-call-argument-newline': ['warn', 'consistent'],
+			'style/function-paren-newline': ['warn', 'consistent'],
+            
 			'comma-spacing': ['warn', { before: false, after: true }],
 			'no-extra-semi': 'warn',
 			'operator-linebreak': ['warn', 'before'],
@@ -230,6 +250,12 @@ export default [
 			'import/order': 'off',
         
 			'ts/explicit-function-return-type': 'off',
+			
+			// Performance optimizations
+			'import/no-cycle': 'off', // Expensive rule
+			'import/no-unresolved': 'off', // Expensive rule
+			'ts/no-unused-vars': 'warn', // Faster than 'error'
+			'no-console': 'warn', // Faster than 'error'
 		},
 	}, //<
 
@@ -314,23 +340,33 @@ export default [
 	}, //<
 	
 	{   name: 'focused-ux/json-rules', //>
-		files: ['**/*.json', '**/*.jsonc'],
-		plugins: { jsonc: jsoncPlugin },
+		files: [
+			'**/*.json',
+			'**/*.jsonc',
+			"c:/Users/slett/AppData/Roaming/Cursor/User/settings.json"
+		],
+		ignores: [],
+		plugins: {jsonc: jsoncPlugin, style: stylisticPlugin, 'fux-format': fuxFormat },
 		languageOptions: { parser: jsoncParser },
 		rules: {
-			'jsonc/quotes': ['warn', 'double'],
-			'jsonc/no-dupe-keys': 'error',
             
+			// 'style/no-multiple-empty-lines': ['warn', { max: 2, maxBOF: 0, maxEOF: 0 }],
+            
+			// 'jsonc/quotes': ['warn', 'double'],
+			// 'jsonc/no-dupe-keys': 'error',
 			'jsonc/indent': ['warn', 4],
 			// "jsonc/indent": "off",
-			"jsonc/object-curly-newline": "off",
-			"jsonc/object-property-newline": "off",
-			"jsonc/array-element-newline": "off",
-			"jsonc/array-bracket-newline": "off",
-			"jsonc/array-bracket-spacing": "off",
-			"jsonc/object-curly-spacing": "off",
-			"jsonc/key-spacing": "off",
-			"jsonc/comma-style": "off"
+			// "jsonc/object-curly-newline": "off",
+			// "jsonc/object-property-newline": "off",
+			// "jsonc/array-element-newline": "off",
+			// "jsonc/array-bracket-newline": "off",
+			// "jsonc/array-bracket-spacing": "off",
+			// "jsonc/object-curly-spacing": "off",
+			// "jsonc/key-spacing": "off",
+			// "jsonc/comma-style": "off"
+            
+			'fux-format/folding-brackets': 'warn',
+			'jsonc/comma-dangle': ['warn', 'never'],
             
 		},
 	}, //<

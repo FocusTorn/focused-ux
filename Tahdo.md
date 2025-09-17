@@ -65,12 +65,12 @@ Report and explain the findings from:
 ---
 
 ## Dependency Graph Hygiene – Findings and Recommendations
-
+<!-- 
 1. Deprecated/Unused Projects
     - **@fux/source**
         - Root is workspace root (`.`) and exposes no targets.
         - Likely a placeholder/stale artifact; it adds noise to the graph.
-        - **Recommendation**: Remove or convert into a documented meta project if intentionally kept.
+        - **Recommendation**: Remove or convert into a documented meta project if intentionally kept. -->
 
 3. Boundary Enforcement (Proposed depConstraints – warn)
     - **shared**: may depend on nothing (or only `shared`).
