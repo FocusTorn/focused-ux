@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { PackageJsonFormattingService } from '../../src/services/PackageJsonFormatting.service'
 import { setupTestEnvironment, resetAllMocks, setupFileSystemMocks, setupPathMocks, setupYamlMocks } from '../_setup'
 
-describe('PackageJsonFormattingService', () => {
+describe('PackageJsonFormatting', () => {
 	let service: PackageJsonFormattingService
 	let mocks: ReturnType<typeof setupTestEnvironment>
 
-	beforeEach(() => {
+	beforeEach(() => { //>
 		mocks = setupTestEnvironment()
 		setupFileSystemMocks(mocks)
 		setupPathMocks(mocks)
@@ -14,10 +14,10 @@ describe('PackageJsonFormattingService', () => {
 		
 		service = new PackageJsonFormattingService(mocks.fileSystem, mocks.yaml)
 		resetAllMocks(mocks)
-	})
+	}) //<
 
 	describe('formatPackageJson', () => {
-		it('should format package.json successfully', async () => {
+		it('should format package.json successfully', async () => { //>
 			// Arrange
 			const packageJsonPath = '/test/package.json'
 			const workspaceRoot = '/test'
@@ -50,9 +50,9 @@ describe('PackageJsonFormattingService', () => {
 				packageJsonPath,
 				expect.stringContaining('"name": "test-package"'),
 			)
-		})
+		}) //<
 
-		it('should handle missing .FocusedUX file', async () => {
+		it('should handle missing .FocusedUX file', async () => { //>
 			// Arrange
 			const packageJsonPath = '/test/package.json'
 			const workspaceRoot = '/test'
@@ -63,9 +63,9 @@ describe('PackageJsonFormattingService', () => {
 			await expect(service.formatPackageJson(packageJsonPath, workspaceRoot))
 				.rejects
 				.toThrow('Could not read \'.FocusedUX\' file: File not found')
-		})
+		}) //<
 
-		it('should handle invalid YAML in .FocusedUX', async () => {
+		it('should handle invalid YAML in .FocusedUX', async () => { //>
 			// Arrange
 			const packageJsonPath = '/test/package.json'
 			const workspaceRoot = '/test'
@@ -79,10 +79,10 @@ describe('PackageJsonFormattingService', () => {
 			// Act & Assert
 			await expect(service.formatPackageJson(packageJsonPath, workspaceRoot))
 				.rejects
-				.toThrow('Failed to parse YAML from \'.FocusedUX\': Invalid YAML')
-		})
+				.toThrow('Could not parse \'.FocusedUX\' file: Invalid YAML')
+		}) //<
 
-		it('should handle missing packageJson-order configuration', async () => {
+		it('should handle missing packageJson-order configuration', async () => { //>
 			// Arrange
 			const packageJsonPath = '/test/package.json'
 			const workspaceRoot = '/test'
@@ -99,9 +99,9 @@ describe('PackageJsonFormattingService', () => {
 			await expect(service.formatPackageJson(packageJsonPath, workspaceRoot))
 				.rejects
 				.toThrow('Configuration Error: \'ProjectButler.packageJson-order\' not found or invalid in \'.FocusedUX\'.')
-		})
+		}) //<
 
-		it('should handle missing package.json file', async () => {
+		it('should handle missing package.json file', async () => { //>
 			// Arrange
 			const packageJsonPath = '/test/package.json'
 			const workspaceRoot = '/test'
@@ -120,10 +120,10 @@ describe('PackageJsonFormattingService', () => {
 			// Act & Assert
 			await expect(service.formatPackageJson(packageJsonPath, workspaceRoot))
 				.rejects
-				.toThrow('Failed to read package.json: Package.json not found')
-		})
+				.toThrow('Could not read \'package.json\' file: Package.json not found')
+		}) //<
 
-		it('should ensure name is always first in order', async () => {
+		it('should ensure name is always first in order', async () => { //>
 			// Arrange
 			const packageJsonPath = '/test/package.json'
 			const workspaceRoot = '/test'
@@ -161,9 +161,9 @@ describe('PackageJsonFormattingService', () => {
 			expect(keys[0]).toBe('name')
 			expect(keys[1]).toBe('version')
 			expect(keys[2]).toBe('scripts')
-		})
+		}) //<
 
-		it('should handle unknown keys by placing them at the end', async () => {
+		it('should handle unknown keys by placing them at the end', async () => { //>
 			// Arrange
 			const packageJsonPath = '/test/package.json'
 			const workspaceRoot = '/test'
@@ -197,9 +197,9 @@ describe('PackageJsonFormattingService', () => {
 			expect(keys[1]).toBe('version')
 			expect(keys[2]).toBe('unknownKey')
 			expect(keys[3]).toBe('scripts')
-		})
+		}) //<
 
-		it('should preserve comment-like keys', async () => {
+		it('should preserve comment-like keys', async () => { //>
 			// Arrange
 			const packageJsonPath = '/test/package.json'
 			const workspaceRoot = '/test'
@@ -229,11 +229,13 @@ describe('PackageJsonFormattingService', () => {
 			const parsed = JSON.parse(writtenContent)
 			
 			expect(parsed['=comment=']).toBe('This is a comment')
-		})
+		}) //<
 	})
-
+	
+	//==================================================================================================================================
+	
 	describe('getUnknownKeys', () => {
-		it('should identify unknown keys correctly', () => {
+		it('should identify unknown keys correctly', () => { //>
 			// Arrange
 			const packageData = {
 				name: 'test',
@@ -248,9 +250,9 @@ describe('PackageJsonFormattingService', () => {
 
 			// Assert
 			expect(unknownKeys).toEqual(['unknownKey'])
-		})
+		}) //<
 
-		it('should ignore comment-like keys', () => {
+		it('should ignore comment-like keys', () => { //>
 			// Arrange
 			const packageData = {
 				'name': 'test',
@@ -264,6 +266,6 @@ describe('PackageJsonFormattingService', () => {
 
 			// Assert
 			expect(unknownKeys).toEqual(['unknownKey'])
-		})
+		}) //<
 	})
 })

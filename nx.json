@@ -34,7 +34,7 @@
         }, //<
         
         
-        "package:dev": {
+        "package:dev": { //>
             "executor": "@fux/vpack:pack",
             "outputs": ["{options.outputPath}"],
             "options": {
@@ -50,7 +50,7 @@
           
                 "dev": true
             }
-        },
+        }, //<
         
         
         // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -64,6 +64,8 @@
                 "configFile": "{projectRoot}/vitest.config.ts",
                 "reportsDirectory": "__tests__/_reports/functional",
                 "passWithNoTests": true
+                
+                
             }
         }, //<
         "test:coverage-tests": { //> run {functional,coverage}-tests, with coverage report
