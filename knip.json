@@ -38,7 +38,7 @@
         // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
         "libs/project-alias-expander": { //>
             "project": ["src/**/*.ts"],
-            "ignoreDependencies": ["adm-zip"]
+            "ignoreDependencies": []
         }, //<
 
         
@@ -82,7 +82,7 @@
         
         "packages/project-butler/core": { //>
             "project": [ "src/**/*.ts" ],
-            "entry": [ "src/index.ts" ],
+            "entry": [],
             "ignore": [
                 "assets/**",
                 "dist/**",
@@ -91,7 +91,7 @@
         }, //<
         "packages/project-butler/ext": { //>
             "project": [ "src/**/*.ts" ],
-            "entry": [ "src/extension.ts" ],
+            "entry": [],
             "ignore": [
                 "assets/**",
                 "dist/**",
@@ -120,7 +120,7 @@
     
         "packages/ghost-writer/core": { //>
             "project": [ "src/**/*.ts" ],
-            "entry": [ "src/index.ts" ],
+            "entry": [],
             "ignore": [
                 "assets/**",
                 "dist/**",
@@ -129,7 +129,7 @@
         }, //<
         "packages/ghost-writer/ext": { //>
             "project": [ "src/**/*.ts" ],
-            "entry": [ "src/index.ts" ],
+            "entry": [],
             "ignore": [
                 "assets/**",
                 "dist/**",

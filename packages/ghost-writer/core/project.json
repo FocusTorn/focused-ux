@@ -7,10 +7,10 @@
             "executor": "@nx/esbuild:esbuild",
             "outputs": [ "{options.outputPath}" ],
             "options": {
-                
                 "main": "packages/ghost-writer/core/src/index.ts",
                 "outputPath": "packages/ghost-writer/core/dist",
-                
+                "declarationRootDir": "packages/ghost-writer/core/src",
+
                 "format": [ "esm" ],
                 "bundle": false,
                 

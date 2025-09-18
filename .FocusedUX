@@ -6,7 +6,7 @@ ContextCherryPicker:
   quick_settings_panel:
     project_structure_contents:
       visible: true
-      filter: none
+      filter: selected
     default_status_message:
       visible: false
       style: drop

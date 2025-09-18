@@ -3,7 +3,6 @@
     "tags": [ "core" ],
     "targets": {
         
-        // ORIGINAL BUILD TARGET - COMMENTED OUT FOR DEBUGGING
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": [ "{options.outputPath}" ],
@@ -14,6 +13,7 @@
                 
                 "format": [ "esm" ],
                 "bundle": false,
+                
                 "external": [
                     "vscode",
                     "js-yaml"
@@ -21,30 +21,6 @@
             }
         }, //<
 
-        // // DEBUG BUILD TARGET - FULL CONFIGURATION
-        // "build": { //>
-        //     "executor": "@nx/esbuild:esbuild",
-        //     "outputs": [ "{options.outputPath}" ],
-        //     "options": {
-        //         "main": "packages/project-butler/core/src/index.ts",
-        //         "outputPath": "packages/project-butler/core/dist",
-        //         "format": [ "esm" ],
-        //         "bundle": false,
-        //         "external": [
-        //             "vscode",
-        //             "js-yaml"
-        //         ],
-        //         // "tsConfig": "packages/project-butler/core/tsconfig.json",
-        //         "sourcemap": true,
-        //         "platform": "node",
-        //         "target": "es2022",
-        //         "esbuildOptions": {
-        //             "outdir": "packages/project-butler/core/dist"
-        //         },
-        //         "declarationRootDir": "packages/project-butler/core/src"
-        //     }
-        // }, //<
-        
         "lint": { "extends": "lint" },
         "lint:full": { "extends": "lint:full" },
         
@@ -76,22 +52,3 @@
     "sourceRoot": "packages/project-butler/core/src",
     "projectType": "library"
 }
-
-
-// Orriginal
-// "test": { //>
-//     "executor": "@nx/vite:test",
-//     "outputs": ["{options.reportsDirectory}"],
-//     "dependsOn": ["build", "^build"]
-// }, //<
-// "test:full": { //>
-//     "executor": "@nx/vite:test",
-//     "outputs": ["{options.reportsDirectory}"],
-//     "dependsOn": [
-//         {
-//             "dependencies": true,
-//             "target": "test",
-//             "params": "forward"
-//         }
-//     ]
-// } //<

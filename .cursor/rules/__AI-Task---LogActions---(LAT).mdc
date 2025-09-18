@@ -1,8 +1,7 @@
 ---
-description: Shall only be executed when directed to do any definitional variation of performing a "lat"
+description: Shall only be executed when directed to do any definitional variation of "performing a 'lat' "
 alwaysApply: false
 ---
-
 # Protocol: LogActions.mdc
 
 **Location:**: .cursor/rules/Protocol-LogActions.mdc

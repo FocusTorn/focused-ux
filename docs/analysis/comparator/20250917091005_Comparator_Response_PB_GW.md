@@ -213,6 +213,10 @@
 - **Response**:
     - ❌ I made the needed changes to align the tsconfig files.
 
+
+    
+
+
 ---
 
 ### 2. Package.json Configuration
@@ -307,6 +311,10 @@
 
 - **Response**:
     - ❌ Updated to cannonically match
+
+
+
+- ❌⚠️✅ Agreed, leave as is
 
 ---
 

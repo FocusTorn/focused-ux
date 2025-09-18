@@ -15,9 +15,4 @@
         "outDir": "./dist",
         "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
     }
-
 }
-
-
-
-

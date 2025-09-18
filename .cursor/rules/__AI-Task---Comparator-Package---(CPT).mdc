@@ -1,0 +1,610 @@
+---
+description: Shall only be executed when directed to do any definitional variation of "doing a 'CPT' "
+alwaysApply: false
+---
+
+# Protocol: Comparator-Package.mdc
+
+**Location**: .cursor/rules/\_\_AI-Task---Comparator-Package---(CPT).mdc
+
+## **Purpose**
+
+This protocol defines the systematic package comparison methodology for AI agents to analyze, compare, and align package architectures across the FocusedUX workspace. This enables identification of architectural violations, pattern standardization, and consistency enforcement.
+
+## **Quick Reference**
+
+- **Prerequisite**: Deep Comprehension analysis MUST be completed for both packages using `docs/analysis/(AI) Deep Comprehension - Package.md`
+- **Core Sections**: Critical Architectural Differences, Configuration Files Analysis, Pattern Deviations, Recommendations
+- **Response Format**: Flattened multiselect `✅⚠️❌` for easy decision-making
+- **Acceptability Indicators**: ✅ ACCEPTABLE, ⚠️ IMPROVE, ❌ COMPLIANCE
+- **Output**: Comparator Response document with timestamp format `YYYYMMDDHHMMSS_Comparator_Response_{PackageA}_{PackageB}.md`
+
+## **Protocol Requirements**
+
+### **STEP 1: Prerequisite Validation**
+
+#### **STEP 1.1: Deep Comprehension Requirement**
+
+**MANDATORY**: Before performing any package comparison, AI agents MUST first execute the Deep Comprehension framework from `docs/analysis/(AI) Deep Comprehension - Package.md` to establish foundational understanding of both packages being compared.
+
+**Validation Checklist**:
+
+- [ ] Deep Comprehension analysis completed for Package A
+- [ ] Deep Comprehension analysis completed for Package B
+- [ ] Foundational understanding established for both packages
+- [ ] Architectural patterns identified for both packages
+
+**CRITICAL**: All aspects of the comparator must be performed in real time, for a current and up to date output. Do NOT look for, read, or use any previous comparator response documents or previous Deep Comprehension analyses. Every comparison must be performed fresh with current package state.
+
+#### **STEP 1.2: Package Information Gathering**
+
+**Required Information**:
+
+- Package project details using `mcp_nx-mcp_nx_project_details`
+- Package structure analysis (`list_dir`, `read_file`)
+- Configuration file analysis (tsconfig.json, package.json, project.json, vitest.config.ts)
+- Service and interface organization patterns
+- Testing structure and complexity analysis
+- Runtime dependency patterns
+
+### **STEP 2: Systematic Comparison Execution**
+
+#### **STEP 2.1: Critical Architectural Differences Analysis**
+
+**Required Dimensions**:
+
+1. **Runtime Dependency Patterns**: Analyze how packages handle external dependencies
+2. **Service Architecture Patterns**: Compare service organization and interaction patterns
+3. **Configuration Management Strategies**: Compare configuration approaches and complexity
+4. **Testing Complexity Patterns**: Analyze testing sophistication and coverage
+5. **Adapter Architecture Differences**: Compare adapter patterns and requirements
+
+**Analysis Template**:
+
+```markdown
+### {Number}. {Difference Name}
+
+- **{PackageA}**: {description}
+- **{PackageB}**: {description}
+
+- **Description**:
+    - {detailed explanation of the differences and reasoning}
+
+- **Deviations**:
+    1. {Primary deviation category}
+    - {Specific technical difference for Package A}
+    - {Specific technical difference for Package B}
+    2. {Additional deviation category}
+    - {Additional technical differences}
+
+- **Result**:
+    - {analysis of the implications and outcomes}
+
+- **Acceptability**:
+    - {✅ ACCEPTABLE | ⚠️ IMPROVE | ❌ COMPLIANCE} - {brief justification}
+    - {Additional acceptability lines with separate icons as needed}
+
+- **Response**:
+    - ✅⚠️❌
+```
+
+#### **STEP 2.2: Configuration Files Analysis**
+
+**Required Configurations**:
+
+1. **TypeScript Configuration (tsconfig.json)**: Compiler options, build information management
+2. **Package Configuration (package.json)**: Dependencies, externalization patterns
+3. **Build Configuration (project.json)**: Executor settings, externalization strategies
+4. **Testing Configuration (vitest.config.ts)**: Test framework settings, performance optimization
+5. **Integration Test Configuration**: VSCode test CLI setup, test compilation
+
+**Analysis Template**:
+
+```markdown
+### {Number}. {Configuration Type}
+
+- **{PackageA}**: {description}
+- **{PackageB}**: {description}
+
+- **Description**:
+    - {detailed explanation of the differences and reasoning}
+
+- **Deviations**:
+    1. {Primary deviation category}
+    - {Specific technical difference for Package A}
+    - {Specific technical difference for Package B}
+    2. {Additional deviation category}
+    - {Additional technical differences}
+
+- **Result**:
+    - {analysis of the implications and outcomes}
+
+- **Acceptability**:
+    - {✅ ACCEPTABLE | ⚠️ IMPROVE | ❌ COMPLIANCE} - {brief justification}
+    - {Additional acceptability lines with separate icons as needed}
+
+- **Response**:
+    - ✅⚠️❌
+```
+
+#### **STEP 2.3: Pattern Deviations Analysis**
+
+**Required Patterns**:
+
+1. **Interface Organization Patterns**: Centralization, naming conventions
+2. **Export Strategy Variations**: Barrel exports, organization patterns
+3. **Configuration Structure Differences**: Constants organization, complexity
+4. **Testing Strategy Evolution**: Test patterns, coverage approaches
+5. **Service Count and Complexity**: Service architecture patterns
+
+**Analysis Template**:
+
+```markdown
+### {Number}. {Deviation Name}
+
+- **{PackageA}**: {description}
+- **{PackageB}**: {description}
+
+- **Description**:
+    - {detailed explanation of the differences and reasoning}
+
+- **Deviations**:
+    - {specific pattern differences found}
+    - {additional implementation variations}
+
+- **Result**:
+    - {analysis of the implications and outcomes}
+
+- **Acceptability**:
+    - {✅ ACCEPTABLE | ⚠️ IMPROVE | ❌ COMPLIANCE} - {brief justification}
+    - {Additional acceptability lines with separate icons as needed}
+
+- **Response**:
+    - ✅⚠️❌
+```
+
+### **STEP 3: Response Documentation**
+
+#### **STEP 3.1: Document Creation**
+
+**File Naming**: `YYYYMMDDHHMMSS_Comparator_Response_{PackageA}_{PackageB}.md`
+
+**Location**: `docs/analysis/comparator/`
+
+**Header Template**:
+
+```markdown
+# COMPARISON FINDINGS AND DEVIATIONS - Responses
+
+**Date**: {YYYY-MM-DD HH:MM:SS}  
+**Packages Compared**: {PackageA} vs {PackageB}  
+**Analysis Type**: Deep Comprehension Comparison  
+**Prerequisite**: Deep Comprehension analysis completed for both packages using `docs/analysis/(AI) Deep Comprehension - Package.md`
+```
+
+#### **STEP 3.2: Recommendations Section**
+
+**Required Sections**:
+
+1. **For Immediate Adoption**: Specific patterns that should be cross-adopted
+2. **For Preservation**: Patterns that are appropriate and should be maintained
+3. **Overall Assessment**: Summary of findings and architectural compliance
+
+**Template**:
+
+```markdown
+## Recommendations
+
+### For Immediate Adoption
+
+1. **{Recommendation1}**: {description}
+2. **{Recommendation2}**: {description}
+
+### For Preservation
+
+1. **{Preservation1}**: {description}
+2. **{Preservation2}**: {description}
+
+### Overall Assessment
+
+{Summary of findings and decisions}
+```
+
+### **STEP 4: Acceptability Indicators**
+
+#### **STEP 4.1: Acceptability Classifications**
+
+- **✅ ACCEPTABLE**: No changes needed - both approaches are valid and appropriate
+- **⚠️ IMPROVE**: Package should adopt better patterns from comparison package
+- **❌ COMPLIANCE**: Package violates project guidelines from docs/\_Testing-Strategy.md, docs/\_SOP.md, docs/\_Package-Archetypes.md, or docs/\_Architecture.md
+
+#### **STEP 4.2: Response Selection Pattern**
+
+- **Response Format**: ALWAYS use exactly `✅⚠️❌` - NO EXCEPTIONS, NO VARIATIONS, NO SINGLE SELECTIONS
+- **MANDATORY**: Every Response section MUST contain exactly these three icons in this exact order
+- **Purpose**: Provides quick visual decision-making interface for architectural alignment
+- **Usage**: The flattened multiselect format allows easy visual scanning and decision-making
+- **CRITICAL**: Never modify this format - it must ALWAYS be `✅⚠️❌`
+
+**Acceptability Format Rules**:
+
+- Single acceptability point: Use one line with icon and justification
+- Multiple acceptability points: Use separate lines, each with its own icon
+- Example single: `- ✅ ACCEPTABLE - Both approaches are valid for their respective functional requirements`
+- Example multiple:
+    - `- ✅ ACCEPTABLE - Both approaches are valid for their respective functional requirements`
+    - `- ⚠️ IMPROVE - PBC should adopt GWC's newer TypeScript version`
+
+### **STEP 5: Validation Checklist**
+
+#### **STEP 5.1: Pre-Execution Checklist**
+
+- [ ] Deep Comprehension analysis completed for both packages
+- [ ] Package project details obtained
+- [ ] Configuration files analyzed
+- [ ] Service and interface patterns identified
+- [ ] Testing structure analyzed
+- [ ] Runtime dependency patterns identified
+
+#### **STEP 5.2: Content Validation Checklist**
+
+- [ ] All 5 Critical Architectural Differences sections present
+- [ ] All 5 Configuration Files Analysis sections present
+- [ ] All 5 Pattern Deviations sections present
+- [ ] Each section includes Description, Result, Acceptability, Response
+- [ ] **CRITICAL**: Every Response section contains exactly `✅⚠️❌` - NO EXCEPTIONS
+- [ ] Recommendations section includes Adoption, Preservation, Assessment
+- [ ] Response document created with proper timestamp format
+- [ ] Document saved to `docs/analysis/comparator/` directory
+
+#### **STEP 5.3: Quality Standards**
+
+- [ ] All technical details are specific and accurate
+- [ ] File paths are exact and complete
+- [ ] Configuration details include specific values
+- [ ] Acceptability assessments are justified
+- [ ] Recommendations are actionable and specific
+
+### **STEP 6: Error Recovery Patterns**
+
+- **Missing Deep Comprehension**: Execute Deep Comprehension analysis first
+- **Incomplete Package Information**: Use `mcp_nx-mcp_nx_project_details` and file analysis tools
+- **Configuration Analysis Gaps**: Read all configuration files systematically
+- **Pattern Recognition Issues**: Follow established architectural pattern templates
+- **Response Format Violations**: Use flattened multiselect `✅⚠️❌` pattern
+
+### **STEP 7: Required Tool Usage**
+
+- **Package Analysis**: `mcp_nx-mcp_nx_project_details` tool
+- **File Reading**: `read_file` tool for all configuration files
+- **Directory Listing**: `list_dir` tool for structure analysis
+- **Pattern Search**: `grep` tool for dependency analysis
+- **Timestamp Generation**: `run_terminal_cmd` with `date +"%Y%m%d%H%M%S"`
+- **Document Creation**: `write` tool for Comparator Response document
+
+## **Protocol Compliance**
+
+### **Compliance Requirements**
+
+This protocol MUST be followed for all package comparisons to ensure:
+
+- **Systematic Analysis**: All packages compared using identical methodology
+- **Completeness**: All required sections and dimensions analyzed
+- **Consistency**: All comparisons follow established templates
+- **Actionability**: All findings include specific recommendations
+- **Traceability**: Complete historical record of all comparisons
+
+### **Enforcement Protocol**
+
+- Package comparisons that do not meet these requirements must be revised
+- Missing sections must be added with appropriate content
+- Insufficient detail must be expanded with specific technical information
+- Non-compliant formatting must be corrected to match requirements
+- Validation checklist must be completed before finalizing any comparison
+
+---
+
+_This protocol ensures that all package comparisons provide systematic, comprehensive, and actionable analysis for architectural alignment and consistency enforcement across the FocusedUX workspace._
+
+# Protocol: Comparator-Package.mdc
+
+**Location**: .cursor/rules/\_\_AI-Task---Comparator-Package---(CPT).mdc
+
+## **Purpose**
+
+This protocol defines the systematic package comparison methodology for AI agents to analyze, compare, and align package architectures across the FocusedUX workspace. This enables identification of architectural violations, pattern standardization, and consistency enforcement.
+
+## **Quick Reference**
+
+- **Prerequisite**: Deep Comprehension analysis MUST be completed for both packages using `docs/analysis/(AI) Deep Comprehension - Package.md`
+- **Core Sections**: Critical Architectural Differences, Configuration Files Analysis, Pattern Deviations, Recommendations
+- **Response Format**: Flattened multiselect `✅⚠️❌` for easy decision-making
+- **Acceptability Indicators**: ✅ ACCEPTABLE, ⚠️ IMPROVE, ❌ COMPLIANCE
+- **Output**: Comparator Response document with timestamp format `YYYYMMDDHHMMSS_Comparator_Response_{PackageA}_{PackageB}.md`
+
+## **Protocol Requirements**
+
+### **STEP 1: Prerequisite Validation**
+
+#### **STEP 1.1: Deep Comprehension Requirement**
+
+**MANDATORY**: Before performing any package comparison, AI agents MUST first execute the Deep Comprehension framework from `docs/analysis/(AI) Deep Comprehension - Package.md` to establish foundational understanding of both packages being compared.
+
+**Validation Checklist**:
+
+- [ ] Deep Comprehension analysis completed for Package A
+- [ ] Deep Comprehension analysis completed for Package B
+- [ ] Foundational understanding established for both packages
+- [ ] Architectural patterns identified for both packages
+
+**CRITICAL**: All aspects of the comparator must be performed in real time, for a current and up to date output. Do NOT look for, read, or use any previous comparator response documents or previous Deep Comprehension analyses. Every comparison must be performed fresh with current package state.
+
+#### **STEP 1.2: Package Information Gathering**
+
+**Required Information**:
+
+- Package project details using `mcp_nx-mcp_nx_project_details`
+- Package structure analysis (`list_dir`, `read_file`)
+- Configuration file analysis (tsconfig.json, package.json, project.json, vitest.config.ts)
+- Service and interface organization patterns
+- Testing structure and complexity analysis
+- Runtime dependency patterns
+
+### **STEP 2: Systematic Comparison Execution**
+
+#### **STEP 2.1: Critical Architectural Differences Analysis**
+
+**Required Dimensions**:
+
+1. **Runtime Dependency Patterns**: Analyze how packages handle external dependencies
+2. **Service Architecture Patterns**: Compare service organization and interaction patterns
+3. **Configuration Management Strategies**: Compare configuration approaches and complexity
+4. **Testing Complexity Patterns**: Analyze testing sophistication and coverage
+5. **Adapter Architecture Differences**: Compare adapter patterns and requirements
+
+**Analysis Template**:
+
+```markdown
+### {Number}. {Difference Name}
+
+- **{PackageA}**: {description}
+- **{PackageB}**: {description}
+
+- **Description**:
+    - {detailed explanation of the differences and reasoning}
+
+- **Deviations**:
+    1. {Primary deviation category}
+    - {Specific technical difference for Package A}
+    - {Specific technical difference for Package B}
+    2. {Additional deviation category}
+    - {Additional technical differences}
+
+- **Result**:
+    - {analysis of the implications and outcomes}
+
+- **Acceptability**:
+    - {✅ ACCEPTABLE | ⚠️ IMPROVE | ❌ COMPLIANCE} - {brief justification}
+    - {Additional acceptability lines with separate icons as needed}
+
+- **Response**:
+    - ✅⚠️❌
+```
+
+#### **STEP 2.2: Configuration Files Analysis**
+
+**Required Configurations**:
+
+1. **TypeScript Configuration (tsconfig.json)**: Compiler options, build information management
+2. **Package Configuration (package.json)**: Dependencies, externalization patterns
+3. **Build Configuration (project.json)**: Executor settings, externalization strategies
+4. **Testing Configuration (vitest.config.ts)**: Test framework settings, performance optimization
+5. **Integration Test Configuration**: VSCode test CLI setup, test compilation
+
+**Analysis Template**:
+
+```markdown
+### {Number}. {Configuration Type}
+
+- **{PackageA}**: {description}
+- **{PackageB}**: {description}
+
+- **Description**:
+    - {detailed explanation of the differences and reasoning}
+
+- **Deviations**:
+    1. {Primary deviation category}
+    - {Specific technical difference for Package A}
+    - {Specific technical difference for Package B}
+    2. {Additional deviation category}
+    - {Additional technical differences}
+
+- **Result**:
+    - {analysis of the implications and outcomes}
+
+- **Acceptability**:
+    - {✅ ACCEPTABLE | ⚠️ IMPROVE | ❌ COMPLIANCE} - {brief justification}
+    - {Additional acceptability lines with separate icons as needed}
+
+- **Response**:
+    - ✅⚠️❌
+```
+
+#### **STEP 2.3: Pattern Deviations Analysis**
+
+**Required Patterns**:
+
+1. **Interface Organization Patterns**: Centralization, naming conventions
+2. **Export Strategy Variations**: Barrel exports, organization patterns
+3. **Configuration Structure Differences**: Constants organization, complexity
+4. **Testing Strategy Evolution**: Test patterns, coverage approaches
+5. **Service Count and Complexity**: Service architecture patterns
+
+**Analysis Template**:
+
+```markdown
+### {Number}. {Deviation Name}
+
+- **{PackageA}**: {description}
+- **{PackageB}**: {description}
+
+- **Description**:
+    - {detailed explanation of the differences and reasoning}
+
+- **Deviations**:
+    - {specific pattern differences found}
+    - {additional implementation variations}
+
+- **Result**:
+    - {analysis of the implications and outcomes}
+
+- **Acceptability**:
+    - {✅ ACCEPTABLE | ⚠️ IMPROVE | ❌ COMPLIANCE} - {brief justification}
+    - {Additional acceptability lines with separate icons as needed}
+
+- **Response**:
+    - ✅⚠️❌
+```
+
+### **STEP 3: Response Documentation**
+
+#### **STEP 3.1: Document Creation**
+
+**File Naming**: `YYYYMMDDHHMMSS_Comparator_Response_{PackageA}_{PackageB}.md`
+
+**Location**: `docs/analysis/comparator/`
+
+**Header Template**:
+
+```markdown
+# COMPARISON FINDINGS AND DEVIATIONS - Responses
+
+**Date**: {YYYY-MM-DD HH:MM:SS}  
+**Packages Compared**: {PackageA} vs {PackageB}  
+**Analysis Type**: Deep Comprehension Comparison  
+**Prerequisite**: Deep Comprehension analysis completed for both packages using `docs/analysis/(AI) Deep Comprehension - Package.md`
+```
+
+#### **STEP 3.2: Recommendations Section**
+
+**Required Sections**:
+
+1. **For Immediate Adoption**: Specific patterns that should be cross-adopted
+2. **For Preservation**: Patterns that are appropriate and should be maintained
+3. **Overall Assessment**: Summary of findings and architectural compliance
+
+**Template**:
+
+```markdown
+## Recommendations
+
+### For Immediate Adoption
+
+1. **{Recommendation1}**: {description}
+2. **{Recommendation2}**: {description}
+
+### For Preservation
+
+1. **{Preservation1}**: {description}
+2. **{Preservation2}**: {description}
+
+### Overall Assessment
+
+{Summary of findings and decisions}
+```
+
+### **STEP 4: Acceptability Indicators**
+
+#### **STEP 4.1: Acceptability Classifications**
+
+- **✅ ACCEPTABLE**: No changes needed - both approaches are valid and appropriate
+- **⚠️ IMPROVE**: Package should adopt better patterns from comparison package
+- **❌ COMPLIANCE**: Package violates project guidelines from docs/\_Testing-Strategy.md, docs/\_SOP.md, docs/\_Package-Archetypes.md, or docs/\_Architecture.md
+
+#### **STEP 4.2: Response Selection Pattern**
+
+- **Response Format**: ALWAYS use exactly `✅⚠️❌` - NO EXCEPTIONS, NO VARIATIONS, NO SINGLE SELECTIONS
+- **MANDATORY**: Every Response section MUST contain exactly these three icons in this exact order
+- **Purpose**: Provides quick visual decision-making interface for architectural alignment
+- **Usage**: The flattened multiselect format allows easy visual scanning and decision-making
+- **CRITICAL**: Never modify this format - it must ALWAYS be `✅⚠️❌`
+
+**Acceptability Format Rules**:
+
+- Single acceptability point: Use one line with icon and justification
+- Multiple acceptability points: Use separate lines, each with its own icon
+- Example single: `- ✅ ACCEPTABLE - Both approaches are valid for their respective functional requirements`
+- Example multiple:
+    - `- ✅ ACCEPTABLE - Both approaches are valid for their respective functional requirements`
+    - `- ⚠️ IMPROVE - PBC should adopt GWC's newer TypeScript version`
+
+### **STEP 5: Validation Checklist**
+
+#### **STEP 5.1: Pre-Execution Checklist**
+
+- [ ] Deep Comprehension analysis completed for both packages
+- [ ] Package project details obtained
+- [ ] Configuration files analyzed
+- [ ] Service and interface patterns identified
+- [ ] Testing structure analyzed
+- [ ] Runtime dependency patterns identified
+
+#### **STEP 5.2: Content Validation Checklist**
+
+- [ ] All 5 Critical Architectural Differences sections present
+- [ ] All 5 Configuration Files Analysis sections present
+- [ ] All 5 Pattern Deviations sections present
+- [ ] Each section includes Description, Result, Acceptability, Response
+- [ ] **CRITICAL**: Every Response section contains exactly `✅⚠️❌` - NO EXCEPTIONS
+- [ ] Recommendations section includes Adoption, Preservation, Assessment
+- [ ] Response document created with proper timestamp format
+- [ ] Document saved to `docs/analysis/comparator/` directory
+
+#### **STEP 5.3: Quality Standards**
+
+- [ ] All technical details are specific and accurate
+- [ ] File paths are exact and complete
+- [ ] Configuration details include specific values
+- [ ] Acceptability assessments are justified
+- [ ] Recommendations are actionable and specific
+
+### **STEP 6: Error Recovery Patterns**
+
+- **Missing Deep Comprehension**: Execute Deep Comprehension analysis first
+- **Incomplete Package Information**: Use `mcp_nx-mcp_nx_project_details` and file analysis tools
+- **Configuration Analysis Gaps**: Read all configuration files systematically
+- **Pattern Recognition Issues**: Follow established architectural pattern templates
+- **Response Format Violations**: Use flattened multiselect `✅⚠️❌` pattern
+
+### **STEP 7: Required Tool Usage**
+
+- **Package Analysis**: `mcp_nx-mcp_nx_project_details` tool
+- **File Reading**: `read_file` tool for all configuration files
+- **Directory Listing**: `list_dir` tool for structure analysis
+- **Pattern Search**: `grep` tool for dependency analysis
+- **Timestamp Generation**: `run_terminal_cmd` with `date +"%Y%m%d%H%M%S"`
+- **Document Creation**: `write` tool for Comparator Response document
+
+## **Protocol Compliance**
+
+### **Compliance Requirements**
+
+This protocol MUST be followed for all package comparisons to ensure:
+
+- **Systematic Analysis**: All packages compared using identical methodology
+- **Completeness**: All required sections and dimensions analyzed
+- **Consistency**: All comparisons follow established templates
+- **Actionability**: All findings include specific recommendations
+- **Traceability**: Complete historical record of all comparisons
+
+### **Enforcement Protocol**
+
+- Package comparisons that do not meet these requirements must be revised
+- Missing sections must be added with appropriate content
+- Insufficient detail must be expanded with specific technical information
+- Non-compliant formatting must be corrected to match requirements
+- Validation checklist must be completed before finalizing any comparison
+
+---
+
+_This protocol ensures that all package comparisons provide systematic, comprehensive, and actionable analysis for architectural alignment and consistency enforcement across the FocusedUX workspace._

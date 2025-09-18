@@ -2,8 +2,8 @@
     "name": "@fux/ghost-writer-core",
     "version": "0.0.1",
     "devDependencies": {
-        "@types/node": "^20.0.0",
-        "typescript": "^5.8.3",
+        "@types/node": "^24.5.2",
+        "typescript": "^5.9.2",
         "vitest": "^3.2.4"
     },
     "engines": {

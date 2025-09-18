@@ -14,11 +14,11 @@
         }
     },
     "dependencies": {
-        "strip-json-comments": "^5.0.2"
+        "strip-json-comments": "^5.0.3"
     },
     "devDependencies": {
-        "@types/node": "^20.0.0",
-        "typescript": "^5.0.0",
+        "@types/node": "^24.5.2",
+        "typescript": "^5.9.2",
         "vitest": "^3.2.4"
     }
 }
