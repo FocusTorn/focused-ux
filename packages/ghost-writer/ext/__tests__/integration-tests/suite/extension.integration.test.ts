@@ -10,8 +10,6 @@ suite('Ghost Writer Extension Integration Test Suite', () => {
     })
 
     test('Should activate without errors', async () => {
-        // This test verifies the extension can be activated
-        // The actual activation is handled by the test runner
         assert.ok(true, 'Extension should activate successfully')
     })
 })

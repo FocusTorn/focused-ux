@@ -76,6 +76,8 @@ export function activate(context: ExtensionContext): void {
 				editBuilder.insert(editor.selection.active, importStatement)
 			})
 			await clipboardService.clear()
+		} else {
+			windowAdapter.errMsg('Failed to generate import statement. Could not determine relative path.')
 		}
 	}
 
@@ -119,6 +121,8 @@ export function activate(context: ExtensionContext): void {
 
 					editBuilder.insert(positionInstance, result.logStatement)
 				})
+			} else {
+				windowAdapter.errMsg('Failed to generate console log statement.')
 			}
 		}
 	}
