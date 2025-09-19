@@ -7,36 +7,36 @@ import { BACKUP_SUFFIX } from '../_config/constants.js'
 
 export class BackupManagementService implements IBackupManagementService {
 
-	constructor(
-		private readonly fileSystem: IFileSystemAdapter,
-		private readonly path: IPathAdapter,
-	) {}
+    constructor(
+        private readonly fileSystem: IFileSystemAdapter,
+        private readonly path: IPathAdapter,
+    ) {}
 
-	async createBackup(filePath: string, _options: IBackupOptions = {}): Promise<string> {
-		const sourcePath = filePath
-		const baseName = this.path.basename(sourcePath)
-		const directory = this.path.dirname(sourcePath)
-		let backupNumber = 1
-		let backupFileName: string
-		let destinationPath: string
-		let fileExists = false
+    async createBackup(filePath: string, _options: IBackupOptions = {}): Promise<string> {
+        const sourcePath = filePath
+        const baseName = this.path.basename(sourcePath)
+        const directory = this.path.dirname(sourcePath)
+        let backupNumber = 1
+        let backupFileName: string
+        let destinationPath: string
+        let fileExists = false
 
-		do {
-			backupFileName = `${baseName}${BACKUP_SUFFIX}${backupNumber > 1 ? backupNumber : ''}`
-			destinationPath = this.path.join(directory, backupFileName)
-			try {
-				await this.fileSystem.stat(destinationPath)
-				fileExists = true
-				backupNumber++
-			}
-			catch (_error: any) {
-				fileExists = false
-			}
-		} while (fileExists)
+        do {
+            backupFileName = `${baseName}${BACKUP_SUFFIX}${backupNumber > 1 ? backupNumber : ''}`
+            destinationPath = this.path.join(directory, backupFileName)
+            try {
+                await this.fileSystem.stat(destinationPath)
+                fileExists = true
+                backupNumber++
+            }
+            catch (_error: unknown) {
+                fileExists = false
+            }
+        } while (fileExists)
 
-		await this.fileSystem.copyFile(sourcePath, destinationPath)
+        await this.fileSystem.copyFile(sourcePath, destinationPath)
 		
-		return destinationPath
-	}
+        return destinationPath
+    }
 
 }

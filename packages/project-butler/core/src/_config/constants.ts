@@ -5,21 +5,21 @@ export const CONFIG_SECTION = 'ProjectButler'
 
 // Package.json formatting constants
 export const DEFAULT_PACKAGE_JSON_ORDER = [
-	'name',
-	'version',
-	'description',
-	'main',
-	'types',
-	'scripts',
-	'dependencies',
-	'devDependencies',
-	'peerDependencies',
-	'optionalDependencies',
-	'engines',
-	'repository',
-	'keywords',
-	'author',
-	'license'
+    'name',
+    'version',
+    'description',
+    'main',
+    'types',
+    'scripts',
+    'dependencies',
+    'devDependencies',
+    'peerDependencies',
+    'optionalDependencies',
+    'engines',
+    'repository',
+    'keywords',
+    'author',
+    'license'
 ]
 
 // Terminal management constants
@@ -40,27 +40,27 @@ export const SUPPORTED_PACKAGE_FORMATS = ['json']
 
 // Error messages
 export const ERROR_MESSAGES = {
-	CONFIG_FILE_NOT_FOUND: 'Could not read \'.FocusedUX\' file',
-	CONFIG_PARSE_ERROR: 'Could not parse \'.FocusedUX\' file',
-	PACKAGE_JSON_NOT_FOUND: 'Could not read \'package.json\' file',
-	PACKAGE_JSON_PARSE_ERROR: 'Could not parse \'package.json\' file',
-	BACKUP_CREATION_FAILED: 'Failed to create backup',
-	TERMINAL_PATH_UPDATE_FAILED: 'Failed to update terminal path',
-	POETRY_SHELL_FAILED: 'Failed to enter Poetry shell'
+    CONFIG_FILE_NOT_FOUND: 'Could not read \'.FocusedUX\' file',
+    CONFIG_PARSE_ERROR: 'Could not parse \'.FocusedUX\' file',
+    PACKAGE_JSON_NOT_FOUND: 'Could not read \'package.json\' file',
+    PACKAGE_JSON_PARSE_ERROR: 'Could not parse \'package.json\' file',
+    BACKUP_CREATION_FAILED: 'Failed to create backup',
+    TERMINAL_PATH_UPDATE_FAILED: 'Failed to update terminal path',
+    POETRY_SHELL_FAILED: 'Failed to enter Poetry shell'
 } as const
 
 // Success messages
 export const SUCCESS_MESSAGES = {
-	PACKAGE_JSON_FORMATTED: 'Package.json formatted successfully',
-	BACKUP_CREATED: 'Backup created successfully',
-	TERMINAL_PATH_UPDATED: 'Terminal path updated successfully',
-	POETRY_SHELL_ENTERED: 'Poetry shell entered successfully'
+    PACKAGE_JSON_FORMATTED: 'Package.json formatted successfully',
+    BACKUP_CREATED: 'Backup created successfully',
+    TERMINAL_PATH_UPDATED: 'Terminal path updated successfully',
+    POETRY_SHELL_ENTERED: 'Poetry shell entered successfully'
 } as const
 
 // File paths
 export const FILE_PATHS = {
-	CONFIG_FILE: '.FocusedUX',
-	PACKAGE_JSON: 'package.json',
-	POETRY_CONFIG: 'pyproject.toml',
-	BACKUP_DIRECTORY: 'backups'
+    CONFIG_FILE: '.FocusedUX',
+    PACKAGE_JSON: 'package.json',
+    POETRY_CONFIG: 'pyproject.toml',
+    BACKUP_DIRECTORY: 'backups'
 } as const

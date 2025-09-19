@@ -1,129 +1,141 @@
 import type { IPackageJsonFormattingService, IPackageJsonConfig, IPackageJsonData } from '../_interfaces/IPackageJsonFormattingService.js'
 import type { IFileSystemAdapter } from '../_interfaces/IFileSystemAdapter.js'
 import type { IYamlAdapter } from '../_interfaces/IYamlAdapter.js'
-import { CONFIG_FILE_NAME, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../_config/constants.js'
+import { CONFIG_FILE_NAME, ERROR_MESSAGES } from '../_config/constants.js'
 
 // These interfaces are defined in the _interfaces directory
 
 export class PackageJsonFormattingService implements IPackageJsonFormattingService {
 
-	constructor(
-		private readonly fileSystem: IFileSystemAdapter,
-		private readonly yaml: IYamlAdapter,
-	) {}
+    constructor(
+        private readonly fileSystem: IFileSystemAdapter,
+        private readonly yaml: IYamlAdapter,
+    ) {}
 
-	async formatPackageJson(packageJsonPath: string, workspaceRoot: string): Promise<void> {
-		// Read the master order from .FocusedUX config
-		const configPath = `${workspaceRoot}/${CONFIG_FILE_NAME}`
-		let configContent: string
+    async formatPackageJson(packageJsonPath: string, workspaceRoot: string): Promise<void> {
+        // Read the master order from .FocusedUX config
+        const configPath = `${workspaceRoot}/${CONFIG_FILE_NAME}`
+        let configContent: string
 
-		try {
-			configContent = await this.fileSystem.readFile(configPath)
-		}
-		catch (err: any) {
-			throw new Error(`${ERROR_MESSAGES.CONFIG_FILE_NOT_FOUND}: ${err.message}`)
-		}
+        try {
+            configContent = await this.fileSystem.readFile(configPath)
+        }
+        catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error'
 
-		let config: IPackageJsonConfig
+            throw new Error(`${ERROR_MESSAGES.CONFIG_FILE_NOT_FOUND}: ${errorMessage}`)
+        }
 
-		try {
-			config = this.yaml.load(configContent)
-		}
-		catch (err: any) {
-			throw new Error(`${ERROR_MESSAGES.CONFIG_PARSE_ERROR}: ${err.message}`)
-		}
+        let config: IPackageJsonConfig
 
-		// Read from ProjectButler configuration
-		const order = config?.ProjectButler?.['packageJson-order']
+        try {
+            config = this.yaml.load(configContent) as IPackageJsonConfig
+        }
+        catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error'
 
-		if (!order || !Array.isArray(order)) {
-			throw new Error('Configuration Error: \'ProjectButler.packageJson-order\' not found or invalid in \'.FocusedUX\'.')
-		}
+            throw new Error(`${ERROR_MESSAGES.CONFIG_PARSE_ERROR}: ${errorMessage}`)
+        }
 
-		// Ensure 'name' is always first
-		const masterOrder = order.includes('name') ? order : ['name', ...order]
+        // Read from ProjectButler configuration
+        const order = config?.ProjectButler?.['packageJson-order']
 
-		// Read and parse the package.json file
-		let packageContent: string
+        if (!order || !Array.isArray(order)) {
+            throw new Error('Configuration Error: \'ProjectButler.packageJson-order\' not found or invalid in \'.FocusedUX\'.')
+        }
 
-		try {
-			packageContent = await this.fileSystem.readFile(packageJsonPath)
-		}
-		catch (err: any) {
-			throw new Error(`${ERROR_MESSAGES.PACKAGE_JSON_NOT_FOUND}: ${err.message}`)
-		}
+        // Ensure 'name' is always first
+        const masterOrder = order.includes('name') ? order : ['name', ...order]
 
-		let packageData: IPackageJsonData
-		try {
-			packageData = JSON.parse(packageContent)
-		}
-		catch (err: any) {
-			throw new Error(`${ERROR_MESSAGES.PACKAGE_JSON_PARSE_ERROR}: ${err.message}`)
-		}
-		const originalKeys = Object.keys(packageData)
+        // Read and parse the package.json file
+        let packageContent: string
 
-		// Validate and collect unknown top-level keys
-		const commentKeyRegex = /=.*=$/
-		const unknownKeys: string[] = []
+        try {
+            packageContent = await this.fileSystem.readFile(packageJsonPath)
+        }
+        catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error'
 
-		for (const key of originalKeys) {
-			if (commentKeyRegex.test(key)) {
-				continue
-			}
+            throw new Error(`${ERROR_MESSAGES.PACKAGE_JSON_NOT_FOUND}: ${errorMessage}`)
+        }
 
-			if (!masterOrder.includes(key)) {
-				unknownKeys.push(key)
-			}
-		}
+        let packageData: IPackageJsonData
 
-		// Re-order the keys into a new object
-		const orderedPackage: IPackageJsonData = {}
+        try {
+            packageData = JSON.parse(packageContent)
+        }
+        catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error'
 
-		// First, add all keys that are in the configuration order
-		for (const key of masterOrder) {
-			if (Object.prototype.hasOwnProperty.call(packageData, key)) {
-				orderedPackage[key] = packageData[key]
-			}
-		}
+            throw new Error(`${ERROR_MESSAGES.PACKAGE_JSON_PARSE_ERROR}: ${errorMessage}`)
+        }
 
-		// Then, add any unknown keys at the end
-		for (const key of unknownKeys) {
-			orderedPackage[key] = packageData[key]
-		}
+        const originalKeys = Object.keys(packageData)
 
-		// Add back any comment-like keys
-		for (const key of originalKeys) {
-			if (commentKeyRegex.test(key)) {
-				orderedPackage[key] = packageData[key]
-			}
-		}
+        // Validate and collect unknown top-level keys
+        const commentKeyRegex = /=.*=$/
+        const unknownKeys: string[] = []
 
-		// Convert back to formatted JSON and write to file
-		const newJsonContent = `${JSON.stringify(orderedPackage, null, 4)}\n`
+        for (const key of originalKeys) {
+            if (commentKeyRegex.test(key)) {
+                continue
+            }
 
-		try {
-			await this.fileSystem.writeFile(packageJsonPath, newJsonContent)
-		}
-		catch (err: any) {
-			throw new Error(`Failed to write updated package.json: ${err.message}`)
-		}
-	}
+            if (!masterOrder.includes(key)) {
+                unknownKeys.push(key)
+            }
+        }
 
-	getUnknownKeys(packageData: IPackageJsonData, masterOrder: string[]): string[] {
-		const commentKeyRegex = /=.*=$/
-		const unknownKeys: string[] = []
+        // Re-order the keys into a new object
+        const orderedPackage: IPackageJsonData = {}
 
-		for (const key of Object.keys(packageData)) {
-			if (commentKeyRegex.test(key)) {
-				continue
-			}
+        // First, add all keys that are in the configuration order
+        for (const key of masterOrder) {
+            if (Object.prototype.hasOwnProperty.call(packageData, key)) {
+                orderedPackage[key] = packageData[key]
+            }
+        }
 
-			if (!masterOrder.includes(key)) {
-				unknownKeys.push(key)
-			}
-		}
+        // Then, add any unknown keys at the end
+        for (const key of unknownKeys) {
+            orderedPackage[key] = packageData[key]
+        }
 
-		return unknownKeys
-	}
+        // Add back any comment-like keys
+        for (const key of originalKeys) {
+            if (commentKeyRegex.test(key)) {
+                orderedPackage[key] = packageData[key]
+            }
+        }
+
+        // Convert back to formatted JSON and write to file
+        const newJsonContent = `${JSON.stringify(orderedPackage, null, 4)}\n`
+
+        try {
+            await this.fileSystem.writeFile(packageJsonPath, newJsonContent)
+        }
+        catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+
+            throw new Error(`Failed to write updated package.json: ${errorMessage}`)
+        }
+    }
+
+    getUnknownKeys(packageData: IPackageJsonData, masterOrder: string[]): string[] {
+        const commentKeyRegex = /=.*=$/
+        const unknownKeys: string[] = []
+
+        for (const key of Object.keys(packageData)) {
+            if (commentKeyRegex.test(key)) {
+                continue
+            }
+
+            if (!masterOrder.includes(key)) {
+                unknownKeys.push(key)
+            }
+        }
+
+        return unknownKeys
+    }
 
 }

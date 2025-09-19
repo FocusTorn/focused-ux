@@ -273,13 +273,13 @@ export interface TerminalScenarioOptions {
 }
 
 export function setupTerminalDirectoryScenario(mocks: TestMocks, options: TerminalScenarioOptions): void {
-    const { path, expectedCommand } = options
+    const { path: _path, expectedCommand: _expectedCommand } = options
 	
     mocks.fileSystem.stat.mockResolvedValue({ type: 'directory' })
 }
 
 export function setupTerminalFileScenario(mocks: TestMocks, options: TerminalScenarioOptions): void {
-    const { path, expectedCommand, directoryPath } = options
+    const { path, expectedCommand: _expectedCommand, directoryPath } = options
 	
     mocks.fileSystem.stat.mockResolvedValue({ type: 'file' })
     mocks.path.dirname.mockReturnValue(directoryPath || path.split('/').slice(0, -1).join('/'))
@@ -316,7 +316,7 @@ export function setupPackageJsonSuccessScenario(mocks: TestMocks, options: Packa
 }
 
 export function setupPackageJsonConfigErrorScenario(mocks: TestMocks, options: PackageJsonScenarioOptions): void {
-    const { configContent } = options
+    const { configContent: _configContent } = options
 	
     mocks.fileSystem.readFile.mockRejectedValueOnce(new Error('File not found'))
 }
@@ -334,7 +334,7 @@ export function setupPackageJsonYamlErrorScenario(mocks: TestMocks, options: Pac
  * Poetry Shell Mock Scenarios
  */
 
-export function setupPoetryShellSuccessScenario(mocks: TestMocks, projectPath: string): void {
+export function setupPoetryShellSuccessScenario(mocks: TestMocks, _projectPath: string): void {
     mocks.fileSystem.stat.mockResolvedValue({ type: 'directory' })
 }
 

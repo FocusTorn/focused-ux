@@ -266,7 +266,7 @@ Write-Host -ForegroundColor DarkGreen "  - Module loaded: PAE aliases "
 `
 	
     // Write the module to the dist directory
-    const modulePath = path.join(PACKAGE_ROOT, 'project-alias-expander', 'dist', 'pae-functions.psm1')
+    const modulePath = path.join(PACKAGE_ROOT, 'dist', 'pae-functions.psm1')
 	
     // Ensure dist directory exists
     const distDir = path.dirname(modulePath)
@@ -291,6 +291,7 @@ Write-Host -ForegroundColor DarkGreen "  - Module loaded: PAE aliases "
 
 function main() {
     const [, , ...args] = process.argv
+    const previousEcho = process.env.PAE_ECHO
     
     // Handle special commands
     if (args.length > 0 && args[0] === 'install-aliases') {
@@ -467,8 +468,6 @@ function main() {
         // For not-nx-targets, we run the workspace-level command with the project name
         const additionalArgs = processedArgs.slice(1)
         
-        const previousEcho = process.env.PAE_ECHO
-
         if (paeEchoEnabled) {
             process.env.PAE_ECHO = '1'
         }
@@ -510,11 +509,37 @@ function main() {
         return
     }
 
-    // For regular Nx targets, continue with normal processing
-    // Only apply full semantics if this wasn't a feature target
-    if (!wasFeatureTarget) {
-        processedArgs[0] = normalizeFullSemantics(full, processedArgs[0])
+    // Handle feature targets differently - pass run-target directly to nx
+    if (wasFeatureTarget) {
+        const originalTarget = rest[0] // The original target before expansion
+        const featureTarget = featureTargets![originalTarget]
+        const runTarget = featureTarget['run-target']
+        
+        // Parse the run-target to separate target from flags
+        const runTargetParts = runTarget.split(' ')
+        const targetName = runTargetParts[0]
+        const targetFlags = runTargetParts.slice(1)
+        
+        // Combine target flags with any additional args from the command
+        const allArgs = [...targetFlags, ...processedArgs.slice(1)]
+        
+        const rc = runNx([targetName, project, ...allArgs])
+        
+        // Restore echo environment
+        if (paeEchoEnabled) {
+            if (previousEcho === undefined) {
+                delete process.env.PAE_ECHO
+            }
+            else {
+                process.env.PAE_ECHO = previousEcho
+            }
+        }
+        
+        process.exit(rc)
     }
+
+    // For regular Nx targets, continue with normal processing
+    processedArgs[0] = normalizeFullSemantics(full, processedArgs[0])
 
     const normalizedTarget = processedArgs[0]
 
@@ -540,8 +565,6 @@ function main() {
     }
 
     // Default single invocation
-    const previousEcho = process.env.PAE_ECHO
-
     if (paeEchoEnabled) {
         process.env.PAE_ECHO = '1'
     }

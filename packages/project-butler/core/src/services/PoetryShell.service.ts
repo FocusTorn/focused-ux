@@ -7,28 +7,28 @@ import { POETRY_SHELL_COMMAND } from '../_config/constants.js'
 
 export class PoetryShellService implements IPoetryShellService {
 
-	constructor(
-		private readonly fileSystem: IFileSystemAdapter,
-		private readonly path: IPathAdapter,
-	) {}
+    constructor(
+        private readonly fileSystem: IFileSystemAdapter,
+        private readonly path: IPathAdapter,
+    ) {}
 
-	async enterPoetryShell(filePath?: string): Promise<IPoetryShellCommand> {
-		let command: string
+    async enterPoetryShell(filePath?: string): Promise<IPoetryShellCommand> {
+        let command: string
 
-		if (filePath) {
-			const stats = await this.fileSystem.stat(filePath)
-			const pathToSend = stats.type === 'directory' ? filePath : this.path.dirname(filePath)
+        if (filePath) {
+            const stats = await this.fileSystem.stat(filePath)
+            const pathToSend = stats.type === 'directory' ? filePath : this.path.dirname(filePath)
 
-			command = `cd "${pathToSend}" && ${POETRY_SHELL_COMMAND}`
-		}
-		else {
-			command = POETRY_SHELL_COMMAND
-		}
+            command = `cd "${pathToSend}" && ${POETRY_SHELL_COMMAND}`
+        }
+        else {
+            command = POETRY_SHELL_COMMAND
+        }
 		
-		return {
-			command,
-			shouldShowTerminal: true,
-		}
-	}
+        return {
+            command,
+            shouldShowTerminal: true,
+        }
+    }
 
 }

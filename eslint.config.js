@@ -256,7 +256,7 @@ export default [
 			// Performance optimizations
 			'import/no-cycle': 'off', // Expensive rule
 			'import/no-unresolved': 'off', // Expensive rule
-			'ts/no-unused-vars': 'warn', // Faster than 'error'
+			// 'ts/no-unused-vars': 'warn', // Faster than 'error'
 		},
 	}, //<
 

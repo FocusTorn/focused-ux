@@ -56,7 +56,12 @@
         
         "t": {"run-from": "ext", "run-target": "test:deps --output-style=stream"},
         "ti": {"run-from": "ext", "run-target": "test:integration"},
-        "l": {"run-from": "ext", "run-target": "lint:full --output-style=stream"}
+        
+        
+        // "l": {"run-from": "ext", "run-target": "lint:full --output-style=stream"}
+        "l": {"run-from": "ext", "run-target": "lint:full --output-style=stream --watch"}
+        
+        
         
     },
     

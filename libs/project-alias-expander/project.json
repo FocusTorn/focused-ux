@@ -18,6 +18,7 @@
                 "tsConfig": "libs/project-alias-expander/tsconfig.json",
                 "platform": "node",
                 "bundle": true,
+                "format": ["esm"],
                 "external": ["vscode"],
                 "thirdParty": true,
                 "assets": []

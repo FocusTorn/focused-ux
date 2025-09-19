@@ -1,3 +1,3 @@
 export interface IYamlAdapter {
-	load: (content: string) => any
+    load: (content: string) => unknown
 }
