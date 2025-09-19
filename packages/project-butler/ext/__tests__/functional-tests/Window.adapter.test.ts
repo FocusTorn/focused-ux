@@ -69,7 +69,18 @@ describe('WindowAdapter', () => {
         it('should create terminal with name', () => {
             // Arrange
             const name = 'Test Terminal'
-            const mockTerminal = { sendText: vi.fn(), show: vi.fn() }
+            const mockTerminal = {
+                sendText: vi.fn(),
+                show: vi.fn(),
+                name: name,
+                processId: Promise.resolve(12345),
+                creationOptions: {},
+                exitStatus: undefined,
+                state: { isInteractedWith: false },
+                shellIntegration: undefined,
+                hide: vi.fn(),
+                dispose: vi.fn(),
+            } as unknown as vscode.Terminal
 
             vi.mocked(vscode.window.createTerminal).mockReturnValue(mockTerminal)
 
@@ -83,7 +94,18 @@ describe('WindowAdapter', () => {
 
         it('should create terminal without name', () => {
             // Arrange
-            const mockTerminal = { sendText: vi.fn(), show: vi.fn() }
+            const mockTerminal = {
+                sendText: vi.fn(),
+                show: vi.fn(),
+                name: undefined,
+                processId: Promise.resolve(12345),
+                creationOptions: {},
+                exitStatus: undefined,
+                state: { isInteractedWith: false },
+                shellIntegration: undefined,
+                hide: vi.fn(),
+                dispose: vi.fn(),
+            } as unknown as vscode.Terminal
 
             vi.mocked(vscode.window.createTerminal).mockReturnValue(mockTerminal)
 

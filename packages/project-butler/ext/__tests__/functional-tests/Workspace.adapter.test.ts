@@ -21,7 +21,11 @@ describe('WorkspaceAdapter', () => {
 
         it('should return undefined when no workspace folders', () => {
             // Arrange
-            vscode.workspace.workspaceFolders = undefined
+            Object.defineProperty(vscode.workspace, 'workspaceFolders', {
+                value: undefined,
+                writable: true,
+                configurable: true
+            })
 
             // Act
             const result = adapter.getWorkspaceRoot()
@@ -32,7 +36,11 @@ describe('WorkspaceAdapter', () => {
 
         it('should return undefined when workspace folders is empty', () => {
             // Arrange
-            vscode.workspace.workspaceFolders = []
+            Object.defineProperty(vscode.workspace, 'workspaceFolders', {
+                value: [],
+                writable: true,
+                configurable: true
+            })
 
             // Act
             const result = adapter.getWorkspaceRoot()

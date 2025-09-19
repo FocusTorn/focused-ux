@@ -455,4 +455,103 @@ describe('BackupManagementService', () => {
                 .rejects.toThrow('Disk full')
         })
     })
+
+    describe('IBackupOptions Interface Testing', () => {
+        it('should accept IBackupOptions parameter (currently unused)', async () => {
+            // Arrange
+            const sourcePath = '/test/file.txt'
+            const backupPath = '/test/file.txt.bak'
+            const backupOptions = {
+                prefix: 'custom-',
+                suffix: '.backup',
+                directory: '/custom-backups'
+            }
+
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
+
+            // Act - Service accepts options but doesn't use them yet
+            const result = await service.createBackup(sourcePath, backupOptions)
+
+            // Assert - Should still work with default behavior
+            expect(result).toBe(backupPath)
+            expect(mocks.fileSystem.copyFile).toHaveBeenCalledWith(sourcePath, backupPath)
+        })
+
+        it('should handle empty IBackupOptions', async () => {
+            // Arrange
+            const sourcePath = '/test/file.txt'
+            const backupPath = '/test/file.txt.bak'
+            const emptyOptions = {}
+
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
+
+            // Act
+            const result = await service.createBackup(sourcePath, emptyOptions)
+
+            // Assert
+            expect(result).toBe(backupPath)
+            expect(mocks.fileSystem.copyFile).toHaveBeenCalledWith(sourcePath, backupPath)
+        })
+
+        it('should handle undefined IBackupOptions', async () => {
+            // Arrange
+            const sourcePath = '/test/file.txt'
+            const backupPath = '/test/file.txt.bak'
+
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
+
+            // Act - No options provided (defaults to undefined)
+            const result = await service.createBackup(sourcePath)
+
+            // Assert
+            expect(result).toBe(backupPath)
+            expect(mocks.fileSystem.copyFile).toHaveBeenCalledWith(sourcePath, backupPath)
+        })
+    })
+
+    describe('Constants Usage Testing', () => {
+        it('should use BACKUP_SUFFIX constant in backup creation', async () => {
+            // Arrange
+            const sourcePath = '/test/file.txt'
+            const backupPath = '/test/file.txt.bak'
+
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
+
+            // Act
+            const result = await service.createBackup(sourcePath)
+
+            // Assert - Verify the backup path uses the correct suffix
+            expect(result).toBe(backupPath)
+            expect(result).toContain('.bak')
+        })
+
+        it('should handle multiple backup conflicts using correct numbering', async () => {
+            // Arrange
+            const sourcePath = '/test/file.txt'
+            const backupPath1 = '/test/file.txt.bak'
+            const backupPath2 = '/test/file.txt.bak2'
+            const backupPath3 = '/test/file.txt.bak3'
+
+            mocks.path.basename.mockReturnValue('file.txt')
+            mocks.path.dirname.mockReturnValue('/test')
+            mocks.path.join
+                .mockReturnValueOnce(backupPath1)
+                .mockReturnValueOnce(backupPath2)
+                .mockReturnValueOnce(backupPath3)
+
+            // First two backups exist, third doesn't
+            mocks.fileSystem.stat
+                .mockResolvedValueOnce({ type: 'file' }) // .bak exists
+                .mockResolvedValueOnce({ type: 'file' }) // .bak2 exists
+                .mockRejectedValueOnce(new Error('File not found')) // .bak3 doesn't exist
+            mocks.fileSystem.copyFile.mockResolvedValue(undefined)
+
+            // Act
+            const result = await service.createBackup(sourcePath)
+
+            // Assert
+            expect(result).toBe(backupPath3)
+            expect(mocks.fileSystem.copyFile).toHaveBeenCalledWith(sourcePath, backupPath3)
+        })
+    })
 })

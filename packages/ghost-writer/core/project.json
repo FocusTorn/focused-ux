@@ -21,31 +21,31 @@
             }
         }, //<
         
+        //= Quality ============================================================= 
+        "check-types": { "extends": "check-types" },
+        "check-types:deps": { "extends": "check-types:deps" },
+        
         "lint": { "extends": "lint" },
         "lint:full": { "extends": "lint:full" },
         
-        "validate": { "extends": "validate" },
-        "validate:full": { "extends": "validate:full" },
-        
-        "audit": { "extends": "audit" },
-        "audit:full": { "extends": "audit:full" },
-        
+        //= Cleaning ============================================================ 
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
         
-        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-        // │                                    Single package testing                                    │
-        // └──────────────────────────────────────────────────────────────────────────────────────────────┘
+        //= Single Package Testing ============================================== 
         "test": { "extends": "test" },
         "test:coverage-tests": { "extends": "test:coverage-tests" },
         
-        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-        // │                                       Dependency chain                                       │
-        // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
+        //= Dependency Chain Testing ============================================ 
         "test:deps": { "extends": "test:deps" },
         "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" }
-        
+    
+    
+        // "validate": { "extends": "validate" },
+        // "validate:full": { "extends": "validate:full" },
+        // "audit": { "extends": "audit" },
+        // "audit:full": { "extends": "audit:full" },
     },
     
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",

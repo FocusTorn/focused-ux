@@ -1,9 +1,9 @@
 {
     "name": "@fux/ghost-writer-ext",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/ghost-writer/ext/src",
-    "projectType": "application",
+    "tags": [ "ext" ],
     "targets": {
+        
+        //= Finalize ============================================================ 
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
@@ -34,15 +34,6 @@
                 ]
             }
         }, //<
-        
-        "package": { //>
-            "executor": "@fux/vpack:pack",
-            "dependsOn": ["build", "@fux/vsix-packager:build"],
-            "options": {
-                "targetPath": "{projectRoot}"
-            }
-        }, //<
-        "package:dev": { "extends": "package:dev" },
         "publish": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["package"],
@@ -51,37 +42,20 @@
                 "cwd": "{projectRoot}"
             }
         }, //<
+        "package": { "extends": "package" },
+        "package:dev": { "extends": "package:dev" },
         
+        //= Quality ============================================================= 
         "check-types": { "extends": "check-types" },
+        "check-types:deps": { "extends": "check-types:deps" },
         
         "lint": { "extends": "lint" },
         "lint:full": { "extends": "lint:full" },
-        
-        "validate": { "extends": "validate" },
-        "validate:full": { "extends": "validate:full" },
-        
-        "audit": { "extends": "audit" },
-        "audit:full": { "extends": "audit:full" },
-        
-        "clean": { "extends": "clean" },
-        "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" },
-        
-        "lint": { "extends": "lint" },
-        "lint:full": { "extends": "lint:full" },
-        
-        "validate": { "extends": "validate" },
-        "validate:full": { "extends": "validate:full" },
-        
-        "audit": { "extends": "audit" },
-        "audit:full": { "extends": "audit:full" },
-
         
         //= Cleaning ============================================================ 
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
-        
         
         //= Single Package Testing ============================================== 
         "test": { "extends": "test" },
@@ -92,7 +66,6 @@
         "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" },
         
         //= Integration Testing ================================================= 
-        
         "test:compile": { //>
             "executor": "nx:run-commands",
             "outputs": ["{projectRoot}/__tests__/integration-tests/_out-tsc"],
@@ -134,10 +107,13 @@
             "description": "Run VS Code extension integration tests with detailed output"
         } //<
         
-        
-        
-        
-        
+        // "validate": { "extends": "validate" },
+        // "validate:full": { "extends": "validate:full" },
+        // "audit": { "extends": "audit" },
+        // "audit:full": { "extends": "audit:full" },
     },
-    "tags": ["ext"]
+    
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/ghost-writer/ext/src",
+    "projectType": "application"
 }

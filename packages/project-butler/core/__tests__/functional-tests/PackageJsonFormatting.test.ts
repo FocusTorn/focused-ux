@@ -282,6 +282,117 @@ describe('PackageJsonFormatting', () => {
         }) //<
     })
 
+    describe('getUnknownKeys Edge Cases', () => {
+        it('should handle empty package data', () => {
+            // Arrange
+            const packageData = {}
+            const masterOrder = ['name', 'version']
+
+            // Act
+            const unknownKeys = service.getUnknownKeys(packageData, masterOrder)
+
+            // Assert
+            expect(unknownKeys).toEqual([])
+        })
+
+        it('should handle package data with only known keys', () => {
+            // Arrange
+            const packageData = {
+                name: 'test',
+                version: '1.0.0',
+                scripts: { test: 'jest' },
+            }
+            const masterOrder = ['name', 'version', 'scripts']
+
+            // Act
+            const unknownKeys = service.getUnknownKeys(packageData, masterOrder)
+
+            // Assert
+            expect(unknownKeys).toEqual([])
+        })
+
+        it('should handle multiple unknown keys', () => {
+            // Arrange
+            const packageData = {
+                name: 'test',
+                version: '1.0.0',
+                unknownKey1: 'value1',
+                unknownKey2: 'value2',
+                scripts: { test: 'jest' },
+                '=comment=': 'This is a comment',
+            }
+            const masterOrder = ['name', 'version', 'scripts']
+
+            // Act
+            const unknownKeys = service.getUnknownKeys(packageData, masterOrder)
+
+            // Assert
+            expect(unknownKeys).toEqual(['unknownKey1', 'unknownKey2'])
+        })
+
+        it('should handle various comment-like key patterns', () => {
+            // Arrange
+            const packageData = {
+                name: 'test',
+                '=comment=': 'This is a comment',
+                '=another-comment=': 'Another comment',
+                '=special-chars@#$=': 'Special chars comment',
+                unknownKey: 'value',
+            }
+            const masterOrder = ['name']
+
+            // Act
+            const unknownKeys = service.getUnknownKeys(packageData, masterOrder)
+
+            // Assert
+            expect(unknownKeys).toEqual(['unknownKey'])
+        })
+
+        it('should handle keys that partially match comment pattern', () => {
+            // Arrange
+            const packageData = {
+                name: 'test',
+                '=comment=': 'This is a comment',
+                'not-a-comment=': 'This is not a comment',
+                '=not-a-comment': 'This is not a comment either',
+                '=comment': 'This is not a comment',
+                'comment=': 'This is not a comment',
+            }
+            const masterOrder = ['name']
+
+            // Act
+            const unknownKeys = service.getUnknownKeys(packageData, masterOrder)
+
+            // Assert
+            expect(unknownKeys).toEqual(['not-a-comment=', '=not-a-comment', '=comment', 'comment='])
+        })
+
+        it('should handle complex nested objects in unknown keys', () => {
+            // Arrange
+            const packageData = {
+                name: 'test',
+                unknownComplexKey: {
+                    nested: {
+                        deeply: {
+                            value: 'complex'
+                        }
+                    },
+                    array: [1, 2, 3],
+                    function: () =>
+                        'test'
+                },
+                scripts: { test: 'jest' },
+            }
+            const masterOrder = ['name', 'scripts']
+
+            // Act
+            const unknownKeys = service.getUnknownKeys(packageData, masterOrder)
+
+            // Assert
+            expect(unknownKeys).toEqual(['unknownComplexKey'])
+        })
+    })
+
     describe('Complex Package.json Scenarios', () => {
         it('should handle deeply nested package.json with complex dependencies', async () => {
             // Arrange

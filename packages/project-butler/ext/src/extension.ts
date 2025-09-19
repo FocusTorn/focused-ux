@@ -47,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
                 try {
                     await formatPackageJson(uri, projectButlerManager, window, workspace)
                 }
-                catch (error: any) {
+                catch (error: unknown) {
                     if (IS_TEST_ENVIRONMENT) {
                         throw error
                     }
@@ -58,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
                 try {
                     await updateTerminalPath(uri, terminalManagementService, window)
                 }
-                catch (error: any) {
+                catch (error: unknown) {
                     if (IS_TEST_ENVIRONMENT) {
                         throw error
                     }
@@ -69,7 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
                 try {
                     await createBackup(uri, backupManagementService, window)
                 }
-                catch (error: any) {
+                catch (error: unknown) {
                     if (IS_TEST_ENVIRONMENT) {
                         throw error
                     }
@@ -80,7 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
                 try {
                     await enterPoetryShell(uri, poetryShellService, window)
                 }
-                catch (error: any) {
+                catch (error: unknown) {
                     if (IS_TEST_ENVIRONMENT) {
                         throw error
                     }
@@ -91,7 +91,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         context.subscriptions.push(...disposables)
     }
-    catch (error: any) {
+    catch (error: unknown) {
         if (!IS_TEST_ENVIRONMENT) {
             vscode.window.showErrorMessage(`Failed to activate Project Butler: ${error.message}`)
         }

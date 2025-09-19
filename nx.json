@@ -22,6 +22,7 @@
             "dependsOn": ["^build"],
             "inputs": ["production", "^production"]
         }, //<
+        
         "build": { //>
             "dependsOn": ["^build"],
             "outputs": ["{options.outputPath}"],
@@ -29,11 +30,23 @@
             "cache": true,
             "syncGenerators": ["@nx/js:typescript-sync"]
         }, //<
-        "publish": { //>
-            "dependsOn": ["build"]
+        "package": { //>
+            "executor": "@fux/vpack:pack",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "targetPath": "{projectRoot}",
+                "outputPath": "vsix_packages",
+
+                "deployPath": ".vpack/deploy",
+                "freshDeploy": true,
+                "keepDeploy": true,
+                
+                "contentsPath": ".vpack/contents",
+                "extractContents": true,
+          
+                "dev": false
+            }
         }, //<
-        
-        
         "package:dev": { //>
             "executor": "@fux/vpack:pack",
             "outputs": ["{options.outputPath}"],
@@ -51,73 +64,40 @@
                 "dev": true
             }
         }, //<
+        "publish": { //>
+            "dependsOn": ["build"]
+        }, //<
         
-        
-        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-        // │                                    Single package testing                                    │
-        // └──────────────────────────────────────────────────────────────────────────────────────────────┘
-        "test": { //> run just functional-tests
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
+        "check-types": { //>
+            "executor": "nx:run-commands",
+            "cache": true,
+            "dependsOn": ["^build"],
+            "inputs": ["default", "^default"],
             "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-                
-                
+                "command": "tsc --noEmit --project {projectRoot}/tsconfig.json",
+                "cwd": "{workspaceRoot}"
             }
         }, //<
-        "test:coverage-tests": { //> run {functional,coverage}-tests, with coverage report
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.coverage.config.ts",
-                "reportsDirectory": "__tests__/_reports/coverage",
-                "passWithNoTests": true
-            }
-        }, //<
-
-        
-        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-        // │                                   Dependency chain testing                                   │
-        // └──────────────────────────────────────────────────────────────────────────────────────────────┘         
-        "test:deps": { //> run just functional-tests
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
+        "check-types:deps": { //>
+            "executor": "nx:run-commands",
+            "cache": true,
             "dependsOn": [
                 {
                     "dependencies": true,
-                    "target": "test",
+                    "target": "check-types",
                     "params": "forward"
                 }
             ],
+            "inputs": ["default", "^default"],
             "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "passWithNoTests": true
-            }
-        }, //<
-        "test:deps:coverage-tests": { //> run {functional,coverage}-tests, with coverage report
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test:coverage-tests",
-                    "params": "forward"
-                }
-            ],
-            "options": {
-                "configFile": "{projectRoot}/vitest.coverage.config.ts",
-                "reportsDirectory": "__tests__/_reports/coverage",
-                "passWithNoTests": true
+                "command": "tsc --noEmit --project {projectRoot}/tsconfig.json",
+                "cwd": "{workspaceRoot}"
             }
         }, //<
         
-        
-        "lint": {
+        "lint": { //>
             "executor": "@nx/eslint:lint",
+            "cache": true,
             "dependsOn": ["build", "^build"],
             "options": {
                 "lintFilePatterns": [
@@ -134,8 +114,8 @@
                 "cache": true,
                 "cacheLocation": "{projectRoot}/.nx/eslintcache"
             }
-        },
-        "lint:full": {
+        }, //<
+        "lint:full": { //>
             "executor": "@nx/eslint:lint",
             "dependsOn": [
                 {
@@ -144,8 +124,66 @@
                     "params": "forward"
                 }
             ]
-        },
-        "validate": {
+        }, //<
+    
+        
+        "test": { //> run just functional-tests on single package
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["build", "^build"],
+            "options": {
+                "configFile": "{projectRoot}/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
+                "passWithNoTests": true
+                
+                
+            }
+        }, //<
+        "test:coverage-tests": { //> run functional & coverage tests on single package
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["build", "^build"],
+            "options": {
+                "configFile": "{projectRoot}/vitest.coverage.config.ts",
+                "reportsDirectory": "__tests__/_reports/coverage",
+                "passWithNoTests": true
+            }
+        }, //<
+        
+        "test:deps": { //> run just functional-tests on dep chain
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ],
+            "options": {
+                "configFile": "{projectRoot}/vitest.config.ts",
+                "passWithNoTests": true
+            }
+        }, //<
+        "test:deps:coverage-tests": { //> run functional & coverage tests on dep chain
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test:coverage-tests",
+                    "params": "forward"
+                }
+            ],
+            "options": {
+                "configFile": "{projectRoot}/vitest.coverage.config.ts",
+                "reportsDirectory": "__tests__/_reports/coverage",
+                "passWithNoTests": true
+            }
+        }, //<
+        
+       
+        "validate": { //>
             "executor": "nx:run-commands",
             "dependsOn": [],
             "inputs": ["default", "^default"],
@@ -155,8 +193,8 @@
                 "commands": ["nx run {projectName}:lint --fix", "nx run {projectName}:audit"],
                 "parallel": false
             }
-        },
-        "validate:full": {
+        }, //<
+        "validate:full": { //>
             "executor": "nx:run-commands",
             "dependsOn": [
                 {
@@ -172,8 +210,9 @@
                 "commands": ["nx run {projectName}:validate"],
                 "parallel": false
             }
-        },
-        "audit": {
+        }, //<
+
+        "audit": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["build", "^build"],
             "inputs": ["default", "^default"],
@@ -183,8 +222,8 @@
                 "command": "tsx libs/tools/structure-auditor/src/main.ts {projectName}",
                 "cwd": "{workspaceRoot}"
             }
-        },
-        "audit:full": {
+        }, //<
+        "audit:full": { //>
             "executor": "nx:run-commands",
             "dependsOn": [
                 {
@@ -200,32 +239,34 @@
                 "commands": ["nx run {projectName}:audit"],
                 "parallel": false
             }
-        },
-        "clean": {
+        }, //<
+
+        "clean": { //>
             "executor": "nx:run-commands",
             "options": {
                 "command": "rimraf {projectRoot}/dist {projectRoot}/coverage {projectRoot}/.nx",
                 "cwd": "{workspaceRoot}"
             }
-        },
-        "clean:dist": {
+        }, //<
+        "clean:dist": { //>
             "executor": "nx:run-commands",
             "options": {
                 "command": "rimraf {projectRoot}/dist",
                 "cwd": "{workspaceRoot}"
             }
-        },
-        "clean:cache": {
+        }, //<
+        "clean:cache": { //>
             "executor": "nx:run-commands",
             "options": {
                 "command": "rimraf {projectRoot}/.nx",
                 "cwd": "{workspaceRoot}"
             }
-        }
+        } //<
        
     },
+    
     "namedInputs": {
-        "default": [
+        "default": [ //>
             "{projectRoot}/**/*",
             "sharedGlobals",
             "!{projectRoot}/**/*.md",
@@ -239,28 +280,35 @@
             "!{projectRoot}/**/*.ico",
             "!{projectRoot}/**/*.pdf",
             "!{projectRoot}/docs/**"
-        ],
-        "production": [
+        ], //<
+        "production": [ //>
             "default",
             "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
             "!{projectRoot}/tsconfig.spec.json",
             "!{projectRoot}/src/test-setup.[jt]s"
-        ],
-        "test": [
+        ], //<
+        "test": [ //>
             "default",
             "{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
             "{projectRoot}/tsconfig.spec.json",
             "{projectRoot}/src/test-setup.[jt]s"
-        ],
-        "lint": ["default", "{projectRoot}/**/*.eslintrc.js", "{projectRoot}/**/*.eslint.json"],
-        "docs": [
+        ], //<
+        "lint": [ //>
+            "default",
+            "{projectRoot}/**/*.eslintrc.js",
+            "{projectRoot}/**/*.eslint.json"
+        ], //<
+        "docs": [ //>
             "{projectRoot}/docs/**",
             "{projectRoot}/**/*.md",
             "{projectRoot}/**/*.markdown",
             "{projectRoot}/**/*.mdx"
-        ],
-        "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
+        ], //<
+        "sharedGlobals": [ //>
+            "{workspaceRoot}/.github/workflows/ci.yml"
+        ] //<
     },
+    
     "packageManager": "pnpm",
     "nxCloudId": "685c28f2a5df05525dfa937b",
     "$schema": "./node_modules/nx/schemas/nx-schema.json",

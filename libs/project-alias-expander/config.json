@@ -26,6 +26,10 @@
         "pd" : "package:dev",
         "pub": "publish",
         //= Linting ============================================================= 
+        "ct" : "check-types",
+        "ctd": "check-types:deps",
+        
+        //= Linting ============================================================= 
         "l" : "lint",
         "lf": "lint:full",
         //= Testing ============================================================= 
@@ -56,10 +60,10 @@
         
         "t": {"run-from": "ext", "run-target": "test:deps --output-style=stream"},
         "ti": {"run-from": "ext", "run-target": "test:integration"},
+        "tsc": {"run-from": "ext", "run-target": "type-check"},
         
+        "l": {"run-from": "ext", "run-target": "lint:full --output-style=stream"}
         
-        // "l": {"run-from": "ext", "run-target": "lint:full --output-style=stream"}
-        "l": {"run-from": "ext", "run-target": "lint:full --output-style=stream --watch"}
         
         
         

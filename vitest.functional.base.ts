@@ -20,14 +20,14 @@ export default defineConfig({
 			'**/__tests__/integration-tests/**',
 		],
         
-		pool: 'threads',
-		poolOptions: {
-			threads: {
-				singleThread: false,
-				maxThreads: 4,
-				minThreads: 1,
-			},
-		},
+		// pool: 'threads',
+		// poolOptions: {
+		// 	threads: {
+		// 		singleThread: false,
+		// 		maxThreads: 4,
+		// 		minThreads: 1,
+		// 	},
+		// },
         
 		// Add timeout and memory limits
 		testTimeout: 2000,

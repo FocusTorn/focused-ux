@@ -305,15 +305,17 @@ export function setupVSCodeFileReadScenario(mocks: ExtensionTestMocks, options: 
     const buffer = Buffer.from(content)
 	
     // Use global mocks instead of local mocks
-    vi.mocked(vscode.Uri.file).mockReturnValue({ fsPath: filePath })
+    const mockUri = { fsPath: filePath } as vscode.Uri
+    vi.mocked(vscode.Uri.file).mockReturnValue(mockUri)
     vi.mocked(vscode.workspace.fs.readFile).mockResolvedValue(buffer)
 }
 
 export function setupVSCodeFileWriteScenario(mocks: ExtensionTestMocks, options: VSCodeFileScenarioOptions): void {
-    const { filePath, content = 'file content' } = options
+    const { filePath, content: _content = 'file content' } = options
 	
     // Use global mocks instead of local mocks
-    vi.mocked(vscode.Uri.file).mockReturnValue({ fsPath: filePath })
+    const mockUri = { fsPath: filePath } as vscode.Uri
+    vi.mocked(vscode.Uri.file).mockReturnValue(mockUri)
     vi.mocked(vscode.workspace.fs.writeFile).mockResolvedValue(undefined)
 }
 
@@ -322,21 +324,24 @@ export function setupVSCodeFileStatScenario(mocks: ExtensionTestMocks, options: 
     const fileTypeValue = fileType === 'file' ? vscode.FileType.File : vscode.FileType.Directory
 	
     // Use global mocks instead of local mocks
-    vi.mocked(vscode.Uri.file).mockReturnValue({ fsPath: filePath })
-    vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({ type: fileTypeValue })
+    const mockUri = { fsPath: filePath } as vscode.Uri
+    vi.mocked(vscode.Uri.file).mockReturnValue(mockUri)
+    vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({ type: fileTypeValue, ctime: 0, mtime: 0, size: 0 })
 }
 
 export function setupVSCodeFileCopyScenario(mocks: ExtensionTestMocks, sourcePath: string, destinationPath: string): void {
     // Use global mocks instead of local mocks
+    const mockSourceUri = { fsPath: sourcePath } as vscode.Uri
+    const mockDestUri = { fsPath: destinationPath } as vscode.Uri
     vi.mocked(vscode.Uri.file)
-        .mockReturnValueOnce({ fsPath: sourcePath })
-        .mockReturnValueOnce({ fsPath: destinationPath })
+        .mockReturnValueOnce(mockSourceUri)
+        .mockReturnValueOnce(mockDestUri)
     vi.mocked(vscode.workspace.fs.copy).mockResolvedValue(undefined)
 }
 
 // Command Registration Scenarios
 export function setupVSCodeCommandRegistrationScenario(mocks: ExtensionTestMocks, options: VSCodeCommandScenarioOptions): void {
-    const { commandName, shouldSucceed = true, errorMessage = 'Command failed' } = options
+    const { commandName: _commandName, shouldSucceed = true, errorMessage = 'Command failed' } = options
     const mockDisposable = { dispose: vi.fn() }
 	
     if (shouldSucceed) {
@@ -370,8 +375,10 @@ export function setupVSCodeWorkspaceScenario(mocks: ExtensionTestMocks, options:
     const { workspacePath, filePaths = [] } = options
 	
     const mockWorkspaceFolder = {
-        uri: { fsPath: workspacePath },
-    }
+        uri: { fsPath: workspacePath } as vscode.Uri,
+        name: 'test-workspace',
+        index: 0,
+    } as vscode.WorkspaceFolder
 	
     mocks.vscode.workspace.workspaceFolders = [mockWorkspaceFolder]
 	
@@ -387,7 +394,14 @@ export function setupVSCodeTerminalScenario(mocks: ExtensionTestMocks, terminalN
         sendText: vi.fn(),
         show: vi.fn(),
         name: terminalName,
-    }
+        processId: Promise.resolve(12345),
+        creationOptions: {},
+        exitStatus: undefined,
+        state: { isInteractedWith: false },
+        shellIntegration: undefined,
+        hide: vi.fn(),
+        dispose: vi.fn(),
+    } as unknown as vscode.Terminal
 	
     mocks.vscode.window.createTerminal.mockReturnValue(mockTerminal)
     mocks.vscode.window.activeTerminal = mockTerminal

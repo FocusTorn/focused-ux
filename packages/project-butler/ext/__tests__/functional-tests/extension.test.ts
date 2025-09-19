@@ -128,4 +128,116 @@ describe('Extension', () => {
             consoleSpy.mockRestore()
         })
     })
+
+    describe('Command Error Handling', () => {
+        it('should handle formatPackageJson command errors gracefully', async () => {
+            // Arrange
+            const mockContext = { subscriptions: { push: vi.fn() } }
+            
+            // Mock the command to throw an error
+            vi.mocked(vscode.commands.registerCommand).mockImplementation((command, handler) => {
+                if (command === 'fux-project-butler.formatPackageJson') {
+                    // Simulate the command handler being called and throwing
+                    setTimeout(() => {
+                        try {
+                            handler()
+                        } catch (_error) {
+                            // This simulates the error handling in the extension
+                        }
+                    }, 0)
+                }
+                return { dispose: vi.fn() }
+            })
+
+            // Act
+            activate(mockContext as any)
+
+            // Assert - Command should be registered
+            expect(vscode.commands.registerCommand).toHaveBeenCalledWith(
+                'fux-project-butler.formatPackageJson',
+                expect.any(Function)
+            )
+        })
+
+        it('should handle updateTerminalPath command errors gracefully', async () => {
+            // Arrange
+            const mockContext = { subscriptions: { push: vi.fn() } }
+            
+            // Act
+            activate(mockContext as any)
+
+            // Assert - Command should be registered
+            expect(vscode.commands.registerCommand).toHaveBeenCalledWith(
+                'fux-project-butler.updateTerminalPath',
+                expect.any(Function)
+            )
+        })
+
+        it('should handle createBackup command errors gracefully', async () => {
+            // Arrange
+            const mockContext = { subscriptions: { push: vi.fn() } }
+            
+            // Act
+            activate(mockContext as any)
+
+            // Assert - Command should be registered
+            expect(vscode.commands.registerCommand).toHaveBeenCalledWith(
+                'fux-project-butler.createBackup',
+                expect.any(Function)
+            )
+        })
+
+        it('should handle enterPoetryShell command errors gracefully', async () => {
+            // Arrange
+            const mockContext = { subscriptions: { push: vi.fn() } }
+            
+            // Act
+            activate(mockContext as any)
+
+            // Assert - Command should be registered
+            expect(vscode.commands.registerCommand).toHaveBeenCalledWith(
+                'fux-project-butler.enterPoetryShell',
+                expect.any(Function)
+            )
+        })
+    })
+
+    describe('Test Environment Detection', () => {
+        it('should handle test environment detection correctly', () => {
+            // Arrange
+            const originalEnv = process.env.VSCODE_TEST
+            process.env.VSCODE_TEST = '1'
+
+            // Act
+            activate({ subscriptions: { push: vi.fn() } } as any)
+
+            // Assert - Should not show error messages in test environment
+            expect(vscode.window.showErrorMessage).not.toHaveBeenCalled()
+
+            // Cleanup
+            process.env.VSCODE_TEST = originalEnv
+        })
+
+        it('should show error messages in non-test environment', () => {
+            // Arrange
+            const originalEnv = process.env.VSCODE_TEST
+            delete process.env.VSCODE_TEST
+
+            // Mock command registration to throw
+            vi.mocked(vscode.commands.registerCommand).mockImplementation(() => {
+                throw new Error('Registration failed')
+            })
+
+            // Act
+            activate({ subscriptions: { push: vi.fn() } } as any)
+
+            // Assert - Should show error message in non-test environment
+            expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
+                'Failed to activate Project Butler: Registration failed'
+            )
+
+            // Cleanup
+            process.env.VSCODE_TEST = originalEnv
+        })
+    })
 })

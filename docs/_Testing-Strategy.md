@@ -1319,6 +1319,106 @@ import {
 
 The extension package (`packages/project-butler/ext/`) uses a specialized mock strategy for VSCode API testing that complements the core package strategy.
 
+#### ⚠️ Critical TypeScript Pitfalls in Setup Files
+
+When creating VSCode mocks in `_setup.ts` files, be aware of these common TypeScript pitfalls that can cause compilation errors:
+
+**1. VSCode Uri Mocking Pitfall**
+
+```typescript
+// ❌ WRONG - Causes TypeScript error: missing properties
+vi.mocked(vscode.Uri.file).mockReturnValue({ fsPath: filePath })
+
+// ✅ CORRECT - Proper type assertion
+const mockUri = { fsPath: filePath } as vscode.Uri
+vi.mocked(vscode.Uri.file).mockReturnValue(mockUri)
+```
+
+**2. FileStat Mocking Pitfall**
+
+```typescript
+// ❌ WRONG - Missing required properties
+vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({ type: fileTypeValue })
+
+// ✅ CORRECT - Include all required properties
+vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({
+    type: fileTypeValue,
+    ctime: 0,
+    mtime: 0,
+    size: 0,
+})
+```
+
+**3. WorkspaceFolder Mocking Pitfall**
+
+```typescript
+// ❌ WRONG - Missing required properties
+const mockWorkspaceFolder = {
+    uri: { fsPath: workspacePath },
+}
+
+// ✅ CORRECT - Complete WorkspaceFolder interface
+const mockWorkspaceFolder = {
+    uri: { fsPath: workspacePath } as vscode.Uri,
+    name: 'test-workspace',
+    index: 0,
+} as vscode.WorkspaceFolder
+```
+
+**4. Terminal Mocking Pitfall**
+
+```typescript
+// ❌ WRONG - Missing required properties, causes type conversion error
+const mockTerminal = {
+    sendText: vi.fn(),
+    show: vi.fn(),
+    name: terminalName,
+} as vscode.Terminal
+
+// ✅ CORRECT - Complete Terminal interface with proper type assertion
+const mockTerminal = {
+    sendText: vi.fn(),
+    show: vi.fn(),
+    name: terminalName,
+    processId: Promise.resolve(12345),
+    creationOptions: {},
+    exitStatus: undefined,
+    state: { isInteractedWith: false },
+    shellIntegration: undefined,
+    hide: vi.fn(),
+    dispose: vi.fn(),
+} as unknown as vscode.Terminal
+```
+
+**5. Multiple Uri Mocking Pitfall**
+
+```typescript
+// ❌ WRONG - Inconsistent type handling
+vi.mocked(vscode.Uri.file)
+    .mockReturnValueOnce({ fsPath: sourcePath })
+    .mockReturnValueOnce({ fsPath: destinationPath })
+
+// ✅ CORRECT - Consistent type assertions
+const mockSourceUri = { fsPath: sourcePath } as vscode.Uri
+const mockDestUri = { fsPath: destinationPath } as vscode.Uri
+vi.mocked(vscode.Uri.file).mockReturnValueOnce(mockSourceUri).mockReturnValueOnce(mockDestUri)
+```
+
+**Key Principles for VSCode Mocking:**
+
+1. **Always use type assertions** (`as vscode.Type`) for partial mock objects
+2. **Include all required properties** when mocking complex interfaces
+3. **Use `as unknown as vscode.Type`** for complex type conversions
+4. **Be consistent** across all mock calls in the same function
+5. **Test your mocks** by running the tests to catch TypeScript errors early
+
+**Common Error Messages and Solutions:**
+
+- `"Argument of type '{ fsPath: string; }' is not assignable to parameter of type 'Uri'"` → Use `as vscode.Uri`
+- `"Type '{ ... }' is missing the following properties from type 'FileStat'"` → Add missing properties
+- `"Conversion of type '{ ... }' to type 'Terminal' may be a mistake"` → Use `as unknown as vscode.Terminal`
+- `"Type '{ ... }' is missing the following properties from type 'WorkspaceFolder'"` → Add `name` and `index` properties
+
 #### VSCode-Specific Mock Scenarios
 
 ```typescript
