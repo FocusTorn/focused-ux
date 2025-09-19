@@ -26,83 +26,82 @@ import fuxFormat from './.eslint/plugins/fux-format/index.js'
 
 //----------------------------------------------------------------------------<<
 
-// const focusTornBaseRules = { //>
-// 	'license-header/header': 'off',
-// 	'license/unknown': 'off',
-// 	'no-console': 'off',
-// 	'no-unused-vars': 'off',
-// 	'antfu/curly': 'off',
-// 	'space-in-parens': ['warn', 'never'],
+const focusTornBaseRules = { //>
+	'license-header/header': 'off',
+	'license/unknown': 'off',
+	'no-console': 'off',
+	'no-unused-vars': 'off',
+	'antfu/curly': 'off',
+	'space-in-parens': ['warn', 'never'],
 
-// 	'unicorn/prefer-module': 'off',
-// 	'unicorn/prefer-node-protocol': 'off',
-// 	'node/prefer-global/process': 'off',
-// 	'antfu/consistent-list-newline': 'off',
+	'unicorn/prefer-module': 'off',
+	'unicorn/prefer-node-protocol': 'off',
+	'node/prefer-global/process': 'off',
+	'antfu/consistent-list-newline': 'off',
 
-// 	'comma-spacing': ['warn', { before: false, after: true }],
-// 	'no-extra-semi': 'warn',
-// 	'operator-linebreak': ['warn', 'before'],
-// 	'unused-imports/no-unused-vars': [
-// 		'warn',
-// 		{
-// 			vars: 'all',
-// 			varsIgnorePattern: '^_',
-// 			caughtErrors: 'all',
-// 			caughtErrorsIgnorePattern: '^_',
-// 			args: 'after-used',
-// 			argsIgnorePattern: '^_',
-// 		},
-// 	],
+	'comma-spacing': ['warn', { before: false, after: true }],
+	'no-extra-semi': 'warn',
+	'operator-linebreak': ['warn', 'before'],
+	'unused-imports/no-unused-vars': [
+		'warn',
+		{
+			vars: 'all',
+			varsIgnorePattern: '^_',
+			caughtErrors: 'all',
+			caughtErrorsIgnorePattern: '^_',
+			args: 'after-used',
+			argsIgnorePattern: '^_',
+		},
+	],
 
-// 	'ts/no-explicit-any': 'warn',
+	'ts/no-explicit-any': 'warn',
 
-// 	'style/implicit-arrow-linebreak': ['warn', 'beside'],
-// 	'style/max-statements-per-line': 'off',
-// 	'style/no-tabs': 'off',
-// 	'style/spaced-comment': 'off',
-// 	'style/indent': ['warn', 'tab'],
-// 	'style/no-mixed-spaces-and-tabs': ['warn', 'smart-tabs'],
-// 	'style/no-multiple-empty-lines': ['warn', { max: 1, maxBOF: 0, maxEOF: 0 }],
-// 	'style/no-trailing-spaces': ['warn', { skipBlankLines: true, ignoreComments: true }],
-// 	'style/semi': ['warn', 'never'],
-// 	'style/padded-blocks': [
-// 		'warn',
-// 		{ blocks: 'never', classes: 'always' },
-// 		{ allowSingleLineBlocks: true },
-// 	],
-// 	'style/padding-line-between-statements': [
-// 		'warn',
-// 		{ blankLine: 'always', prev: '*', next: ['const', 'let', 'var'] },
-// 		{ blankLine: 'always', prev: ['const', 'let', 'var'], next: '*' },
-// 		{ blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] },
-// 	],
+	'style/implicit-arrow-linebreak': ['warn', 'beside'],
+	'style/max-statements-per-line': 'off',
+	'style/no-tabs': 'off',
+	'style/spaced-comment': 'off',
+	'style/indent': ['warn', 'tab'],
+	'style/no-mixed-spaces-and-tabs': ['warn', 'smart-tabs'],
+	'style/no-multiple-empty-lines': ['warn', { max: 1, maxBOF: 0, maxEOF: 0 }],
+	'style/no-trailing-spaces': ['warn', { skipBlankLines: true, ignoreComments: true }],
+	'style/semi': ['warn', 'never'],
+	'style/padded-blocks': [
+		'warn',
+		{ blocks: 'never', classes: 'always' },
+		{ allowSingleLineBlocks: true },
+	],
+	'style/padding-line-between-statements': [
+		'warn',
+		{ blankLine: 'always', prev: '*', next: ['const', 'let', 'var'] },
+		{ blankLine: 'always', prev: ['const', 'let', 'var'], next: '*' },
+		{ blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] },
+	],
 
-// 	'style/brace-style': 'off',
-// 	'style/function-call-argument-newline': 'off',
-// 	'style/function-paren-newline': 'off',
-// 	'style/array-element-newline': 'off',
-// 	'style/object-property-newline': 'off',
+	'style/brace-style': 'off',
+	'style/function-call-argument-newline': 'off',
+	'style/function-paren-newline': 'off',
+	'style/array-element-newline': 'off',
+	'style/object-property-newline': 'off',
 
-// 	'import/no-unresolved': 'off',
-// 	'import/no-cycle': 'off',
-// 	'import/extensions': 'off',
-// 	'import/no-duplicates': 'warn',
-// 	'import/order': 'off',
+	'import/no-unresolved': 'off',
+	'import/no-cycle': 'off',
+	'import/extensions': 'off',
+	'import/no-duplicates': 'warn',
+	'import/order': 'off',
 
-// 	'ts/explicit-function-return-type': 'off',
-// } //<
+	'ts/explicit-function-return-type': 'off',
+} //<
 
 export default [
 	// Performance optimizations
-	{
-		name: 'performance/cache',
+	{   name: 'performance/cache', //>
 		settings: {
 			cache: true,
 			cacheLocation: '.eslintcache',
 			cacheStrategy: 'content'
 		}
-	},
-
+	}, //<
+    
 	{   ignores: [ //>
         
 		'**/*.md',
@@ -187,6 +186,7 @@ export default [
 			'node/prefer-global/process': 'off',
             
 			// 'antfu/consistent-list-newline': 'off',
+            
 			// Array formatting
 			'style/array-bracket-newline': ['warn', 'consistent'],
 			'style/array-element-newline': ['warn', 'consistent'],
@@ -218,9 +218,11 @@ export default [
     
 			'style/implicit-arrow-linebreak': ['warn', 'beside'],
 			'style/max-statements-per-line': 'off',
-			'style/no-tabs': 'off',
 			'style/spaced-comment': 'off',
-			'style/indent': ['warn', 'tab'],
+			
+			// 'style/no-tabs': 'warn',
+            'style/indent': ['warn', 4],
+            
 			'style/no-mixed-spaces-and-tabs': ['warn', 'smart-tabs'],
 			'style/no-multiple-empty-lines': ['warn', { max: 1, maxBOF: 0, maxEOF: 0 }],
 			'style/no-trailing-spaces': ['warn', { skipBlankLines: true, ignoreComments: true }],
@@ -255,7 +257,6 @@ export default [
 			'import/no-cycle': 'off', // Expensive rule
 			'import/no-unresolved': 'off', // Expensive rule
 			'ts/no-unused-vars': 'warn', // Faster than 'error'
-			'no-console': 'warn', // Faster than 'error'
 		},
 	}, //<
 

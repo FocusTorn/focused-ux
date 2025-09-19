@@ -1,12 +1,18 @@
 import { defineConfig } from 'vitest/config'
 
+// console.log('⚡ Loading vitest.functional.base.ts configuration')
+
 export default defineConfig({
 	test: {
 		
 		reporters: ['default'],
-		include: [
-			'__tests__/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-		],
+		
+		globals: true,
+		environment: 'node',
+        
+		// VS Code extension specific settings
+		deps: { optimizer: { ssr: { include: ['vscode'] } } },
+        
 		exclude: [
 			'**/*.d.ts',
 			'**/*.config.*',
@@ -14,11 +20,19 @@ export default defineConfig({
 			'**/__tests__/integration-tests/**',
 		],
         
-		globals: true,
-		environment: 'node',
+		pool: 'threads',
+		poolOptions: {
+			threads: {
+				singleThread: false,
+				maxThreads: 4,
+				minThreads: 1,
+			},
+		},
         
-		// VS Code extension specific settings
-		deps: { optimizer: { ssr: { include: ['vscode'] } } },
+		// Add timeout and memory limits
+		testTimeout: 2000,
+		hookTimeout: 2000,
+		
 	},
     
 })

@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { PoetryShellService } from '../../src/services/PoetryShell.service'
-import { setupTestEnvironment, resetAllMocks, setupFileSystemMocks, setupPathMocks } from '../_setup'
+import { 
+	setupTestEnvironment, 
+	resetAllMocks, 
+	setupFileSystemMocks, 
+	setupPathMocks,
+	setupPoetryShellSuccessScenario,
+	setupPoetryShellErrorScenario
+} from '../_setup'
 
 describe('PoetryShellService', () => {
 	let service: PoetryShellService
@@ -20,7 +27,7 @@ describe('PoetryShellService', () => {
 			// Arrange
 			const filePath = '/test/directory'
 
-			mocks.fileSystem.stat.mockResolvedValue({ type: 'directory' })
+			setupPoetryShellSuccessScenario(mocks, filePath)
 
 			// Act
 			const result = await service.enterPoetryShell(filePath)
@@ -62,7 +69,7 @@ describe('PoetryShellService', () => {
 			// Arrange
 			const filePath = '/test/file.txt'
 
-			mocks.fileSystem.stat.mockRejectedValue(new Error('File system error'))
+			setupPoetryShellErrorScenario(mocks, filePath, 'File system error')
 
 			// Act & Assert
 			await expect(service.enterPoetryShell(filePath))

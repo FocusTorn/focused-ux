@@ -146,7 +146,7 @@ packages/package-name/core/
 │   ├── _interfaces/          # All interfaces centralized
 │   ├── services/             # All services in flat structure
 │   ├── _config/              # Constants and configuration
-│   └── index.ts              # Simple barrel exports
+│   └── index.ts              # Comprehensive categorized exports
 ├── __tests__/
 │   ├── _setup.ts             # Global test setup
 │   ├── functional-tests/     # Main integration tests
@@ -461,22 +461,19 @@ packages/package-name/ext/
             }
         },
         "package": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "executor": "@fux/vpack:pack",
+            "dependsOn": ["build", "@fux/vsix-packager:build"],
             "options": {
-                "command": "node scripts/create-vsix.js packages/package-name/ext vsix_packages"
+                "targetPath": "{projectRoot}"
             }
         },
         "package:dev": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "executor": "@fux/vpack:pack",
+            "dependsOn": ["build", "@fux/vsix-packager:build"],
             "options": {
-                "command": "node scripts/create-vsix.js packages/package-name/ext vsix_packages --dev",
-                "outputPath": "vsix_packages"
-            },
-            "cache": false,
-            "inputs": ["production", "^production", "{workspaceRoot}/scripts/create-vsix.js"],
-            "outputs": ["{options.outputPath}"]
+                "targetPath": "{projectRoot}",
+                "dev": true
+            }
         },
         "test": {
             "executor": "@nx/vite:test",
@@ -522,6 +519,73 @@ packages/package-name/ext/
 }
 ```
 
+## **VPack Packaging Patterns**
+
+### **VPack Executor Integration**
+
+The FocusedUX monorepo uses the **VPack executor** (`@fux/vpack:pack`) for streamlined VSCode extension packaging, replacing traditional `vsce` commands with Nx-native execution.
+
+#### **VPack Configuration Pattern**
+
+```json
+{
+    "package": {
+        "executor": "@fux/vpack:pack",
+        "dependsOn": ["build", "@fux/vsix-packager:build"],
+        "options": {
+            "targetPath": "{projectRoot}"
+        }
+    },
+    "package:dev": {
+        "executor": "@fux/vpack:pack",
+        "dependsOn": ["build", "@fux/vsix-packager:build"],
+        "options": {
+            "targetPath": "{projectRoot}",
+            "dev": true
+        }
+    }
+}
+```
+
+#### **VPack Workflow**
+
+1. **Build Dependencies**: Automatically builds core package and VSIX packager
+2. **Extension Build**: Builds extension package with proper bundling
+3. **VSIX Creation**: Creates VSIX package using integrated packager
+4. **Development Mode**: `dev: true` enables enhanced debugging and development features
+
+#### **VPack Benefits**
+
+- **Nx Integration**: Native Nx executor with proper dependency management
+- **Automatic Build Chain**: Handles all build dependencies automatically
+- **Development Support**: Built-in development mode for enhanced debugging
+- **Consistent Packaging**: Standardized packaging across all extensions
+
+#### **VPack vs Traditional Packaging**
+
+| Aspect            | VPack Pattern | Traditional vsce     |
+| ----------------- | ------------- | -------------------- |
+| **Command**       | `{alias} p`   | `vsce package`       |
+| **Dependencies**  | Automatic     | Manual               |
+| **Configuration** | project.json  | vsce config          |
+| **Development**   | `{alias} pd`  | `vsce package --dev` |
+| **Integration**   | Nx-native     | External tool        |
+
+#### **VPack Execution Commands**
+
+```bash
+# Production packaging
+pae {alias} p
+
+# Development packaging
+pae {alias} pd
+
+# Examples
+pae pb p      # Package Project Butler
+pae gw pd     # Package Ghost Writer (dev mode)
+pae dc p      # Package Dynamicons
+```
+
 ## **Implementation Patterns**
 
 ### **Core Package Implementation**
@@ -555,17 +619,162 @@ export interface IFeatureService {
 
 **Export Pattern:**
 
-**Preferred Barrel Exports (Project Butler Core Pattern):**
+**Required Comprehensive Export Strategy (Project Butler Core Pattern):**
 
 ```typescript
 // packages/package-name/core/src/index.ts
-// Simple barrel exports
-export * from './_interfaces/IFeatureService.js'
-export * from './services/Feature.service.js'
+// Service Interfaces
+export * from './_interfaces/IPackageJsonFormattingService.js'
+export * from './_interfaces/ITerminalManagementService.js'
+export * from './_interfaces/IBackupManagementService.js'
+export * from './_interfaces/IPoetryShellService.js'
+export * from './_interfaces/IProjectButlerManagerService.js'
+
+// Adapter Interfaces
+export * from './_interfaces/IFileSystemAdapter.js'
+export * from './_interfaces/IPathAdapter.js'
+export * from './_interfaces/IYamlAdapter.js'
+
+// Services
+export * from './services/PackageJsonFormatting.service.js'
+export * from './services/TerminalManagement.service.js'
+export * from './services/BackupManagement.service.js'
+export * from './services/PoetryShell.service.js'
+export * from './services/ProjectButlerManager.service.js'
+
+// Constants
 export * from './_config/constants.js'
 ```
 
-**Alternative Individual Exports:**
+**Key Requirements:**
+
+- **Service Interfaces**: Core business logic interfaces
+- **Adapter Interfaces**: VSCode integration interfaces
+- **Services**: Concrete implementations
+- **Constants**: Configuration and constants
+- **Clear Categorization**: Each category must be clearly separated with comments
+- **Comprehensive Coverage**: All interfaces and services must be exported
+- **Consistent Pattern**: Follow the same structure across all core packages
+
+### **Dependency Aggregation Pattern**
+
+**Required Dependency Management Strategy:**
+
+All core packages MUST implement dependency aggregation pattern for better dependency management and centralized orchestration:
+
+```typescript
+// packages/package-name/core/src/_interfaces/IPackageManagerService.ts
+export interface IPackageDependencies {
+    service1: IService1
+    service2: IService2
+    service3: IService3
+}
+
+export interface IPackageManagerService {
+    method1: (param: Type) => ReturnType
+    method2: (param: Type) => Promise<ReturnType>
+    // ... other orchestrated methods
+}
+
+// packages/package-name/core/src/services/PackageManager.service.ts
+export class PackageManagerService implements IPackageManagerService {
+    constructor(private readonly dependencies: IPackageDependencies) {}
+
+    method1(param: Type): ReturnType {
+        return this.dependencies.service1.process(param)
+    }
+
+    async method2(param: Type): Promise<ReturnType> {
+        return this.dependencies.service2.process(param)
+    }
+}
+```
+
+**Dependency Aggregation Requirements:**
+
+- **Dependencies Interface**: Aggregate all service dependencies into single interface (e.g., `I{Feature}Dependencies`)
+- **Manager Service**: Create central orchestrator service that uses aggregated dependencies
+- **Clean Constructor**: Single `dependencies` parameter instead of multiple individual dependencies
+- **Centralized Access**: Manager service provides unified access to all package functionality
+- **Consistent Pattern**: Follow the same structure across all core packages
+
+**Benefits:**
+
+- **Better Dependency Management**: Single dependencies interface instead of multiple individual dependencies
+- **Cleaner Architecture**: Simplified constructor patterns and dependency injection
+- **Centralized Orchestration**: Manager service provides unified access to all functionality
+- **Improved Testability**: Easier to mock dependencies with single aggregated interface
+- **Consistency**: Uniform pattern across all packages in the monorepo
+
+### **Complex Orchestration Pattern**
+
+**Required Complex Manager Service Coordination:**
+
+All core packages MUST implement complex orchestration patterns for advanced manager service coordination:
+
+```typescript
+// packages/package-name/core/src/services/PackageManager.service.ts
+export class PackageManagerService implements IPackageManagerService {
+    constructor(private readonly dependencies: IPackageDependencies) {}
+
+    // Basic operations with validation and error handling
+    async basicOperation(param: Type): Promise<ReturnType> {
+        try {
+            this.validateInput(param)
+            const result = await this.dependencies.service.process(param)
+            if (!result) throw new Error(ERROR_MESSAGES.OPERATION_FAILED)
+            return result
+        } catch (error: any) {
+            throw new Error(`${ERROR_MESSAGES.OPERATION_FAILED}: ${error.message}`)
+        }
+    }
+
+    // Complex orchestration workflows
+    async complexWorkflow(param1: Type1, param2: Type2): Promise<WorkflowResult> {
+        try {
+            // Step 1: Validate inputs
+            this.validateWorkflowInputs(param1, param2)
+
+            // Step 2: Execute first operation
+            const step1Result = await this.dependencies.service1.process(param1)
+
+            // Step 3: Execute second operation with step1 result
+            const step2Result = await this.dependencies.service2.process(step1Result, param2)
+
+            // Step 4: Coordinate final result
+            return this.coordinateResults(step1Result, step2Result)
+        } catch (error: any) {
+            throw new Error(`Complex workflow failed: ${error.message}`)
+        }
+    }
+
+    // Private validation methods
+    private validateInput(param: Type): void {
+        if (!param) throw new Error(ERROR_MESSAGES.MISSING_REQUIRED_PARAMETER)
+        // Additional validation logic
+    }
+}
+```
+
+**Complex Orchestration Requirements:**
+
+- **Multi-step Workflows**: Complex business logic with multiple coordinated steps
+- **Error Handling**: Comprehensive error handling with specific error messages and validation
+- **Input Validation**: Robust parameter validation with detailed error reporting
+- **Business Logic Orchestration**: Coordinating multiple operations in sequence
+- **Metadata Management**: Enhanced data structures with metadata for complex workflows
+- **Workflow Coordination**: Complete end-to-end workflows that orchestrate multiple services
+
+**Benefits:**
+
+- **Advanced Orchestration**: Complex multi-step workflows that coordinate multiple services
+- **Robust Error Handling**: Comprehensive error handling with specific error messages
+- **Input Validation**: Robust parameter validation with detailed error reporting
+- **Business Logic Coordination**: Manager service orchestrates complex business processes
+- **Enhanced Metadata**: Rich metadata support for complex workflow state management
+- **Workflow Efficiency**: Complete workflows that handle multiple operations in sequence
+
+**Alternative Individual Exports (Feature-Based Structure):**
 
 ```typescript
 // packages/package-name/core/src/index.ts
@@ -849,11 +1058,12 @@ export default mergeConfig(
 - No complex DI container mocking
 - Clear separation of concerns
 
-### **5. Individual Exports**
+### **5. Comprehensive Export Strategy**
 
-- Core packages use individual exports for tree-shaking
-- No barrel exports for better optimization
-- Clear public API surface
+- Core packages use comprehensive categorized exports
+- Clear separation between Service Interfaces, Adapter Interfaces, Services, and Constants
+- Consistent pattern across all packages for better maintainability
+- Clear public API surface with organized categorization
 
 ## **Command Aliases**
 

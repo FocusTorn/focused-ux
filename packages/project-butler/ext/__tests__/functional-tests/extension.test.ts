@@ -1,6 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { activate, deactivate } from '../../src/extension'
 import * as vscode from 'vscode'
+import { 
+	setupTestEnvironment, 
+	resetAllMocks, 
+	setupVSCodeMocks,
+	setupVSCodeCommandRegistrationScenario,
+	setupVSCodeWindowMessageScenario,
+	setupVSCodeErrorScenario,
+	createExtensionMockBuilder
+} from '../_setup'
 
 // Mock the core package
 vi.mock('@fux/project-butler-core', () => ({
@@ -23,18 +32,24 @@ vi.mock('@fux/project-butler-core', () => ({
 
 describe('Extension', () => {
 	let context: any
+	let mocks: ReturnType<typeof setupTestEnvironment>
 
 	beforeEach(() => {
-		vi.clearAllMocks()
+		mocks = setupTestEnvironment()
+		setupVSCodeMocks(mocks)
 		context = {
 			subscriptions: {
 				push: vi.fn(),
 			},
 		}
+		resetAllMocks(mocks)
 	})
 
 	describe('activate', () => {
 		it('should register all commands successfully', () => {
+			// Arrange
+			setupVSCodeCommandRegistrationScenario(mocks, { commandName: 'formatPackageJson', shouldSucceed: true })
+
 			// Act
 			activate(context as any)
 
@@ -79,9 +94,8 @@ describe('Extension', () => {
 
 		it('should handle activation errors gracefully', () => {
 			// Arrange
-			vi.mocked(vscode.commands.registerCommand).mockImplementation(() => {
-				throw new Error('Registration failed')
-			})
+			setupVSCodeErrorScenario(mocks, 'command', 'Registration failed')
+			setupVSCodeWindowMessageScenario(mocks, 'error', 'Failed to activate Project Butler: Registration failed')
 
 			// Act
 			activate(context as any)

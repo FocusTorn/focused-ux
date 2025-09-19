@@ -2,13 +2,26 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { FileSystemAdapter } from '../../src/adapters/FileSystem.adapter'
 import { Buffer } from 'node:buffer'
 import * as vscode from 'vscode'
+import { 
+	setupTestEnvironment, 
+	resetAllMocks, 
+	setupVSCodeMocks,
+	setupVSCodeFileReadScenario,
+	setupVSCodeFileWriteScenario,
+	setupVSCodeFileStatScenario,
+	setupVSCodeFileCopyScenario,
+	createExtensionMockBuilder
+} from '../_setup'
 
 describe('FileSystemAdapter', () => {
 	let adapter: FileSystemAdapter
+	let mocks: ReturnType<typeof setupTestEnvironment>
 
 	beforeEach(() => {
-		vi.clearAllMocks()
+		mocks = setupTestEnvironment()
+		setupVSCodeMocks(mocks)
 		adapter = new FileSystemAdapter()
+		resetAllMocks(mocks)
 	})
 
 	describe('readFile', () => {
@@ -16,9 +29,8 @@ describe('FileSystemAdapter', () => {
 			// Arrange
 			const path = '/test/file.txt'
 			const content = 'file content'
-			const buffer = Buffer.from(content)
 
-			vi.mocked(vscode.workspace.fs.readFile).mockResolvedValue(buffer)
+			setupVSCodeFileReadScenario(mocks, { filePath: path, content })
 
 			// Act
 			const result = await adapter.readFile(path)
@@ -36,7 +48,7 @@ describe('FileSystemAdapter', () => {
 			const path = '/test/file.txt'
 			const content = 'file content'
 
-			vi.mocked(vscode.workspace.fs.writeFile).mockResolvedValue(undefined)
+			setupVSCodeFileWriteScenario(mocks, { filePath: path, content })
 
 			// Act
 			await adapter.writeFile(path, content)
@@ -55,7 +67,7 @@ describe('FileSystemAdapter', () => {
 			// Arrange
 			const path = '/test/file.txt'
 
-			vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({ type: vscode.FileType.File })
+			setupVSCodeFileStatScenario(mocks, { filePath: path, fileType: 'file' })
 
 			// Act
 			const result = await adapter.stat(path)
@@ -70,7 +82,7 @@ describe('FileSystemAdapter', () => {
 			// Arrange
 			const path = '/test/directory'
 
-			vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({ type: vscode.FileType.Directory })
+			setupVSCodeFileStatScenario(mocks, { filePath: path, fileType: 'directory' })
 
 			// Act
 			const result = await adapter.stat(path)
@@ -86,7 +98,7 @@ describe('FileSystemAdapter', () => {
 			const source = '/test/source.txt'
 			const destination = '/test/destination.txt'
 
-			vi.mocked(vscode.workspace.fs.copy).mockResolvedValue(undefined)
+			setupVSCodeFileCopyScenario(mocks, source, destination)
 
 			// Act
 			await adapter.copyFile(source, destination)

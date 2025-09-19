@@ -1,5 +1,25 @@
+/* eslint-disable fux-format/folding-brackets */
 {
-    "targets": {
+    
+    
+    // targets is now package-targets
+    
+    // added feature-targets
+    // this is the configuration for when pb is ran instead of pbe or pbc where it 
+    // uses the "full": true and would 
+    
+    // "feature-targets": {
+    //     "t": {"run-from": "ext", "run-target": "td -s"},
+    
+    //     "ti": {"run-from": "ext", "run-target": "test:integration"},
+    //     "l": {"run-from": "ext", "run-target": "lint:full"}
+    // },
+    
+    // The above would cause @fux/ghost-writer-ext:test:deps when pb t is used
+    // The above would cause @fux/ghost-writer-ext:lint:full when pb l is used
+    
+    
+    "package-targets": {
         //= Prepare ============================================================= 
         "b"  : "build",
         "p"  : "package",
@@ -28,6 +48,18 @@
         "o" : "optimize",
         "m" : "monitor"
     },
+      
+    "feature-targets": {
+        // "t": {"run-from": "ext", "run-target": "test:deps"},
+        // "ti": {"run-from": "ext", "run-target": "test:integration"},
+        // "l": {"run-from": "ext", "run-target": "lint:full"}
+        
+        "t": {"run-from": "ext", "run-target": "test:deps --output-style=stream"},
+        "ti": {"run-from": "ext", "run-target": "test:integration"},
+        "l": {"run-from": "ext", "run-target": "lint:full --output-style=stream"}
+        
+    },
+    
     "not-nx-targets": {
         "esv": "npx esbuild-visualizer --metadata"
     },

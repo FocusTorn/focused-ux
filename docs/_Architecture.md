@@ -404,23 +404,148 @@ While the architecture follows consistent patterns, some packages have legitimat
             }
         },
         "package": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "executor": "@fux/vpack:pack",
+            "dependsOn": ["build", "@fux/vsix-packager:build"],
             "options": {
-                "command": "node scripts/create-vsix.js packages/{feature}/ext vsix_packages"
+                "targetPath": "{projectRoot}"
             }
         },
         "package:dev": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "executor": "@fux/vpack:pack",
+            "dependsOn": ["build", "@fux/vsix-packager:build"],
             "options": {
-                "command": "node scripts/create-vsix.js packages/{feature}/ext vsix_packages --dev"
+                "targetPath": "{projectRoot}",
+                "dev": true
             }
         }
     },
     "tags": ["ext"]
 }
 ```
+
+## **VPack Executor Documentation**
+
+### **VPack Packaging System**
+
+The FocusedUX monorepo uses the **VPack executor** (`@fux/vpack:pack`) for VSCode extension packaging, replacing the traditional `vsce` command with a more integrated approach.
+
+#### **VPack Executor Configuration**
+
+```json
+{
+    "package": {
+        "executor": "@fux/vpack:pack",
+        "dependsOn": ["build", "@fux/vsix-packager:build"],
+        "options": {
+            "targetPath": "{projectRoot}"
+        }
+    },
+    "package:dev": {
+        "executor": "@fux/vpack:pack",
+        "dependsOn": ["build", "@fux/vsix-packager:build"],
+        "options": {
+            "targetPath": "{projectRoot}",
+            "dev": true
+        }
+    }
+}
+```
+
+#### **VPack Features**
+
+- **Integrated Build Pipeline**: Automatically handles build dependencies and VSIX packaging
+- **Development Mode**: `dev: true` option for development packaging with enhanced debugging
+- **Dependency Management**: Integrates with `@fux/vsix-packager` for consistent packaging
+- **Project Root Targeting**: Uses `{projectRoot}` placeholder for flexible path resolution
+
+#### **VPack vs Traditional Packaging**
+
+| Aspect            | VPack                    | Traditional vsce             |
+| ----------------- | ------------------------ | ---------------------------- |
+| **Integration**   | Nx-native executor       | External command             |
+| **Dependencies**  | Automatic build chain    | Manual dependency management |
+| **Configuration** | project.json integration | Separate vsce configuration  |
+| **Development**   | Built-in dev mode        | Manual dev flags             |
+
+## **Runtime Dependency Patterns for Extensions**
+
+### **Extension Dependency Classification**
+
+Extensions require careful dependency management to balance functionality with bundle size and runtime performance.
+
+#### **Dependencies vs DevDependencies**
+
+```json
+{
+    "dependencies": {
+        "@fux/{feature}-core": "workspace:*", // ✅ Core business logic
+        "js-yaml": "^4.1.0", // ✅ Runtime YAML parsing
+        "@types/js-yaml": "^4.0.9" // ✅ Type definitions for runtime deps
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.99.3", // ✅ Build-time VSCode types
+        "typescript": "^5.9.2", // ✅ Build-time TypeScript
+        "vitest": "^3.2.4" // ✅ Test-time Vitest
+    }
+}
+```
+
+#### **Runtime Dependency Decision Matrix**
+
+| Package Type         | Dependencies           | DevDependencies   | Rationale                                 |
+| -------------------- | ---------------------- | ----------------- | ----------------------------------------- |
+| **Core Package**     | ✅ Business logic      | ✅ Build tools    | Core consumed at runtime                  |
+| **External Runtime** | ✅ If imported in code | ❌ Never          | Extension uses at runtime                 |
+| **Build Tools**      | ❌ Never               | ✅ Always         | Only needed during build                  |
+| **Type Definitions** | ✅ For runtime deps    | ✅ For build deps | Types for runtime deps go in dependencies |
+
+#### **External Runtime Dependencies Pattern**
+
+When extensions need external packages at runtime:
+
+```typescript
+// packages/{feature}/ext/src/adapters/Yaml.adapter.ts
+import { load as loadYaml } from 'js-yaml' // Runtime import
+```
+
+```json
+// packages/{feature}/ext/package.json
+{
+    "dependencies": {
+        "js-yaml": "^4.1.0" // Runtime dependency
+    }
+}
+```
+
+```json
+// packages/{feature}/ext/project.json
+{
+    "external": ["js-yaml"] // Don't bundle, expect at runtime
+}
+```
+
+#### **Common Runtime Dependencies**
+
+- **YAML Processing**: `js-yaml` (Project Butler pattern)
+- **File System**: `fs-extra` (if VSCode APIs insufficient)
+- **HTTP Requests**: `axios` or `node-fetch` (for external APIs)
+- **Data Validation**: `zod` or `joi` (for configuration validation)
+- **Date Handling**: `date-fns` or `moment` (for complex date operations)
+
+#### **Dependency Externalization Strategy**
+
+```json
+{
+    "external": [
+        "vscode", // ✅ Always externalize VSCode
+        "js-yaml", // ✅ External runtime dependencies
+        "fs-extra", // ✅ If used at runtime
+        "axios" // ✅ If used at runtime
+    ]
+}
+```
+
+**Rationale**: Externalization keeps extension bundles small while ensuring runtime dependencies are available in the VSCode environment.
 
 ## **Package Structure**
 
@@ -434,7 +559,7 @@ packages/{feature}/core/
 │   ├── _interfaces/          # All interfaces centralized
 │   ├── services/             # All services in flat structure
 │   ├── _config/              # Constants and configuration
-│   └── index.ts              # Simple barrel exports
+│   └── index.ts              # Comprehensive categorized exports
 ├── __tests__/
 │   ├── functional-tests/     # Main integration tests
 │   ├── isolated-tests/       # Unit tests
@@ -503,6 +628,172 @@ packages/{feature}/ext/
 - **Better testability** - Easier to write comprehensive tests
 - **Proven approach** - Consistent pattern across all packages
 - **Complete coverage** - All adapters have tests
+
+### **Core Package Export Strategy**
+
+**Required Comprehensive Export Categorization:**
+
+All core packages MUST implement comprehensive export coverage with clear categorization following the Project Butler Core pattern:
+
+```typescript
+// packages/{feature}/core/src/index.ts
+// Service Interfaces
+export * from './_interfaces/IPackageJsonFormattingService.js'
+export * from './_interfaces/ITerminalManagementService.js'
+export * from './_interfaces/IBackupManagementService.js'
+export * from './_interfaces/IPoetryShellService.js'
+export * from './_interfaces/IProjectButlerManagerService.js'
+
+// Adapter Interfaces
+export * from './_interfaces/IFileSystemAdapter.js'
+export * from './_interfaces/IPathAdapter.js'
+export * from './_interfaces/IYamlAdapter.js'
+
+// Services
+export * from './services/PackageJsonFormatting.service.js'
+export * from './services/TerminalManagement.service.js'
+export * from './services/BackupManagement.service.js'
+export * from './services/PoetryShell.service.js'
+export * from './services/ProjectButlerManager.service.js'
+
+// Constants
+export * from './_config/constants.js'
+```
+
+**Export Strategy Requirements:**
+
+- **Service Interfaces**: Core business logic interfaces (e.g., `IServiceName`)
+- **Adapter Interfaces**: VSCode integration interfaces (e.g., `IAdapterName`)
+- **Services**: Concrete implementations (e.g., `ServiceName.service.js`)
+- **Constants**: Configuration and constants (e.g., `constants.js`)
+- **Clear Categorization**: Each category must be clearly separated with comments
+- **Comprehensive Coverage**: All interfaces and services must be exported
+- **Consistent Pattern**: Follow the same structure across all core packages
+
+**Benefits:**
+
+- **Clear Organization**: Developers can easily understand package structure
+- **Better DX**: Improved developer experience with organized exports
+- **Maintainability**: Easier to maintain and extend package functionality
+- **Consistency**: Uniform pattern across all packages in the monorepo
+
+### **Dependency Aggregation Pattern**
+
+**Required Dependency Management Strategy:**
+
+All core packages MUST implement dependency aggregation pattern for better dependency management and centralized orchestration:
+
+```typescript
+// packages/{feature}/core/src/_interfaces/I{Feature}ManagerService.ts
+export interface I{Feature}Dependencies {
+	service1: IService1
+	service2: IService2
+	service3: IService3
+}
+
+export interface I{Feature}ManagerService {
+	method1: (param: Type) => ReturnType
+	method2: (param: Type) => Promise<ReturnType>
+	// ... other orchestrated methods
+}
+
+// packages/{feature}/core/src/services/{Feature}Manager.service.ts
+export class {Feature}ManagerService implements I{Feature}ManagerService {
+	constructor(private readonly dependencies: I{Feature}Dependencies) {}
+
+	method1(param: Type): ReturnType {
+		return this.dependencies.service1.process(param)
+	}
+
+	async method2(param: Type): Promise<ReturnType> {
+		return this.dependencies.service2.process(param)
+	}
+}
+```
+
+**Dependency Aggregation Requirements:**
+
+- **Dependencies Interface**: Aggregate all service dependencies into single interface (e.g., `I{Feature}Dependencies`)
+- **Manager Service**: Create central orchestrator service that uses aggregated dependencies
+- **Clean Constructor**: Single `dependencies` parameter instead of multiple individual dependencies
+- **Centralized Access**: Manager service provides unified access to all package functionality
+- **Consistent Pattern**: Follow the same structure across all core packages
+
+**Benefits:**
+
+- **Better Dependency Management**: Single dependencies interface instead of multiple individual dependencies
+- **Cleaner Architecture**: Simplified constructor patterns and dependency injection
+- **Centralized Orchestration**: Manager service provides unified access to all functionality
+- **Improved Testability**: Easier to mock dependencies with single aggregated interface
+- **Consistency**: Uniform pattern across all packages in the monorepo
+
+### **Complex Orchestration Pattern**
+
+**Required Complex Manager Service Coordination:**
+
+All core packages MUST implement complex orchestration patterns for advanced manager service coordination:
+
+```typescript
+// packages/{feature}/core/src/services/{Feature}Manager.service.ts
+export class {Feature}ManagerService implements I{Feature}ManagerService {
+	constructor(private readonly dependencies: I{Feature}Dependencies) {}
+
+	// Basic operations with validation and error handling
+	async basicOperation(param: Type): Promise<ReturnType> {
+		try {
+			this.validateInput(param)
+			const result = await this.dependencies.service.process(param)
+			if (!result) throw new Error(ERROR_MESSAGES.OPERATION_FAILED)
+			return result
+		} catch (error: any) {
+			throw new Error(`${ERROR_MESSAGES.OPERATION_FAILED}: ${error.message}`)
+		}
+	}
+
+	// Complex orchestration workflows
+	async complexWorkflow(param1: Type1, param2: Type2): Promise<WorkflowResult> {
+		try {
+			// Step 1: Validate inputs
+			this.validateWorkflowInputs(param1, param2)
+
+			// Step 2: Execute first operation
+			const step1Result = await this.dependencies.service1.process(param1)
+
+			// Step 3: Execute second operation with step1 result
+			const step2Result = await this.dependencies.service2.process(step1Result, param2)
+
+			// Step 4: Coordinate final result
+			return this.coordinateResults(step1Result, step2Result)
+		} catch (error: any) {
+			throw new Error(`Complex workflow failed: ${error.message}`)
+		}
+	}
+
+	// Private validation methods
+	private validateInput(param: Type): void {
+		if (!param) throw new Error(ERROR_MESSAGES.MISSING_REQUIRED_PARAMETER)
+		// Additional validation logic
+	}
+}
+```
+
+**Complex Orchestration Requirements:**
+
+- **Multi-step Workflows**: Complex business logic with multiple coordinated steps
+- **Error Handling**: Comprehensive error handling with specific error messages and validation
+- **Input Validation**: Robust parameter validation with detailed error reporting
+- **Business Logic Orchestration**: Coordinating multiple operations in sequence
+- **Metadata Management**: Enhanced data structures with metadata for complex workflows
+- **Workflow Coordination**: Complete end-to-end workflows that orchestrate multiple services
+
+**Benefits:**
+
+- **Advanced Orchestration**: Complex multi-step workflows that coordinate multiple services
+- **Robust Error Handling**: Comprehensive error handling with specific error messages
+- **Input Validation**: Robust parameter validation with detailed error reporting
+- **Business Logic Coordination**: Manager service orchestrates complex business processes
+- **Enhanced Metadata**: Rich metadata support for complex workflow state management
+- **Workflow Efficiency**: Complete workflows that handle multiple operations in sequence
 
 ## **Migration Guide**
 

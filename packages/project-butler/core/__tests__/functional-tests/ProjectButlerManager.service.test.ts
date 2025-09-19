@@ -4,7 +4,17 @@ import { PackageJsonFormattingService } from '../../src/services/PackageJsonForm
 import { TerminalManagementService } from '../../src/services/TerminalManagement.service'
 import { BackupManagementService } from '../../src/services/BackupManagement.service'
 import { PoetryShellService } from '../../src/services/PoetryShell.service'
-import { setupTestEnvironment, resetAllMocks, setupFileSystemMocks, setupPathMocks, setupYamlMocks } from '../_setup'
+import { 
+	setupTestEnvironment, 
+	resetAllMocks, 
+	setupFileSystemMocks, 
+	setupPathMocks, 
+	setupYamlMocks,
+	setupPackageJsonSuccessScenario,
+	setupTerminalDirectoryScenario,
+	setupBackupSuccessScenario,
+	setupPoetryShellSuccessScenario
+} from '../_setup'
 
 describe('ProjectButlerManager Integration', () => {
 	let projectButlerManager: ProjectButlerManagerService
@@ -45,14 +55,12 @@ describe('ProjectButlerManager Integration', () => {
 				version: '1.0.0',
 			}, null, 2)
 
-			mocks.fileSystem.readFile
-				.mockResolvedValueOnce(configContent)
-				.mockResolvedValueOnce(packageContent)
-
-			mocks.yaml.load.mockReturnValue({
-				ProjectButler: {
-					'packageJson-order': ['name', 'version', 'scripts'],
-				},
+			setupPackageJsonSuccessScenario(mocks, {
+				packageJsonPath,
+				workspaceRoot,
+				configContent,
+				packageContent,
+				expectedOrder: ['name', 'version', 'scripts']
 			})
 
 			// Act
@@ -90,10 +98,7 @@ describe('ProjectButlerManager Integration', () => {
 			const sourcePath = '/test/file.txt'
 			const backupPath = '/test/file.txt.bak'
 
-			mocks.path.basename.mockReturnValue('file.txt')
-			mocks.path.dirname.mockReturnValue('/test')
-			mocks.path.join.mockReturnValue(backupPath)
-			mocks.fileSystem.stat.mockRejectedValue(new Error('File not found'))
+			setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
 
 			// Act
 			await projectButlerManager.createBackup(sourcePath)

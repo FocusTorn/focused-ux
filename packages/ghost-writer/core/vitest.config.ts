@@ -7,7 +7,7 @@ export default mergeConfig(
 		test: {
 			setupFiles: ['./__tests__/_setup.ts'],
 			include: [
-				'__tests__/functional/**/*.{test}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+				'./__tests__/functional-tests/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
 			],
 			pool: 'threads',
 			poolOptions: {

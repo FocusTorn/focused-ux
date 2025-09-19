@@ -27,7 +27,7 @@ export const TERMINAL_COMMAND_PREFIX = 'cd'
 export const TERMINAL_PATH_QUOTE_CHAR = '"'
 
 // Backup management constants
-export const BACKUP_SUFFIX = '-backup'
+export const BACKUP_SUFFIX = '.bak'
 export const BACKUP_TIMESTAMP_FORMAT = 'YYYY-MM-DD_HH-mm-ss'
 
 // Poetry shell constants

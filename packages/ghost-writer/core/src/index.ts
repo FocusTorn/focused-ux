@@ -1,9 +1,10 @@
-// Interfaces
+// Service Interfaces
 export * from './_interfaces/IStorageService.js'
 export * from './_interfaces/IUtilServices.js'
 export * from './_interfaces/IClipboardService.js'
 export * from './_interfaces/IImportGeneratorService.js'
 export * from './_interfaces/IConsoleLoggerService.js'
+export * from './_interfaces/IGhostWriterManagerService.js'
 
 // Adapter Interfaces
 export * from './_interfaces/IStorageAdapter.js'
@@ -17,6 +18,7 @@ export * from './_interfaces/IWorkspaceAdapter.js'
 export * from './services/Clipboard.service.js'
 export * from './services/ImportGenerator.service.js'
 export * from './services/ConsoleLogger.service.js'
+export * from './services/GhostWriterManager.service.js'
 
 // Constants
 export * from './_config/constants.js'

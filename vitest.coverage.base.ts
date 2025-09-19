@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitest/config'
 
+// console.log('📊 Loading vitest.coverage.base.ts configuration')
+
 export default defineConfig({
 	test: {
 		coverage: {

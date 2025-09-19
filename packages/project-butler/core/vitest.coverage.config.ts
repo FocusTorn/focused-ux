@@ -2,6 +2,8 @@ import { defineConfig, mergeConfig } from 'vitest/config'
 import functionalConfig from './vitest.config'
 import baseCoverageConfig from '../../../vitest.coverage.base'
 
+// console.log('📈 Loading packages/project-butler/core/vitest.coverage.config.ts')
+
 export default mergeConfig(
 	mergeConfig(functionalConfig, baseCoverageConfig),
 	defineConfig({

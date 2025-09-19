@@ -1,7 +1,7 @@
 import { vi, beforeAll, afterAll, afterEach } from 'vitest'
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
-import type * as vscode from 'vscode'
+import * as vscode from 'vscode'
 
 // 1) Mock js-yaml globally 
 vi.mock('js-yaml', () => ({
@@ -266,4 +266,214 @@ export function createMockUri(path: string): vscode.Uri {
 		with: vi.fn(),
 		toJSON: vi.fn(),
 	} as any
+}
+
+// ============================================================================
+// VSCode Mock Scenarios for Extension Tests
+// ============================================================================
+
+/**
+ * Extension-specific mock scenarios for common VSCode operations
+ */
+
+export interface VSCodeFileScenarioOptions {
+	filePath: string
+	content?: string
+	fileType?: 'file' | 'directory'
+}
+
+export interface VSCodeCommandScenarioOptions {
+	commandName: string
+	shouldSucceed?: boolean
+	errorMessage?: string
+}
+
+export interface VSCodeWorkspaceScenarioOptions {
+	workspacePath: string
+	filePaths?: string[]
+}
+
+// File System Scenarios
+export function setupVSCodeFileReadScenario(mocks: ExtensionTestMocks, options: VSCodeFileScenarioOptions): void {
+	const { filePath, content = 'file content' } = options
+	const buffer = Buffer.from(content)
+	
+	// Use global mocks instead of local mocks
+	vi.mocked(vscode.Uri.file).mockReturnValue({ fsPath: filePath })
+	vi.mocked(vscode.workspace.fs.readFile).mockResolvedValue(buffer)
+}
+
+export function setupVSCodeFileWriteScenario(mocks: ExtensionTestMocks, options: VSCodeFileScenarioOptions): void {
+	const { filePath, content = 'file content' } = options
+	
+	// Use global mocks instead of local mocks
+	vi.mocked(vscode.Uri.file).mockReturnValue({ fsPath: filePath })
+	vi.mocked(vscode.workspace.fs.writeFile).mockResolvedValue(undefined)
+}
+
+export function setupVSCodeFileStatScenario(mocks: ExtensionTestMocks, options: VSCodeFileScenarioOptions): void {
+	const { filePath, fileType = 'file' } = options
+	const fileTypeValue = fileType === 'file' ? vscode.FileType.File : vscode.FileType.Directory
+	
+	// Use global mocks instead of local mocks
+	vi.mocked(vscode.Uri.file).mockReturnValue({ fsPath: filePath })
+	vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({ type: fileTypeValue })
+}
+
+export function setupVSCodeFileCopyScenario(mocks: ExtensionTestMocks, sourcePath: string, destinationPath: string): void {
+	// Use global mocks instead of local mocks
+	vi.mocked(vscode.Uri.file)
+		.mockReturnValueOnce({ fsPath: sourcePath })
+		.mockReturnValueOnce({ fsPath: destinationPath })
+	vi.mocked(vscode.workspace.fs.copy).mockResolvedValue(undefined)
+}
+
+// Command Registration Scenarios
+export function setupVSCodeCommandRegistrationScenario(mocks: ExtensionTestMocks, options: VSCodeCommandScenarioOptions): void {
+	const { commandName, shouldSucceed = true, errorMessage = 'Command failed' } = options
+	const mockDisposable = { dispose: vi.fn() }
+	
+	if (shouldSucceed) {
+		// Use global mocks instead of local mocks
+		vi.mocked(vscode.commands.registerCommand).mockReturnValue(mockDisposable)
+	} else {
+		vi.mocked(vscode.commands.registerCommand).mockImplementation(() => {
+			throw new Error(errorMessage)
+		})
+	}
+}
+
+// Window/UI Scenarios
+export function setupVSCodeWindowMessageScenario(mocks: ExtensionTestMocks, messageType: 'info' | 'warning' | 'error', message: string): void {
+	switch (messageType) {
+		case 'info':
+			// Use global mocks instead of local mocks
+			vi.mocked(vscode.window.showInformationMessage).mockResolvedValue(undefined)
+			break
+		case 'warning':
+			vi.mocked(vscode.window.showWarningMessage).mockResolvedValue(undefined)
+			break
+		case 'error':
+			vi.mocked(vscode.window.showErrorMessage).mockResolvedValue(undefined)
+			break
+	}
+}
+
+// Workspace Scenarios
+export function setupVSCodeWorkspaceScenario(mocks: ExtensionTestMocks, options: VSCodeWorkspaceScenarioOptions): void {
+	const { workspacePath, filePaths = [] } = options
+	
+	const mockWorkspaceFolder = {
+		uri: { fsPath: workspacePath },
+	}
+	
+	mocks.vscode.workspace.workspaceFolders = [mockWorkspaceFolder]
+	
+	// Setup file system mocks for each file
+	filePaths.forEach(filePath => {
+		setupVSCodeFileStatScenario(mocks, { filePath, fileType: 'file' })
+	})
+}
+
+// Terminal Scenarios
+export function setupVSCodeTerminalScenario(mocks: ExtensionTestMocks, terminalName?: string): void {
+	const mockTerminal = {
+		sendText: vi.fn(),
+		show: vi.fn(),
+		name: terminalName,
+	}
+	
+	mocks.vscode.window.createTerminal.mockReturnValue(mockTerminal)
+	mocks.vscode.window.activeTerminal = mockTerminal
+}
+
+// Extension Context Scenarios
+export function setupVSCodeExtensionContextScenario(mocks: ExtensionTestMocks): void {
+	const mockDisposable = { dispose: vi.fn() }
+	mocks.context.subscriptions.push(mockDisposable)
+}
+
+// Error Scenarios
+export function setupVSCodeErrorScenario(mocks: ExtensionTestMocks, errorType: 'fileSystem' | 'command' | 'workspace', errorMessage: string): void {
+	switch (errorType) {
+		case 'fileSystem':
+			// Use global mocks instead of local mocks
+			vi.mocked(vscode.workspace.fs.readFile).mockRejectedValue(new Error(errorMessage))
+			vi.mocked(vscode.workspace.fs.writeFile).mockRejectedValue(new Error(errorMessage))
+			vi.mocked(vscode.workspace.fs.stat).mockRejectedValue(new Error(errorMessage))
+			break
+		case 'command':
+			vi.mocked(vscode.commands.registerCommand).mockImplementation(() => {
+				throw new Error(errorMessage)
+			})
+			break
+		case 'workspace':
+			// Can't directly assign to mocked property, need to mock the getter
+			Object.defineProperty(vscode.workspace, 'workspaceFolders', {
+				get: () => undefined,
+				configurable: true
+			})
+			break
+	}
+}
+
+// ============================================================================
+// Extension Mock Builder Pattern
+// ============================================================================
+
+export class ExtensionMockBuilder {
+	constructor(private mocks: ExtensionTestMocks) {}
+
+	fileRead(options: VSCodeFileScenarioOptions): ExtensionMockBuilder {
+		setupVSCodeFileReadScenario(this.mocks, options)
+		return this
+	}
+
+	fileWrite(options: VSCodeFileScenarioOptions): ExtensionMockBuilder {
+		setupVSCodeFileWriteScenario(this.mocks, options)
+		return this
+	}
+
+	fileStat(options: VSCodeFileScenarioOptions): ExtensionMockBuilder {
+		setupVSCodeFileStatScenario(this.mocks, options)
+		return this
+	}
+
+	fileCopy(sourcePath: string, destinationPath: string): ExtensionMockBuilder {
+		setupVSCodeFileCopyScenario(this.mocks, sourcePath, destinationPath)
+		return this
+	}
+
+	commandRegistration(options: VSCodeCommandScenarioOptions): ExtensionMockBuilder {
+		setupVSCodeCommandRegistrationScenario(this.mocks, options)
+		return this
+	}
+
+	windowMessage(messageType: 'info' | 'warning' | 'error', message: string): ExtensionMockBuilder {
+		setupVSCodeWindowMessageScenario(this.mocks, messageType, message)
+		return this
+	}
+
+	workspace(options: VSCodeWorkspaceScenarioOptions): ExtensionMockBuilder {
+		setupVSCodeWorkspaceScenario(this.mocks, options)
+		return this
+	}
+
+	terminal(terminalName?: string): ExtensionMockBuilder {
+		setupVSCodeTerminalScenario(this.mocks, terminalName)
+		return this
+	}
+
+	error(errorType: 'fileSystem' | 'command' | 'workspace', errorMessage: string): ExtensionMockBuilder {
+		setupVSCodeErrorScenario(this.mocks, errorType, errorMessage)
+		return this
+	}
+
+	build(): ExtensionTestMocks {
+		return this.mocks
+	}
+}
+
+export function createExtensionMockBuilder(mocks: ExtensionTestMocks): ExtensionMockBuilder {
+	return new ExtensionMockBuilder(mocks)
 }

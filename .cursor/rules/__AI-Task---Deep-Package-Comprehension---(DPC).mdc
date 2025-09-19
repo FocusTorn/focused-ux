@@ -1,0 +1,1554 @@
+---
+description: Shall only be executed when directed to do any definitional variation of "doing a 'DPC' "
+alwaysApply: false
+---
+
+# Protocol: Deep-Package-Comprehension.mdc
+
+**Location**: .cursor/rules/\_\_AI-Task---Deep-Package-Comprehension---(DPC).mdc
+
+## **AI AGENT EXECUTION PROTOCOL**
+
+**CRITICAL**: This protocol is designed for AI agent consumption and MUST be followed exactly as structured. Each section contains explicit validation requirements that MUST be completed before proceeding.
+
+**ENFORCEMENT MECHANISM**: This protocol uses **CONCRETE EVIDENCE REQUIREMENTS** and **MANDATORY TOOL EXECUTION** to prevent skipping or incomplete execution.
+
+**CRITICAL OUTPUT REQUIREMENT**:
+
+- **NO ANALYSIS RESULTS IN CHAT**: All analysis results, findings, and detailed analysis MUST appear ONLY in the created documents
+- **CHAT RESPONSES**: Chat responses should contain ONLY status updates, confirmations, and references to created documents
+- **DOCUMENT-ONLY ANALYSIS**: Detailed analysis, findings, and comprehensive results are FORBIDDEN in chat responses
+- **REFERENCE ONLY**: Chat may reference document locations and confirm completion status
+
+**MANDATORY EVIDENCE REQUIREMENTS**:
+
+- **CONCRETE PROOF**: Each validation step requires specific, verifiable evidence
+- **TOOL EXECUTION PROOF**: All required tools must be executed with documented results
+- **FILE REFERENCES**: All analysis must reference specific files, line numbers, and code snippets
+- **MEASURABLE COMPLETION**: Each step has quantifiable completion criteria
+- **FAILURE DETECTION**: Incomplete execution triggers automatic restart requirements
+
+## **EXECUTION BLOCKING REQUIREMENTS**
+
+### **BLOCK 0: PRE-COMPREHENSION PREPARATION**
+
+**🚫 EXECUTION BLOCK**: You cannot proceed past this point until pre-comprehension preparation is completed.
+
+**MANDATORY PREPARATION CHECKLIST WITH CONCRETE EVIDENCE**:
+
+- [ ] **CRITICAL**: Target package identified and accessible
+    - **EVIDENCE REQUIRED**: Specific package path documented (e.g., `packages/ghost-writer/core/`)
+    - **TOOL PROOF**: `list_dir` tool executed on package directory with results documented
+- [ ] **CRITICAL**: All source code files accessible (src/, tests/, config files)
+    - **EVIDENCE REQUIRED**: Complete file listing with counts and types documented
+    - **TOOL PROOF**: `list_dir` tool executed on src/, tests/, and config directories
+- [ ] **CRITICAL**: Package documentation and README available
+    - **EVIDENCE REQUIRED**: Specific README file path and content summary documented
+    - **TOOL PROOF**: `read_file` tool executed on README with content analysis
+- [ ] **CRITICAL**: Workspace architecture context understood
+    - **EVIDENCE REQUIRED**: Workspace structure documented with package relationships
+    - **TOOL PROOF**: `mcp_nx-mcp_nx_project_details` tool executed with results documented
+- [ ] **CRITICAL**: Sufficient context window allocated for deep analysis
+    - **EVIDENCE REQUIRED**: Context window allocation strategy documented
+    - **TOOL PROOF**: File count and size analysis completed
+- [ ] **CRITICAL**: Package type classification completed (core, ext, shared, tool)
+    - **EVIDENCE REQUIRED**: Specific package type with architectural justification documented
+    - **TOOL PROOF**: Package structure analysis with type-specific patterns identified
+- [ ] **CRITICAL**: Integration patterns with other packages understood
+    - **EVIDENCE REQUIRED**: Cross-package dependencies mapped with specific file references
+    - **TOOL PROOF**: `grep` tool executed for cross-package imports with results documented
+- [ ] **CRITICAL**: Build and deployment configuration analyzed
+    - **EVIDENCE REQUIRED**: Build configuration files analyzed with specific settings documented
+    - **TOOL PROOF**: `read_file` tool executed on project.json and package.json with analysis
+
+**ANALYSIS TEMPLATES**:
+
+```markdown
+### Package Selection and Resource Allocation
+
+**Required Information Validation**:
+
+- **MANDATORY**: Target package identification and scope clearly defined
+- **MANDATORY**: Access to all relevant source code and configuration files verified
+- **MANDATORY**: Documentation and architectural context available and accessible
+- **MANDATORY**: Sufficient context window allocation for comprehensive analysis confirmed
+
+**Resource Accessibility Verification**:
+
+- **MANDATORY**: All source code files accessible (src/, tests/, config files)
+- **MANDATORY**: Package documentation and README available and readable
+- **MANDATORY**: Workspace architecture context understood and documented
+- **MANDATORY**: Sufficient context window allocated for deep analysis confirmed
+
+### Context Understanding
+
+**Workspace Architecture Analysis**:
+
+- **MANDATORY**: Workspace architecture patterns and standards identified
+- **MANDATORY**: Package type classification completed (core, ext, shared, tool)
+- **MANDATORY**: Integration patterns with other packages mapped
+- **MANDATORY**: Build and deployment configuration analyzed
+
+**Package Classification Validation**:
+
+- **MANDATORY**: Package type correctly identified and documented
+- **MANDATORY**: Package role in workspace architecture understood
+- **MANDATORY**: Integration points with other packages mapped
+- **MANDATORY**: Build and deployment requirements understood
+```
+
+**🚫 VALIDATION BLOCK**: Before proceeding, you MUST provide **CONCRETE EVIDENCE** of completion:
+
+**MANDATORY VALIDATION EVIDENCE**:
+
+1. **PACKAGE PATH DOCUMENTED**: `packages/{package-name}/core/` with specific path
+2. **FILE LISTING EVIDENCE**: Complete directory listing with file counts and types
+3. **README ANALYSIS EVIDENCE**: Specific README content summary with key points
+4. **WORKSPACE CONTEXT EVIDENCE**: Nx project details with dependencies and targets
+5. **PACKAGE TYPE EVIDENCE**: Specific type classification with architectural justification
+6. **INTEGRATION EVIDENCE**: Cross-package imports mapped with specific file references
+7. **BUILD CONFIG EVIDENCE**: Project.json and package.json analysis with specific settings
+
+**VALIDATION STATEMENT**: "PRE-COMPREHENSION PREPARATION COMPLETED: Package path {specific-path}, {file-count} files accessible, README analyzed at {readme-path}, workspace context from Nx project {project-name}, package type {type} with {architectural-pattern}, {cross-package-count} cross-package dependencies mapped, build config analyzed with {build-targets} targets."
+
+### **BLOCK 1: MANDATORY GREP-BASED DEPENDENCY ANALYSIS**
+
+**🚫 EXECUTION BLOCK**: You cannot proceed past this point until ALL grep-based dependency analysis is completed.
+
+**CRITICAL**: This block is MANDATORY and cannot be skipped, abbreviated, or substituted. Every grep command MUST be executed and results documented.
+
+**MANDATORY GREP EXECUTION CHECKLIST WITH CONCRETE EVIDENCE**:
+
+- [ ] **CRITICAL**: All import statements traced using grep with specific commands
+    - **EVIDENCE REQUIRED**: Complete grep results with file paths, line numbers, and import statements
+    - **TOOL PROOF**: `grep` tool executed with exact command and results documented
+- [ ] **CRITICAL**: External package imports cataloged with grep results
+    - **EVIDENCE REQUIRED**: Specific external packages with import locations and usage context
+    - **TOOL PROOF**: `grep` tool executed for external imports with results documented
+- [ ] **CRITICAL**: Cross-package imports identified with grep evidence
+    - **EVIDENCE REQUIRED**: Specific cross-package imports with file paths and line numbers
+    - **TOOL PROOF**: `grep` tool executed for cross-package imports with results documented
+- [ ] **CRITICAL**: Node.js built-in usage cataloged with grep results
+    - **EVIDENCE REQUIRED**: Specific Node.js built-ins with usage locations and context
+    - **TOOL PROOF**: `grep` tool executed for node: imports with results documented
+- [ ] **CRITICAL**: VSCode API usage patterns counted with grep evidence
+    - **EVIDENCE REQUIRED**: Specific VSCode API usage with file paths and line numbers
+    - **TOOL PROOF**: `grep` tool executed for vscode imports with results documented
+- [ ] **CRITICAL**: Type-only imports identified with grep analysis
+    - **EVIDENCE REQUIRED**: Specific type-only imports with file paths and line numbers
+    - **TOOL PROOF**: `grep` tool executed for type imports with results documented
+- [ ] **CRITICAL**: Circular dependency detection completed with grep analysis
+    - **EVIDENCE REQUIRED**: Specific circular dependencies with file paths and import chains
+    - **TOOL PROOF**: `grep` tool executed for circular patterns with results documented
+- [ ] **CRITICAL**: Runtime vs dev dependency validation completed with grep evidence
+    - **EVIDENCE REQUIRED**: Specific dependency misclassifications with file paths and evidence
+    - **TOOL PROOF**: `grep` tool executed for dependency validation with results documented
+
+**MANDATORY GREP COMMANDS TO EXECUTE**:
+
+```bash
+# 1. ALL IMPORT STATEMENTS - MANDATORY
+grep -r "import.*from" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 2. EXTERNAL PACKAGE IMPORTS - MANDATORY
+grep -r "import.*from ['\"][^./]" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 3. CROSS-PACKAGE IMPORTS - MANDATORY
+grep -r "import.*from ['\"]@fux/" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 4. NODE.JS BUILT-IN IMPORTS - MANDATORY
+grep -r "import.*from ['\"]node:" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 5. VSCode API IMPORTS - MANDATORY
+grep -r "import.*from ['\"]vscode" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 6. TYPE-ONLY IMPORTS - MANDATORY
+grep -r "import type" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 7. RELATIVE IMPORTS - MANDATORY
+grep -r "import.*from ['\"]\." packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 8. DYNAMIC IMPORTS - MANDATORY
+grep -r "import(" packages/{package-name}/core/src/ --include="*.ts" -n
+```
+
+**MANDATORY GREP RESULTS DOCUMENTATION**:
+
+For each grep command executed, you MUST document:
+
+1. **Command executed**: Exact grep command used
+2. **Results count**: Number of matches found
+3. **File locations**: Specific files containing matches
+4. **Line numbers**: Specific line numbers for each match
+5. **Import details**: Complete import statement for each match
+6. **Analysis**: What each import represents and its purpose
+
+**MANDATORY DEPENDENCY VALIDATION**:
+
+- [ ] **CRITICAL**: Compare grep results against package.json dependencies
+- [ ] **CRITICAL**: Identify ANY runtime imports not declared in dependencies
+- [ ] **CRITICAL**: Identify ANY declared dependencies not found in grep results
+- [ ] **CRITICAL**: Identify ANY devDependencies used at runtime (VIOLATION)
+- [ ] **CRITICAL**: Identify ANY dependencies not used at runtime (WASTE)
+- [ ] **CRITICAL**: Verify externalized dependencies match actual usage
+- [ ] **CRITICAL**: Document specific violations with file paths and line numbers
+
+**MANDATORY RUNTIME DEPENDENCY CLASSIFICATION**:
+
+For each external package import found in grep results, you MUST document:
+
+1. **Package name**: Exact package name imported
+2. **Import location**: File path and line number
+3. **Usage context**: Runtime, build, test, or dev usage
+4. **Declared location**: package.json dependencies or devDependencies
+5. **Classification**: Correct, misclassified, or violation
+6. **Evidence**: Specific code showing how package is used
+7. **Impact assessment**: Runtime failure risk if misclassified
+
+**MANDATORY VIOLATION DETECTION**:
+
+- [ ] **CRITICAL**: Document ALL devDependencies used at runtime (CRITICAL VIOLATION)
+- [ ] **CRITICAL**: Document ALL dependencies declared but not used (WASTE)
+- [ ] **CRITICAL**: Document ALL runtime imports not declared (MISSING DEPENDENCY)
+- [ ] **CRITICAL**: Document ALL externalization mismatches (BUILD VIOLATION)
+- [ ] **CRITICAL**: Provide specific file paths and line numbers for each violation
+- [ ] **CRITICAL**: Assess runtime failure risk for each violation
+
+**MANDATORY CROSS-PACKAGE DEPENDENCY MAPPING**:
+
+- [ ] **CRITICAL**: Map ALL imports from other workspace packages
+- [ ] **CRITICAL**: Document specific files importing from other packages
+- [ ] **CRITICAL**: Trace dependency chains between packages
+- [ ] **CRITICAL**: Identify circular dependencies between packages
+- [ ] **CRITICAL**: Document workspace-level dependency relationships
+
+**MANDATORY CIRCULAR DEPENDENCY DETECTION**:
+
+- [ ] **CRITICAL**: Analyze import chains for circular patterns
+- [ ] **CRITICAL**: Document any circular dependencies found
+- [ ] **CRITICAL**: Identify specific files involved in circular dependencies
+- [ ] **CRITICAL**: Assess impact of circular dependencies on build/runtime
+
+**ANALYSIS TEMPLATES**:
+
+```markdown
+### Import Graph Analysis
+
+**Internal Import Dependencies**:
+
+- Trace ALL relative imports within package using grep/pattern search
+- Map complete import dependency chains
+- Identify circular dependencies and potential issues
+- Document actual vs declared dependency relationships
+
+**External Import Dependencies**:
+
+- Catalog all external package imports
+- Verify declared dependencies match actual usage
+- Identify misclassified dependencies (runtime vs dev)
+- Map external dependency usage patterns
+
+**Cross-Package Dependencies**:
+
+- Identify dependencies between packages in workspace
+- Map shared library usage (libs/shared, libs/tools)
+- Trace cross-package communication patterns
+- Document workspace-level dependency relationships
+
+### Runtime Dependency Validation
+
+**CRITICAL DEPENDENCY MISCLASSIFICATION DETECTION**:
+
+- **MANDATORY**: Trace EVERY import statement in source code using grep/pattern search
+- **MANDATORY**: Compare actual imports against package.json dependencies vs devDependencies
+- **MANDATORY**: Identify ANY dependency used at runtime but listed as devDependency (CRITICAL VIOLATION)
+- **MANDATORY**: Identify ANY dependency listed as dependency but not used at runtime (WASTE)
+- **MANDATORY**: Verify externalized dependencies in project.json match actual runtime usage
+- **MANDATORY**: Document specific import statements that prove runtime vs dev classification
+
+**Declared vs Actual Dependencies**:
+
+- Verify declared dependencies match actual usage
+- Identify misclassified dependencies (runtime vs dev)
+- Map external dependency usage patterns
+- Validate dependency externalization in build configs
+
+**DEPENDENCY CLASSIFICATION VALIDATION**:
+
+- **For each external package import**: Determine if it's used at runtime or only during build/test
+- **For each devDependency**: Verify it's NOT imported in source code (only in tests/build scripts)
+- **For each dependency**: Verify it IS imported and used in source code
+- **For each externalized dependency**: Verify it's actually imported and used at runtime
+
+**VSCode API Usage Patterns**:
+
+- Count and catalog VSCode import points
+- Map VSCode API usage complexity
+- Identify VSCode integration patterns
+- Document VSCode dependency relationships
+
+**Node.js Built-in Dependencies**:
+
+- Catalog usage of node:path, node:buffer, node:process, etc.
+- Map built-in module usage patterns
+- Identify built-in dependency complexity
+- Document Node.js API usage patterns
+
+### Service Dependency Chains
+
+**Service Instantiation Patterns**:
+
+- Map how services actually depend on each other
+- Trace service instantiation and dependency injection patterns
+- Identify service interaction patterns and coordination
+- Document service lifecycle dependencies
+
+**Adapter Dependency Patterns**:
+
+- Analyze which adapters depend on which VSCode APIs
+- Map adapter interface dependencies
+- Trace adapter instantiation and usage patterns
+- Document adapter integration complexity
+
+### Core Package Integration
+
+**Extension Consumption Analysis**:
+
+- Analyze how extensions consume their core packages
+- Map service imports and usage patterns
+- Trace interface definitions and implementations
+- Document core package integration complexity
+
+### Dependency Complexity Assessment
+
+**Complexity Scoring**:
+
+- Calculate total dependency complexity scores
+- Compare dependency patterns between packages
+- Identify architectural dependency differences
+- Document dependency optimization opportunities
+
+### Circular Dependency Detection
+
+**Import Cycle Analysis**:
+
+- **MANDATORY**: Map complete import dependency chains using graph analysis
+- **MANDATORY**: Identify any circular import patterns (A imports B, B imports A)
+- **MANDATORY**: Document specific files involved in circular dependencies
+- **MANDATORY**: Assess impact of circular dependencies on build and runtime
+- **MANDATORY**: Identify resolution strategies for circular dependencies
+
+### Version Compatibility Analysis
+
+**Version Validation**:
+
+- **MANDATORY**: Compare declared dependency versions in package.json vs actual usage
+- **MANDATORY**: Identify version mismatches between declared and resolved versions
+- **MANDATORY**: Document any version conflicts or compatibility issues
+- **MANDATORY**: Verify externalized dependencies use compatible versions
+- **MANDATORY**: Assess impact of version differences on functionality
+
+### Type-Only Import Analysis
+
+**Import Type Validation**:
+
+- **MANDATORY**: Identify all `import type` statements vs regular imports
+- **MANDATORY**: Verify type-only imports are not used at runtime
+- **MANDATORY**: Document any type imports that should be value imports
+- **MANDATORY**: Verify VSCode API imports are type-only outside adapters
+- **MANDATORY**: Assess impact of incorrect import types on build/runtime
+
+### Build Dependency Validation
+
+**Build vs Runtime Analysis**:
+
+- **MANDATORY**: Verify build dependencies (esbuild, typescript, etc.) are not imported in source code
+- **MANDATORY**: Identify any build tools used at runtime (CRITICAL VIOLATION)
+- **MANDATORY**: Document proper separation of build vs runtime dependencies
+- **MANDATORY**: Verify externalization correctly separates build from runtime deps
+- **MANDATORY**: Assess impact of build dependency leakage on runtime
+
+### Security Vulnerability Assessment
+
+**Dependency Security Analysis**:
+
+- **MANDATORY**: Identify any known security vulnerabilities in dependencies
+- **MANDATORY**: Document dependency security implications
+- **MANDATORY**: Assess impact of vulnerable dependencies on package security
+- **MANDATORY**: Identify mitigation strategies for security vulnerabilities
+- **MANDATORY**: Document security best practices for dependency management
+```
+
+**🚫 VALIDATION BLOCK**: Before proceeding, you MUST provide **CONCRETE EVIDENCE** of completion:
+
+**MANDATORY VALIDATION EVIDENCE**:
+
+1. **GREP COMMAND EVIDENCE**: All 8 mandatory grep commands executed with specific results
+2. **IMPORT TRACING EVIDENCE**: Complete import statements with file paths and line numbers
+3. **EXTERNAL DEPENDENCY EVIDENCE**: Specific external packages with usage locations
+4. **CROSS-PACKAGE EVIDENCE**: Specific cross-package imports with file references
+5. **NODE.JS EVIDENCE**: Specific Node.js built-ins with usage locations
+6. **VSCode API EVIDENCE**: Specific VSCode API usage with file references
+7. **TYPE IMPORT EVIDENCE**: Specific type-only imports with file references
+8. **CIRCULAR DEPENDENCY EVIDENCE**: Specific circular dependencies with import chains
+9. **DEPENDENCY VIOLATION EVIDENCE**: Specific misclassifications with file paths and evidence
+
+**VALIDATION STATEMENT**: "GREP-BASED DEPENDENCY ANALYSIS COMPLETED: {import-count} imports traced, {external-count} external packages cataloged, {cross-package-count} cross-package imports identified, {nodejs-count} Node.js built-ins found, {vscode-count} VSCode API usages counted, {type-count} type-only imports identified, {circular-count} circular dependencies detected, {violation-count} dependency violations identified with specific evidence."
+
+### **BLOCK 2: RUNTIME DEPENDENCY VALIDATION**
+
+**🚫 EXECUTION BLOCK**: You cannot proceed past this point until runtime dependency validation is completed.
+
+**MANDATORY RUNTIME VALIDATION CHECKLIST WITH CONCRETE EVIDENCE**:
+
+- [ ] **CRITICAL**: Every import statement analyzed for runtime vs build usage
+    - **EVIDENCE REQUIRED**: Specific import statements with runtime/build classification and justification
+    - **TOOL PROOF**: `read_file` tool executed on source files with usage analysis documented
+- [ ] **CRITICAL**: Dependency misclassification detection completed
+    - **EVIDENCE REQUIRED**: Specific misclassifications with file paths, line numbers, and evidence
+    - **TOOL PROOF**: `grep` tool results compared with package.json dependencies documented
+- [ ] **CRITICAL**: Externalized dependency verification completed
+    - **EVIDENCE REQUIRED**: Specific externalized dependencies with build config verification
+    - **TOOL PROOF**: `read_file` tool executed on project.json with externalization analysis
+- [ ] **CRITICAL**: Version compatibility analysis completed
+    - **EVIDENCE REQUIRED**: Specific version mismatches with compatibility impact assessment
+    - **TOOL PROOF**: Package.json analysis with version comparison documented
+- [ ] **CRITICAL**: Security vulnerability assessment completed
+    - **EVIDENCE REQUIRED**: Specific security vulnerabilities with impact assessment
+    - **TOOL PROOF**: Dependency security analysis with vulnerability documentation
+
+**MANDATORY DEPENDENCY CLASSIFICATION ANALYSIS**:
+
+For each external package import found in grep results:
+
+1. **Package name**: Exact package name imported
+2. **Import location**: File path and line number
+3. **Usage context**: Runtime, build, test, or dev usage
+4. **Declared location**: package.json dependencies or devDependencies
+5. **Classification**: Correct, misclassified, or violation
+6. **Evidence**: Specific code showing how package is used
+
+**EXAMPLE VIOLATION DETECTION**:
+
+```markdown
+#### External Package: typescript
+
+- **Import Statement**: `import * as ts from 'typescript'`
+- **File Location**: `packages/ghost-writer/core/src/services/ConsoleLogger.service.ts:1`
+- **Usage Context**: Runtime service implementation (used in constructor and methods)
+- **Declared In**: devDependencies
+- **Classification**: ❌ CRITICAL VIOLATION - Runtime usage of devDependency
+- **Evidence**: Used in LogMessageHelper constructor and AST analysis methods
+- **Impact**: Will cause runtime errors when extension loads
+- **Fix Required**: Move typescript to dependencies or externalize properly
+```
+
+**MANDATORY VIOLATION DOCUMENTATION**:
+
+- [ ] **CRITICAL**: Document ALL dependency misclassifications found
+- [ ] **CRITICAL**: Document ALL unused dependencies found
+- [ ] **CRITICAL**: Document ALL missing dependencies found
+- [ ] **CRITICAL**: Document ALL externalization violations found
+- [ ] **CRITICAL**: Provide specific file paths and line numbers for each violation
+
+**BLOCKING PROGRESSION REQUIREMENTS**:
+
+- **CRITICAL**: Block 2 (runtime dependency validation) cannot be bypassed
+- **CRITICAL**: Dependency classification analysis must be completed for every external import
+
+**🚫 VALIDATION BLOCK**: Before proceeding, you MUST provide **CONCRETE EVIDENCE** of completion:
+
+**MANDATORY VALIDATION EVIDENCE**:
+
+1. **IMPORT ANALYSIS EVIDENCE**: Specific import statements with runtime/build classification
+2. **MISCLASSIFICATION EVIDENCE**: Specific dependency misclassifications with file paths and evidence
+3. **EXTERNALIZATION EVIDENCE**: Specific externalized dependencies with build config verification
+4. **VERSION COMPATIBILITY EVIDENCE**: Specific version mismatches with impact assessment
+5. **SECURITY VULNERABILITY EVIDENCE**: Specific security vulnerabilities with impact assessment
+
+**VALIDATION STATEMENT**: "RUNTIME DEPENDENCY VALIDATION COMPLETED: {import-count} imports analyzed for runtime usage, {misclassification-count} dependency misclassifications identified with specific violations at {file-paths}, {externalized-count} externalized dependencies verified, {version-mismatch-count} version compatibility issues assessed, {vulnerability-count} security vulnerabilities identified with impact assessment."
+
+---
+
+### **BLOCK 3: FOUNDATIONAL KNOWLEDGE ACQUISITION**
+
+**STOP**: You cannot proceed past this point until foundational knowledge is acquired.
+
+**MANDATORY FOUNDATIONAL ANALYSIS CHECKLIST**:
+
+- [ ] Package Identity Analysis completed (What, Why, Who, How)
+- [ ] Architectural Pattern Recognition completed (Package Type, Design Patterns, Integration Patterns)
+- [ ] Core Functionality Mapping completed (Data Flow, Service Architecture, Algorithms)
+- [ ] User Experience Simulation completed (Workflows, Interface, Configuration)
+
+**ANALYSIS TEMPLATES**:
+
+```markdown
+### Package Identity Analysis
+
+**What is this package?**
+
+- Primary functionality and capabilities
+- Core value proposition
+- Target problem domain
+
+**Why does it exist?**
+
+- Problems it solves
+- User pain points addressed
+- Competitive advantages
+
+**Who uses it?**
+
+- Primary user personas
+- User skill levels and constraints
+- Use case scenarios
+
+**How does it fit?**
+
+- Role in broader system architecture
+- Integration points with other packages
+- Dependency relationships
+
+### Architectural Pattern Analysis
+
+**Package Type Patterns**
+
+- Core package: Business logic isolation, self-contained architecture
+- Extension package: VSCode integration, adapter patterns
+- Shared package: Utility functions, cross-package consumption
+- Tool package: Standalone execution, minimal dependencies
+
+**Design Pattern Recognition**
+
+- Service architecture patterns
+- Data flow patterns
+- Error handling patterns
+- Configuration management patterns
+
+**Integration Pattern Mapping**
+
+- VSCode API usage patterns
+- Cross-package communication patterns
+- External dependency integration patterns
+
+### Core Functionality Analysis
+
+**Data Flow Mapping**
+
+- Input sources and validation
+- Processing pipeline and transformations
+- Output generation and presentation
+- Error handling and recovery
+
+**Service Architecture Understanding**
+
+- Service responsibilities and boundaries
+- Service interactions and dependencies
+- State management and lifecycle
+- Performance characteristics
+
+**Algorithm and Logic Comprehension**
+
+- Core algorithms and their implementation
+- Business logic and decision trees
+- Optimization strategies and trade-offs
+- Edge case handling
+
+### User Experience Analysis
+
+**User Workflow Simulation**
+
+- Primary user journeys
+- Decision points and branching
+- Error scenarios and recovery
+- Success criteria and validation
+
+**Interface Interaction Understanding**
+
+- Command structure and patterns
+- UI component organization
+- User input handling
+- Feedback and response patterns
+
+**Configuration and Customization**
+
+- User settings and preferences
+- Configuration validation and impact
+- Extension points and customization
+- Default behavior and overrides
+```
+
+### **CRITICAL: Deep Codebase Dependency Analysis**
+
+**MANDATORY**: This is a critical process that MUST be performed for comprehensive package understanding.
+
+**Import Graph Analysis**
+
+- Trace ALL actual imports between packages using grep/pattern search
+- Map complete import dependency chains
+- Identify circular dependencies and potential issues
+- Document actual vs declared dependency relationships
+
+**Runtime Dependency Validation**
+
+- Verify declared dependencies match actual usage
+- Identify misclassified dependencies (runtime vs dev)
+- Map external dependency usage patterns
+- Validate dependency externalization in build configs
+
+**Service Dependency Chains**
+
+- Map how services actually depend on each other
+- Trace service instantiation and dependency injection patterns
+- Identify service interaction patterns and coordination
+- Document service lifecycle dependencies
+
+**Adapter Dependency Patterns**
+
+- Analyze which adapters depend on which VSCode APIs
+- Map adapter interface dependencies
+- Trace adapter instantiation and usage patterns
+- Document adapter integration complexity
+
+**Core Package Integration**
+
+- Analyze how extensions consume their core packages
+- Map service imports and usage patterns
+- Trace interface definitions and implementations
+- Document core package integration complexity
+
+**Cross-Package Dependencies**
+
+- Identify dependencies between packages in the workspace
+- Map shared library usage (libs/shared, libs/tools)
+- Trace cross-package communication patterns
+- Document workspace-level dependency relationships
+
+**Node.js Built-in Dependencies**
+
+- Catalog usage of node:path, node:buffer, node:process, etc.
+- Map built-in module usage patterns
+- Identify built-in dependency complexity
+- Document Node.js API usage patterns
+
+**VSCode API Usage Patterns**
+
+- Count and catalog VSCode import points
+- Map VSCode API usage complexity
+- Identify VSCode integration patterns
+- Document VSCode dependency relationships
+
+**Dependency Complexity Assessment**
+
+- Calculate total dependency complexity scores
+- Compare dependency patterns between packages
+- Identify architectural dependency differences
+- Document dependency optimization opportunities
+
+````
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "FOUNDATIONAL KNOWLEDGE ACQUIRED: Package identity, architecture, functionality, and user experience fully understood."
+
+### **BLOCK 4: IMPLEMENTATION PATTERN LEARNING**
+
+**STOP**: You cannot proceed past this point until implementation patterns are learned.
+
+**MANDATORY IMPLEMENTATION ANALYSIS CHECKLIST**:
+
+- [ ] Code Structure Comprehension completed (Organization, Strategy, Quality)
+- [ ] Dependency and Integration Mapping completed (Direct, Indirect, Integration)
+- [ ] State Management Understanding completed (Transitions, Lifecycle, Memory)
+- [ ] Event-Driven Architecture Understanding completed (Propagation, Async, Listeners)
+
+**ANALYSIS TEMPLATES**:
+
+```markdown
+### Code Structure Comprehension
+
+**Code Organization Patterns**
+
+- File and directory structure
+- Module organization and boundaries
+- Import and dependency patterns
+- Naming conventions and standards
+
+**Implementation Strategy Recognition**
+
+- Error handling approaches
+- Performance optimization techniques
+- Testing strategies and coverage
+- Documentation patterns
+
+**Code Quality Patterns**
+
+- Type safety and validation
+- Error prevention strategies
+- Performance considerations
+- Maintainability patterns
+
+### Dependency and Integration Mapping
+
+**Direct Dependency Understanding**
+
+- Package dependencies and versions
+- Import patterns and usage
+- Configuration and initialization
+- Capability and limitation mapping
+
+**Indirect Dependency Analysis**
+
+- Transitive dependency chains
+- Version compatibility requirements
+- Breaking change impact assessment
+- Security and vulnerability considerations
+
+**Integration Pattern Recognition**
+
+- Cross-package communication
+- Shared data and state
+- Coordinated functionality
+- Performance impact analysis
+
+### State Management Understanding
+
+**Complex State Transition Understanding**
+
+- State machine patterns and transitions
+- State validation and consistency checks
+- State persistence and restoration
+- State synchronization across components
+
+**Lifecycle Event Handling**
+
+- Package initialization sequences
+- Activation and deactivation patterns
+- Cleanup and disposal strategies
+- Resource lifecycle management
+
+**Memory State Management**
+
+- In-memory state vs persistent state
+- State caching strategies
+- State invalidation patterns
+- Memory optimization techniques
+
+### Event-Driven Architecture Understanding
+
+**Event Propagation Patterns**
+
+- Event bubbling and capturing
+- Event delegation strategies
+- Event filtering and transformation
+- Event listener management
+
+**Asynchronous Operation Coordination**
+
+- Promise chain management
+- Async/await patterns
+- Concurrent operation handling
+- Error propagation in async flows
+
+**Event Listener Management**
+
+- Listener registration and cleanup
+- Event listener optimization
+- Memory leak prevention
+- Event listener debugging
+````
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "IMPLEMENTATION PATTERNS LEARNED: Code structure, dependencies, state management, and event architecture fully analyzed."
+
+### **BLOCK 5: COMPLEX ALGORITHM AND BUSINESS LOGIC COMPREHENSION**
+
+**STOP**: You cannot proceed past this point until complex algorithms are comprehended.
+
+**MANDATORY ALGORITHM ANALYSIS CHECKLIST**:
+
+- [ ] Complex Algorithm Analysis completed (Complexity, Business Logic, Data Transformation)
+- [ ] Error Handling and Edge Case Management completed (Cascading, Edge Cases, Recovery)
+- [ ] Configuration and Environment Management completed (Dynamic, Environment-Specific, Validation)
+- [ ] Integration and Communication Patterns completed (Inter-Package, Serialization, Protocols)
+
+**ANALYSIS TEMPLATES**:
+
+```markdown
+### Complex Algorithm Analysis
+
+**Algorithm Complexity Analysis**
+
+- Time complexity understanding
+- Space complexity analysis
+- Performance characteristics
+- Optimization opportunities
+
+**Business Logic Decision Trees**
+
+- Complex conditional logic
+- Decision tree patterns
+- Business rule implementation
+- Edge case handling
+
+**Data Transformation Pipelines**
+
+- Multi-step data processing
+- Data validation and sanitization
+- Transformation optimization
+- Pipeline error handling
+
+### Error Handling and Edge Case Management
+
+**Cascading Error Scenarios**
+
+- Error propagation patterns
+- Error context preservation
+- Error recovery strategies
+- Error logging and debugging
+
+**Edge Case Identification**
+
+- Boundary condition analysis
+- Edge case testing strategies
+- Input validation patterns
+- Exception handling approaches
+
+**Recovery Strategy Patterns**
+
+- Failure mode analysis
+- Recovery procedure implementation
+- Graceful degradation strategies
+- Resilience pattern implementation
+
+### Configuration and Environment Management
+
+**Dynamic Configuration Loading**
+
+- Runtime configuration changes
+- Configuration validation
+- Configuration inheritance
+- Configuration hot-reloading
+
+**Environment-Specific Behavior**
+
+- Environment detection
+- Environment-specific configuration
+- Feature flag management
+- Environment adaptation patterns
+
+**Configuration Validation**
+
+- Schema validation
+- Configuration error handling
+- Default value management
+- Configuration migration
+
+### Integration and Communication Patterns
+
+**Inter-Package Communication**
+
+- Communication protocols
+- Data exchange patterns
+- API contract management
+- Version compatibility
+
+**Data Serialization**
+
+- Serialization strategies
+- Data format handling
+- Serialization optimization
+- Deserialization error handling
+
+**Protocol Implementation**
+
+- Custom protocol design
+- Protocol versioning
+- Protocol optimization
+- Protocol debugging
+```
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "COMPLEX ALGORITHMS COMPREHENDED: Algorithm complexity, error handling, configuration, and integration patterns fully understood."
+
+### **BLOCK 6: RESOURCE MANAGEMENT AND OPTIMIZATION COMPREHENSION**
+
+**STOP**: You cannot proceed past this point until resource management is comprehended.
+
+**MANDATORY RESOURCE ANALYSIS CHECKLIST**:
+
+- [ ] Resource Management and Optimization completed (Pool Management, Memory, Performance)
+- [ ] Testing Strategy and Quality Assurance completed (Complex Scenarios, Mock Strategy, Test Data)
+- [ ] Performance and Reliability Comprehension completed (Baseline, Optimization, Testing)
+- [ ] Testing and Deployment Comprehension completed (Strategy, Implementation, Integration)
+- [ ] **CRITICAL**: Build System Analysis completed (Configuration, Process, Optimization)
+- [ ] **CRITICAL**: Security Analysis completed (Code Security, Implementation, Compliance)
+- [ ] **CRITICAL**: Performance Baseline Analysis completed (Metrics, Benchmarking, Monitoring)
+- [ ] **CRITICAL**: Data Flow and State Synchronization completed (Consistency, Conflict Resolution)
+- [ ] **CRITICAL**: Integration Testing and Compatibility completed (API Compatibility, Migration)
+- [ ] **CRITICAL**: Monitoring and Observability completed (Logging, Metrics, Health Checks)
+- [ ] **CRITICAL**: Documentation and Knowledge Transfer completed (Code Docs, API Docs, Maintenance)
+- [ ] **CRITICAL**: Compliance and Standards completed (Coding Standards, Architecture Compliance)
+- [ ] **CRITICAL**: Scalability and Extensibility completed (Scaling Patterns, Extension Points)
+
+**ANALYSIS TEMPLATES**:
+
+```markdown
+### Resource Management and Optimization
+
+**Resource Pool Management**
+
+- Shared resource management
+- Resource allocation strategies
+- Resource contention handling
+- Resource cleanup patterns
+
+**Memory Management**
+
+- Memory allocation patterns
+- Memory leak prevention
+- Memory optimization techniques
+- Memory monitoring strategies
+
+**Performance Optimization**
+
+- Code-level optimizations
+- Algorithm optimizations
+- Data structure optimizations
+- Performance profiling
+
+### Testing Strategy and Quality Assurance
+
+**Complex Test Scenarios**
+
+- Complex business logic testing
+- Integration testing patterns
+- End-to-end testing strategies
+- Performance testing approaches
+
+**Mock Strategy Patterns**
+
+- Advanced mocking techniques
+- Mock lifecycle management
+- Mock optimization strategies
+- Mock debugging techniques
+
+**Test Data Management**
+
+- Test data setup patterns
+- Test data cleanup strategies
+- Test data isolation
+- Test data optimization
+
+### Performance and Reliability Comprehension
+
+**Baseline Performance Understanding**
+
+- Normal operation characteristics
+- Resource usage patterns
+- Performance bottlenecks
+- Scaling characteristics
+
+**Optimization Strategy Recognition**
+
+- Caching implementations
+- Lazy loading patterns
+- Algorithm optimizations
+- Resource management
+
+**Performance Testing Understanding**
+
+- Benchmark strategies
+- Performance targets
+- Regression detection
+- Monitoring approaches
+
+### Testing and Deployment Comprehension
+
+**Test Organization and Coverage**
+
+- Test types and purposes
+- Coverage strategies and metrics
+- Test data management
+- Test environment setup
+
+**Test Implementation Patterns**
+
+- Test structure and organization
+- Mocking and stubbing strategies
+- Assertion patterns
+- Test utilities and helpers
+
+**Testing Integration Understanding**
+
+- CI/CD integration patterns
+- Automated testing workflows
+- Test reporting and monitoring
+- Test maintenance strategies
+
+**Build Process Understanding**
+
+- Build configuration and steps
+- Dependency resolution
+- Output generation and validation
+- Build optimization strategies
+
+**Packaging and Distribution**
+
+- Package format and contents
+- Installation and configuration
+- Update and versioning strategies
+- Distribution mechanisms
+
+**Operational Considerations**
+
+- Monitoring and alerting
+- Health checking and diagnostics
+- Backup and recovery
+- Security and compliance
+```
+
+### Reliability and Error Handling Comprehension
+
+**Error Handling Pattern Recognition**:
+
+- **MANDATORY**: Error detection and classification patterns identified
+- **MANDATORY**: Error recovery strategies mapped and documented
+- **MANDATORY**: User communication patterns for errors analyzed
+- **MANDATORY**: Logging and debugging approaches documented
+
+**Failure Mode Understanding**:
+
+- **MANDATORY**: Failure scenarios and causes identified and documented
+- **MANDATORY**: Impact assessment and mitigation strategies mapped
+- **MANDATORY**: Graceful degradation strategies analyzed
+- **MANDATORY**: Recovery procedures documented and validated
+
+**Resilience Pattern Recognition**:
+
+- **MANDATORY**: Retry mechanisms and strategies identified
+- **MANDATORY**: Circuit breaker implementations analyzed
+- **MANDATORY**: Timeout handling patterns documented
+- **MANDATORY**: Resource management during failures analyzed
+
+### Build System Analysis
+
+**Build Configuration Understanding**:
+
+- **MANDATORY**: Build configuration and steps analyzed and documented
+- **MANDATORY**: Dependency resolution patterns identified and mapped
+- **MANDATORY**: Output generation and validation processes documented
+- **MANDATORY**: Build optimization strategies analyzed
+
+**Build Process Analysis**:
+
+- **MANDATORY**: Build pipeline stages identified and documented
+- **MANDATORY**: Build artifact generation patterns analyzed
+- **MANDATORY**: Build error handling and recovery strategies documented
+- **MANDATORY**: Build performance characteristics analyzed
+
+### Security Analysis
+
+**Code Security Patterns**:
+
+- **MANDATORY**: Input validation and sanitization patterns identified
+- **MANDATORY**: Authentication and authorization patterns analyzed
+- **MANDATORY**: Data protection and encryption strategies documented
+- **MANDATORY**: Security boundary enforcement patterns identified
+
+**Security Implementation Analysis**:
+
+- **MANDATORY**: Security vulnerability patterns identified and documented
+- **MANDATORY**: Security best practices implementation analyzed
+- **MANDATORY**: Security testing strategies documented
+- **MANDATORY**: Security compliance requirements analyzed
+
+### Performance Baseline Analysis
+
+**Performance Metrics Collection**:
+
+- **MANDATORY**: Performance metrics collection strategies identified
+- **MANDATORY**: Benchmarking strategies documented and analyzed
+- **MANDATORY**: Performance regression detection patterns identified
+- **MANDATORY**: Resource usage profiling strategies documented
+
+**Performance Analysis**:
+
+- **MANDATORY**: Performance baseline characteristics documented
+- **MANDATORY**: Performance bottleneck identification strategies analyzed
+- **MANDATORY**: Performance optimization opportunities identified
+- **MANDATORY**: Performance monitoring strategies documented
+
+### Data Flow and State Synchronization
+
+**Data Consistency Patterns**:
+
+- **MANDATORY**: Data consistency patterns identified and documented
+- **MANDATORY**: State synchronization mechanisms analyzed
+- **MANDATORY**: Conflict resolution strategies documented
+- **MANDATORY**: Data integrity validation patterns identified
+
+**State Management Analysis**:
+
+- **MANDATORY**: State synchronization across components analyzed
+- **MANDATORY**: State consistency validation strategies documented
+- **MANDATORY**: State conflict resolution patterns identified
+- **MANDATORY**: State persistence and restoration strategies analyzed
+
+### Integration Testing and Compatibility
+
+**API Compatibility Patterns**:
+
+- **MANDATORY**: API compatibility patterns identified and documented
+- **MANDATORY**: Version migration strategies analyzed
+- **MANDATORY**: Backward compatibility maintenance patterns documented
+- **MANDATORY**: Integration testing strategies analyzed
+
+**Compatibility Analysis**:
+
+- **MANDATORY**: Cross-version compatibility patterns identified
+- **MANDATORY**: Breaking change impact assessment strategies documented
+- **MANDATORY**: Compatibility testing approaches analyzed
+- **MANDATORY**: Migration path strategies documented
+
+### Monitoring and Observability
+
+**Logging Patterns and Strategies**:
+
+- **MANDATORY**: Logging patterns and strategies identified and documented
+- **MANDATORY**: Metrics collection and analysis approaches documented
+- **MANDATORY**: Health check implementations analyzed
+- **MANDATORY**: Debugging and troubleshooting patterns documented
+
+**Observability Analysis**:
+
+- **MANDATORY**: Monitoring strategy implementation analyzed
+- **MANDATORY**: Observability tool integration patterns documented
+- **MANDATORY**: Alert and notification strategies identified
+- **MANDATORY**: Diagnostic and debugging approaches analyzed
+
+### Documentation and Knowledge Transfer
+
+**Code Documentation Patterns**:
+
+- **MANDATORY**: Code documentation patterns identified and analyzed
+- **MANDATORY**: API documentation strategies documented
+- **MANDATORY**: Knowledge transfer mechanisms analyzed
+- **MANDATORY**: Maintenance documentation patterns identified
+
+**Knowledge Transfer Analysis**:
+
+- **MANDATORY**: Documentation completeness and quality assessed
+- **MANDATORY**: Knowledge transfer effectiveness analyzed
+- **MANDATORY**: Documentation maintenance strategies documented
+- **MANDATORY**: Knowledge accessibility patterns identified
+
+### Compliance and Standards
+
+**Coding Standards Compliance**:
+
+- **MANDATORY**: Coding standards compliance patterns identified and documented
+- **MANDATORY**: Architecture pattern compliance analyzed
+- **MANDATORY**: Security standards adherence documented
+- **MANDATORY**: Performance standards compliance analyzed
+
+**Standards Analysis**:
+
+- **MANDATORY**: Industry standard compliance patterns identified
+- **MANDATORY**: Internal standard adherence documented
+- **MANDATORY**: Compliance validation strategies analyzed
+- **MANDATORY**: Standards enforcement mechanisms documented
+
+### Scalability and Extensibility
+
+**Scalability Patterns and Strategies**:
+
+- **MANDATORY**: Scalability patterns and strategies identified and documented
+- **MANDATORY**: Extension point identification completed
+- **MANDATORY**: Plugin architecture patterns analyzed
+- **MANDATORY**: Performance scaling strategies documented
+
+**Extensibility Analysis**:
+
+- **MANDATORY**: Extension mechanism patterns identified
+- **MANDATORY**: Plugin integration strategies analyzed
+- **MANDATORY**: Scalability bottleneck identification completed
+- **MANDATORY**: Extension point documentation completed
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "RESOURCE MANAGEMENT COMPREHENDED: Resource management, testing strategy, performance, deployment, reliability patterns, build system, security, performance baseline, data flow, integration testing, monitoring, documentation, compliance, and scalability fully analyzed."
+
+### **BLOCK 7: KNOWLEDGE INTEGRATION AND RETENTION**
+
+**STOP**: You cannot proceed past this point until knowledge is integrated and retained.
+
+**MANDATORY INTEGRATION ANALYSIS CHECKLIST**:
+
+- [ ] Cross-Aspect Integration completed (Feature Integration, Cross-Package, System Behavior)
+- [ ] Knowledge Organization and Retention completed (Mental Model, Retrieval, Maintenance)
+- [ ] Completeness Validation completed (Coverage, Accuracy, Integration, Retrieval, Patterns, Context)
+- [ ] Knowledge Application Framework completed (Implementation, Troubleshooting, Optimization, Extension, Integration, User Support)
+
+**ANALYSIS TEMPLATES**:
+
+```markdown
+### Cross-Aspect Integration
+
+**Feature Integration Understanding**
+
+- How features work together
+- Shared data and state
+- Coordinated behavior
+- Performance interactions
+
+**Cross-Package Integration**
+
+- Package communication patterns
+- Shared workflows and data
+- Dependency coordination
+- Performance impact
+
+**System Behavior Synthesis**
+
+- Overall system behavior
+- Emergent patterns and properties
+- Edge case handling
+- Failure scenarios
+
+### Knowledge Organization and Retention
+
+**Mental Model Construction**
+
+- Hierarchical knowledge structure
+- Relationship mapping
+- Pattern cataloging
+- Implementation examples
+
+**Knowledge Retrieval Optimization**
+
+- Context-based retrieval
+- Pattern matching
+- Cross-reference linking
+- Scenario-based access
+
+**Knowledge Maintenance Planning**
+
+- Change impact assessment
+- Knowledge update strategies
+- Validation and verification
+- Continuous learning
+
+### Completeness Validation
+
+**Coverage Verification**
+
+- Comprehensive coverage of all aspects
+- Accuracy validation against source code
+- Integration verification
+- Retrieval capability verification
+
+**Pattern Recognition Validation**
+
+- Pattern catalog completeness
+- Context understanding verification
+- Relationship mapping accuracy
+- Implementation example quality
+
+### Knowledge Application Framework
+
+**Implementation Guidance**
+
+- How knowledge guides implementation decisions
+- Pattern application strategies
+- Best practice identification
+- Architecture decision support
+
+**Troubleshooting Guidance**
+
+- How knowledge guides problem resolution
+- Debugging strategy development
+- Error pattern recognition
+- Solution pathway identification
+
+**Optimization Guidance**
+
+- How knowledge guides performance improvements
+- Bottleneck identification strategies
+- Optimization opportunity recognition
+- Performance pattern analysis
+
+**Extension Guidance**
+
+- How knowledge guides feature extensions
+- Integration point identification
+- Extension pattern recognition
+- Compatibility assessment
+
+**Integration Guidance**
+
+- How knowledge guides integration decisions
+- Dependency management strategies
+- Interface design guidance
+- Version compatibility assessment
+
+**User Support**
+
+- How knowledge supports user assistance
+- User scenario understanding
+- Problem diagnosis strategies
+- Solution communication patterns
+```
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "KNOWLEDGE INTEGRATION COMPLETED: Cross-aspect integration, knowledge organization, and application framework fully established."
+
+### **BLOCK 8: OUTPUT DOCUMENTATION FRAMEWORK**
+
+**STOP**: You cannot proceed past this point until output documentation is completed.
+
+**MANDATORY DOCUMENTATION CHECKLIST**:
+
+- [ ] **CRITICAL**: Comprehensive Package Comprehension Model documented
+- [ ] **CRITICAL**: Detailed Knowledge Structure established
+- [ ] **CRITICAL**: Executive Knowledge Summary completed
+- [ ] **CRITICAL**: Mental model organization documented
+- [ ] **CRITICAL**: Pattern catalog completed
+- [ ] **CRITICAL**: Relationship mapping documented
+- [ ] **CRITICAL**: Implementation examples cataloged
+
+**ANALYSIS TEMPLATES**:
+
+```markdown
+### Comprehensive Package Comprehension Model
+
+**Executive Knowledge Summary**:
+
+- **MANDATORY**: Package identity (purpose, scope, value proposition, target users, key features)
+- **MANDATORY**: Architecture overview (architectural approach, design patterns, integration patterns, performance characteristics)
+- **MANDATORY**: Implementation overview (code organization, testing strategies, deployment, quality assurance)
+- **MANDATORY**: Knowledge structure (mental model organization, pattern catalog, relationship mapping, implementation examples)
+
+### Detailed Knowledge Structure
+
+**Knowledge Organization**:
+
+- **MANDATORY**: Foundational Knowledge documented (identity, purpose, architecture)
+- **MANDATORY**: Functional Knowledge documented (how functionality works)
+- **MANDATORY**: Behavioral Knowledge documented (performance and reliability)
+- **MANDATORY**: Integration Knowledge documented (dependencies and configuration)
+- **MANDATORY**: User Experience Knowledge documented (workflows and interface)
+- **MANDATORY**: Implementation Knowledge documented (testing and deployment)
+- **MANDATORY**: System Knowledge documented (how everything works together)
+
+### Package Comprehension Summary
+
+**Package Identity**:
+
+- **MANDATORY**: Purpose and scope clearly defined
+- **MANDATORY**: Value proposition documented
+- **MANDATORY**: Target users and use cases identified
+- **MANDATORY**: Key features and capabilities cataloged
+
+**Architecture Overview**:
+
+- **MANDATORY**: Overall architectural approach documented
+- **MANDATORY**: Design patterns and decisions cataloged
+- **MANDATORY**: Integration patterns mapped
+- **MANDATORY**: Performance characteristics documented
+
+**Implementation Overview**:
+
+- **MANDATORY**: Code organization and structure documented
+- **MANDATORY**: Testing strategies and coverage analyzed
+- **MANDATORY**: Deployment and operations documented
+- **MANDATORY**: Quality assurance approaches cataloged
+
+**Knowledge Structure**:
+
+- **MANDATORY**: Mental model organization documented
+- **MANDATORY**: Pattern catalog completed
+- **MANDATORY**: Relationship mapping established
+- **MANDATORY**: Implementation examples cataloged
+```
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "OUTPUT DOCUMENTATION COMPLETED: Comprehensive package comprehension model, detailed knowledge structure, and executive summary fully documented."
+
+## **FINAL VALIDATION BLOCK**
+
+**STOP**: You cannot claim DPC completion until ALL validation requirements are met.
+
+**MANDATORY FINAL VALIDATION CHECKLIST**:
+
+- [ ] All 8 execution blocks completed with explicit validation statements
+- [ ] All mandatory analysis checklists completed
+- [ ] All validation statements explicitly stated
+- [ ] Comprehensive package comprehension model documented
+- [ ] Detailed knowledge structure established
+- [ ] All required tools used appropriately
+- [ ] **CRITICAL**: All 8 mandatory grep commands executed with results documented
+- [ ] **CRITICAL**: Dependency validation completed with specific violations identified
+- [ ] **CRITICAL**: Cross-package dependencies mapped with evidence
+- [ ] **CRITICAL**: Circular dependencies detected and documented
+- [ ] **CRITICAL**: Architectural compliance violations documented with evidence
+- [ ] **CRITICAL**: All devDependency runtime usage violations identified and documented
+
+**🚫 FINAL VALIDATION BLOCK**: Before claiming DPC completion, you MUST provide **CONCRETE EVIDENCE** of completion:
+
+**MANDATORY FINAL VALIDATION EVIDENCE**:
+
+1. **BLOCK COMPLETION EVIDENCE**: All 8 execution blocks completed with specific validation statements
+2. **TOOL EXECUTION EVIDENCE**: All required tools executed with documented results
+3. **DEPENDENCY ANALYSIS EVIDENCE**: Complete dependency analysis with specific counts and violations
+4. **ARCHITECTURAL VIOLATION EVIDENCE**: Specific architectural violations with file paths and evidence
+5. **KNOWLEDGE STRUCTURE EVIDENCE**: Comprehensive knowledge structure with specific patterns and relationships
+6. **COMPREHENSION MODEL EVIDENCE**: Complete package comprehension model with specific insights
+
+**FINAL VALIDATION STATEMENT**: "DPC PROTOCOL COMPLETED: All 8 execution blocks completed with full validation. Package comprehension model established with {pattern-count} patterns and {relationship-count} relationships. Dependency analysis completed with {violation-count} violations documented at {specific-file-paths}. All architectural violations documented with specific evidence. Knowledge structure established with {insight-count} insights and {template-count} analysis templates."
+
+**🚨 FAILURE DETECTION**: If any evidence is missing or validation statement is generic → **AUTOMATIC RESTART FROM BLOCK 0**
+
+## **REQUIRED TOOL USAGE**
+
+### **MANDATORY TOOL REQUIREMENTS**
+
+**CRITICAL**: The following tools MUST be used appropriately throughout the DPC analysis:
+
+- **Package Analysis**: `mcp_nx-mcp_nx_project_details` tool for project configuration
+- **File Reading**: `read_file` tool for all source code and configuration files
+- **Directory Listing**: `list_dir` tool for structure analysis
+- **Pattern Search**: `grep` tool for dependency and import analysis - **MANDATORY FOR BLOCK 1**
+- **Code Analysis**: Systematic reading of all relevant files
+- **Documentation Review**: Analysis of README, documentation, and comments
+
+### **MANDATORY GREP TOOL USAGE**
+
+**CRITICAL**: The `grep` tool MUST be used in Block 1 with the following requirements:
+
+- [ ] **CRITICAL**: All 8 mandatory grep commands MUST be executed
+- [ ] **CRITICAL**: Results from each grep command MUST be documented
+- [ ] **CRITICAL**: No analysis can proceed without grep results
+- [ ] **CRITICAL**: All import statements MUST be traced with grep
+- [ ] **CRITICAL**: All dependency relationships MUST be mapped with grep evidence
+
+### **TOOL USAGE VALIDATION**
+
+**MANDATORY TOOL CHECKLIST**:
+
+- [ ] **CRITICAL**: `mcp_nx-mcp_nx_project_details` tool used for project configuration analysis
+- [ ] **CRITICAL**: `read_file` tool used for all source code and configuration files
+- [ ] **CRITICAL**: `list_dir` tool used for structure analysis
+- [ ] **CRITICAL**: `grep` tool used for dependency and import analysis with all 8 mandatory commands
+- [ ] **CRITICAL**: Systematic reading of all relevant files completed
+- [ ] **CRITICAL**: Documentation review completed (README, documentation, comments)
+
+**TOOL USAGE REQUIREMENTS**:
+
+- **Package Analysis**: MUST use `mcp_nx-mcp_nx_project_details` tool to understand project configuration, targets, and dependencies
+- **File Reading**: MUST use `read_file` tool to analyze all source code, configuration files, and documentation
+- **Directory Listing**: MUST use `list_dir` tool to understand package structure and organization
+- **Pattern Search**: MUST use `grep` tool to trace imports, dependencies, and usage patterns
+- **Code Analysis**: MUST systematically read all relevant files to understand implementation
+- **Documentation Review**: MUST analyze README, documentation, and comments for context and understanding
+
+## **PROTOCOL COMPLIANCE FRAMEWORK**
+
+### **COMPLIANCE REQUIREMENTS**
+
+**CRITICAL**: This protocol MUST be followed for all deep package comprehension to ensure:
+
+- **Comprehensive Analysis**: All aspects of package functionality analyzed
+- **Systematic Approach**: Consistent methodology across all packages
+- **Knowledge Retention**: Structured mental models for effective retention
+- **Pattern Recognition**: Cataloged patterns for future application
+- **Integration Understanding**: Complete understanding of relationships and dependencies
+
+### **ENFORCEMENT PROTOCOL**
+
+- **Package comprehension that does not meet these requirements must be revised**
+- **Missing phases must be completed with appropriate analysis**
+- **Insufficient detail must be expanded with specific technical information**
+- **Knowledge validation must be completed before finalizing comprehension**
+- **Pattern cataloging must be comprehensive and accurate**
+
+### **ADDITIONAL ANALYSIS RECOMMENDATIONS**
+
+**Note**: Any additional data points or analysis that would be beneficial but are not part of the mandatory protocol should be documented here AFTER all outlined steps are completed.
+
+### **PROTOCOL IMPROVEMENT RECOMMENDATIONS**
+
+**Note**: Any data points that should be removed as not value-add or protocol improvements should be documented here AFTER all outlined steps are completed.
+
+## **ENFORCEMENT MECHANISMS**
+
+### **🚫 BLOCKING PROGRESSION**
+
+- Each block contains explicit **🚫 EXECUTION BLOCK** instructions
+- **CONCRETE EVIDENCE** required before progression
+- No section can be skipped or abbreviated
+- All checklists must be completed with **TOOL PROOF**
+- **CRITICAL**: Block 1 (grep-based analysis) cannot be bypassed
+
+### **🔍 EXPLICIT VALIDATION REQUIREMENTS**
+
+- Each block requires **CONCRETE EVIDENCE** of completion
+- Validation statements must include **SPECIFIC COUNTS AND REFERENCES**
+- No "good enough" or "sufficient" analysis is acceptable
+- All requirements must be met with **TOOL EXECUTION PROOF**
+- **CRITICAL**: Grep results must be documented with **SPECIFIC EVIDENCE**
+
+### **⚡ SYSTEMATIC ENFORCEMENT**
+
+- Protocol is structured as sequential blocks with **🚫 EXECUTION BLOCKS**
+- Each block builds on previous blocks with **EVIDENCE REQUIREMENTS**
+- No shortcuts or workarounds are possible
+- Complete execution is the only acceptable outcome
+- **CRITICAL**: Dependency analysis must be **EVIDENCE-BASED WITH TOOL PROOF**
+
+### **🚨 FAILURE DETECTION AND CORRECTION**
+
+**AUTOMATIC FAILURE DETECTION**:
+
+- **MISSING EVIDENCE**: If validation statement lacks specific counts/references → **AUTOMATIC RESTART**
+- **MISSING TOOL PROOF**: If required tools not executed → **AUTOMATIC RESTART**
+- **VAGUE VALIDATION**: If validation statement is generic → **AUTOMATIC RESTART**
+- **INCOMPLETE CHECKLIST**: If any checklist item incomplete → **AUTOMATIC RESTART**
+
+**CORRECTION MECHANISM**:
+
+- **RESTART FROM BLOCK 0**: Failed execution requires complete restart
+- **EVIDENCE VERIFICATION**: All evidence must be verifiable and specific
+- **TOOL EXECUTION VERIFICATION**: All required tools must be executed with documented results
+- **NO PARTIAL COMPLETION**: Either complete execution or complete restart
+
+**FAILURE INDICATORS**:
+
+- Validation statements without specific counts (e.g., "some imports" vs "47 imports")
+- Missing tool execution evidence (e.g., no grep results documented)
+- Generic validation statements (e.g., "analysis completed" vs "analysis completed with 23 violations")
+- Incomplete checklist items (e.g., unchecked boxes or missing evidence)
+
+## **AI AGENT COMPLIANCE REQUIREMENTS**
+
+### **MANDATORY EXECUTION PATTERN**
+
+1. **Read Block 0** → **Complete Block 0** → **State Validation** → **Proceed to Block 1**
+2. **Read Block 1** → **Execute ALL 8 grep commands** → **Document results** → **State Validation** → **Proceed to Block 2**
+3. **Read Block 2** → **Complete Block 2** → **State Validation** → **Proceed to Block 3**
+4. **Continue pattern** until all 8 blocks completed
+5. **Complete Final Validation** → **Claim DPC completion**
+
+### **NO DEVIATION ALLOWED**
+
+- No skipping blocks
+- No abbreviating requirements
+- No "good enough" analysis
+- No proceeding without validation
+- No claiming completion without final validation
+- **CRITICAL**: No bypassing grep-based dependency analysis
+
+### **EXPLICIT ACKNOWLEDGMENT REQUIRED**
+
+- Each block requires explicit validation statement
+- Validation statements must be verbatim
+- No variations or substitutions allowed
+- All requirements must be met before progression
+- **CRITICAL**: Grep results must be explicitly documented
+
+---
+
+_This protocol ensures systematic, comprehensive, and validated package comprehension through enforced execution blocks, mandatory grep-based dependency analysis, and explicit validation requirements designed specifically for AI agent consumption._

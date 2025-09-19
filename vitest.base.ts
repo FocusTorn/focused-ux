@@ -1,4 +1,7 @@
 import { defineConfig } from 'vitest/config'
+import { ConfigReporter } from './libs/tools/vitest-config-reporter'
+
+// console.log('🔧 Loading vitest.base.ts configuration')
 
 export default defineConfig({
 	test: {
@@ -17,5 +20,13 @@ export default defineConfig({
 				'**/_interfaces/**',
 			],
 		},
+        
+		// onConsoleLog(log, type) {
+		// 	if (log.includes('🔧 Loading') || log.includes('📊 Loading') || log.includes('⚡ Loading') || log.includes('🎯 Loading') || log.includes('📈 Loading')) {
+		// 		console.log(`[CONFIG] ${log}`)
+		// 	}
+		// },
+        
+		reporters: ['default', new ConfigReporter()],
 	},
 })
