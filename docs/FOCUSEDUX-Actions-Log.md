@@ -1848,9 +1848,9 @@ console.log('🔍 Debug output now visible!')
 **Implementations**:
 
 - Added `libs/tools/aka` with `src/main.ts` implementing:
-    - Target shortcuts expansion (`l`→`lint`, `lf`→`lint:full`)
+    - Target shortcuts expansion (`l`→`lint`, `lf`→`lint:deps`)
     - Short/long flag expansion: `-f`→`--fix`, `-s`→`--skip-nx-cache`, `-fs`/`-sf` supported; `--fix`, `--skip-nx-cache` passthrough
-    - Full alias semantics: aliases marked `full` in `.vscode/shell/pnpm_aliases.json` map `l|lint|test|validate` to `lint:full|test:full|validate:full`
+    - Full alias semantics: aliases marked `full` in `.vscode/shell/pnpm_aliases.json` map `l|lint|test|validate` to `lint:deps|test:full|validate:deps`
     - Two-pass lint when `--fix` is present (with and then without `--fix`)
     - Run-many support for `ext|core|all`
 - Moved PS shim into package: `libs/tools/aka/ps/aka.ps1`

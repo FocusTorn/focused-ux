@@ -10,7 +10,11 @@
             "outputs": ["{options.outputPath}"],
 
             "dependsOn": [ //"^build", "@fux/dynamicons-assets:generate-assets"],
-                { "projects": ["@fux/dynamicons-core"], "target": "build", "params": "ignore" },
+                {
+                    "projects": ["@fux/dynamicons-core"],
+                    "target": "build",
+                    "params": "ignore"
+                },
                 "@fux/dynamicons-assets:generate-assets"
             ],
 
@@ -89,9 +93,9 @@
         
         "check-types": { "extends": "check-types" },
         "lint": { "extends": "lint" },
-        "lint:full": { "extends": "lint:full" },
+        "lint:deps": { "extends": "lint:deps" },
         "validate": { "extends": "validate" },
-        "validate:full": { "extends": "validate:full" },
+        "validate:deps": { "extends": "validate:deps" },
         "audit": { "extends": "audit" },
         "audit:full": { "extends": "audit:full" },
         

@@ -141,10 +141,10 @@ function normalizeFullSemantics(isFull: boolean, target: string): string {
         return target
 
     const map: Record<string, string> = {
-        l: 'lint:full',
-        lint: 'lint:full',
+        l: 'lint:deps',
+        lint: 'lint:deps',
         test: 'test:full',
-        validate: 'validate:full',
+        validate: 'validate:deps',
     }
 
     return map[target] ?? target
@@ -196,17 +196,17 @@ function runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: stri
     const par = String(projects.length)
     const target = targets[0]
 
-    // Auto-inject --output-style=stream for test:full, validate:full, and lint:full targets
+    // Auto-inject --output-style=stream for test:full, validate:deps, and lint:deps targets
     let enhancedFlags = [...flags]
 
-    if ((target === 'test:full' || target === 'validate:full' || target === 'lint:full')
+    if ((target === 'test:full' || target === 'validate:deps' || target === 'lint:deps')
 	  && !enhancedFlags.some(flag =>
 	      flag === '--stream' || flag === '--output-style=stream' || flag.startsWith('--output='))) {
         enhancedFlags = ['--output-style=stream', ...enhancedFlags]
     }
 
-    // Auto-inject --parallel=false for validate:full to get cleaner sequential output
-    if (target === 'validate:full' && !enhancedFlags.some(flag =>
+    // Auto-inject --parallel=false for validate:deps to get cleaner sequential output
+    if (target === 'validate:deps' && !enhancedFlags.some(flag =>
         flag === '--parallel=false' || flag === '--parallel=true')) {
         enhancedFlags = ['--parallel=false', ...enhancedFlags]
     }
@@ -549,17 +549,17 @@ function main() {
     const restArgs = processedArgs.slice(1).filter(a =>
         !a.startsWith('--'))
 
-    // Auto-inject --output-style=stream for test:full, validate:full, and lint:full targets
+    // Auto-inject --output-style=stream for test:full, validate:deps, and lint:deps targets
     let enhancedArgs = [...flagArgs]
 
-    if ((normalizedTarget === 'test:full' || normalizedTarget === 'validate:full' || normalizedTarget === 'lint:full')
+    if ((normalizedTarget === 'test:full' || normalizedTarget === 'validate:deps' || normalizedTarget === 'lint:deps')
 	  && !enhancedArgs.some(arg =>
 	      arg === '--stream' || arg === '--output-style=stream' || arg.startsWith('--output='))) {
         enhancedArgs = ['--output-style=stream', ...enhancedArgs]
     }
 
-    // Auto-inject --parallel=false for validate:full to get cleaner sequential output
-    if (normalizedTarget === 'validate:full' && !enhancedArgs.some(arg =>
+    // Auto-inject --parallel=false for validate:deps to get cleaner sequential output
+    if (normalizedTarget === 'validate:deps' && !enhancedArgs.some(arg =>
         arg === '--parallel=false' || arg === '--parallel=true')) {
         enhancedArgs = ['--parallel=false', ...enhancedArgs]
     }

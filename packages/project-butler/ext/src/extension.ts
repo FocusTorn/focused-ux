@@ -51,7 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
                     if (IS_TEST_ENVIRONMENT) {
                         throw error
                     }
-                    await window.showErrorMessage(`Failed to format package.json: ${error.message}`)
+                    await window.showErrorMessage(`Failed to format package.json: ${error instanceof Error ? error.message : String(error)}`)
                 }
             }),
             vscode.commands.registerCommand('fux-project-butler.updateTerminalPath', async (uri?: vscode.Uri) => {
@@ -62,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
                     if (IS_TEST_ENVIRONMENT) {
                         throw error
                     }
-                    await window.showErrorMessage(`Error updating terminal path: ${error.message}`)
+                    await window.showErrorMessage(`Error updating terminal path: ${error instanceof Error ? error.message : String(error)}`)
                 }
             }),
             vscode.commands.registerCommand('fux-project-butler.createBackup', async (uri?: vscode.Uri) => {
@@ -73,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
                     if (IS_TEST_ENVIRONMENT) {
                         throw error
                     }
-                    await window.showErrorMessage(`Error creating backup: ${error.message}`)
+                    await window.showErrorMessage(`Error creating backup: ${error instanceof Error ? error.message : String(error)}`)
                 }
             }),
             vscode.commands.registerCommand('fux-project-butler.enterPoetryShell', async (uri?: vscode.Uri) => {
@@ -84,7 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
                     if (IS_TEST_ENVIRONMENT) {
                         throw error
                     }
-                    await window.showErrorMessage(`Error entering poetry shell: ${error.message}`)
+                    await window.showErrorMessage(`Error entering poetry shell: ${error instanceof Error ? error.message : String(error)}`)
                 }
             }),
         ]
@@ -93,9 +93,9 @@ export function activate(context: vscode.ExtensionContext) {
     }
     catch (error: unknown) {
         if (!IS_TEST_ENVIRONMENT) {
-            vscode.window.showErrorMessage(`Failed to activate Project Butler: ${error.message}`)
+            vscode.window.showErrorMessage(`Failed to activate Project Butler: ${error instanceof Error ? error.message : String(error)}`)
         }
-        console.error('F-UX: Project Butler failed to activate:', error.message)
+        console.error('F-UX: Project Butler failed to activate:', error instanceof Error ? error.message : String(error))
     }
 }
 

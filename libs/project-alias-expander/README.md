@@ -236,9 +236,9 @@ PAE uses a JSON configuration file located at `libs/project-alias-expander/confi
 
 | Shortcut   | Full Target     | Description                                    |
 | ---------- | --------------- | ---------------------------------------------- |
-| `l`        | `lint:full`     | Full linting (when used with full packages)    |
+| `l`        | `lint:deps`     | Full linting (when used with full packages)    |
 | `t`        | `test:full`     | Full testing (when used with full packages)    |
-| `validate` | `validate:full` | Full validation (when used with full packages) |
+| `validate` | `validate:deps` | Full validation (when used with full packages) |
 
 ## Flag Expansions
 
@@ -335,8 +335,8 @@ pae pb test:integration
 
 PAE automatically injects helpful flags for certain operations:
 
-- **Stream Output**: Auto-injects `--output-style=stream` for `test:full`, `validate:full`, and `lint:full`
-- **Sequential Execution**: Auto-injects `--parallel=false` for `validate:full`
+- **Stream Output**: Auto-injects `--output-style=stream` for `test:full`, `validate:deps`, and `lint:deps`
+- **Sequential Execution**: Auto-injects `--parallel=false` for `validate:deps`
 - **Vitest Config**: Auto-injects coverage config for test commands with `--coverage`
 
 ## Error Handling

@@ -1,0 +1,58 @@
+{
+    "name": "@fux/vscode-test-executor",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "targets": {
+        "build": { //>
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "options": {
+                
+                "main": "plugins/vscode-test-executor/src/index.ts",
+                "tsConfig": "plugins/vscode-test-executor/tsconfig.lib.json",
+
+                "bundle": false,
+                
+                "assets": [
+                    {
+                        "input": "./plugins/vscode-test-executor/src",
+                        "glob": "**/!(*.ts)",
+                        "output": "."
+                    },
+                    {
+                        "input": "./plugins/vscode-test-executor/src",
+                        "glob": "**/*.d.ts",
+                        "output": "."
+                    }
+                ]
+            }
+
+        } //<
+        
+        // "build_og": { //>
+        //     "executor": "@nx/js:tsc",
+        //     "outputs": ["{options.outputPath}"],
+        //     "options": {
+        //         "outputPath": "plugins/vscode-test-executor/dist",
+        //         "main": "plugins/vscode-test-executor/src/index.ts",
+        //         "tsConfig": "plugins/vscode-test-executor/tsconfig.lib.json",
+        //         "rootDir": "plugins/vscode-test-executor/src",
+        //         "generatePackageJson": false,
+        //         "assets": [
+        //             {
+        //                 "input": "./plugins/vscode-test-executor/src",
+        //                 "glob": "**/!(*.ts)",
+        //                 "output": "."
+        //             },
+        //             {
+        //                 "input": "./plugins/vscode-test-executor/src",
+        //                 "glob": "**/*.d.ts",
+        //                 "output": "."
+        //             }
+        //         ]
+        //     }
+        // } //<
+   
+    }
+}

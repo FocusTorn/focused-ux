@@ -235,19 +235,19 @@ export function checkUniversalTargets(projectPath: string, pkg: string, projectT
 		ok = false
 	}
 
-	// Check for lint:full target
-	if (!targets['lint:full']) {
-		const location = findJsonLocation(projectPath, 'lint:full')
+	// Check for lint:deps target
+	if (!targets['lint:deps']) {
+		const location = findJsonLocation(projectPath, 'lint:deps')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		addError('Missing lint:full target', `${pkg}/${projectType}/project.json${locationStr}: Missing 'lint:full' target.`)
+		addError('Missing lint:deps target', `${pkg}/${projectType}/project.json${locationStr}: Missing 'lint:deps' target.`)
 		ok = false
 	}
-	else if (!targets['lint:full'].extends || targets['lint:full'].extends !== 'lint:full') {
+	else if (!targets['lint:deps'].extends || targets['lint:deps'].extends !== 'lint:deps') {
 		const location = findJsonLocation(projectPath, 'extends')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		addError('Invalid lint:full extends', `${pkg}/${projectType}/project.json${locationStr}: lint:full target should extend 'lint:full'.`)
+		addError('Invalid lint:deps extends', `${pkg}/${projectType}/project.json${locationStr}: lint:deps target should extend 'lint:deps'.`)
 		ok = false
 	}
 
@@ -283,19 +283,19 @@ export function checkUniversalTargets(projectPath: string, pkg: string, projectT
 		ok = false
 	}
 
-	// Check for validate:full target
-	if (!targets['validate:full']) {
-		const location = findJsonLocation(projectPath, 'validate:full')
+	// Check for validate:deps target
+	if (!targets['validate:deps']) {
+		const location = findJsonLocation(projectPath, 'validate:deps')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		addError('Missing validate:full target', `${pkg}/${projectType}/project.json${locationStr}: Missing 'validate:full' target.`)
+		addError('Missing validate:deps target', `${pkg}/${projectType}/project.json${locationStr}: Missing 'validate:deps' target.`)
 		ok = false
 	}
-	else if (!targets['validate:full'].extends || targets['validate:full'].extends !== 'validate:full') {
+	else if (!targets['validate:deps'].extends || targets['validate:deps'].extends !== 'validate:deps') {
 		const location = findJsonLocation(projectPath, 'extends')
 		const locationStr = location ? `:${location.line}:${location.column}` : ''
 
-		addError('Invalid validate:full extends', `${pkg}/${projectType}/project.json${locationStr}: validate:full target should extend 'validate:full'.`)
+		addError('Invalid validate:deps extends', `${pkg}/${projectType}/project.json${locationStr}: validate:deps target should extend 'validate:deps'.`)
 		ok = false
 	}
 
@@ -425,12 +425,12 @@ export function checkProjectJsonTargetConsistency(pkg: string) { //>
 		'package',
 		'package:dev',
 		'lint',
-		'lint:full',
+		'lint:deps',
 		'test',
 		'test:full',
 		'check-types',
 		'validate',
-		'validate:full',
+		'validate:deps',
 	]
 
 	// Check ext project.json

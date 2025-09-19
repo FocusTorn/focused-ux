@@ -59,6 +59,9 @@
         },
         {
             "path": "./plugins/vpack"
+        },
+        {
+            "path": "./plugins/vscode-test-executor"
         }
     ]
 }

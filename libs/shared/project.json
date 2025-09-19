@@ -33,14 +33,14 @@
         "lint": {
             "extends": "lint"
         },
-        "lint:full": {
-            "extends": "lint:full"
+        "lint:deps": {
+            "extends": "lint:deps"
         },
         "validate": {
             "extends": "validate"
         },
-        "validate:full": {
-            "extends": "validate:full"
+        "validate:deps": {
+            "extends": "validate:deps"
         },
         "audit": {
             "extends": "audit"

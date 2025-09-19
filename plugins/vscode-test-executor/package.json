@@ -1,0 +1,26 @@
+{
+    "name": "@fux/vscode-test-executor",
+    "version": "0.0.1",
+    "dependencies": {
+        "@nx/devkit": "21.5.2",
+        "tslib": "^2.3.0"
+    },
+    "private": true,
+    "module": "./dist/index.js",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        }
+    },
+    "executors": "./executors.json",
+    "files": [
+        "dist",
+        "!**/*.tsbuildinfo",
+        "executors.json"
+    ]
+}

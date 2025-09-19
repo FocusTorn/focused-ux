@@ -90,6 +90,12 @@ export function createVscodeTestConfig(options: FuxVSCodeTestConfigOptions) {
 			'GitHub.copilot',
 			'--disable-extension',
 			'GitHub.copilot-chat',
+			'--disable-extension',
+			'github.vscode-pull-request-github',
+			'--disable-extension',
+			'github.codespaces',
+			'--disable-extension',
+			'github.copilot-labs',
 
 			// Load our extension for testing.
 			'--extensionDevelopmentPath',

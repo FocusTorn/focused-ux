@@ -12,11 +12,11 @@
     //     "t": {"run-from": "ext", "run-target": "td -s"},
     
     //     "ti": {"run-from": "ext", "run-target": "test:integration"},
-    //     "l": {"run-from": "ext", "run-target": "lint:full"}
+    //     "l": {"run-from": "ext", "run-target": "lint:deps"}
     // },
     
     // The above would cause @fux/ghost-writer-ext:test:deps when pb t is used
-    // The above would cause @fux/ghost-writer-ext:lint:full when pb l is used
+    // The above would cause @fux/ghost-writer-ext:lint:deps when pb l is used
     
     
     "package-targets": {
@@ -28,10 +28,9 @@
         //= Linting ============================================================= 
         "ct" : "check-types",
         "ctd": "check-types:deps",
-        
         //= Linting ============================================================= 
         "l" : "lint",
-        "lf": "lint:full",
+        "lf": "lint:deps",
         //= Testing ============================================================= 
         "t"  : "test",
         "tc" : "test:coverage-tests",
@@ -44,7 +43,7 @@
         "cd": "clean:dist",
         //= Adherance =========================================================== 
         "v" : "validate",
-        "vf": "validate:full",
+        "vf": "validate:deps",
         "a" : "audit",
         "af": "audit:full",
         //= Feature Specific - CMO ============================================== 
@@ -56,13 +55,15 @@
     "feature-targets": {
         // "t": {"run-from": "ext", "run-target": "test:deps"},
         // "ti": {"run-from": "ext", "run-target": "test:integration"},
-        // "l": {"run-from": "ext", "run-target": "lint:full"}
+        // "l": {"run-from": "ext", "run-target": "lint:deps"}
         
         "t": {"run-from": "ext", "run-target": "test:deps --output-style=stream"},
         "ti": {"run-from": "ext", "run-target": "test:integration"},
         "tsc": {"run-from": "ext", "run-target": "type-check"},
         
-        "l": {"run-from": "ext", "run-target": "lint:full --output-style=stream"}
+        "l": {"run-from": "ext", "run-target": "lint:deps --output-style=stream"},
+        "ct": {"run-from": "ext", "run-target": "check-types:deps --output-style=stream"}
+        
         
         
         
@@ -168,6 +169,8 @@
         "cmo"  : "@fux/cursor-memory-optimizer",
         
         //= Plugins ============================================================= 
-        "vpack": "@fux/vpack"
+        "vpack": "@fux/vpack",
+        "vscte" : "@fux/vscode-test-executor"
+        
     }
 }

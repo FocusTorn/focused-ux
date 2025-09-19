@@ -15,9 +15,6 @@
                 
                 "main": "plugins/vpack/src/index.ts",
                 "tsConfig": "plugins/vpack/tsconfig.lib.json",
-                
-                // "outputPath": "plugins/vpack/dist",
-                // "declarationRootDir": "packages/project-butler/core/src",
 
                 "bundle": false,
                 

@@ -1,0 +1,9 @@
+{
+    "executors": {
+        "test-integration": {
+            "implementation": "./dist/executors/test-integration/test-integration",
+            "schema": "./dist/executors/test-integration/schema.json",
+            "description": "VS Code integration test executor with automatic compilation"
+        }
+    }
+}

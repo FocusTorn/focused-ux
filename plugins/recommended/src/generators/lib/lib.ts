@@ -51,7 +51,7 @@ export async function libGenerator(tree: Tree, options: LibGeneratorSchema) {
 					quiet: false,
 				},
 			},
-			'lint:full': {
+			'lint:deps': {
 				executor: '@nx/eslint:lint',
 				dependsOn: [
 					{
@@ -72,7 +72,7 @@ export async function libGenerator(tree: Tree, options: LibGeneratorSchema) {
 					parallel: false,
 				},
 			},
-			'validate:full': {
+			'validate:deps': {
 				executor: 'nx:run-commands',
 				dependsOn: [
 					{

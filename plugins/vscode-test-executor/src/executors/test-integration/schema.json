@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "type": "object",
+    "properties": {
+        "tsConfig": {
+            "type": "string",
+            "description": "Path to the TypeScript config for integration tests"
+        },
+        "config": {
+            "type": "string", 
+            "description": "Path to the VS Code test config file"
+        },
+        "timeout": {
+            "type": "number",
+            "description": "Test timeout in milliseconds",
+            "default": 20000
+        },
+        "filterOutput": {
+            "type": "boolean",
+            "description": "Whether to filter noisy output",
+            "default": true
+        },
+        "filterPatterns": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Patterns to filter out from output when filterOutput is true",
+            "default": [
+                "extensionEnabledApiProposals",
+                "ChatSessionStore",
+                "update#setState disabled",
+                "update#ctor",
+                "Started local extension host",
+                "Settings Sync"
+            ]
+        },
+        "additionalArgs": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Additional arguments to pass to vscode-test",
+            "default": []
+        }
+    },
+    "required": ["tsConfig", "config"]
+}

@@ -73,9 +73,9 @@
         
         "check-types": { "extends": "check-types" },
         "lint": { "extends": "lint" },
-        "lint:full": { "extends": "lint:full" },
+        "lint:deps": { "extends": "lint:deps" },
         "validate": { "extends": "validate" },
-        "validate:full": { "extends": "validate:full" },
+        "validate:deps": { "extends": "validate:deps" },
         "audit": { "extends": "audit" },
         "audit:full": { "extends": "audit:full" },
         
@@ -107,7 +107,7 @@
 //         "lint"
 //     ]
 // },
-// "lint:full": {
+// "lint:deps": {
 //     "executor": "nx:run-commands",
 //     "dependsOn": [
 //         "^lint",
@@ -154,10 +154,10 @@
 //         "parallel": false
 //     }
 // },
-// "validate:full": {
+// "validate:deps": {
 //     "executor": "nx:run-commands",
 //     "dependsOn": [
-//         "lint:full",
+//         "lint:deps",
 //         "check-types:full"
 //     ],
 //     "options": {

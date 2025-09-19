@@ -6,7 +6,6 @@
             "options": {
                 "format": ["esm"],
                 "bundle": true,
-                
                 "outputPath": "{projectRoot}/dist",
                 "tsConfig": "{projectRoot}/tsconfig.json",
                 "platform": "node",
@@ -22,7 +21,7 @@
             "dependsOn": ["^build"],
             "inputs": ["production", "^production"]
         }, //<
-        
+        //= Finalize ============================================================ 
         "build": { //>
             "dependsOn": ["^build"],
             "outputs": ["{options.outputPath}"],
@@ -36,14 +35,11 @@
             "options": {
                 "targetPath": "{projectRoot}",
                 "outputPath": "vsix_packages",
-
                 "deployPath": ".vpack/deploy",
                 "freshDeploy": true,
                 "keepDeploy": true,
-                
                 "contentsPath": ".vpack/contents",
                 "extractContents": true,
-          
                 "dev": false
             }
         }, //<
@@ -53,21 +49,18 @@
             "options": {
                 "targetPath": "{projectRoot}",
                 "outputPath": "vsix_packages",
-
                 "deployPath": ".vpack/deploy",
                 "freshDeploy": true,
                 "keepDeploy": true,
-                
                 "contentsPath": ".vpack/contents",
                 "extractContents": true,
-          
                 "dev": true
             }
         }, //<
         "publish": { //>
             "dependsOn": ["build"]
         }, //<
-        
+        //= Quality ============================================================= 
         "check-types": { //>
             "executor": "nx:run-commands",
             "cache": true,
@@ -94,7 +87,6 @@
                 "cwd": "{workspaceRoot}"
             }
         }, //<
-        
         "lint": { //>
             "executor": "@nx/eslint:lint",
             "cache": true,
@@ -115,7 +107,7 @@
                 "cacheLocation": "{projectRoot}/.nx/eslintcache"
             }
         }, //<
-        "lint:full": { //>
+        "lint:deps": { //>
             "executor": "@nx/eslint:lint",
             "dependsOn": [
                 {
@@ -125,64 +117,6 @@
                 }
             ]
         }, //<
-    
-        
-        "test": { //> run just functional-tests on single package
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-                
-                
-            }
-        }, //<
-        "test:coverage-tests": { //> run functional & coverage tests on single package
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.coverage.config.ts",
-                "reportsDirectory": "__tests__/_reports/coverage",
-                "passWithNoTests": true
-            }
-        }, //<
-        
-        "test:deps": { //> run just functional-tests on dep chain
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test",
-                    "params": "forward"
-                }
-            ],
-            "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "passWithNoTests": true
-            }
-        }, //<
-        "test:deps:coverage-tests": { //> run functional & coverage tests on dep chain
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test:coverage-tests",
-                    "params": "forward"
-                }
-            ],
-            "options": {
-                "configFile": "{projectRoot}/vitest.coverage.config.ts",
-                "reportsDirectory": "__tests__/_reports/coverage",
-                "passWithNoTests": true
-            }
-        }, //<
-        
-       
         "validate": { //>
             "executor": "nx:run-commands",
             "dependsOn": [],
@@ -194,7 +128,7 @@
                 "parallel": false
             }
         }, //<
-        "validate:full": { //>
+        "validate:deps": { //>
             "executor": "nx:run-commands",
             "dependsOn": [
                 {
@@ -211,7 +145,6 @@
                 "parallel": false
             }
         }, //<
-
         "audit": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["build", "^build"],
@@ -240,7 +173,7 @@
                 "parallel": false
             }
         }, //<
-
+        //= Cleaning ============================================================ 
         "clean": { //>
             "executor": "nx:run-commands",
             "options": {
@@ -261,8 +194,73 @@
                 "command": "rimraf {projectRoot}/.nx",
                 "cwd": "{workspaceRoot}"
             }
+        }, //<
+        //= Single Package Testing ============================================== 
+        "test": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["build", "^build"],
+            "options": {
+                "configFile": "{projectRoot}/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
+                "passWithNoTests": true
+            }
+        }, //<
+        "test:coverage-tests": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["build", "^build"],
+            "options": {
+                "configFile": "{projectRoot}/vitest.coverage.config.ts",
+                "reportsDirectory": "__tests__/_reports/coverage",
+                "passWithNoTests": true
+            }
+        }, //<
+        //= Dependency Chain Testing ============================================ 
+        "test:deps": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test",
+                    "params": "forward"
+                }
+            ],
+            "options": {
+                "configFile": "{projectRoot}/vitest.config.ts",
+                "passWithNoTests": true
+            }
+        }, //<
+        "test:deps:coverage-tests": { //>
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": [
+                {
+                    "dependencies": true,
+                    "target": "test:coverage-tests",
+                    "params": "forward"
+                }
+            ],
+            "options": {
+                "configFile": "{projectRoot}/vitest.coverage.config.ts",
+                "reportsDirectory": "__tests__/_reports/coverage",
+                "passWithNoTests": true
+            }
+        }, //<
+        //= Integration Testing ================================================= 
+        "test:integration": { //>
+            "executor": "@fux/vscode-test-executor:test-integration",
+            "dependsOn": ["build"],
+            "cache": false,
+            "options": {
+                "tsConfig": "{projectRoot}/__tests__/integration-tests/tsconfig.test.json",
+                "config": "{projectRoot}/__tests__/integration-tests/.vscode-test.mjs",
+                "timeout": 20000,
+                "filterOutput": true
+            }
         } //<
-       
+        
     },
     
     "namedInputs": {
@@ -294,9 +292,7 @@
             "{projectRoot}/src/test-setup.[jt]s"
         ], //<
         "lint": [ //>
-            "default",
-            "{projectRoot}/**/*.eslintrc.js",
-            "{projectRoot}/**/*.eslint.json"
+            "default", "{projectRoot}/**/*.eslintrc.js", "{projectRoot}/**/*.eslint.json"
         ], //<
         "docs": [ //>
             "{projectRoot}/docs/**",
@@ -308,7 +304,6 @@
             "{workspaceRoot}/.github/workflows/ci.yml"
         ] //<
     },
-    
     "packageManager": "pnpm",
     "nxCloudId": "685c28f2a5df05525dfa937b",
     "$schema": "./node_modules/nx/schemas/nx-schema.json",

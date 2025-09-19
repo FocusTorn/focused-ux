@@ -26,7 +26,7 @@
         "check-types:deps": { "extends": "check-types:deps" },
         
         "lint": { "extends": "lint" },
-        "lint:full": { "extends": "lint:full" },
+        "lint:deps": { "extends": "lint:deps" },
         
         //= Cleaning ============================================================ 
         "clean": { "extends": "clean" },
@@ -43,7 +43,7 @@
     
     
         // "validate": { "extends": "validate" },
-        // "validate:full": { "extends": "validate:full" },
+        // "validate:deps": { "extends": "validate:deps" },
         // "audit": { "extends": "audit" },
         // "audit:full": { "extends": "audit:full" },
     },
