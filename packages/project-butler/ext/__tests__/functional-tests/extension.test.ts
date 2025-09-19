@@ -9,7 +9,7 @@ import {
     setupVSCodeWindowMessageScenario,
     setupVSCodeErrorScenario,
     createExtensionMockBuilder
-} from '../_setup'
+} from '../__mocks__/_setup'
 
 // Mock the core package
 vi.mock('@fux/project-butler-core', () =>

@@ -3,99 +3,86 @@ import process from 'node:process'
 import { Buffer } from 'node:buffer'
 import * as vscode from 'vscode'
 
-// 1) Mock js-yaml globally 
-vi.mock('js-yaml', () =>
-    ({
-        load: vi.fn((content: string) => {
+// ┌──────────────────────────────────────────────────────────────────────────┐
+// │                               GLOBAL MOCKS                               │
+// └──────────────────────────────────────────────────────────────────────────┘
+
+vi.mock('js-yaml', () => ({ //> Mock js-yaml globally 
+    load: vi.fn((content: string) => {
         // Simple mock implementation for testing
-            if (!content || content.trim() === '')
-                return undefined
-            if (content.trim() === 'key: value')
-                return { key: 'value' }
-            if (content.includes('ProjectButler')) {
-                return {
-                    ProjectButler: {
-                        'packageJson-order': ['name', 'version', 'scripts'],
-                    },
-                }
+        if (!content || content.trim() === '')
+            return undefined
+        if (content.trim() === 'key: value')
+            return { key: 'value' }
+        if (content.includes('ProjectButler')) {
+            return {
+                ProjectButler: {
+                    'packageJson-order': ['name', 'version', 'scripts'],
+                },
             }
-            return {}
-        }),
-    }))
+        }
+        return {}
+    }),
+})) //<
+    
+vi.mock('vscode', () => ({ //> Mock vscode globally (no real VSCode API calls)
+    commands: {
+        registerCommand: vi.fn(),
+    },
+    window: {
+        showInformationMessage: vi.fn(),
+        showWarningMessage: vi.fn(),
+        showErrorMessage: vi.fn(),
+        createTerminal: vi.fn(),
+        activeTextEditor: null,
+        activeTerminal: null,
+    },
+    workspace: {
+        workspaceFolders: [
+            { uri: { fsPath: '/test/workspace' } },
+        ],
+        fs: {
+            readFile: vi.fn(),
+            writeFile: vi.fn(),
+            stat: vi.fn(),
+            copy: vi.fn(),
+        },
+    },
+    Uri: {
+        file: vi.fn((path: string) =>
+            ({ fsPath: path })),
+    },
+    FileType: {
+        Directory: 1,
+        File: 2,
+    },
+    Terminal: class MockTerminal {
 
-// 2) Mock vscode globally (no real VSCode API calls)
-vi.mock('vscode', () =>
-    ({
-        commands: {
-            registerCommand: vi.fn(),
-        },
-        window: {
-            showInformationMessage: vi.fn(),
-            showWarningMessage: vi.fn(),
-            showErrorMessage: vi.fn(),
-            createTerminal: vi.fn(),
-            activeTextEditor: null,
-            activeTerminal: null,
-        },
-        workspace: {
-            workspaceFolders: [
-                { uri: { fsPath: '/test/workspace' } },
-            ],
-            fs: {
-                readFile: vi.fn(),
-                writeFile: vi.fn(),
-                stat: vi.fn(),
-                copy: vi.fn(),
-            },
-        },
-        Uri: {
-            file: vi.fn((path: string) =>
-                ({ fsPath: path })),
-        },
-        FileType: {
-            Directory: 1,
-            File: 2,
-        },
-        Terminal: class MockTerminal {
-
-            constructor(public name?: string) {}
-            sendText = vi.fn()
-            show = vi.fn()
+        constructor(public name?: string) {}
+        sendText = vi.fn()
+        show = vi.fn()
 	
-        },
-        TextEditor: class MockTextEditor {
+    },
+    TextEditor: class MockTextEditor {
 
-            document = {
-                uri: { fsPath: '/test/file.txt' },
-            }
+        document = {
+            uri: { fsPath: '/test/file.txt' },
+        }
 	
-        },
-    }))
+    },
+})) //<
 
-// 3) Use fake timers globally (no real waits)
-beforeAll(() => {
-    vi.useFakeTimers()
-})
+beforeAll(() => { vi.useFakeTimers() }) // Use fake timers globally (no real waits)
+afterAll(() => { vi.useRealTimers() }) // Restore real timers globally
+afterEach(() => { vi.clearAllMocks() }) // 4) Keep mocks clean between tests
 
-afterAll(() => {
-    vi.useRealTimers()
-})
-
-// 4) Keep mocks clean between tests
-afterEach(() => {
-    vi.clearAllMocks()
-})
-
-// Console output configuration for tests
 // Set this to true to enable console output for debugging
 const ENABLE_CONSOLE_OUTPUT = process.env.ENABLE_TEST_CONSOLE === 'true'
 
 if (ENABLE_CONSOLE_OUTPUT) {
-    // Enable console output for debugging
     console.log('🔍 Test console output enabled - use ENABLE_TEST_CONSOLE=true to enable')
 }
 else {
-    // Silence console by default to reduce noise and make assertions stable.
     // Use ENABLE_TEST_CONSOLE=true to opt-in when debugging.
     console.log = vi.fn()
     console.info = vi.fn()
@@ -119,7 +106,7 @@ export function enableTestConsoleOutput() {
 // TEST HELPERS
 // ============================================================================
 
-export interface ExtensionTestMocks {
+export interface ExtensionTestMocks { //>
     vscode: {
         commands: {
             registerCommand: ReturnType<typeof vi.fn>
@@ -152,9 +139,9 @@ export interface ExtensionTestMocks {
     context: {
         subscriptions: vscode.Disposable[]
     }
-}
+} //<
 
-export function setupTestEnvironment(): ExtensionTestMocks {
+export function setupTestEnvironment(): ExtensionTestMocks { //>
     const mockTerminal = {
         sendText: vi.fn(),
         show: vi.fn(),
@@ -213,9 +200,9 @@ export function setupTestEnvironment(): ExtensionTestMocks {
         vscode,
         context,
     }
-}
+} //<
 
-export function resetAllMocks(mocks: ExtensionTestMocks): void {
+export function resetAllMocks(mocks: ExtensionTestMocks): void { //>
     Object.values(mocks.vscode.commands).forEach(mock =>
         mock.mockReset())
     Object.values(mocks.vscode.window).forEach((mock) => {
@@ -226,9 +213,9 @@ export function resetAllMocks(mocks: ExtensionTestMocks): void {
     Object.values(mocks.vscode.workspace.fs).forEach(mock =>
         mock.mockReset())
     mocks.vscode.Uri.file.mockReset()
-}
+} //<
 
-export function setupVSCodeMocks(mocks: ExtensionTestMocks): void {
+export function setupVSCodeMocks(mocks: ExtensionTestMocks): void { //>
     // Default implementations
     mocks.vscode.window.showInformationMessage.mockResolvedValue(undefined)
     mocks.vscode.window.showWarningMessage.mockResolvedValue(undefined)
@@ -237,9 +224,9 @@ export function setupVSCodeMocks(mocks: ExtensionTestMocks): void {
     mocks.vscode.workspace.fs.writeFile.mockResolvedValue(undefined)
     mocks.vscode.workspace.fs.stat.mockResolvedValue({ type: mocks.vscode.FileType.File })
     mocks.vscode.workspace.fs.copy.mockResolvedValue(undefined)
-}
+} //<
 
-export function createMockExtensionContext(): vscode.ExtensionContext {
+export function createMockExtensionContext(): vscode.ExtensionContext { //>
     return {
         subscriptions: [],
         workspaceState: {} as any,
@@ -259,9 +246,9 @@ export function createMockExtensionContext(): vscode.ExtensionContext {
         extension: {} as any,
         languageModelAccessInformation: {} as any,
     }
-}
+} //<
 
-export function createMockUri(path: string): vscode.Uri {
+export function createMockUri(path: string): vscode.Uri { //>
     return {
         fsPath: path,
         scheme: 'file',
@@ -272,7 +259,9 @@ export function createMockUri(path: string): vscode.Uri {
         with: vi.fn(),
         toJSON: vi.fn(),
     } as any
-}
+} //<
+
+
 
 // ============================================================================
 // VSCode Mock Scenarios for Extension Tests
@@ -282,25 +271,32 @@ export function createMockUri(path: string): vscode.Uri {
  * Extension-specific mock scenarios for common VSCode operations
  */
 
-export interface VSCodeFileScenarioOptions {
+export interface VSCodeFileScenarioOptions { //>
     filePath: string
     content?: string
     fileType?: 'file' | 'directory'
-}
+} //<
 
-export interface VSCodeCommandScenarioOptions {
+export interface VSCodeCommandScenarioOptions { //>
     commandName: string
     shouldSucceed?: boolean
     errorMessage?: string
-}
+} //<
 
-export interface VSCodeWorkspaceScenarioOptions {
+export interface VSCodeWorkspaceScenarioOptions { //>
     workspacePath: string
     filePaths?: string[]
-}
+} //<
 
-// File System Scenarios
-export function setupVSCodeFileReadScenario(mocks: ExtensionTestMocks, options: VSCodeFileScenarioOptions): void {
+
+// ┌────────────────────────────────────────────────────────────────────────────┐
+// │                           File System Scenarios                            │
+// └────────────────────────────────────────────────────────────────────────────┘
+
+export function setupVSCodeFileReadScenario( //>
+    mocks: ExtensionTestMocks,
+    options: VSCodeFileScenarioOptions
+): void {
     const { filePath, content = 'file content' } = options
     const buffer = Buffer.from(content)
 	
@@ -308,18 +304,24 @@ export function setupVSCodeFileReadScenario(mocks: ExtensionTestMocks, options: 
     const mockUri = { fsPath: filePath } as vscode.Uri
     vi.mocked(vscode.Uri.file).mockReturnValue(mockUri)
     vi.mocked(vscode.workspace.fs.readFile).mockResolvedValue(buffer)
-}
+} //<
 
-export function setupVSCodeFileWriteScenario(mocks: ExtensionTestMocks, options: VSCodeFileScenarioOptions): void {
+export function setupVSCodeFileWriteScenario( //>
+    mocks: ExtensionTestMocks,
+    options: VSCodeFileScenarioOptions
+): void {
     const { filePath, content: _content = 'file content' } = options
 	
     // Use global mocks instead of local mocks
     const mockUri = { fsPath: filePath } as vscode.Uri
     vi.mocked(vscode.Uri.file).mockReturnValue(mockUri)
     vi.mocked(vscode.workspace.fs.writeFile).mockResolvedValue(undefined)
-}
+} //<
 
-export function setupVSCodeFileStatScenario(mocks: ExtensionTestMocks, options: VSCodeFileScenarioOptions): void {
+export function setupVSCodeFileStatScenario( //>
+    mocks: ExtensionTestMocks,
+    options: VSCodeFileScenarioOptions
+): void {
     const { filePath, fileType = 'file' } = options
     const fileTypeValue = fileType === 'file' ? vscode.FileType.File : vscode.FileType.Directory
 	
@@ -327,7 +329,9 @@ export function setupVSCodeFileStatScenario(mocks: ExtensionTestMocks, options: 
     const mockUri = { fsPath: filePath } as vscode.Uri
     vi.mocked(vscode.Uri.file).mockReturnValue(mockUri)
     vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({ type: fileTypeValue, ctime: 0, mtime: 0, size: 0 })
-}
+} //<
+
+
 
 export function setupVSCodeFileCopyScenario(mocks: ExtensionTestMocks, sourcePath: string, destinationPath: string): void {
     // Use global mocks instead of local mocks
@@ -451,17 +455,24 @@ export class ExtensionMockBuilder {
         return this
     }
 
-    fileWrite(options: VSCodeFileScenarioOptions): ExtensionMockBuilder {
+    fileWrite( //>
+        options: VSCodeFileScenarioOptions
+    ): ExtensionMockBuilder {
         setupVSCodeFileWriteScenario(this.mocks, options)
         return this
-    }
+    } //<
 
-    fileStat(options: VSCodeFileScenarioOptions): ExtensionMockBuilder {
+    fileStat( //>
+        options: VSCodeFileScenarioOptions
+    ): ExtensionMockBuilder {
         setupVSCodeFileStatScenario(this.mocks, options)
         return this
-    }
+    } //<
 
-    fileCopy(sourcePath: string, destinationPath: string): ExtensionMockBuilder {
+    fileCopy(
+        sourcePath: string,
+        destinationPath: string
+    ): ExtensionMockBuilder {
         setupVSCodeFileCopyScenario(this.mocks, sourcePath, destinationPath)
         return this
     }

@@ -11,7 +11,7 @@ import {
     setupVSCodeFileStatScenario,
     setupVSCodeFileCopyScenario,
     createExtensionMockBuilder
-} from '../_setup'
+} from '../__mocks__/_setup'
 
 describe('FileSystemAdapter', () => {
     let adapter: FileSystemAdapter
