@@ -240,4 +240,57 @@ describe('Extension', () => {
             process.env.VSCODE_TEST = originalEnv
         })
     })
+
+
+    describe('Extension Activation Error Scenarios', () => {
+        it('should handle command registration failures', () => {
+            // Arrange
+            const originalEnv = process.env.VSCODE_TEST
+            delete process.env.VSCODE_TEST
+
+            // Mock command registration to throw
+            vi.mocked(vscode.commands.registerCommand).mockImplementation(() => {
+                throw new Error('Command registration failed')
+            })
+
+            // Act
+            activate({ subscriptions: { push: vi.fn() } } as any)
+
+            // Assert - Should show error message
+            expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
+                'Failed to activate Project Butler: Command registration failed'
+            )
+
+            // Cleanup
+            process.env.VSCODE_TEST = originalEnv
+        })
+
+        it('should handle context subscription failures', () => {
+            // Arrange
+            const originalEnv = process.env.VSCODE_TEST
+            delete process.env.VSCODE_TEST
+
+            const mockContext = {
+                subscriptions: {
+                    push: vi.fn().mockImplementation(() => {
+                        throw new Error('Subscription failed')
+                    })
+                }
+            }
+
+            // Mock command registration to succeed so we can test subscription failure
+            vi.mocked(vscode.commands.registerCommand).mockReturnValue({ dispose: vi.fn() })
+
+            // Act
+            activate(mockContext as any)
+
+            // Assert - Should show error message
+            expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
+                'Failed to activate Project Butler: Subscription failed'
+            )
+
+            // Cleanup
+            process.env.VSCODE_TEST = originalEnv
+        })
+    })
 })
