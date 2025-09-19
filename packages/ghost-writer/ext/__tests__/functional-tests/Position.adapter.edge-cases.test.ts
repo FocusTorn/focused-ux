@@ -1,17 +1,21 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { PositionAdapter } from '../../src/adapters/Position.adapter'
 import * as vscode from 'vscode'
-
-// Mock VSCode Position
-vi.mock('vscode', () => ({
-	Position: vi.fn().mockImplementation((line, character) => ({ line, character }))
-}))
+import {
+    setupTestEnvironment,
+    resetAllMocks,
+    setupVSCodeMocks
+} from '../__mocks__/helpers'
 
 describe('PositionAdapter Edge Cases', () => {
+	let mocks: ReturnType<typeof setupTestEnvironment>
 	let adapter: PositionAdapter
 
 	beforeEach(() => {
-		vi.clearAllMocks()
+		mocks = setupTestEnvironment()
+		setupVSCodeMocks(mocks)
+		resetAllMocks(mocks)
+		
 		adapter = new PositionAdapter()
 	})
 

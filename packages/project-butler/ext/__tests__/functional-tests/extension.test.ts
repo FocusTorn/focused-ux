@@ -4,12 +4,14 @@ import * as vscode from 'vscode'
 import {
     setupTestEnvironment,
     resetAllMocks,
-    setupVSCodeMocks,
+    setupVSCodeMocks
+} from '../__mocks__/helpers'
+import {
     setupVSCodeCommandRegistrationScenario,
     setupVSCodeWindowMessageScenario,
     setupVSCodeErrorScenario,
     createExtensionMockBuilder
-} from '../__mocks__/_setup'
+} from '../__mocks__/mock-scenario-builder'
 
 // Mock the core package
 vi.mock('@fux/project-butler-core', () =>

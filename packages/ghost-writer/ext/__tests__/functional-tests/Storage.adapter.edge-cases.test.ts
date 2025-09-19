@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { StorageAdapter } from '../../src/adapters/Storage.adapter'
+import { createMockStorageContext } from '../__mocks__/helpers'
 import * as vscode from 'vscode'
 
 describe('StorageAdapter Edge Cases', () => {
@@ -9,12 +10,7 @@ describe('StorageAdapter Edge Cases', () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		adapter = new StorageAdapter()
-		mockContext = {
-			globalState: {
-				update: vi.fn().mockResolvedValue(undefined),
-				get: vi.fn().mockResolvedValue(undefined),
-			},
-		}
+		mockContext = createMockStorageContext()
 	})
 
 	describe('Error Handling', () => {

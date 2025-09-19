@@ -1,21 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { activate, deactivate } from '../../src/extension.js'
+import {
+    setupTestEnvironment,
+    resetAllMocks,
+    setupVSCodeMocks,
+    createMockExtensionContext,
+    createMockStorageContext
+} from '../__mocks__/helpers'
 
 describe('Ghost Writer Extension', () => {
+	let mocks: ReturnType<typeof setupTestEnvironment>
 	let mockContext: any
 
 	beforeEach(() => {
-		mockContext = {
-			subscriptions: [],
-			globalState: {
-				get: vi.fn(),
-				update: vi.fn(),
-			},
-			workspaceState: {
-				get: vi.fn(),
-				update: vi.fn(),
-			},
-		}
+		mocks = setupTestEnvironment()
+		setupVSCodeMocks(mocks)
+		resetAllMocks(mocks)
+		
+		mockContext = createMockExtensionContext()
+		// Add storage context properties
+		const storageContext = createMockStorageContext()
+		mockContext.globalState = storageContext.globalState
+		mockContext.workspaceState = storageContext.workspaceState
 	})
 
 	describe('activate', () => {

@@ -1,27 +1,25 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { WorkspaceAdapter } from '../../src/adapters/Workspace.adapter'
 import * as vscode from 'vscode'
-
-// Mock VSCode workspace
-vi.mock('vscode', () => ({
-	workspace: {
-		getConfiguration: vi.fn()
-	}
-}))
+import {
+    setupTestEnvironment,
+    resetAllMocks,
+    setupVSCodeMocks,
+    createMockConfiguration
+} from '../__mocks__/helpers'
 
 describe('WorkspaceAdapter', () => {
+	let mocks: ReturnType<typeof setupTestEnvironment>
 	let adapter: WorkspaceAdapter
 	let mockConfiguration: any
 
 	beforeEach(() => {
-		vi.clearAllMocks()
+		mocks = setupTestEnvironment()
+		setupVSCodeMocks(mocks)
+		resetAllMocks(mocks)
+		
 		adapter = new WorkspaceAdapter()
-		mockConfiguration = {
-			get: vi.fn(),
-			update: vi.fn(),
-			has: vi.fn(),
-			inspect: vi.fn(),
-		}
+		mockConfiguration = createMockConfiguration()
 	})
 
 	describe('getConfiguration', () => {

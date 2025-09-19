@@ -5,13 +5,15 @@ import * as vscode from 'vscode'
 import {
     setupTestEnvironment,
     resetAllMocks,
-    setupVSCodeMocks,
+    setupVSCodeMocks
+} from '../__mocks__/helpers'
+import {
     setupVSCodeFileReadScenario,
     setupVSCodeFileWriteScenario,
     setupVSCodeFileStatScenario,
     setupVSCodeFileCopyScenario,
     createExtensionMockBuilder
-} from '../__mocks__/_setup'
+} from '../__mocks__/mock-scenario-builder'
 
 describe('FileSystemAdapter', () => {
     let adapter: FileSystemAdapter

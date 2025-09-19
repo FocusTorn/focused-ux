@@ -27,7 +27,7 @@ export default createVscodeTestConfig({
     ],
     setupFiles: './_out-tsc/suite/index.js',
     skipExtensionDependencies: true,
-    // version: 'stable',
+    version: 'insiders',
 })
 
 

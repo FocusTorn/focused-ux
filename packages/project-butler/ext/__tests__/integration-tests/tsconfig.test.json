@@ -6,8 +6,7 @@
         "./_out-tsc/**",
         "../functional-tests/**",
         "../coverage-tests/**",
-        "../isolated-tests/**",
-        "../_setup.ts"
+        "../isolated-tests/**"
     ],
     
     "compilerOptions": {

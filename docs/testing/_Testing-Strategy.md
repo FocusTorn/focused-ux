@@ -740,11 +740,21 @@ export default createVscodeTestConfig({
 
 ---
 
-## 🎭 Advanced Mocking Strategy
+## 🎭 Enhanced Mock Strategy
 
 ### Overview
 
 The FocusedUX project uses an **Enhanced Mock Strategy** that combines centralized mock scenarios with individual test flexibility. This approach reduces code duplication by 60% while maintaining test clarity and maintainability.
+
+> **📖 For detailed documentation**: See [Enhanced Mock Strategy Guide](./Enhanced-Mock-Strategy.md)
+
+### Quick Reference
+
+The Enhanced Mock Strategy consists of three key components:
+
+1. **`__mocks__/globals.ts`** - Global mocks & setup
+2. **`__mocks__/helpers.ts`** - Test utilities & mock creators
+3. **`__mocks__/mock-scenario-builder.ts`** - Composable mock scenarios
 
 ### Core Principles
 

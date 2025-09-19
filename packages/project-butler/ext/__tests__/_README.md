@@ -6,12 +6,14 @@ This directory contains the test files for the @fux/project-butler-ext package, 
 
 ```
 __tests__/
-├── _setup.ts              # Global test setup with console control
-├── helpers.ts              # Common test utilities and mock setup functions
+├── __mocks__/
+│   ├── globals.ts          # Global mocks and test setup
+│   ├── helpers.ts          # Test helper functions and utilities
+│   └── mock-scenario-builder.ts # Mock scenario builder functions
 ├── README.md               # This file
-├── unit/                   # Unit tests for extension components
 ├── functional-tests/       # Functional tests for command execution
-└── coverage-tests/         # Coverage-only tests (if applicable)
+├── integration-tests/      # Integration tests for extension behavior
+└── coverage-tests/        # Coverage-only tests (if applicable)
 ```
 
 ## Test Setup
