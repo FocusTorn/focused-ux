@@ -35,6 +35,8 @@
         "allowUnreachableCode": false,
         "noImplicitOverride": true,
         "noImplicitReturns": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
         "noFallthroughCasesInSwitch": true,
         
         // EMIT =========================================================

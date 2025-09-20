@@ -130,14 +130,10 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
                     
                     // Output only lines with actual error content - no blank lines
                     const lines = modifiedOutput.split('\n')
+                        .filter(line => line.trim().length > 0) // Remove blank lines
+                        .join('\n')
 
-                    lines.forEach((line: string) => {
-                        const trimmed = line.trim()
-
-                        if (trimmed.length > 0) {
-                            console.log(line)
-                        }
-                    })
+                    console.log(lines)
                 }
                 throw error // Re-throw to maintain error behavior
             }
