@@ -7,25 +7,25 @@ import type { IPathUtilsService, ICommonUtilsService } from '../../../src/_inter
 // ============================================================================
 
 export interface TestMocks {
-	storage: IStorageService
-	pathUtils: IPathUtilsService
-	commonUtils: ICommonUtilsService
+    storage: IStorageService
+    pathUtils: IPathUtilsService
+    commonUtils: ICommonUtilsService
 }
 
 export function createMockTestEnvironment(): TestMocks {
-	return {
-		storage: createMockStorageService(),
-		pathUtils: createMockPathUtilsService(),
-		commonUtils: createMockCommonUtilsService(),
-	}
+    return {
+        storage: createMockStorageService(),
+        pathUtils: createMockPathUtilsService(),
+        commonUtils: createMockCommonUtilsService(),
+    }
 }
 
 export function resetAllMocks(mocks: TestMocks): void {
-	vi.clearAllMocks()
-	mocks.storage.update.mockReset()
-	mocks.storage.get.mockReset()
-	mocks.pathUtils.getDottedPath.mockReset()
-	mocks.commonUtils.errMsg.mockReset()
+    vi.clearAllMocks()
+    mocks.storage.update.mockReset()
+    mocks.storage.get.mockReset()
+    mocks.pathUtils.getDottedPath.mockReset()
+    mocks.commonUtils.errMsg.mockReset()
 }
 
 // ============================================================================
@@ -33,21 +33,21 @@ export function resetAllMocks(mocks: TestMocks): void {
 // ============================================================================
 
 export function createMockStorageService(): IStorageService {
-	return {
-		update: vi.fn().mockResolvedValue(undefined),
-		get: vi.fn().mockResolvedValue(undefined),
-	}
+    return {
+        update: vi.fn().mockResolvedValue(undefined),
+        get: vi.fn().mockResolvedValue(undefined),
+    }
 }
 
 export function createMockPathUtilsService(): IPathUtilsService {
-	return {
-		getDottedPath: vi.fn().mockReturnValue('./component'),
-	}
+    return {
+        getDottedPath: vi.fn().mockReturnValue('./component'),
+    }
 }
 
 export function createMockCommonUtilsService(): ICommonUtilsService {
-	return {
-		errMsg: vi.fn(),
-	}
+    return {
+        errMsg: vi.fn(),
+    }
 }
 

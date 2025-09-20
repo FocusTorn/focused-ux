@@ -7,6 +7,7 @@ export interface User {
 }
 
 export class UserService {
+
     async getUser(id: string): Promise<User | null> {
         // Implementation
         return null
@@ -16,6 +17,7 @@ export class UserService {
         // Implementation
         return { id: '1', ...user }
     }
+
 }
 
 export default UserService

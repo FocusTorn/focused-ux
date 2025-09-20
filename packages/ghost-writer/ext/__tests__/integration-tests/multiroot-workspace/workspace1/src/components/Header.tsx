@@ -1,4 +1,3 @@
-
 // Frontend component: workspace1/src/components/Header.tsx
 import React from 'react'
 

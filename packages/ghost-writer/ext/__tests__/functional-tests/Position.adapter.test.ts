@@ -8,77 +8,77 @@ import {
 } from '../__mocks__/helpers'
 
 describe('PositionAdapter', () => {
-	let mocks: ReturnType<typeof setupTestEnvironment>
-	let adapter: PositionAdapter
+    let mocks: ReturnType<typeof setupTestEnvironment>
+    let adapter: PositionAdapter
 
-	beforeEach(() => {
-		mocks = setupTestEnvironment()
-		setupVSCodeMocks(mocks)
-		resetAllMocks(mocks)
+    beforeEach(() => {
+        mocks = setupTestEnvironment()
+        setupVSCodeMocks(mocks)
+        resetAllMocks(mocks)
 		
-		adapter = new PositionAdapter()
-	})
+        adapter = new PositionAdapter()
+    })
 
-	describe('create', () => {
-		it('should create position with line and character', () => {
-			// Arrange
-			const line = 5
-			const character = 10
+    describe('create', () => {
+        it('should create position with line and character', () => {
+            // Arrange
+            const line = 5
+            const character = 10
 
-			// Act
-			const result = adapter.create(line, character)
+            // Act
+            const result = adapter.create(line, character)
 
-			// Assert
-			expect(result).toEqual({ line, character })
-			expect(result.line).toBe(line)
-			expect(result.character).toBe(character)
-		})
+            // Assert
+            expect(result).toEqual({ line, character })
+            expect(result.line).toBe(line)
+            expect(result.character).toBe(character)
+        })
 
-		it('should create position at origin', () => {
-			// Arrange
-			const line = 0
-			const character = 0
+        it('should create position at origin', () => {
+            // Arrange
+            const line = 0
+            const character = 0
 
-			// Act
-			const result = adapter.create(line, character)
+            // Act
+            const result = adapter.create(line, character)
 
-			// Assert
-			expect(result).toEqual({ line, character })
-			expect(result.line).toBe(line)
-			expect(result.character).toBe(character)
-		})
+            // Assert
+            expect(result).toEqual({ line, character })
+            expect(result.line).toBe(line)
+            expect(result.character).toBe(character)
+        })
 
-		it('should create position with large values', () => {
-			// Arrange
-			const line = 1000
-			const character = 500
+        it('should create position with large values', () => {
+            // Arrange
+            const line = 1000
+            const character = 500
 
-			// Act
-			const result = adapter.create(line, character)
+            // Act
+            const result = adapter.create(line, character)
 
-			// Assert
-			expect(result).toEqual({ line, character })
-			expect(result.line).toBe(line)
-			expect(result.character).toBe(character)
-		})
+            // Assert
+            expect(result).toEqual({ line, character })
+            expect(result.line).toBe(line)
+            expect(result.character).toBe(character)
+        })
 
-		it('should create multiple positions', () => {
-			// Arrange
-			const positions = [
-				{ line: 0, character: 0 },
-				{ line: 1, character: 5 },
-				{ line: 10, character: 20 },
-			]
+        it('should create multiple positions', () => {
+            // Arrange
+            const positions = [
+                { line: 0, character: 0 },
+                { line: 1, character: 5 },
+                { line: 10, character: 20 },
+            ]
 
-			// Act
-			const results = positions.map(pos => adapter.create(pos.line, pos.character))
+            // Act
+            const results = positions.map(pos => adapter.create(pos.line, pos.character))
 
-			// Assert
-			results.forEach((result, index) => {
-				expect(result).toEqual(positions[index])
-				expect(result.line).toBe(positions[index].line)
-				expect(result.character).toBe(positions[index].character)
-			})
-		})
-	})
+            // Assert
+            results.forEach((result, index) => {
+                expect(result).toEqual(positions[index])
+                expect(result.line).toBe(positions[index].line)
+                expect(result.character).toBe(positions[index].character)
+            })
+        })
+    })
 })

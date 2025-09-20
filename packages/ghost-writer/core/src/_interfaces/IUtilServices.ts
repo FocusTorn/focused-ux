@@ -1,7 +1,7 @@
 export interface IPathUtilsService {
-	getDottedPath: (from: string, to: string) => string | undefined
+    getDottedPath: (from: string, to: string) => string | undefined
 }
 
 export interface ICommonUtilsService {
-	errMsg: (message: string) => void
+    errMsg: (message: string) => void
 }

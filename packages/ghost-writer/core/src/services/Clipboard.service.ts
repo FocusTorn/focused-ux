@@ -4,20 +4,20 @@ import type { IClipboardService, StoredFragment } from '../_interfaces/IClipboar
 
 export class ClipboardService implements IClipboardService {
 
-	constructor(private readonly storageService: IStorageService) {}
+    constructor(private readonly storageService: IStorageService) {}
 
-	public async store(fragment: StoredFragment): Promise<void> {
-		await this.storageService.update(ghostWriterConstants.storageKeys.CLIPBOARD, fragment)
-	}
+    public async store(fragment: StoredFragment): Promise<void> {
+        await this.storageService.update(ghostWriterConstants.storageKeys.CLIPBOARD, fragment)
+    }
 
-	public async retrieve(): Promise<StoredFragment | undefined> {
-		return this.storageService.get<StoredFragment>(
-			ghostWriterConstants.storageKeys.CLIPBOARD,
-		)
-	}
+    public async retrieve(): Promise<StoredFragment | undefined> {
+        return this.storageService.get<StoredFragment>(
+            ghostWriterConstants.storageKeys.CLIPBOARD,
+        )
+    }
 
-	public async clear(): Promise<void> {
-		await this.storageService.update(ghostWriterConstants.storageKeys.CLIPBOARD, undefined)
-	}
+    public async clear(): Promise<void> {
+        await this.storageService.update(ghostWriterConstants.storageKeys.CLIPBOARD, undefined)
+    }
 
 }

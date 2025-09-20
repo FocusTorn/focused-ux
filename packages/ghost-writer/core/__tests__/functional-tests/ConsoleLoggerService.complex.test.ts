@@ -2,15 +2,15 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { ConsoleLoggerService } from '../../src/services/ConsoleLogger.service.js'
 
 describe('ConsoleLoggerService - Complex Scenarios', () => {
-	let consoleLoggerService: ConsoleLoggerService
+    let consoleLoggerService: ConsoleLoggerService
 
-	beforeEach(() => {
-		consoleLoggerService = new ConsoleLoggerService()
-	})
+    beforeEach(() => {
+        consoleLoggerService = new ConsoleLoggerService()
+    })
 
-	describe('Class Method Detection', () => {
-		it('should generate log statement for class method variable', () => {
-			const documentContent = `
+    describe('Class Method Detection', () => {
+        it('should generate log statement for class method variable', () => {
+            const documentContent = `
 class MyClass {
   private myProperty = 'test';
   
@@ -21,22 +21,22 @@ class MyClass {
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'localVar',
-				selectionLine: 5,
-				includeClassName: true,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'localVar',
+                selectionLine: 5,
+                includeClassName: true,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('localVar')
-		})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('localVar')
+        })
 
-		it('should generate log statement for class property', () => {
-			const documentContent = `
+        it('should generate log statement for class property', () => {
+            const documentContent = `
 class MyClass {
   private myProperty = 'test';
   
@@ -46,24 +46,24 @@ class MyClass {
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'myProperty',
-				selectionLine: 2,
-				includeClassName: true,
-				includeFunctionName: false,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'myProperty',
+                selectionLine: 2,
+                includeClassName: true,
+                includeFunctionName: false,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('myProperty')
-		})
-	})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('myProperty')
+        })
+    })
 
-	describe('Nested Function Handling', () => {
-		it('should handle nested function variables', () => {
-			const documentContent = `
+    describe('Nested Function Handling', () => {
+        it('should handle nested function variables', () => {
+            const documentContent = `
 function outerFunction() {
   const outerVar = 'outer';
   
@@ -76,46 +76,46 @@ function outerFunction() {
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'innerVar',
-				selectionLine: 5,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'innerVar',
+                selectionLine: 5,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('innerVar')
-		})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('innerVar')
+        })
 
-		it('should handle arrow function variables', () => {
-			const documentContent = `
+        it('should handle arrow function variables', () => {
+            const documentContent = `
 const myFunction = () => {
   const arrowVar = 'arrow';
   return arrowVar;
 };
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'arrowVar',
-				selectionLine: 2,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'arrowVar',
+                selectionLine: 2,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('arrowVar')
-		})
-	})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('arrowVar')
+        })
+    })
 
-	describe('Complex AST Scenarios', () => {
-		it('should handle variable in conditional statement', () => {
-			const documentContent = `
+    describe('Complex AST Scenarios', () => {
+        it('should handle variable in conditional statement', () => {
+            const documentContent = `
 function testFunction() {
   const myVar = 'test';
   
@@ -128,22 +128,22 @@ function testFunction() {
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'conditionalVar',
-				selectionLine: 5,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'conditionalVar',
+                selectionLine: 5,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('conditionalVar')
-		})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('conditionalVar')
+        })
 
-		it('should handle variable in loop', () => {
-			const documentContent = `
+        it('should handle variable in loop', () => {
+            const documentContent = `
 function testFunction() {
   const items = ['a', 'b', 'c'];
   
@@ -156,22 +156,22 @@ function testFunction() {
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'loopVar',
-				selectionLine: 5,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'loopVar',
+                selectionLine: 5,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('loopVar')
-		})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('loopVar')
+        })
 
-		it('should handle variable in try-catch block', () => {
-			const documentContent = `
+        it('should handle variable in try-catch block', () => {
+            const documentContent = `
 function testFunction() {
   try {
     const tryVar = 'try';
@@ -183,46 +183,46 @@ function testFunction() {
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'catchVar',
-				selectionLine: 6,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'catchVar',
+                selectionLine: 6,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('catchVar')
-		})
-	})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('catchVar')
+        })
+    })
 
-	describe('Edge Cases', () => {
-		it('should handle variable at end of function', () => {
-			const documentContent = `
+    describe('Edge Cases', () => {
+        it('should handle variable at end of function', () => {
+            const documentContent = `
 function testFunction() {
   const myVar = 'test';
   return myVar;
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'myVar',
-				selectionLine: 2,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'myVar',
+                selectionLine: 2,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('myVar')
-		})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('myVar')
+        })
 
-		it('should handle variable in switch statement', () => {
-			const documentContent = `
+        it('should handle variable in switch statement', () => {
+            const documentContent = `
 function testFunction(value: string) {
   switch (value) {
     case 'a':
@@ -234,22 +234,22 @@ function testFunction(value: string) {
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'switchVar',
-				selectionLine: 4,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'switchVar',
+                selectionLine: 4,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('switchVar')
-		})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('switchVar')
+        })
 
-		it('should handle variable in async function', () => {
-			const documentContent = `
+        it('should handle variable in async function', () => {
+            const documentContent = `
 async function testFunction() {
   const asyncVar = 'async';
   await Promise.resolve();
@@ -257,24 +257,24 @@ async function testFunction() {
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'asyncVar',
-				selectionLine: 2,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'asyncVar',
+                selectionLine: 2,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('asyncVar')
-		})
-	})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('asyncVar')
+        })
+    })
 
-	describe('Configuration Options', () => {
-		it('should include class name when requested', () => {
-			const documentContent = `
+    describe('Configuration Options', () => {
+        it('should include class name when requested', () => {
+            const documentContent = `
 class MyClass {
   public myMethod() {
     const myVar = 'test';
@@ -283,22 +283,22 @@ class MyClass {
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'myVar',
-				selectionLine: 3,
-				includeClassName: true,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'myVar',
+                selectionLine: 3,
+                includeClassName: true,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('myVar')
-		})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('myVar')
+        })
 
-		it('should exclude class name when not requested', () => {
-			const documentContent = `
+        it('should exclude class name when not requested', () => {
+            const documentContent = `
 class MyClass {
   public myMethod() {
     const myVar = 'test';
@@ -307,46 +307,46 @@ class MyClass {
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'myVar',
-				selectionLine: 3,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'myVar',
+                selectionLine: 3,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('myVar')
-		})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('myVar')
+        })
 
-		it('should exclude function name when not requested', () => {
-			const documentContent = `
+        it('should exclude function name when not requested', () => {
+            const documentContent = `
 function testFunction() {
   const myVar = 'test';
   return myVar;
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'myVar',
-				selectionLine: 2,
-				includeClassName: false,
-				includeFunctionName: false,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'myVar',
+                selectionLine: 2,
+                includeClassName: false,
+                includeFunctionName: false,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('myVar')
-		})
-	})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('myVar')
+        })
+    })
 
-	describe('Error Handling', () => {
-		it('should handle invalid TypeScript syntax gracefully', () => {
-			const documentContent = `
+    describe('Error Handling', () => {
+        it('should handle invalid TypeScript syntax gracefully', () => {
+            const documentContent = `
 function testFunction() {
   const myVar = 'test';
   return myVar;
@@ -355,58 +355,58 @@ function testFunction() {
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'myVar',
-				selectionLine: 2,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'myVar',
+                selectionLine: 2,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			// Should still work despite invalid syntax
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('myVar')
-		})
+            // Should still work despite invalid syntax
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('myVar')
+        })
 
-		it('should handle empty document gracefully', () => {
-			const documentContent = ''
+        it('should handle empty document gracefully', () => {
+            const documentContent = ''
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'myVar',
-				selectionLine: 0,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'myVar',
+                selectionLine: 0,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('myVar')
-		})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('myVar')
+        })
 
-		it('should handle variable not found in AST', () => {
-			const documentContent = `
+        it('should handle variable not found in AST', () => {
+            const documentContent = `
 function testFunction() {
   const myVar = 'test';
   return myVar;
 }
 `
 
-			const result = consoleLoggerService.generate({
-				documentContent,
-				fileName: 'test.ts',
-				selectedVar: 'nonExistentVar',
-				selectionLine: 2,
-				includeClassName: false,
-				includeFunctionName: true,
-			})
+            const result = consoleLoggerService.generate({
+                documentContent,
+                fileName: 'test.ts',
+                selectedVar: 'nonExistentVar',
+                selectionLine: 2,
+                includeClassName: false,
+                includeFunctionName: true,
+            })
 
-			expect(result).toBeDefined()
-			expect(result?.logStatement).toContain('console.log')
-			expect(result?.logStatement).toContain('nonExistentVar')
-		})
-	})
+            expect(result).toBeDefined()
+            expect(result?.logStatement).toContain('console.log')
+            expect(result?.logStatement).toContain('nonExistentVar')
+        })
+    })
 })

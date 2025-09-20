@@ -1,4 +1,3 @@
-
 // Component with error
 import React from 'react'
 

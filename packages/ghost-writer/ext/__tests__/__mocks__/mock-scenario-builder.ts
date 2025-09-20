@@ -221,6 +221,7 @@ export class GhostWriterMockBuilder {
     }
 
     build(): ExtensionTestMocks { return this.mocks }
+
 }
 
 export function createGhostWriterMockBuilder(

@@ -1,4 +1,3 @@
-
 // User profile component
 import React from 'react'
 import type { User } from '../types/User'

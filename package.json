@@ -72,6 +72,7 @@
         "rimraf": "^6.0.1",
         "strip-json-comments": "^5.0.3",
         "toml-eslint-parser": "^0.10.0",
+        "ts-incremental-strict-mode": "^0.5.2",
         "ts-node": "^10.9.2",
         "tslib": "^2.8.1",
         "typescript": "^5.9.2",

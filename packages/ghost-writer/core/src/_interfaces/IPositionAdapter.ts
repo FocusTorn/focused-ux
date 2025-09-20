@@ -1,3 +1,3 @@
 export interface IPositionAdapter {
-	create: (line: number, character: number) => any // vscode.Position
+    create: (line: number, character: number) => any // vscode.Position
 }

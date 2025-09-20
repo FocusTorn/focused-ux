@@ -61,16 +61,27 @@
             "dependsOn": ["build"]
         }, //<
         //= Quality ============================================================= 
-        "check-types": { //>
+        // "check-types": { //>
+        //     "executor": "nx:run-commands",
+        //     "cache": true,
+        //     "dependsOn": ["^build"],
+        //     "inputs": ["default", "^default"],
+        //     "options": {
+        //         "command": "tsc --noEmit --project {projectRoot}/tsconfig.json",
+        //         "cwd": "{workspaceRoot}"
+        //     }
+        // }, //<
+        
+        "check-types": {
             "executor": "nx:run-commands",
             "cache": true,
-            "dependsOn": ["^build"],
             "inputs": ["default", "^default"],
             "options": {
-                "command": "tsc --noEmit --project {projectRoot}/tsconfig.json",
+                "command": "npx ts-incremental-strict-mode '{projectRoot}/**/*.ts'",
                 "cwd": "{workspaceRoot}"
             }
-        }, //<
+        },
+        
         "check-types:deps": { //>
             "executor": "nx:run-commands",
             "cache": true,

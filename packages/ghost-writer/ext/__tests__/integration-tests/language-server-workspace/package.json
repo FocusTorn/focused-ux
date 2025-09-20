@@ -1,9 +1,9 @@
 {
-  "name": "language-server-test",
-  "version": "1.0.0",
-  "dependencies": {
-    "react": "^18.0.0",
-    "@types/react": "^18.0.0",
-    "typescript": "^5.0.0"
-  }
+    "name": "language-server-test",
+    "version": "1.0.0",
+    "dependencies": {
+        "react": "^18.0.0",
+        "@types/react": "^18.0.0",
+        "typescript": "^5.0.0"
+    }
 }

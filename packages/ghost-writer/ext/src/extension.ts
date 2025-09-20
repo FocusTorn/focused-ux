@@ -11,140 +11,142 @@ import { PositionAdapter } from './adapters/Position.adapter.js'
 import * as vscode from 'vscode'
 
 export function activate(context: ExtensionContext): void {
-	console.log(`[${constants.extension.name}] Activating...`)
+    console.log(`[${constants.extension.name}] Activating...`)
 
-	// Create adapters
-	const storageAdapter = new StorageAdapter()
-	storageAdapter.setContext(context)
-	const windowAdapter = new WindowAdapter()
-	const pathUtilsAdapter = new PathUtilsAdapter()
-	const workspaceAdapter = new WorkspaceAdapter()
-	const commandsAdapter = new CommandsAdapter()
-	const positionAdapter = new PositionAdapter()
+    // Create adapters
+    const storageAdapter = new StorageAdapter()
 
-	// Create core services
-	const clipboardService = new ClipboardService(storageAdapter)
-	const consoleLoggerService = new ConsoleLoggerService()
-	const importGeneratorService = new ImportGeneratorService(pathUtilsAdapter, windowAdapter)
+    storageAdapter.setContext(context)
 
-	// Command Handlers
-	const handleStoreCodeFragment = async (): Promise<void> => {
-		const editor = windowAdapter.activeTextEditor
+    const windowAdapter = new WindowAdapter()
+    const pathUtilsAdapter = new PathUtilsAdapter()
+    const workspaceAdapter = new WorkspaceAdapter()
+    const commandsAdapter = new CommandsAdapter()
+    const positionAdapter = new PositionAdapter()
 
-		if (!editor) {
-			windowAdapter.errMsg('No active text editor.')
-			return
-		}
+    // Create core services
+    const clipboardService = new ClipboardService(storageAdapter)
+    const consoleLoggerService = new ConsoleLoggerService()
+    const importGeneratorService = new ImportGeneratorService(pathUtilsAdapter, windowAdapter)
 
-		const selection = editor.selection
-		const selectedText = editor.document.getText(selection)
+    // Command Handlers
+    const handleStoreCodeFragment = async (): Promise<void> => {
+        const editor = windowAdapter.activeTextEditor
 
-		if (selectedText.trim()) {
-			await clipboardService.store({
-				text: selectedText,
-				sourceFilePath: editor.document.fileName,
-			})
-			await windowAdapter.showTimedInformationMessage(`Stored fragment: ${selectedText}`)
-		}
-		else {
-			windowAdapter.errMsg('No text selected to store.')
-		}
-	}
+        if (!editor) {
+            windowAdapter.errMsg('No active text editor.')
+            return
+        }
 
-	const handleInsertImportStatement = async (): Promise<void> => {
-		const editor = windowAdapter.activeTextEditor
+        const selection = editor.selection
+        const selectedText = editor.document.getText(selection)
 
-		if (!editor) {
-			windowAdapter.errMsg('No active text editor.')
-			return
-		}
+        if (selectedText.trim()) {
+            await clipboardService.store({
+                text: selectedText,
+                sourceFilePath: editor.document.fileName,
+            })
+            await windowAdapter.showTimedInformationMessage(`Stored fragment: ${selectedText}`)
+        }
+        else {
+            windowAdapter.errMsg('No text selected to store.')
+        }
+    }
 
-		const fragment = await clipboardService.retrieve()
+    const handleInsertImportStatement = async (): Promise<void> => {
+        const editor = windowAdapter.activeTextEditor
 
-		if (!fragment) {
-			windowAdapter.errMsg('No fragment stored in Ghost Writer clipboard.')
-			return
-		}
+        if (!editor) {
+            windowAdapter.errMsg('No active text editor.')
+            return
+        }
 
-		const importStatement = importGeneratorService.generate(
-			editor.document.fileName,
-			fragment,
-		)
+        const fragment = await clipboardService.retrieve()
 
-		if (importStatement) {
-			await editor.edit((editBuilder: TextEditorEdit) => {
-				editBuilder.insert(editor.selection.active, importStatement)
-			})
-			await clipboardService.clear()
-		} else {
-			windowAdapter.errMsg('Failed to generate import statement. Could not determine relative path.')
-		}
-	}
+        if (!fragment) {
+            windowAdapter.errMsg('No fragment stored in Ghost Writer clipboard.')
+            return
+        }
 
-	const handleLogSelectedVariable = async (): Promise<void> => {
-		const editor = windowAdapter.activeTextEditor
+        const importStatement = importGeneratorService.generate(
+            editor.document.fileName,
+            fragment,
+        )
 
-		if (!editor) {
-			windowAdapter.errMsg('No active text editor.')
-			return
-		}
+        if (importStatement) {
+            await editor.edit((editBuilder: TextEditorEdit) => {
+                editBuilder.insert(editor.selection.active, importStatement)
+            })
+            await clipboardService.clear()
+        } else {
+            windowAdapter.errMsg('Failed to generate import statement. Could not determine relative path.')
+        }
+    }
 
-		const config: WorkspaceConfiguration = workspaceAdapter.getConfiguration(constants.extension.configKey)
-		const includeClassName = config.get<boolean>(
-			constants.configKeys.loggerIncludeClassName,
-			true,
-		) ?? true
-		const includeFunctionName = config.get<boolean>(
-			constants.configKeys.loggerIncludeFunctionName,
-			true,
-		) ?? true
+    const handleLogSelectedVariable = async (): Promise<void> => {
+        const editor = windowAdapter.activeTextEditor
 
-		for (const selection of editor.selections) {
-			const selectedVar = editor.document.getText(selection)
+        if (!editor) {
+            windowAdapter.errMsg('No active text editor.')
+            return
+        }
 
-			if (!selectedVar.trim()) {
-				continue
-			}
+        const config: WorkspaceConfiguration = workspaceAdapter.getConfiguration(constants.extension.configKey)
+        const includeClassName = config.get<boolean>(
+            constants.configKeys.loggerIncludeClassName,
+            true,
+        ) ?? true
+        const includeFunctionName = config.get<boolean>(
+            constants.configKeys.loggerIncludeFunctionName,
+            true,
+        ) ?? true
 
-			const result = consoleLoggerService.generate({
-				documentContent: editor.document.getText(),
-				fileName: editor.document.fileName,
-				selectedVar,
-				selectionLine: selection.active.line,
-				includeClassName,
-				includeFunctionName,
-			})
+        for (const selection of editor.selections) {
+            const selectedVar = editor.document.getText(selection)
 
-			if (result) {
-				await editor.edit((editBuilder: TextEditorEdit) => {
-					const positionInstance = positionAdapter.create(result.insertLine, 0)
+            if (!selectedVar.trim()) {
+                continue
+            }
 
-					editBuilder.insert(positionInstance, result.logStatement)
-				})
-			} else {
-				windowAdapter.errMsg('Failed to generate console log statement.')
-			}
-		}
-	}
+            const result = consoleLoggerService.generate({
+                documentContent: editor.document.getText(),
+                fileName: editor.document.fileName,
+                selectedVar,
+                selectionLine: selection.active.line,
+                includeClassName,
+                includeFunctionName,
+            })
 
-	const disposables: Disposable[] = [
-		commandsAdapter.registerCommand(
-			constants.commands.storeCodeFragment,
-			handleStoreCodeFragment,
-		),
-		commandsAdapter.registerCommand(
-			constants.commands.insertImportStatement,
-			handleInsertImportStatement,
-		),
-		commandsAdapter.registerCommand(
-			constants.commands.logSelectedVariable,
-			handleLogSelectedVariable,
-		),
-	]
+            if (result) {
+                await editor.edit((editBuilder: TextEditorEdit) => {
+                    const positionInstance = positionAdapter.create(result.insertLine, 0)
 
-	context.subscriptions.push(...disposables)
+                    editBuilder.insert(positionInstance, result.logStatement)
+                })
+            } else {
+                windowAdapter.errMsg('Failed to generate console log statement.')
+            }
+        }
+    }
 
-	console.log(`[${constants.extension.name}] Activated.`)
+    const disposables: Disposable[] = [
+        commandsAdapter.registerCommand(
+            constants.commands.storeCodeFragment,
+            handleStoreCodeFragment,
+        ),
+        commandsAdapter.registerCommand(
+            constants.commands.insertImportStatement,
+            handleInsertImportStatement,
+        ),
+        commandsAdapter.registerCommand(
+            constants.commands.logSelectedVariable,
+            handleLogSelectedVariable,
+        ),
+    ]
+
+    context.subscriptions.push(...disposables)
+
+    console.log(`[${constants.extension.name}] Activated.`)
 }
 
 export function deactivate(): void {}
