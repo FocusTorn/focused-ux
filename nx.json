@@ -66,15 +66,6 @@
             "options": {
                 "files": ["{projectRoot}/**/*.ts"],
                 "strict": false
-                // "target": "ES2022",
-                // "moduleResolution": "NodeNext",
-                // "skipLibCheck": true,
-                // "noImplicitAny": true,
-                // "noImplicitReturns": true,
-                // "noImplicitThis": true,
-                // "noUnusedLocals": true,
-                // "noUnusedParameters": true,
-                // "exactOptionalPropertyTypes": true
             }
         },
         
@@ -84,16 +75,6 @@
             "inputs": ["default", "^default"],
             "options": {
                 "files": ["{projectRoot}/**/*.ts"]
-                // "strict": true,
-                // "target": "ES2022",
-                // "moduleResolution": "NodeNext",
-                // "skipLibCheck": true,
-                // "noImplicitAny": true,
-                // "noImplicitReturns": true,
-                // "noImplicitThis": true,
-                // "noUnusedLocals": true,
-                // "noUnusedParameters": true,
-                // "exactOptionalPropertyTypes": true
             }
         },
         

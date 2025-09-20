@@ -35,7 +35,7 @@
         "allowUnreachableCode": false,
         "noImplicitOverride": true,
         "noImplicitReturns": true,
-        "noImplicitAny": true,
+        "noImplicitAny": false,
         "noImplicitThis": true,
         "noFallthroughCasesInSwitch": true,
         

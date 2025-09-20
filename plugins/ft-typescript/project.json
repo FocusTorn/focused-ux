@@ -1,7 +1,7 @@
 {
-    "name": "@fux/vpack",
+    "name": "@fux/ft-typescript",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "plugins/vpack/src",
+    "sourceRoot": "plugins/ft-typescript/src",
     "projectType": "library",
     "targets": {
         
@@ -12,19 +12,19 @@
             ],
             "options": {
                 
-                "main": "plugins/vpack/src/index.ts",
-                "tsConfig": "plugins/vpack/tsconfig.lib.json",
+                "main": "plugins/ft-typescript/src/index.ts",
+                "tsConfig": "plugins/ft-typescript/tsconfig.lib.json",
 
                 "bundle": false,
                 
                 "assets": [
                     {
-                        "input": "./plugins/vpack/src",
+                        "input": "./plugins/ft-typescript/src",
                         "glob": "**/!(*.ts)",
                         "output": "."
                     },
                     {
-                        "input": "./plugins/vpack/src",
+                        "input": "./plugins/ft-typescript/src",
                         "glob": "**/*.d.ts",
                         "output": "."
                     }

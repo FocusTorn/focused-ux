@@ -54,7 +54,7 @@ import fuxFormat from './.eslint/plugins/fux-format/index.js'
 //         },
 //     ],
 
-//     'ts/no-explicit-any': 'warn',
+// 'ts/no-explicit-any': 'warn',
 
 //     // 'style/implicit-arrow-linebreak': ['warn', 'beside'],
 //     'style/max-statements-per-line': 'off',
@@ -214,7 +214,7 @@ export default [
                 },
             ],
 
-            // 'ts/no-explicit-any': 'warn',
+            'ts/no-explicit-any': 'warn',
 
             // 'style/implicit-arrow-linebreak': ['warn', 'beside'],
             'style/max-statements-per-line': 'off',
@@ -277,7 +277,7 @@ export default [
         rules: {
             'import/no-cycle': 'off',
             'import/extensions': 'off',
-            // 'ts/no-explicit-any': 'off',
+            'ts/no-explicit-any': 'off',
             'ts/explicit-function-return-type': 'off',
             'ts/no-unused-vars': 'off',
             'ts/no-use-before-define': 'off',

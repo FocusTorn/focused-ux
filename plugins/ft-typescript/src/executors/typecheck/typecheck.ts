@@ -95,7 +95,7 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
 
             // Execute the command and capture output for message override
             try {
-                const output = execSync(command, {
+                const _output = execSync(command, {
                     stdio: 'pipe',
                     cwd: workspaceRoot,
                     encoding: 'utf8'
@@ -103,10 +103,12 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
 
                 // If we get here, there were no errors
                 logger.info('✅ Type checking passed!')
-            } catch (error: any) {
-                // TypeScript errors are returned as non-zero exit code
-                if (error.stdout || error.stderr) {
-                    const output = (error.stdout || error.stderr || '').toString()
+            } catch (error: unknown) {
+                // TypeScript errors are returned as non-zero exit code - avoiding 'any'
+                const err = error as Record<string, unknown>
+
+                if (err && (err['stdout'] || err['stderr'])) {
+                    const output = (err['stdout'] || err['stderr'] || '').toString()
                     
                     // Override error messages and clean up paths
                     let modifiedOutput = output
@@ -141,7 +143,7 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
             // Clean up temporary file
             try {
                 unlinkSync(tempTsconfigPath)
-            } catch (error) {
+            } catch (_error) {
                 // Ignore cleanup errors
             }
         }
