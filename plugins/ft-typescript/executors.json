@@ -1,0 +1,9 @@
+{
+    "executors": {
+        "typecheck": {
+            "implementation": "./dist/executors/typecheck/typecheck",
+            "schema": "./dist/executors/typecheck/schema.json",
+            "description": "typecheck executor"
+        }
+    }
+}

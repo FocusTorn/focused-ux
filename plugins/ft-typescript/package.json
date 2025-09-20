@@ -1,0 +1,55 @@
+{
+    "name": "@fux/ft-typescript",
+    "version": "0.0.1",
+    "private": true,
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        }
+    },
+    "nx": {
+        "targets": {
+            "build": {
+                "executor": "@nx/js:tsc",
+                "outputs": [
+                    "{options.outputPath}"
+                ],
+                "options": {
+                    "outputPath": "plugins/ft-typescript/dist",
+                    "main": "plugins/ft-typescript/src/index.ts",
+                    "tsConfig": "plugins/ft-typescript/tsconfig.lib.json",
+                    "rootDir": "plugins/ft-typescript/src",
+                    "generatePackageJson": false,
+                    "assets": [
+                        {
+                            "input": "./plugins/ft-typescript/src",
+                            "glob": "**/!(*.ts)",
+                            "output": "."
+                        },
+                        {
+                            "input": "./plugins/ft-typescript/src",
+                            "glob": "**/*.d.ts",
+                            "output": "."
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "dependencies": {
+        "@nx/devkit": "21.5.2",
+        "tslib": "^2.3.0"
+    },
+    "executors": "./executors.json",
+    "files": [
+        "dist",
+        "!**/*.tsbuildinfo",
+        "executors.json"
+    ]
+}

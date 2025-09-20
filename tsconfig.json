@@ -62,6 +62,9 @@
         },
         {
             "path": "./plugins/vscode-test-executor"
+        },
+        {
+            "path": "./plugins/ft-typescript"
         }
     ]
 }

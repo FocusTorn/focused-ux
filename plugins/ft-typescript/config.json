@@ -1,0 +1,8 @@
+{
+    "error-msg-override": {
+     
+        "TS2835": "Relative import paths need explicit file extensions in ECMAScript imports"
+        
+    }
+    
+}

@@ -1,0 +1,73 @@
+{
+    "$schema": "https://json-schema.org/schema",
+    "version": 2,
+    "title": "Typecheck executor",
+    "description": "TypeScript strict type checking without tsconfig file",
+    "type": "object",
+    "properties": {
+        "files": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "File patterns to type check (e.g., ['src/**/*.ts', 'lib/**/*.ts'])",
+            "default": ["{projectRoot}/**/*.ts"]
+        },
+        "strict": {
+            "type": "boolean",
+            "description": "Enable strict type checking",
+            "default": true
+        },
+        "target": {
+            "type": "string",
+            "description": "TypeScript compilation target",
+            "default": "ES2022"
+        },
+        "moduleResolution": {
+            "type": "string",
+            "description": "Module resolution strategy",
+            "default": "NodeNext"
+        },
+        "skipLibCheck": {
+            "type": "boolean",
+            "description": "Skip type checking of declaration files",
+            "default": true
+        },
+        "noImplicitAny": {
+            "type": "boolean",
+            "description": "Enable noImplicitAny",
+            "default": true
+        },
+        "noImplicitReturns": {
+            "type": "boolean",
+            "description": "Enable noImplicitReturns",
+            "default": true
+        },
+        "noImplicitThis": {
+            "type": "boolean",
+            "description": "Enable noImplicitThis",
+            "default": true
+        },
+        "noUnusedLocals": {
+            "type": "boolean",
+            "description": "Enable noUnusedLocals",
+            "default": true
+        },
+        "noUnusedParameters": {
+            "type": "boolean",
+            "description": "Enable noUnusedParameters",
+            "default": true
+        },
+        "exactOptionalPropertyTypes": {
+            "type": "boolean",
+            "description": "Enable exactOptionalPropertyTypes",
+            "default": true
+        },
+        "configFile": {
+            "type": "string",
+            "description": "Path to error message override config file",
+            "default": "plugins/ft-typescript/config.json"
+        }
+    },
+    "required": []
+}

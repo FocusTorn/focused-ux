@@ -39,12 +39,12 @@
         
         //= Dependency Chain Testing ============================================ 
         "test:deps": { "extends": "test:deps" },
-        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" }
+        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" },
     
     
         // "validate": { "extends": "validate" },
         // "validate:deps": { "extends": "validate:deps" },
-        // "audit": { "extends": "audit" },
+        "audit": { "extends": "audit" }
         // "audit:full": { "extends": "audit:full" },
     },
     
