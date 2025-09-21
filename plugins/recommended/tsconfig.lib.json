@@ -2,6 +2,7 @@
     "extends": "../../tsconfig.base.json",
 
     "include": ["src/**/*.ts"],
+    "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"],
     
     "compilerOptions": {
         "rootDir": "src",
@@ -10,5 +11,5 @@
         "emitDeclarationOnly": false
         
         // "baseUrl": ".", // not used unless with browser AMD loaders
-    },
+    }
 }

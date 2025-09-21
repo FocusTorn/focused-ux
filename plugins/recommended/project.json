@@ -4,16 +4,19 @@
     "sourceRoot": "plugins/recommended/src",
     "projectType": "library",
     "targets": {
+        
+        
         "build": {
-            "executor": "@nx/js:tsc",
-            "outputs": [ "{options.outputPath}" ],
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": [
+                "{options.outputPath}"
+            ],
             "options": {
-                "rootDir": "plugins/recommended/src",
-                "outputPath": "plugins/recommended/dist",
+                
                 "main": "plugins/recommended/src/index.ts",
                 "tsConfig": "plugins/recommended/tsconfig.lib.json",
 
-                "generatePackageJson": false,
+                "bundle": false,
                 
                 "assets": [
                     {
@@ -28,7 +31,9 @@
                     }
                 ]
             }
+
         }
+       
     }
   
 }

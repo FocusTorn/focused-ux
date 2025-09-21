@@ -171,7 +171,8 @@
         //= Plugins ============================================================= 
         "vpack": "@fux/vpack",
         "vscte" : "@fux/vscode-test-executor",
-        "fttc" : "@fux/ft-typescript"
+        "fttc" : "@fux/ft-typescript",
+        "reco": "@fux/recommended"
         
     }
 }

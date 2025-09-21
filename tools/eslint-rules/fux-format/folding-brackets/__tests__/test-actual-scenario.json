@@ -1,0 +1,6 @@
+{ "plugin": "@nx/vite/plugin",
+    "options": { "buildTargetName": "build",
+        "testTargetName": "vite:test",
+        "serveTargetName": "serve"
+    }
+}

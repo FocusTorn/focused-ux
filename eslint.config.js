@@ -22,7 +22,7 @@ import tomlPlugin from 'eslint-plugin-toml'
 import tomlParser from 'toml-eslint-parser'
 import unusedImportsPlugin from 'eslint-plugin-unused-imports'
 
-import fuxFormat from './.eslint/plugins/fux-format/index.js'
+import foldingBracketsRule from './tools/eslint-rules/fux-format/folding-brackets/index.js'
 
 //----------------------------------------------------------------------------<<
 
@@ -114,6 +114,7 @@ const mainJsTsOverrides = {
 // JSON-specific stylistic overrides
 const jsonStylisticOverrides = {
     'style/no-multiple-empty-lines': ['warn', { max: 2, maxBOF: 0, maxEOF: 0 }], // More lenient for JSON
+    'style/object-property-newline': 'off', // Allow properties on same line for JSON
 }
 
 // TypeScript-specific rules
@@ -200,13 +201,13 @@ export default [
     ],
     }, //<
     
-    {   name: 'focused-ux/cache-settings',
+    {   name: 'focused-ux/cache-settings', //>
         settings: {
             cache: true,
             cacheLocation: '.eslintcache',
             cacheStrategy: 'content',
         },
-    },
+    }, //<
 
     {   name: 'focused-ux/JS-TS', //>
         files: ['**/*.{js,jsx,ts,tsx}'],
@@ -220,7 +221,11 @@ export default [
             '@nx': nxPlugin,
             eslintComments,
             node: nPlugin,
-            'fux-format': fuxFormat,
+                'fux-format': {
+                    rules: {
+                        'folding-brackets': foldingBracketsRule
+                    }
+                },
         },
         rules: {
             ...baseRules,
@@ -329,13 +334,25 @@ export default [
         plugins: {
             jsonc: jsoncPlugin,
             style: stylisticPlugin,
-            'fux-format': fuxFormat
+            'fux-format': { 
+                rules: { 
+                    'folding-brackets': foldingBracketsRule
+                } 
+            }
         },
         rules: {
             ...baseRules,
             ...mergeRules(stylisticRules, jsonStylisticOverrides),
             'jsonc/indent': ['warn', 4],
             'jsonc/comma-dangle': ['warn', 'never'],
+            
+            // 'style/object-curly-newline': ['warn', {
+            //     ObjectExpression: 'always',
+            //     ObjectPattern: 'always',
+            //     ImportDeclaration: 'always',
+            //     ExportDeclaration: 'always'
+            // }]
+            
             'fux-format/folding-brackets': 'warn',
         },
         languageOptions: { //>
@@ -351,7 +368,11 @@ export default [
             ts: tsPlugin,
             import: importPlugin,
             node: nPlugin,
-            'fux-format': fuxFormat,
+                'fux-format': {
+                    rules: {
+                        'folding-brackets': foldingBracketsRule
+                    }
+                },
         },
         rules: {
             ...baseRules,
@@ -360,7 +381,6 @@ export default [
             ...tsRules,
             ...mainJsTsOverrides,
             ...configOverrides,
-            'fux-format/triple-space-after-opening-brace': 'warn',
         },
     }, //<
 

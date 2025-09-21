@@ -9,6 +9,11 @@
             "factory": "./dist/generators/lib/lib",
             "schema": "./dist/generators/lib/schema.json",
             "description": "lib generator"
+        },
+        "tests": {
+            "factory": "./dist/generators/tests/tests",
+            "schema": "./dist/generators/tests/schema.json",
+            "description": "tests generator"
         }
     }
 }

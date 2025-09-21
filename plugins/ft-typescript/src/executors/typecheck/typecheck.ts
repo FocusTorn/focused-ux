@@ -33,8 +33,7 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
         const configPath = join(workspaceRoot, configFile)
         let errorOverrides: Record<string, string> = {}
         
-        try {
-            const configContent = readFileSync(configPath, 'utf8')
+        try { const configContent = readFileSync(configPath, 'utf8')
             const config = JSON.parse(configContent)
 
             errorOverrides = config['error-msg-override'] || {}

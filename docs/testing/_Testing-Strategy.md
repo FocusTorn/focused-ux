@@ -1,5 +1,7 @@
 # FocusedUX Testing Strategy v3
 
+> **📖 Enhanced Mock Strategy**: This project uses an Enhanced Mock Strategy with centralized mock scenarios. See [Enhanced Mock Strategy Guide](./Enhanced-Mock-Strategy.md) for detailed documentation on the three-component mock system (`globals.ts`, `helpers.ts`, `mock-scenario-builder.ts`).
+
 ## 🚀 Quick Reference for AI Agents
 
 ### Package Types & Testing Approach
@@ -130,7 +132,7 @@ export default mergeConfig(
     baseConfig,
     defineConfig({
         test: {
-            setupFiles: ['./__tests__/_setup.ts'],
+            setupFiles: ['./__tests__/__mocks__/globals.ts'],
             exclude: ['**/__tests__/integration/**', '**/__tests__/_out-tsc/**'],
         },
     })
@@ -141,10 +143,14 @@ export default mergeConfig(
 
 ### Core Package Testing
 
+> **📖 Enhanced Mock Strategy**: The FocusedUX project uses an Enhanced Mock Strategy with centralized mock scenarios. See [Enhanced Mock Strategy Guide](./Enhanced-Mock-Strategy.md) for detailed documentation.
+
 ```typescript
 // __tests__/functional/ServiceName.service.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { ServiceName } from '../../src/features/ServiceName.service.js'
+import { setupTestEnvironment, resetAllMocks } from '../__mocks__/helpers'
+import { setupBackupSuccessScenario } from '../__mocks__/mock-scenario-builder'
 
 class MockDependency {
     process = vi.fn()
@@ -153,13 +159,23 @@ class MockDependency {
 describe('ServiceName', () => {
     let service: ServiceName
     let mockDep: MockDependency
+    let mocks: ReturnType<typeof setupTestEnvironment>
 
     beforeEach(() => {
+        mocks = setupTestEnvironment()
+        resetAllMocks(mocks)
+
         mockDep = new MockDependency()
         service = new ServiceName(mockDep)
     })
 
     it('should process data correctly', async () => {
+        // Use Enhanced Mock Strategy scenarios
+        setupBackupSuccessScenario(mocks, {
+            sourcePath: '/test/file.txt',
+            backupPath: '/test/file.txt.bak',
+        })
+
         mockDep.process.mockResolvedValue('processed')
         const result = await service.processData('test')
         expect(result).toBe('processed')
@@ -172,9 +188,14 @@ describe('ServiceName', () => {
 
 ```typescript
 // __tests__/functional/extension.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { activate, deactivate } from '../../src/extension'
 import * as vscode from 'vscode'
+import { setupTestEnvironment, resetAllMocks, setupVSCodeMocks } from '../__mocks__/helpers'
+import {
+    setupVSCodeCommandRegistrationScenario,
+    createGhostWriterMockBuilder,
+} from '../__mocks__/mock-scenario-builder'
 
 vi.mock('@fux/{feature}-core', () => ({
     ServiceName: vi.fn().mockImplementation(() => ({
@@ -184,13 +205,23 @@ vi.mock('@fux/{feature}-core', () => ({
 
 describe('Extension', () => {
     let context: any
+    let mocks: ReturnType<typeof setupTestEnvironment>
 
     beforeEach(() => {
-        vi.clearAllMocks()
+        mocks = setupTestEnvironment()
+        setupVSCodeMocks(mocks)
+        resetAllMocks(mocks)
+
         context = { subscriptions: { push: vi.fn() } }
     })
 
     it('should register commands successfully', () => {
+        // Use Enhanced Mock Strategy scenarios
+        setupVSCodeCommandRegistrationScenario(mocks, {
+            commandName: 'test.command',
+            shouldSucceed: true,
+        })
+
         activate(context)
         expect(vscode.commands.registerCommand).toHaveBeenCalledTimes(1)
     })
@@ -332,28 +363,65 @@ packages/{feature}/ext/
 └── project.json
 ```
 
-### Test Setup File
+### Enhanced Mock Strategy Setup
+
+> **📖 Enhanced Mock Strategy**: The FocusedUX project uses a sophisticated three-component mock system instead of a single `_setup.ts` file. See [Enhanced Mock Strategy Guide](./Enhanced-Mock-Strategy.md) for complete documentation.
+
+**Directory Structure:**
+
+```
+__tests__/
+├── __mocks__/
+│   ├── globals.ts              # Global mocks & setup
+│   ├── helpers.ts              # Test utilities & mock creators
+│   └── mock-scenario-builder.ts # Composable mock scenarios
+└── functional-tests/
+    └── *.test.ts               # Individual test files
+```
+
+**Global Setup (`globals.ts`):**
 
 ```typescript
-// __tests__/_setup.ts
 import { vi, beforeAll, afterAll, afterEach } from 'vitest'
 
-vi.mock('vscode', () => ({
-    commands: { registerCommand: vi.fn() },
-    window: {
-        showInformationMessage: vi.fn(),
-        activeTextEditor: null,
-    },
-    workspace: {
-        workspaceFolders: [{ uri: { fsPath: '/test/workspace' } }],
-        fs: { readFile: vi.fn(), writeFile: vi.fn() },
-    },
-    Uri: { file: vi.fn((path: string) => ({ fsPath: path })) },
-}))
+// Console output control
+const ENABLE_CONSOLE_OUTPUT = process.env.ENABLE_TEST_CONSOLE === 'true'
+if (!ENABLE_CONSOLE_OUTPUT) {
+    console.log = vi.fn()
+    console.info = vi.fn()
+    console.warn = vi.fn()
+    console.error = vi.fn()
+}
 
+// Global timer setup
 beforeAll(() => vi.useFakeTimers())
 afterAll(() => vi.useRealTimers())
 afterEach(() => vi.clearAllMocks())
+```
+
+**Test Helpers (`helpers.ts`):**
+
+```typescript
+import { vi } from 'vitest'
+import * as vscode from 'vscode'
+
+export interface ExtensionTestMocks {
+    vscode: {
+        commands: { registerCommand: ReturnType<typeof vi.fn> }
+        window: { showInformationMessage: ReturnType<typeof vi.fn> }
+        // ... other VSCode mocks
+    }
+}
+
+export function setupTestEnvironment(): ExtensionTestMocks {
+    return {
+        vscode: {
+            commands: { registerCommand: vi.fn() },
+            window: { showInformationMessage: vi.fn() },
+            // ... other mock setup
+        },
+    }
+}
 ```
 
 ## 🔍 Decision Trees
@@ -747,6 +815,15 @@ export default createVscodeTestConfig({
 The FocusedUX project uses an **Enhanced Mock Strategy** that combines centralized mock scenarios with individual test flexibility. This approach reduces code duplication by 60% while maintaining test clarity and maintainability.
 
 > **📖 For detailed documentation**: See [Enhanced Mock Strategy Guide](./Enhanced-Mock-Strategy.md)
+
+### Key Benefits
+
+- **60% reduction** in mock setup code
+- **Centralized scenarios** for common patterns
+- **Type-safe interfaces** for all mock objects
+- **Fluent builder pattern** for complex compositions
+- **Consistent behavior** across all tests
+- **Easy to extend** with new scenarios
 
 ### Quick Reference
 
@@ -1296,16 +1373,16 @@ export class MockBuilder {
 
 ### Migration Guide
 
-To migrate existing tests to use the new mocking strategy:
+To migrate existing tests to use the Enhanced Mock Strategy:
 
-1. **Import the scenario functions** you need
-2. **Replace repetitive mock setup** with scenario calls
-3. **Remove individual mock calls** that are covered by scenarios
-4. **Keep specific overrides** for test-specific behavior
+1. **Update directory structure** to use `__mocks__/` instead of `_setup.ts`
+2. **Import from new locations** (`helpers.ts` and `mock-scenario-builder.ts`)
+3. **Replace repetitive mock setup** with scenario calls
+4. **Use builder pattern** for complex compositions
 5. **Test the migration** to ensure behavior is preserved
 
 ```typescript
-// Before migration
+// Before migration (old _setup.ts approach)
 import {
     setupTestEnvironment,
     resetAllMocks,
@@ -1313,16 +1390,14 @@ import {
     setupPathMocks,
 } from '../_setup'
 
-// After migration
+// After migration (Enhanced Mock Strategy)
+import { setupTestEnvironment, resetAllMocks, setupVSCodeMocks } from '../__mocks__/helpers'
 import {
-    setupTestEnvironment,
-    resetAllMocks,
-    setupFileSystemMocks,
-    setupPathMocks,
     setupBackupSuccessScenario,
     setupBackupConflictScenario,
     setupBackupErrorScenario,
-} from '../_setup'
+    createMockBuilder,
+} from '../__mocks__/mock-scenario-builder'
 ```
 
 ### Extension Package Mock Strategy
@@ -1589,3 +1664,4 @@ it('should handle command registration with error', () => {
 - **VSCode Integration**: Specialized extension testing support
 
 This comprehensive mocking strategy provides the perfect balance between centralized control and individual test flexibility, making your test suite more maintainable, readable, and efficient across both core business logic and VSCode extension functionality.
+

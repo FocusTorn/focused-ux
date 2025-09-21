@@ -1,0 +1,29 @@
+{
+    "name": "@focused-ux/eslint-rules",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Custom ESLint rules for FocusedUX project",
+    "main": "index.js",
+    "scripts": {
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage"
+    },
+    "dependencies": {
+        "@nx/devkit": "21.5.2",
+        "eslint": "^9.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^24.0.10",
+        "@typescript-eslint/parser": "^8.0.0",
+        "@vitest/coverage-v8": "^3.2.4",
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4"
+    },
+    "generators": "./generators.json",
+    "files": [
+        "dist",
+        "!**/*.tsbuildinfo",
+        "generators.json"
+    ]
+}

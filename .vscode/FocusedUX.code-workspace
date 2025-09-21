@@ -6,6 +6,7 @@
     ],
     "settings": {
         
+        "terminal.integrated.defaultProfile.windows": "FUX Git Bash",
         
         "terminal.integrated.profiles.windows": {
         
@@ -14,7 +15,7 @@
         //         "args": ["-NoExit", "-command", ". .vscode/shell/profile.ps1"],
         //     }, //<
         
-            "FUX Git Bash": { //>
+        "FUX Git Bash": { //>
                 "path": "C:/Program Files/Git/bin/bash.exe",
                 "args": [
                     "--login",
@@ -36,7 +37,6 @@
             ]
         },
 
-        "terminal.integrated.defaultProfile.windows": "FUX Git Bash",
         
         
         

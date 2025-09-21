@@ -80,3 +80,5 @@ vitest.config.*.timestamp*
 # git rm -r --cached _reports/coverage
 # git rm -r --cached -- ':(glob)**/_reports/coverage/**'
 
+
+test-output
