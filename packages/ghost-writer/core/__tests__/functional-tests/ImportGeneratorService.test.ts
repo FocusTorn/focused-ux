@@ -9,6 +9,7 @@ import {
     setupImportGeneratorSuccessScenario,
     setupImportGeneratorFailureScenario,
     setupCommonUtilsScenario,
+    setupPathUtilsSuccessScenario,
     createGhostWriterMockBuilder
 } from '../__mocks__/mock-scenario-builder'
 
@@ -148,7 +149,11 @@ describe('ImportGeneratorService', () => {
             const currentFilePath = '/path/to/main.ts'
 
             // Setup mock to handle multiple calls
-            mocks.pathUtils.getDottedPath = vi.fn().mockReturnValue('./component')
+            setupPathUtilsSuccessScenario(mocks, {
+                fromPath: '/path/to/component.ts',
+                toPath: '/path/to/main.ts',
+                expectedPath: './component'
+            })
             setupCommonUtilsScenario(mocks)
 
             // Act

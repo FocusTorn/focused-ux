@@ -248,7 +248,7 @@ dist/assets/
 ```typescript
 export const assetConstants = {
     // External icon source
-    externalIconSource: 'D:/_dev/!Projects/_fux/icons',
+    externalIconSource: 'D:/_dev/_Projects/_fux/icons',
 
     // Asset directories
     paths: {

@@ -16,7 +16,7 @@ export class ThemeProcessor {
 	constructor() {
 		this.errorHandler = new ErrorHandler()
 		// Use absolute path for now to get theme generation working
-		this.THEMES_DIR = 'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/dist/assets/themes'
+		this.THEMES_DIR = 'D:/_dev/_Projects/_fux/_FocusedUX/packages/dynamicons/assets/dist/assets/themes'
 		// Ensure themes directory exists
 		this.ensureThemesDirectory()
 	}
@@ -211,9 +211,9 @@ export class ThemeProcessor {
 			await this.ensureThemesDirectory()
 			
 			// Read model files
-			const fileIconsModelPath = 'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/file_icons.model.json'
-			const folderIconsModelPath = 'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/folder_icons.model.json'
-			const languageIconsModelPath = 'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/language_icons.model.json'
+			const fileIconsModelPath = 'D:/_dev/_Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/file_icons.model.json'
+			const folderIconsModelPath = 'D:/_dev/_Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/folder_icons.model.json'
+			const languageIconsModelPath = 'D:/_dev/_Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/language_icons.model.json'
 			
 			const fileIconsModel = JSON.parse(stripJsonComments(await fs.readFile(fileIconsModelPath, 'utf-8')))
 			const folderIconsModel = JSON.parse(stripJsonComments(await fs.readFile(folderIconsModelPath, 'utf-8')))
@@ -345,9 +345,9 @@ export class ThemeProcessor {
 			
 			// Check model files for changes
 			const modelFiles = [
-				'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/file_icons.model.json',
-				'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/folder_icons.model.json',
-				'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/language_icons.model.json',
+				'D:/_dev/_Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/file_icons.model.json',
+				'D:/_dev/_Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/folder_icons.model.json',
+				'D:/_dev/_Projects/_fux/_FocusedUX/packages/dynamicons/assets/src/models/language_icons.model.json',
 			]
 			
 			for (const modelFile of modelFiles) {

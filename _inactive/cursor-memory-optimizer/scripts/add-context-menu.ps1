@@ -123,8 +123,8 @@ Write-Host "`nTo remove these items later, run: .\add-context-menu.ps1 -Remove" 
 
 
 
-# powershell.exe -ExecutionPolicy Bypass -File "D:\_dev\!Projects\_fux\_FocusedUX\libs\tools\cursor-memory-optimizer\scripts\add-context-menu.ps1"
-# "D:\_dev\!Projects\_fux\_FocusedUX\libs\tools\cursor-memory-optimizer\scripts\add-context-menu.ps1"
+# powershell.exe -ExecutionPolicy Bypass -File "D:\_dev\_Projects\_fux\_FocusedUX\libs\tools\cursor-memory-optimizer\scripts\add-context-menu.ps1"
+# "D:\_dev\_Projects\_fux\_FocusedUX\libs\tools\cursor-memory-optimizer\scripts\add-context-menu.ps1"
 
 
-# powershell.exe -ExecutionPolicy Bypass -File "D:\_dev\!Projects\_fux\_FocusedUX\libs\tools\cursor-memory-optimizer\scripts\add-taskbar-context.ps1"
+# powershell.exe -ExecutionPolicy Bypass -File "D:\_dev\_Projects\_fux\_FocusedUX\libs\tools\cursor-memory-optimizer\scripts\add-taskbar-context.ps1"

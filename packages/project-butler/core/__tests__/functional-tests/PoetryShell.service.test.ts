@@ -5,9 +5,11 @@ import {
     resetAllMocks,
     setupFileSystemMocks,
     setupPathMocks,
+} from '../__mocks__/helpers'
+import {
     setupPoetryShellSuccessScenario,
-    setupPoetryShellErrorScenario
-} from '../_setup'
+    setupPoetryShellErrorScenario,
+} from '../__mocks__/mock-scenario-builder'
 
 describe('PoetryShellService', () => {
     let service: PoetryShellService

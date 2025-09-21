@@ -4,7 +4,7 @@
  */
 export const assetConstants = {
 	// External source configuration
-	externalIconSource: 'D:/_dev/!Projects/_fux/icons',
+	externalIconSource: 'D:/_dev/_Projects/_fux/icons',
 	deleteOriginalSvg: false, // Set to true to move (delete original), false to copy
 	
 	// Directory structure paths

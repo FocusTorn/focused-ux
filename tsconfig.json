@@ -7,9 +7,6 @@
     "include": [],
     "references": [
         {
-            "path": "./generators"
-        },
-        {
             "path": "./packages/context-cherry-picker/core"
         },
         {
@@ -47,9 +44,6 @@
         },
         {
             "path": "./libs/project-alias-expander"
-        },
-        {
-            "path": "./generators/test-scaffold"
         },
         {
             "path": "./plugins/recommended"

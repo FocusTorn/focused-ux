@@ -5,11 +5,9 @@ export default mergeConfig(
     baseConfig,
     defineConfig({
         test: {
-            globals: true,
-            environment: 'node',
-            include: ['**/*.test.{js,ts}'],
-            exclude: ['node_modules/**', 'dist/**', '**/_out-tsc/**'],
             setupFiles: ['./__tests__/__mocks__/globals.ts'],
+            include: ['./__tests__/functional-tests/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+            exclude: ['**/__tests__/integration-tests/**', '**/__tests__/_out-tsc/**'],
         },
     })
 )

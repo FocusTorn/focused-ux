@@ -413,7 +413,7 @@ Successfully transformed standalone scripts collection into unified Nx core pack
 2. **Build System Path Resolution**:
     - **Failure**: "Could not resolve" errors with multiple path resolution attempts
     - **Root Cause**: Running `dca b` from package directory instead of workspace root
-    - **Recovery**: Executed all commands from workspace root (`D:\_dev\!Projects\_fux\_FocusedUX`)
+    - **Recovery**: Executed all commands from workspace root (`D:\_dev\_Projects\_fux\_FocusedUX`)
     - **Prevention**: Nx commands must be run from workspace root for proper path resolution
 
 3. **Error Variable Reference Mistakes**:
@@ -1090,7 +1090,7 @@ if (!baseThemeExists || !dynThemeExists) {
 constructor() {
     this.errorHandler = new ErrorHandler()
     // Use absolute path for now to get theme generation working
-    this.THEMES_DIR = 'D:/_dev/!Projects/_fux/_FocusedUX/packages/dynamicons/assets/dist/assets/themes'
+    this.THEMES_DIR = 'D:/_dev/_Projects/_fux/_FocusedUX/packages/dynamicons/assets/dist/assets/themes'
     // Ensure themes directory exists
     this.ensureThemesDirectory()
 }

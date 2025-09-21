@@ -24,10 +24,21 @@ export const mochaHooks = {
     async afterAll() {
         console.log('--- Global teardown: Closing editors ---')
         await vscode.commands.executeCommand('workbench.action.closeAllEditors')
+        
+        // Force close any remaining windows
+        await vscode.commands.executeCommand('workbench.action.closeAllGroups')
+        
+        // Clear any active text editors
+        const activeEditor = vscode.window.activeTextEditor
+        if (activeEditor) {
+            await vscode.window.showTextDocument(activeEditor.document, { preview: false })
+            await vscode.commands.executeCommand('workbench.action.closeActiveEditor')
+        }
+        
         console.log('--- Teardown complete ---')
-        // A small delay to ensure VS Code processes can settle before the test runner exits.
+        // A longer delay to ensure VS Code processes can settle before the test runner exits.
         await new Promise(resolve =>
-            setTimeout(resolve, 500))
+            setTimeout(resolve, 2000))
     },
 }
 

@@ -45,7 +45,7 @@ function cat {
 
 
 function prompt {
-    $ProjectRoot = "D:\_dev\!Projects\_fux\_FocusedUX\"
+    $ProjectRoot = "D:\_dev\_Projects\_fux\_FocusedUX\"
 
     # ANSI COLOR CODES
     $ESC = [char]27

@@ -10,11 +10,13 @@ import {
     setupFileSystemMocks,
     setupPathMocks,
     setupYamlMocks,
+} from '../__mocks__/helpers'
+import {
     setupPackageJsonSuccessScenario,
     // setupTerminalDirectoryScenario,
     setupBackupSuccessScenario,
     // setupPoetryShellSuccessScenario
-} from '../_setup'
+} from '../__mocks__/mock-scenario-builder'
 
 describe('ProjectButlerManager Integration', () => {
     let projectButlerManager: ProjectButlerManagerService

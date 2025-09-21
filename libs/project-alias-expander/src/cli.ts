@@ -156,7 +156,12 @@ function runNx(argv: string[]): number {
         return 0
     }
 
-    const res = spawnSync('nx', argv, { stdio: 'inherit', shell: process.platform === 'win32' })
+    const res = spawnSync('nx', argv, { 
+        stdio: 'inherit', 
+        shell: process.platform === 'win32',
+        timeout: 300000, // 5 minute timeout
+        killSignal: 'SIGTERM'
+    })
 
     return res.status ?? 1
 }
@@ -167,7 +172,12 @@ function runCommand(command: string, args: string[]): number {
         return 0
     }
 
-    const res = spawnSync(command, args, { stdio: 'inherit', shell: process.platform === 'win32' })
+    const res = spawnSync(command, args, { 
+        stdio: 'inherit', 
+        shell: process.platform === 'win32',
+        timeout: 300000, // 5 minute timeout
+        killSignal: 'SIGTERM'
+    })
 
     return res.status ?? 1
 }
@@ -215,6 +225,12 @@ function runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: stri
 }
 
 function installAliases() {
+    // Prevent multiple installations during the same process
+    if (process.env.PAE_INSTALLING === '1') {
+        return
+    }
+    process.env.PAE_INSTALLING = '1'
+    
     const config = loadAliasConfig()
     const aliases = Object.keys(config.packages)
     const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')

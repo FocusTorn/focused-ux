@@ -4,6 +4,9 @@
     "include": [],
     "references": [
         {
+            "path": "../../libs/vscode-test-cli-config"
+        },
+        {
             "path": "./tsconfig.lib.json"
         }
     ]

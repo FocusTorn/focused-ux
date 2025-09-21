@@ -1,46 +1,46 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ConfigurationService } from '../../src/services/ConfigurationService.js'
-import type { IWorkspace } from '../../src/_interfaces/IWorkspace.js'
-import type { ICommonUtils } from '../../src/_interfaces/ICommonUtils.js'
-
-// Mock dependencies
-const mockWorkspace: IWorkspace = {
-	getConfiguration: vi.fn(),
-}
-
-const mockCommonUtils: ICommonUtils = {
-	delay: vi.fn(),
-	errMsg: vi.fn(),
-}
+import {
+	setupTestEnvironment,
+	resetAllMocks,
+	setupWorkspaceMocks,
+} from '../__mocks__/helpers'
+import {
+	setupConfigurationSuccessScenario,
+	setupConfigurationErrorScenario,
+	createDynamiconsMockBuilder,
+} from '../__mocks__/mock-scenario-builder'
 
 describe('ConfigurationService', () => {
 	let service: ConfigurationService
-	let mockConfig: any
+	let mocks: ReturnType<typeof setupTestEnvironment>
 
 	beforeEach(() => {
-		vi.clearAllMocks()
-		mockConfig = {
-			get: vi.fn(),
-			update: vi.fn(),
-		}
-		;(mockWorkspace.getConfiguration as any).mockReturnValue(mockConfig)
-		service = new ConfigurationService(mockWorkspace, mockCommonUtils)
+		mocks = setupTestEnvironment()
+		resetAllMocks(mocks)
+		setupWorkspaceMocks(mocks)
+		service = new ConfigurationService(mocks.workspace, mocks.commonUtils)
 	})
 
 	describe('getUserIconsDirectory', () => {
 		it('should return user icons directory when configured', async () => {
 			const expectedPath = '/path/to/user/icons'
 
-			mockConfig.get.mockReturnValue(expectedPath)
+			setupConfigurationSuccessScenario(mocks, {
+				key: 'userIconsDirectory',
+				value: expectedPath,
+			})
 
 			const result = await service.getUserIconsDirectory()
 
 			expect(result).toBe(expectedPath)
-			expect(mockConfig.get).toHaveBeenCalledWith('userIconsDirectory')
 		})
 
 		it('should return undefined when not configured', async () => {
-			mockConfig.get.mockReturnValue(undefined)
+			setupConfigurationSuccessScenario(mocks, {
+				key: 'userIconsDirectory',
+				value: undefined,
+			})
 
 			const result = await service.getUserIconsDirectory()
 
@@ -48,7 +48,10 @@ describe('ConfigurationService', () => {
 		})
 
 		it('should return undefined when empty string', async () => {
-			mockConfig.get.mockReturnValue('')
+			setupConfigurationSuccessScenario(mocks, {
+				key: 'userIconsDirectory',
+				value: '',
+			})
 
 			const result = await service.getUserIconsDirectory()
 
@@ -63,16 +66,21 @@ describe('ConfigurationService', () => {
 				'folder:src': '_source',
 			}
 
-			mockConfig.get.mockReturnValue(expectedMappings)
+			setupConfigurationSuccessScenario(mocks, {
+				key: 'customIconMappings',
+				value: expectedMappings,
+			})
 
 			const result = await service.getCustomMappings()
 
 			expect(result).toEqual(expectedMappings)
-			expect(mockConfig.get).toHaveBeenCalledWith('customIconMappings')
 		})
 
 		it('should return undefined when not configured', async () => {
-			mockConfig.get.mockReturnValue(undefined)
+			setupConfigurationSuccessScenario(mocks, {
+				key: 'customIconMappings',
+				value: undefined,
+			})
 
 			const result = await service.getCustomMappings()
 
@@ -80,7 +88,10 @@ describe('ConfigurationService', () => {
 		})
 
 		it('should return empty object when configured as empty', async () => {
-			mockConfig.get.mockReturnValue({})
+			setupConfigurationSuccessScenario(mocks, {
+				key: 'customIconMappings',
+				value: {},
+			})
 
 			const result = await service.getCustomMappings()
 
@@ -90,16 +101,21 @@ describe('ConfigurationService', () => {
 
 	describe('getHideArrowsSetting', () => {
 		it('should return true when configured', async () => {
-			mockConfig.get.mockReturnValue(true)
+			setupConfigurationSuccessScenario(mocks, {
+				key: 'hideExplorerArrows',
+				value: true,
+			})
 
 			const result = await service.getHideArrowsSetting()
 
 			expect(result).toBe(true)
-			expect(mockConfig.get).toHaveBeenCalledWith('hideExplorerArrows')
 		})
 
 		it('should return false when configured', async () => {
-			mockConfig.get.mockReturnValue(false)
+			setupConfigurationSuccessScenario(mocks, {
+				key: 'hideExplorerArrows',
+				value: false,
+			})
 
 			const result = await service.getHideArrowsSetting()
 
@@ -107,7 +123,10 @@ describe('ConfigurationService', () => {
 		})
 
 		it('should return null when configured', async () => {
-			mockConfig.get.mockReturnValue(null)
+			setupConfigurationSuccessScenario(mocks, {
+				key: 'hideExplorerArrows',
+				value: null,
+			})
 
 			const result = await service.getHideArrowsSetting()
 
@@ -115,7 +134,10 @@ describe('ConfigurationService', () => {
 		})
 
 		it('should return undefined when not configured', async () => {
-			mockConfig.get.mockReturnValue(undefined)
+			setupConfigurationSuccessScenario(mocks, {
+				key: 'hideExplorerArrows',
+				value: undefined,
+			})
 
 			const result = await service.getHideArrowsSetting()
 
@@ -128,50 +150,63 @@ describe('ConfigurationService', () => {
 			const originalMappings = { 'file:.ts': '_old' }
 			const newMappings = { 'file:.ts': '_new', 'folder:src': '_source' }
 			
-			mockConfig.get.mockReturnValue(originalMappings)
-			mockConfig.update.mockResolvedValue(undefined)
+			// Setup configuration mock for this specific test
+			const mockConfig = mocks.workspace.getConfiguration().get as any
+			const mockUpdate = mocks.workspace.getConfiguration().update as any
+			
+			mockConfig.mockReturnValue(originalMappings)
+			mockUpdate.mockResolvedValue(undefined)
 
 			const updateFn = vi.fn().mockResolvedValue(newMappings)
 
 			await service.updateCustomMappings(updateFn)
 
 			expect(updateFn).toHaveBeenCalledWith(originalMappings)
-			expect(mockConfig.update).toHaveBeenCalledWith('customIconMappings', newMappings, true)
+			expect(mockUpdate).toHaveBeenCalledWith('customIconMappings', newMappings, true)
 		})
 
 		it('should not update when no changes are made', async () => {
 			const mappings = { 'file:.ts': '_typescript' }
 			
-			mockConfig.get.mockReturnValue(mappings)
-			mockConfig.update.mockResolvedValue(undefined)
+			const mockConfig = mocks.workspace.getConfiguration().get as any
+			const mockUpdate = mocks.workspace.getConfiguration().update as any
+			
+			mockConfig.mockReturnValue(mappings)
+			mockUpdate.mockResolvedValue(undefined)
 
 			const updateFn = vi.fn().mockResolvedValue(mappings)
 
 			await service.updateCustomMappings(updateFn)
 
 			expect(updateFn).toHaveBeenCalledWith(mappings)
-			expect(mockConfig.update).not.toHaveBeenCalled()
+			expect(mockUpdate).not.toHaveBeenCalled()
 		})
 
 		it('should handle update function returning false', async () => {
 			const mappings = { 'file:.ts': '_typescript' }
 			
-			mockConfig.get.mockReturnValue(mappings)
+			const mockConfig = mocks.workspace.getConfiguration().get as any
+			const mockUpdate = mocks.workspace.getConfiguration().update as any
+			
+			mockConfig.mockReturnValue(mappings)
 
 			const updateFn = vi.fn().mockResolvedValue(false)
 
 			await service.updateCustomMappings(updateFn)
 
 			expect(updateFn).toHaveBeenCalledWith(mappings)
-			expect(mockConfig.update).not.toHaveBeenCalled()
+			expect(mockUpdate).not.toHaveBeenCalled()
 		})
 
 		it('should handle update function returning boolean true', async () => {
 			const originalMappings = { 'file:.ts': '_old' }
 			const updatedMappings = { 'file:.ts': '_new' }
 			
-			mockConfig.get.mockReturnValue(originalMappings)
-			mockConfig.update.mockResolvedValue(undefined)
+			const mockConfig = mocks.workspace.getConfiguration().get as any
+			const mockUpdate = mocks.workspace.getConfiguration().update as any
+			
+			mockConfig.mockReturnValue(originalMappings)
+			mockUpdate.mockResolvedValue(undefined)
 
 			const updateFn = vi.fn().mockImplementation(async (mappings) => {
 				mappings['file:.ts'] = '_new'
@@ -182,7 +217,7 @@ describe('ConfigurationService', () => {
 
 			// The updateFn is called with a mutable copy that gets modified by the mock
 			expect(updateFn).toHaveBeenCalledWith(expect.objectContaining({ 'file:.ts': '_new' }))
-			expect(mockConfig.update).toHaveBeenCalledWith('customIconMappings', updatedMappings, true)
+			expect(mockUpdate).toHaveBeenCalledWith('customIconMappings', updatedMappings, true)
 		})
 
 		it('should handle config update error', async () => {
@@ -190,27 +225,57 @@ describe('ConfigurationService', () => {
 			const newMappings = { 'file:.ts': '_new' }
 			const updateError = new Error('Update failed')
 			
-			mockConfig.get.mockReturnValue(originalMappings)
-			mockConfig.update.mockRejectedValue(updateError)
+			const mockConfig = mocks.workspace.getConfiguration().get as any
+			const mockUpdate = mocks.workspace.getConfiguration().update as any
+			
+			mockConfig.mockReturnValue(originalMappings)
+			mockUpdate.mockRejectedValue(updateError)
 
 			const updateFn = vi.fn().mockResolvedValue(newMappings)
 
 			await expect(service.updateCustomMappings(updateFn)).rejects.toThrow('Failed to update icon mappings: Update failed')
-			expect(mockConfig.update).toHaveBeenCalledWith('customIconMappings', newMappings, true)
+			expect(mockUpdate).toHaveBeenCalledWith('customIconMappings', newMappings, true)
 		})
 
 		it('should handle empty original mappings', async () => {
 			const newMappings = { 'file:.ts': '_typescript' }
 			
-			mockConfig.get.mockReturnValue(undefined)
-			mockConfig.update.mockResolvedValue(undefined)
+			const mockConfig = mocks.workspace.getConfiguration().get as any
+			const mockUpdate = mocks.workspace.getConfiguration().update as any
+			
+			mockConfig.mockReturnValue(undefined)
+			mockUpdate.mockResolvedValue(undefined)
 
 			const updateFn = vi.fn().mockResolvedValue(newMappings)
 
 			await service.updateCustomMappings(updateFn)
 
 			expect(updateFn).toHaveBeenCalledWith({})
-			expect(mockConfig.update).toHaveBeenCalledWith('customIconMappings', newMappings, true)
+			expect(mockUpdate).toHaveBeenCalledWith('customIconMappings', newMappings, true)
+		})
+	})
+
+	describe('Enhanced Mock Strategy Examples', () => {
+		it('should demonstrate builder pattern for complex scenarios', async () => {
+			// Using the fluent builder API for complex mock composition
+			createDynamiconsMockBuilder(mocks)
+				.configuration({
+					key: 'userIconsDirectory',
+					value: '/path/to/icons',
+				})
+				.build()
+
+			const result = await service.getUserIconsDirectory()
+
+			expect(result).toBe('/path/to/icons')
+		})
+
+		it('should demonstrate error scenario handling', async () => {
+			createDynamiconsMockBuilder(mocks)
+				.error('configuration', 'Configuration service unavailable')
+				.build()
+
+			await expect(service.getUserIconsDirectory()).rejects.toThrow()
 		})
 	})
 })

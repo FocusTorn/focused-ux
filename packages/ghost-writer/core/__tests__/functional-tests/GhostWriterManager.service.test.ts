@@ -685,19 +685,27 @@ describe('GhostWriterManagerService', () => {
         })
 
         it('should handle service timeout scenarios', async () => {
-            // Arrange
-            const fragment: StoredFragment = {
-                text: 'MyComponent',
-                sourceFilePath: '/path/to/component.ts'
+            // Temporarily disable fake timers for this test
+            vi.useRealTimers()
+            
+            try {
+                // Arrange
+                const fragment: StoredFragment = {
+                    text: 'MyComponent',
+                    sourceFilePath: '/path/to/component.ts'
+                }
+
+                mocks.clipboard.store.mockImplementation(() =>
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Service timeout')), 10)))
+
+                // Act & Assert
+                await expect(service.storeFragment(fragment))
+                    .rejects.toThrow('Storage operation failed: Service timeout')
+            } finally {
+                // Re-enable fake timers
+                vi.useFakeTimers()
             }
-
-            mocks.clipboard.store.mockImplementation(() =>
-                new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Service timeout')), 100)))
-
-            // Act & Assert
-            await expect(service.storeFragment(fragment))
-                .rejects.toThrow('Storage operation failed: Service timeout')
         })
     })
 

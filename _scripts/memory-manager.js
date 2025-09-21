@@ -18,7 +18,7 @@ class MemoryManager {
         await this.initialize();
         
         const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
-        const workspacePath = 'D:\\_dev\\!Projects\\_fux\\_FocusedUX';
+        const workspacePath = 'D:\\_dev\\_Projects\\_fux\\_FocusedUX';
         const metadata = { source: 'cursorrules', version: 'postgresql-only' };
         
         await this.memory.addConversation(timestamp, conversationName, workspacePath, metadata);

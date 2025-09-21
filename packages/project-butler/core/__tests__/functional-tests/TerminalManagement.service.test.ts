@@ -5,10 +5,12 @@ import {
     resetAllMocks,
     setupFileSystemMocks,
     setupPathMocks,
+} from '../__mocks__/helpers'
+import {
     setupTerminalDirectoryScenario,
     setupTerminalFileScenario,
-    setupTerminalErrorScenario
-} from '../_setup'
+    setupTerminalErrorScenario,
+} from '../__mocks__/mock-scenario-builder'
 
 describe('TerminalManagementService', () => {
     let service: TerminalManagementService

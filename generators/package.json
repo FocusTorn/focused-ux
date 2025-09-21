@@ -1,5 +1,0 @@
-{
-    "name": "@fux/generators",
-    "version": "0.0.1",
-    "generators": "./collection.json"
-}

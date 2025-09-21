@@ -6,11 +6,13 @@ import {
     setupFileSystemMocks,
     setupPathMocks,
     setupYamlMocks,
+} from '../__mocks__/helpers'
+import {
     setupPackageJsonSuccessScenario,
     setupPackageJsonConfigErrorScenario,
     // setupPackageJsonYamlErrorScenario,
-    // createMockBuilder
-} from '../_setup'
+    // createProjectButlerMockBuilder
+} from '../__mocks__/mock-scenario-builder'
 
 describe('PackageJsonFormatting', () => {
     let service: PackageJsonFormattingService

@@ -219,7 +219,7 @@
         "2": "./packages/project-butler/tsconfig.json",
         "3": "./packages/dynamicons/tsconfig.json"
       },
-      "tsconfigRootDir": "D:\\_dev\\!Projects\\_fux\\_FocusedUX"
+      "tsconfigRootDir": "D:\\_dev\\_Projects\\_fux\\_FocusedUX"
     }
   }
 }

@@ -372,7 +372,7 @@ All json parsing should leverage the strip json comments package
 
 **Item 1 (Staging):**
 
-- ✅ Reads from `assetConstants.externalIconSource` (D:/\_dev/!Projects/\_fux/icons)
+- ✅ Reads from `assetConstants.externalIconSource` (D:/\_dev/_Projects/\_fux/icons)
 - ✅ Filters for SVG files only, ignores other file types
 - ✅ Uses `assetConstants.deleteOriginalSvg` flag (currently false = copy, true = move)
 - ✅ Stages icons to `assets/icons/new_icons` directory

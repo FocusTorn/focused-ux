@@ -261,6 +261,22 @@
                 "timeout": 20000,
                 "filterOutput": true
             }
+        },
+        "cleanup:vscode-test": {
+            "executor": "nx:run-commands",
+            "cache": false,
+            "options": {
+                "command": "node -e \"require('./libs/vscode-test-cli-config/dist/index.js').cleanupVscodeTestArtifacts(process.cwd(), process.env.NX_PROJECT_NAME || 'unknown')\"",
+                "cwd": "{workspaceRoot}"
+            }
+        },
+        "cleanup:all:vscode-test": {
+            "executor": "nx:run-commands",
+            "cache": false,
+            "options": {
+                "command": "node -e \"require('./libs/vscode-test-cli-config/dist/index.js').cleanupAllVscodeTestArtifacts(process.cwd())\"",
+                "cwd": "{workspaceRoot}"
+            }
         }
     },
     "namedInputs": {

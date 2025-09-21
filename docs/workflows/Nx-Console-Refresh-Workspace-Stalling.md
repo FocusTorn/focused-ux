@@ -71,7 +71,7 @@ Get-AuthenticodeSignature "$dir\handle64.exe"  # optional signature check
 
 ```powershell
 $h = "$env:TEMP\Handle\handle64.exe"
-& $h -nobanner 'D:\_dev\!Projects\_fux\_FocusedUX\.nx' /accepteula
+& $h -nobanner 'D:\_dev\_Projects\_fux\_FocusedUX\.nx' /accepteula
 & $h -nobanner 'FocusedUX' /accepteula
 ```
 - What this does: searches for open handles on `.nx` and the repo path.
@@ -105,7 +105,7 @@ Stop-Process -Id 6264,25564,26296,37796 -Force   # replace with your PIDs
 npx.cmd nx reset --only-daemon
 npx.cmd nx reset --only-workspace-data
 # If needed:
-# Remove-Item -Recurse -Force 'D:\_dev\!Projects\_fux\_FocusedUX\.nx\workspace-data'
+# Remove-Item -Recurse -Force 'D:\_dev\_Projects\_fux\_FocusedUX\.nx\workspace-data'
 ```
 - What this does: terminates stuck Nx processes and resets daemon/workspace data.
 - Result: releases locks so refresh can proceed.
@@ -127,9 +127,9 @@ setx NX_DAEMON false
 ```
 - Defender exclusion (A/B test or permanent):
 ```powershell
-Add-MpPreference -ExclusionPath 'D:\_dev\!Projects\_fux\_FocusedUX'
+Add-MpPreference -ExclusionPath 'D:\_dev\_Projects\_fux\_FocusedUX'
 # Remove later with:
-# Remove-MpPreference -ExclusionPath 'D:\_dev\!Projects\_fux\_FocusedUX'
+# Remove-MpPreference -ExclusionPath 'D:\_dev\_Projects\_fux\_FocusedUX'
 ```
 - What this does: disables daemon where it tends to hang and prevents AV from locking `.nx`.
 - Result: fewer stalls; refresh works reliably.

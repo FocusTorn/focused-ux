@@ -1,5 +1,5 @@
-{
-    "name": "@fux/project-butler-core",
+{   "name": "@fux/project-butler-core", //>
+
     "tags": [ "core" ],
     "targets": {
         
@@ -47,8 +47,7 @@
         // "audit": { "extends": "audit" },
         // "audit:full": { "extends": "audit:full" },
     },
-    
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/project-butler/core/src",
-    "projectType": "library"
+    "projectType": "library",
 }

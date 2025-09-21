@@ -5,6 +5,8 @@ import {
     resetAllMocks,
     setupFileSystemMocks,
     setupPathMocks,
+} from '../__mocks__/helpers'
+import {
     setupBackupSuccessScenario,
     setupBackupConflictScenario,
     setupBackupErrorScenario,
@@ -13,8 +15,8 @@ import {
     setupUnixPathScenario,
     setupNetworkPathScenario,
     setupConcurrentBackupScenario,
-    createMockBuilder
-} from '../_setup'
+    createProjectButlerMockBuilder,
+} from '../__mocks__/mock-scenario-builder'
 
 describe('BackupManagementService', () => {
     let service: BackupManagementService
@@ -96,12 +98,8 @@ describe('BackupManagementService', () => {
             // Arrange
             const sourcePath = '/large-project/package.json'
             const backupPath = '/large-project/package.json.bak'
-			
-            mocks.path.basename.mockReturnValue('package.json')
-            mocks.path.dirname.mockReturnValue('/large-project')
-            mocks.path.join.mockReturnValue(backupPath)
-            mocks.fileSystem.stat.mockRejectedValue(new Error('File not found')) // Backup doesn't exist
-            mocks.fileSystem.copyFile.mockResolvedValue(undefined)
+
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
 
             // Act
             const result = await service.createBackup(sourcePath)
@@ -115,12 +113,8 @@ describe('BackupManagementService', () => {
             // Arrange
             const sourcePath = '/special-chars-project/file with spaces.txt'
             const backupPath = '/special-chars-project/file with spaces.txt.bak'
-			
-            mocks.path.basename.mockReturnValue('file with spaces.txt')
-            mocks.path.dirname.mockReturnValue('/special-chars-project')
-            mocks.path.join.mockReturnValue(backupPath)
-            mocks.fileSystem.stat.mockRejectedValue(new Error('File not found')) // Backup doesn't exist
-            mocks.fileSystem.copyFile.mockResolvedValue(undefined)
+
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
 
             // Act
             const result = await service.createBackup(sourcePath)
@@ -134,12 +128,8 @@ describe('BackupManagementService', () => {
             // Arrange
             const sourcePath = '/level1/level2/level3/level4/level5/deep-file.txt'
             const backupPath = '/level1/level2/level3/level4/level5/deep-file.txt.bak'
-			
-            mocks.path.basename.mockReturnValue('deep-file.txt')
-            mocks.path.dirname.mockReturnValue('/level1/level2/level3/level4/level5')
-            mocks.path.join.mockReturnValue(backupPath)
-            mocks.fileSystem.stat.mockRejectedValue(new Error('File not found')) // Backup doesn't exist
-            mocks.fileSystem.copyFile.mockResolvedValue(undefined)
+
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
 
             // Act
             const result = await service.createBackup(sourcePath)
@@ -153,12 +143,8 @@ describe('BackupManagementService', () => {
             // Arrange
             const sourcePath = '/symlink-project/symlink.txt'
             const backupPath = '/symlink-project/symlink.txt.bak'
-			
-            mocks.path.basename.mockReturnValue('symlink.txt')
-            mocks.path.dirname.mockReturnValue('/symlink-project')
-            mocks.path.join.mockReturnValue(backupPath)
-            mocks.fileSystem.stat.mockRejectedValue(new Error('File not found')) // Backup doesn't exist
-            mocks.fileSystem.copyFile.mockResolvedValue(undefined)
+
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
 
             // Act
             const result = await service.createBackup(sourcePath)
@@ -200,12 +186,8 @@ describe('BackupManagementService', () => {
             // Arrange
             const sourcePath = '/protected-file.txt'
             const backupPath = '/protected-file.txt.bak'
-			
-            mocks.path.basename.mockReturnValue('protected-file.txt')
-            mocks.path.dirname.mockReturnValue('/')
-            mocks.path.join.mockReturnValue(backupPath)
-            mocks.fileSystem.stat.mockRejectedValue(new Error('Permission denied'))
-            mocks.fileSystem.copyFile.mockResolvedValue(undefined)
+
+            setupBackupStatErrorGracefulScenario(mocks, { sourcePath, backupPath }, 'Permission denied')
 
             // Act
             const result = await service.createBackup(sourcePath)
@@ -219,12 +201,8 @@ describe('BackupManagementService', () => {
             // Arrange
             const sourcePath = '/large-file.txt'
             const backupPath = '/large-file.txt.bak'
-			
-            mocks.path.basename.mockReturnValue('large-file.txt')
-            mocks.path.dirname.mockReturnValue('/')
-            mocks.path.join.mockReturnValue(backupPath)
-            mocks.fileSystem.stat.mockRejectedValue(new Error('File not found')) // Backup doesn't exist
-            mocks.fileSystem.copyFile.mockRejectedValue(new Error('No space left on device'))
+
+            setupBackupErrorScenario(mocks, { sourcePath, backupPath }, 'copy', 'No space left on device')
 
             // Act & Assert
             await expect(service.createBackup(sourcePath))
@@ -235,12 +213,8 @@ describe('BackupManagementService', () => {
             // Arrange
             const sourcePath = '/corrupted-file.txt'
             const backupPath = '/corrupted-file.txt.bak'
-			
-            mocks.path.basename.mockReturnValue('corrupted-file.txt')
-            mocks.path.dirname.mockReturnValue('/')
-            mocks.path.join.mockReturnValue(backupPath)
-            mocks.fileSystem.stat.mockRejectedValue(new Error('File system corruption detected'))
-            mocks.fileSystem.copyFile.mockResolvedValue(undefined)
+
+            setupBackupStatErrorGracefulScenario(mocks, { sourcePath, backupPath }, 'File system corruption detected')
 
             // Act
             const result = await service.createBackup(sourcePath)
@@ -254,12 +228,8 @@ describe('BackupManagementService', () => {
             // Arrange
             const sourcePath = '/very-long-path-' + 'a'.repeat(200) + '.txt'
             const backupPath = '/very-long-path-' + 'a'.repeat(200) + '.txt.bak'
-			
-            mocks.path.basename.mockReturnValue('very-long-path-' + 'a'.repeat(200) + '.txt')
-            mocks.path.dirname.mockReturnValue('/')
-            mocks.path.join.mockReturnValue(backupPath)
-            mocks.fileSystem.stat.mockRejectedValue(new Error('File not found')) // Backup doesn't exist
-            mocks.fileSystem.copyFile.mockResolvedValue(undefined)
+
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
 
             // Act
             const result = await service.createBackup(sourcePath)
@@ -388,12 +358,8 @@ describe('BackupManagementService', () => {
             // Arrange
             const sourcePath = '/real-world-project/package.json'
             const backupPath = '/real-world-project/package.json.bak'
-			
-            mocks.path.basename.mockReturnValue('package.json')
-            mocks.path.dirname.mockReturnValue('/real-world-project')
-            mocks.path.join.mockReturnValue(backupPath)
-            mocks.fileSystem.stat.mockRejectedValue(new Error('File not found')) // Backup doesn't exist
-            mocks.fileSystem.copyFile.mockResolvedValue(undefined)
+
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
 
             // Act
             const result = await service.createBackup(sourcePath)
@@ -407,12 +373,8 @@ describe('BackupManagementService', () => {
             // Arrange
             const sourcePath = '/monorepo/packages/core/package.json'
             const backupPath = '/monorepo/packages/core/package.json.bak'
-			
-            mocks.path.basename.mockReturnValue('package.json')
-            mocks.path.dirname.mockReturnValue('/monorepo/packages/core')
-            mocks.path.join.mockReturnValue(backupPath)
-            mocks.fileSystem.stat.mockRejectedValue(new Error('File not found')) // Backup doesn't exist
-            mocks.fileSystem.copyFile.mockResolvedValue(undefined)
+
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
 
             // Act
             const result = await service.createBackup(sourcePath)
@@ -428,8 +390,8 @@ describe('BackupManagementService', () => {
             // Arrange - Using the builder pattern for complex mock setup
             const sourcePath = '/complex-project/file.txt'
             const backupPath = '/complex-project/file.txt.bak'
-			
-            createMockBuilder(mocks)
+
+            createProjectButlerMockBuilder(mocks)
                 .backup({ sourcePath, backupPath })
                 .build()
 
@@ -445,14 +407,31 @@ describe('BackupManagementService', () => {
             // Arrange - Builder pattern for error scenarios
             const sourcePath = '/error-project/file.txt'
             const backupPath = '/error-project/file.txt.bak'
-			
-            createMockBuilder(mocks)
+
+            createProjectButlerMockBuilder(mocks)
                 .backupError('copy', 'Disk full', { sourcePath, backupPath })
                 .build()
 
             // Act & Assert
             await expect(service.createBackup(sourcePath))
                 .rejects.toThrow('Disk full')
+        })
+
+        it('should demonstrate builder with cross-platform scenarios', async () => {
+            // Arrange - Builder pattern for Windows path scenarios
+            const sourcePath = 'C:\\Users\\John\\Documents\\Project\\file.txt'
+            const backupPath = 'C:\\Users\\John\\Documents\\Project\\file.txt.bak'
+
+            createProjectButlerMockBuilder(mocks)
+                .windowsPath(sourcePath, backupPath)
+                .build()
+
+            // Act
+            const result = await service.createBackup(sourcePath)
+
+            // Assert
+            expect(result).toBe(backupPath)
+            expect(mocks.fileSystem.copyFile).toHaveBeenCalledWith(sourcePath, backupPath)
         })
     })
 
