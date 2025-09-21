@@ -329,7 +329,7 @@
     "defaultRunner": "nx/tasks-runners/default",
     "plugins": [
         
-        { "plugin": "@nx/vite/plugin", //>
+        { "plugin": "@nx/vite/plugin",
             "options": {
                 "buildTargetName": "build",
                 "testTargetName": "vite:test",
@@ -344,6 +344,6 @@
         } //<
     
     ],
-    "tui": { "enabled": false } 
+    "tui": { "enabled": false }
     
 }

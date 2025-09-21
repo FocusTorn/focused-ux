@@ -19,7 +19,7 @@
                 
                 "assets": [
                     {
-                        "input": "./plugins/ft-typescript/src",
+                         "input": "./plugins/ft-typescript/src",
                         "glob": "**/!(*.ts)",
                         "output": "."
                     },
