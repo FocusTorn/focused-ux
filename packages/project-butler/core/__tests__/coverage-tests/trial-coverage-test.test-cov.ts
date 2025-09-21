@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe } from 'vitest'
 
 describe('Extension', () => {
 	

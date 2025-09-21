@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { beforeEach, describe, it, expect } from 'vitest'
 import { ConsoleLoggerService } from '../../src/services/ConsoleLogger.service.js'
 
 describe('ConsoleLoggerService', () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { ImportGeneratorService } from '../../src/services/ImportGenerator.service.js'
 import type { StoredFragment } from '../../src/_interfaces/IClipboardService.js'
 import {

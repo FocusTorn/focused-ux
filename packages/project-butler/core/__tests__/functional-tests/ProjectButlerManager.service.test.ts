@@ -11,9 +11,9 @@ import {
     setupPathMocks,
     setupYamlMocks,
     setupPackageJsonSuccessScenario,
-    setupTerminalDirectoryScenario,
+    // setupTerminalDirectoryScenario,
     setupBackupSuccessScenario,
-    setupPoetryShellSuccessScenario
+    // setupPoetryShellSuccessScenario
 } from '../_setup'
 
 describe('ProjectButlerManager Integration', () => {
