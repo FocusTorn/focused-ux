@@ -1,12 +1,17 @@
 {
     "extends": "../../../tsconfig.base.json",
     
-    "include": ["src/**/*.ts"],
+    "include": [
+        "src/**/*.ts",
+        "__tests__/**/*.ts"
+
+        
+    ],
     
     "exclude": [
         "node_modules",
-        "**/*.test.ts",
-        "__tests__/**/*",
+        // "**/*.test.ts",
+        // "__tests__/**/*",
         "dist/**/*"
     ],
     
