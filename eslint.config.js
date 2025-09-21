@@ -29,7 +29,7 @@ import foldingBracketsRule from './tools/eslint-rules/fux-format/folding-bracket
 // RULE COMPOSITION --------------------------------------->>
 
 // Base rules that apply everywhere (no plugin-specific rules)
-const baseRules = {
+const baseRules = { //>
     'license-header/header': 'off',
     'license/unknown': 'off',
     'no-console': 'off',
@@ -44,10 +44,10 @@ const baseRules = {
     'comma-spacing': ['warn', { before: false, after: true }],
     'no-extra-semi': 'warn',
     'operator-linebreak': ['warn', 'before'],
-}
+} //<
 
 // Plugin-specific rules for JS/TS files
-const pluginRules = {
+const pluginRules = { //>
     'unused-imports/no-unused-vars': [
         'warn',
         {
@@ -64,10 +64,10 @@ const pluginRules = {
     'import/extensions': 'off',
     'import/no-duplicates': 'warn',
     'import/order': 'off',
-}
+} //<
 
 // Stylistic rules for code files
-const stylisticRules = {
+const stylisticRules = { //>
     'style/indent': ['warn', 4],
     'style/no-mixed-spaces-and-tabs': ['warn', 'smart-tabs'],
     'style/no-multiple-empty-lines': ['warn', { max: 1, maxBOF: 0, maxEOF: 0 }],
@@ -100,31 +100,31 @@ const stylisticRules = {
     'style/max-statements-per-line': 'off',
     'style/spaced-comment': 'off',
     'style/brace-style': 'off',
-}
+} //<
 
 // Main JS-TS specific overrides (rules that were turned off in the original main block)
-const mainJsTsOverrides = {
+const mainJsTsOverrides = { //>
     'style/brace-style': 'off',
     'style/function-call-argument-newline': 'off',
     'style/function-paren-newline': 'off',
     'style/array-element-newline': 'off',
     'style/object-property-newline': 'off',
-}
+} //<
 
 // JSON-specific stylistic overrides
-const jsonStylisticOverrides = {
+const jsonStylisticOverrides = { //>
     'style/no-multiple-empty-lines': ['warn', { max: 2, maxBOF: 0, maxEOF: 0 }], // More lenient for JSON
     'style/object-property-newline': 'off', // Allow properties on same line for JSON
-}
+} //<
 
 // TypeScript-specific rules
-const tsRules = {
+const tsRules = { //>
     'ts/no-explicit-any': 'warn',
     'ts/explicit-function-return-type': 'off',
-}
+} //<
 
 // Test-specific overrides
-const testOverrides = {
+const testOverrides = { //>
     'import/no-cycle': 'off',
     'import/extensions': 'off',
     'ts/no-explicit-any': 'off',
@@ -139,77 +139,91 @@ const testOverrides = {
     'style/padding-line-between-statements': 'off',
     'style/no-multiple-empty-lines': 'off',
     'style/brace-style': 'off',
-}
+} //<
 
 // Config file overrides
-const configOverrides = {
+const configOverrides = { //>
     'ts/explicit-function-return-type': 'off',
     'ts/no-use-before-define': 'off',
     'import/no-unresolved': 'off',
     'style/padding-line-between-statements': 'off',
     'no-console': 'off',
-}
+} //<
 
-// Function to merge rules with overrides
-function mergeRules(baseRules, overrides = {}) {
+// Function to merge rules with overrides (optimized for performance)
+function mergeRules(baseRules, overrides = {}) { //>
+    if (Object.keys(overrides).length === 0) return baseRules
     return { ...baseRules, ...overrides }
-}
+} //<
 
 //----------------------------------------------------------------------------<<
 
 export default [
     {   ignores: [ //>
-        '**/*.md',
+        // Build outputs and caches (most common, put first)
         '**/dist/**',
-        '**/.output/**',
-        '**/_out-tsc/**',
+        '**/.nx/cache/**',
+        '**/.eslintcache',
+        '**/node_modules/**',
         '**/coverage/**',
         '**/.turbo/**',
-        '**/node_modules/**',
+        '**/.output/**',
+        '**/_out-tsc/**',
+        '**/build/**',
+        '**/out/**',
+        
+        // Documentation (skip entirely)
+        '**/*.md',
+        '**/CHANGELOG.md',
+        '**/README.md',
+        
+        // Lock files
         'pnpm-lock.yaml',
         '**/package-lock.json',
         '**/yarn.lock',
-        '**/CHANGELOG.md',
-        '**/README.md',
-        '**/.eslintcache',
-        '**/.nx/cache/**',
+        '**/*.lock',
+        
+        // Test artifacts
         '**/.vscode-test/**',
         '**/__tests__/**/*.js',
-        '**/*.model.*/**',
+        '**/cypress/videos/**',
+        '**/cypress/screenshots/**',
+        
+        // Temporary and generated files
+        '**/.git/**',
+        '**/tmp/**',
+        '**/temp/**',
+        '**/*.log',
+        '**/generated/**',
         '**/*removed*/**/*',
         '**/*X_____*.*',
         '**/*X_____*/*.*',
         '**/*_____X*.*',
         '**/*_____X*/*.*',
-        '**/.git/**',
-        '**/tmp/**',
-        '**/temp/**',
-        '**/*.log',
-        '**/*.lock',
-        '**/generated/**',
-        '**/build/**',
-        '**/out/**',
+        '**/*.model.*/**',
+        
+        // Framework-specific
         '**/.next/**',
         '**/.nuxt/**',
         '**/.svelte-kit/**',
         '**/storybook-static/**',
         '**/.storybook/**',
-        '**/cypress/videos/**',
-        '**/cypress/screenshots/**',
         '**/vite.config.*.timestamp*',
         '**/vitest.config.*.timestamp*',
-    ],
-    }, //<
+    ], }, //<
     
-    {   name: 'focused-ux/cache-settings', //>
+    {   name: 'fux/performance-settings', //>
         settings: {
             cache: true,
             cacheLocation: '.eslintcache',
-            cacheStrategy: 'content',
+            cacheStrategy: 'metadata',
+        },
+        linterOptions: {
+            reportUnusedDisableDirectives: 'warn',
         },
     }, //<
 
-    {   name: 'focused-ux/JS-TS', //>
+    {   name: 'fux/JS-TS', //>
         files: ['**/*.{js,jsx,ts,tsx}'],
         plugins: {
             style: stylisticPlugin,
@@ -221,11 +235,6 @@ export default [
             '@nx': nxPlugin,
             eslintComments,
             node: nPlugin,
-                'fux-format': {
-                    rules: {
-                        'folding-brackets': foldingBracketsRule
-                    }
-                },
         },
         rules: {
             ...baseRules,
@@ -233,20 +242,26 @@ export default [
             ...stylisticRules,
             ...tsRules,
             ...mainJsTsOverrides,
+            
+            // Prevent require() usage in ESM files
+            'ts/no-var-requires': 'error',
+            'import/no-commonjs': 'error',
+            'unicorn/prefer-module': 'error',
         },
-        languageOptions: {
+        languageOptions: { //>
             parser: tsParser,
             parserOptions: {
-                project: null,
                 ecmaVersion: 'latest',
                 sourceType: 'module',
             },
-        },
+        }, //<
     }, //<
 
-    {   name: 'focused-ux/custom-formatting-tweaks', //>
+    {   name: 'fux/custom-formatting-tweaks', //>
         files: ['**/*.{js,jsx,ts,tsx}'],
-        plugins: { style: stylisticPlugin },
+        plugins: {
+            style: stylisticPlugin
+        },
         rules: {
             'style/function-paren-newline': ['warn', 'multiline-arguments'],
             'style/function-call-argument-newline': ['warn', 'consistent'],
@@ -254,7 +269,7 @@ export default [
         },
     }, //<
 
-    {   name: 'focused-ux/test-rules', //>
+    {   name: 'fux/test-rules', //>
         files: ['**/*.test.ts', '**/*.spec.ts', '**/test/**/*.ts', '**/__tests__/**/*.ts'],
         plugins: {
             style: stylisticPlugin,
@@ -268,7 +283,7 @@ export default [
             ...mainJsTsOverrides,
             ...testOverrides,
         },
-        languageOptions: {
+        languageOptions: { //>
             globals: {
                 describe: 'readonly',
                 it: 'readonly',
@@ -282,13 +297,15 @@ export default [
                 test: 'readonly',
                 suite: 'readonly',
             },
-        },
+        }, //<
     }, //<
 
-    {   name: 'focused-ux/shared-library', //>
+    {   name: 'fux/shared-library', //>
         files: ['libs/shared/**/*.ts', 'libs/shared/**/*.tsx'],
         plugins: {
             ts: tsPlugin,
+            style: stylisticPlugin,
+            import: importPlugin,
         },
         rules: {
             ...baseRules,
@@ -298,46 +315,62 @@ export default [
             ...mainJsTsOverrides,
             'ts/no-use-before-define': 'off',
         },
+        languageOptions: { //>
+            parser: tsParser,
+            parserOptions: {
+                ecmaVersion: 'latest',
+                sourceType: 'module',
+            },
+        }, //<
     }, //<
 
-    {   name: 'focused-ux/markdown', //>
+    {   name: 'fux/markdown', //>
         files: ['**/*.md', '**/*.markdown'],
-        plugins: { markdown: markdownPlugin },
+        plugins: {
+            markdown: markdownPlugin
+        },
         rules: {
             'markdown/heading-style': ['warn', 'atx'],
             'markdown/no-inline-html': 'warn',
         },
     }, //<
 
-    {   name: 'focused-ux/yaml', //>
+    {   name: 'fux/yaml', //>
         files: ['**/*.{yml,yaml}'],
         plugins: { yml: ymlPlugin },
-        languageOptions: { parser: yamlParser },
-        rules: {},
+        rules: {
+            
+        },
+        languageOptions: { //>
+            parser: yamlParser
+        }, //<
     }, //<
 
-    {   name: 'focused-ux/toml', //>
+    {   name: 'fux/toml', //>
         files: ['**/*.toml'],
-        plugins: { toml: tomlPlugin },
-        languageOptions: { parser: tomlParser },
+        plugins: {
+            toml: tomlPlugin
+        },
         rules: {
             'toml/indent': ['warn', 4],
         },
+        languageOptions: { //>
+            parser: tomlParser
+        }, //<
     }, //<
 
-    {   name: 'focused-ux/json', //>
+    {   name: 'fux/json', //>
         files: [
             '**/*.json',
-            '**/*.jsonc',
-            'c:/Users/slett/AppData/Roaming/Cursor/User/settings.json',
+            '**/*.jsonc'
         ],
         plugins: {
             jsonc: jsoncPlugin,
             style: stylisticPlugin,
-            'fux-format': { 
-                rules: { 
+            'fux-format': {
+                rules: {
                     'folding-brackets': foldingBracketsRule
-                } 
+                }
             }
         },
         rules: {
@@ -353,26 +386,23 @@ export default [
             //     ExportDeclaration: 'always'
             // }]
             
-            'fux-format/folding-brackets': 'warn',
+            // 'fux-format/folding-brackets': 'warn',
         },
         languageOptions: { //>
             parser: jsoncParser
         }, //<
     }, //<
 
-    {   name: 'focused-ux/config-files', //>
-        files: ['**/*.config.{js,ts,cjs,mjs}', '**/*.rc.{js,ts,cjs,mjs}'],
-        languageOptions: { parser: tsParser, parserOptions: { project: null } },
+    {   name: 'fux/config-files', //>
+        files: [
+            '**/*.config.{js,ts,cjs,mjs}',
+            '**/*.rc.{js,ts,cjs,mjs}'
+        ],
         plugins: {
             style: stylisticPlugin,
             ts: tsPlugin,
             import: importPlugin,
             node: nPlugin,
-                'fux-format': {
-                    rules: {
-                        'folding-brackets': foldingBracketsRule
-                    }
-                },
         },
         rules: {
             ...baseRules,
@@ -381,7 +411,15 @@ export default [
             ...tsRules,
             ...mainJsTsOverrides,
             ...configOverrides,
+            
+            // Prevent require() usage in ESM files
+            'ts/no-var-requires': 'error',
+            'import/no-commonjs': 'error',
         },
+        languageOptions: { //>
+            parser: tsParser
+            
+        }, //<
     }, //<
 
 ]

@@ -1,10 +1,10 @@
-{   "name": "@fux/project-butler-core", //>
-
+{
+    "name": "@fux/project-butler-core",
     "tags": [ "core" ],
     "targets": {
         
         //= Finalize ============================================================ 
-        "build": { //>
+        "build": {
             "executor": "@nx/esbuild:esbuild",
             "outputs": [ "{options.outputPath}" ],
             "options": {
@@ -20,7 +20,7 @@
                     "js-yaml"
                 ]
             }
-        }, //<
+        },
         
         //= Quality ============================================================= 
         "check-types": { "extends": "check-types" },
@@ -49,5 +49,5 @@
     },
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/project-butler/core/src",
-    "projectType": "library",
+    "projectType": "library"
 }

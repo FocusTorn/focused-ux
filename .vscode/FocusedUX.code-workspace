@@ -24,6 +24,7 @@
                     ". ./.vscode/shell/profile.sh; exec bash --login -i"
                 ]
             }, //<
+            
         },
 
         "terminal.integrated.automationProfile.windows": {
@@ -32,8 +33,6 @@
                 "-NoLogo",
                 "-NoProfile",
                 "-NoExit",
-                "-File",
-            
             ]
         },
 

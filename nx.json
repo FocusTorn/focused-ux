@@ -98,6 +98,8 @@
             "cache": true,
             "dependsOn": ["build", "^build"],
             "options": {
+                "parallel": true,
+                "maxParallel": 4,
                 "lintFilePatterns": [
                     "{projectRoot}/**/*.ts",
                     "{projectRoot}/**/*.tsx",
