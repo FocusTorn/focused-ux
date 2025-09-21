@@ -64,7 +64,15 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
 
         // Create a temporary tsconfig file for the type check
         const tempTsconfigPath = join(workspaceRoot, '.nx-temp-tsconfig.json')
-        const tsconfig = {
+        
+        // Add workspace-level vitest base files to include list
+        const workspaceVitestFiles = [ //>
+            'vitest.functional.base.ts',
+            'vitest.coverage.base.ts',
+            'vitest.workspace.ts'
+        ] //<
+        
+        const tsconfig = { //>
             extends: './tsconfig.base.json',
             compilerOptions: {
                 // Start with base config
@@ -82,8 +90,8 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
                 noUnusedParameters: noUnusedParameters,
                 exactOptionalPropertyTypes: exactOptionalPropertyTypes,
             },
-            include: files
-        }
+            include: [...files, ...workspaceVitestFiles]
+        } //<
 
         try {
             writeFileSync(tempTsconfigPath, JSON.stringify(tsconfig, null, 2))
@@ -95,11 +103,11 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
 
             // Execute the command and capture output for message override
             try {
-                const _output = execSync(command, {
-                    stdio: 'pipe',
-                    cwd: workspaceRoot,
-                    encoding: 'utf8'
-                })
+                // const output = execSync(command, {
+                //     stdio: 'pipe',
+                //     cwd: workspaceRoot,
+                //     encoding: 'utf8'
+                // })
 
                 // If we get here, there were no errors
                 logger.info('✅ Type checking passed!')
