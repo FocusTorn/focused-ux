@@ -1,31 +1,26 @@
-// Interfaces
-export type { FileSystemEntry, FileGroup, FileGroupsConfig } from './_interfaces/ccp.types.js'
-export type { IContext } from './_interfaces/IContext.js'
+// Service Interfaces
 export type { IContextCherryPickerManager } from './_interfaces/IContextCherryPickerManager.js'
 export type { IContextDataCollectorService, CollectionResult } from './_interfaces/IContextDataCollectorService.js'
 export type { IContextFormattingService } from './_interfaces/IContextFormattingService.js'
 export type { IFileContentProviderService, FileContentResult } from './_interfaces/IFileContentProviderService.js'
-export type { IFileExplorerItem } from './_interfaces/IFileExplorerItem.js'
 export type { IFileExplorerService } from './_interfaces/IFileExplorerService.js'
-export type { IFileSystem, DirectoryEntry } from './_interfaces/IFileSystem.js'
 export type { IFileUtilsService } from './_interfaces/IFileUtilsService.js'
 export type { IGoogleGenAiService, IGoogleGenAiCountTokensResult } from './_interfaces/IGoogleGenAiService.js'
-export type { IPath } from './_interfaces/IPath.js'
 export type { IQuickSettingsService } from './_interfaces/IQuickSettingsService.js'
-export type { ISavedStateItem } from './_interfaces/ISavedStateItem.js'
 export type { ISavedStatesService } from './_interfaces/ISavedStatesService.js'
 export type { IStorageService } from './_interfaces/IStorageService.js'
 export type { ITokenizerService } from './_interfaces/ITokenizerService.js'
 export type { ITreeFormatterService, TreeFormatterNode } from './_interfaces/ITreeFormatterService.js'
-export type { ITreeItemFactory } from './models/FileExplorerItem.js'
-export type { IWindow } from './_interfaces/IWindow.js'
 
-// Intentional linting error
+// Adapter Interfaces
+export type { IContext } from './_interfaces/IContext.js'
+export type { IFileSystem, DirectoryEntry } from './_interfaces/IFileSystem.js'
+export type { IPath } from './_interfaces/IPath.js'
+export type { IWindow } from './_interfaces/IWindow.js'
 export type { IWorkspace } from './_interfaces/IWorkspace.js'
 
-// Models
-export { FileExplorerItem } from './models/FileExplorerItem.js'
-export { SavedStateItem } from './models/SavedStateItem.js'
+// Local Types
+export type { IEvent, ITreeItemCheckboxState, ITreeItemCollapsibleState, ITreeItemLabel, IConfigurationService, IEventEmitter } from './_interfaces/ILocalTypes.js'
 
 // Services
 export { ContextCherryPickerManager } from './services/CCP_Manager.service.js'
@@ -43,3 +38,5 @@ export { TreeFormatterService } from './services/TreeFormatter.service.js'
 
 // Constants
 export { constants as ccpConstants } from './_config/constants.js'
+
+// Core package exports all services and interfaces for use by the extension

@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { TreeItemLabel } from '@fux/shared'
+import type { ITreeItemLabel } from './ILocalTypes.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 

@@ -34,12 +34,6 @@
             "path": "./packages/project-butler/ext"
         },
         {
-            "path": "./libs/mockly"
-        },
-        {
-            "path": "./libs/shared"
-        },
-        {
             "path": "./libs/vscode-test-cli-config"
         },
         {

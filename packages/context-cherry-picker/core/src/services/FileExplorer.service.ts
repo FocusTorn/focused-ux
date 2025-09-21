@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { TreeItemCheckboxState, TreeItemCollapsibleState, Event } from '@fux/shared'
+import type { ITreeItemCheckboxState, ITreeItemCollapsibleState, IEvent } from '../_interfaces/ILocalTypes.js'
 
 //= MISC ======================================================================================================
 import * as micromatch from 'micromatch'
@@ -19,7 +19,7 @@ import type { IQuickSettingsService } from '../_interfaces/IQuickSettingsService
 import type { ITokenizerService } from '../_interfaces/ITokenizerService.js'
 import type { IFileSystem, DirectoryEntry } from '../_interfaces/IFileSystem.js'
 import type { IPath } from '../_interfaces/IPath.js'
-import { EventEmitterAdapter } from '@fux/shared'
+import { EventEmitterAdapter } from '../_interfaces/ILocalTypes.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 

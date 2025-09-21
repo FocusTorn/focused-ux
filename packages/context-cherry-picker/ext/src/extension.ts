@@ -1,76 +1,125 @@
-import type { ExtensionContext, Disposable, TreeView, TreeCheckboxChangeEvent } from 'vscode'
-import type { WindowAdapter } from '@fux/shared'
-import { ExtensionContextAdapter, ExtensionAPIAdapter } from '@fux/shared'
-import { createDIContainer } from './injection.js'
-import { ccpConstants } from '@fux/context-cherry-picker-core'
-import type { SavedStateItem, IContextCherryPickerManager, IFileExplorerService, ISavedStatesService, IQuickSettingsService, FileExplorerItem } from '@fux/context-cherry-picker-core'
+import * as vscode from 'vscode'
+import process from 'node:process'
+import {
+    ContextCherryPickerManager,
+    StorageService,
+    GoogleGenAiService,
+    ContextDataCollectorService,
+    FileContentProviderService,
+    ContextFormattingService,
+    FileExplorerService,
+    SavedStatesService,
+    QuickSettingsService,
+    TokenizerService,
+    TreeFormatterService,
+    FileUtilsService,
+} from '@fux/context-cherry-picker-core'
+import { ContextAdapter } from './adapters/Context.adapter.js'
+import { FileSystemAdapter } from './adapters/FileSystem.adapter.js'
+import { PathAdapter } from './adapters/Path.adapter.js'
+import { WindowAdapter } from './adapters/Window.adapter.js'
+import { WorkspaceAdapter } from './adapters/Workspace.adapter.js'
+import { TreeItemFactoryAdapter } from './adapters/TreeItemFactory.adapter.js'
 import { FileExplorerViewProvider } from './providers/FileExplorer.provider.js'
 import { SavedStatesViewProvider } from './providers/SavedStates.provider.js'
-
-// Intentional linting error
 import { QuickSettingsViewProvider } from './providers/QuickSettings.provider.js'
+import { ccpConstants } from '@fux/context-cherry-picker-core'
 
-// FIX The filter quick settings ignores directories starting with a ., EG.  '.shared'
+// --- Environment Check ---
+// VS Code's test runner sets this environment variable.
+const IS_TEST_ENVIRONMENT = process.env.VSCODE_TEST === '1'
 
-export async function activate(context: ExtensionContext): Promise<void> {
-	// console.log(`[${ccpConstants.extension.name}] Activating...`)
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
+    try {
+        // Create adapters
+        const contextAdapter = new ContextAdapter(context)
+        const fileSystem = new FileSystemAdapter()
+        const path = new PathAdapter()
+        const window = new WindowAdapter()
+        const workspace = new WorkspaceAdapter()
+        const treeItemFactory = new TreeItemFactoryAdapter()
 
-	const extensionContext = new ExtensionContextAdapter(context)
-	const extensionAPI = new ExtensionAPIAdapter()
-	const container = await createDIContainer(context)
+        // Create core services with their dependencies
+        const storageService = new StorageService(contextAdapter)
+        const googleGenAiService = new GoogleGenAiService()
+        const contextDataCollectorService = new ContextDataCollectorService(fileSystem, path)
+        const fileContentProviderService = new FileContentProviderService(fileSystem, path)
+        const contextFormattingService = new ContextFormattingService()
+        const fileExplorerService = new FileExplorerService(fileSystem, path, workspace, window, treeItemFactory)
+        const savedStatesService = new SavedStatesService(storageService)
+        const quickSettingsService = new QuickSettingsService(workspace, fileSystem, path, contextAdapter)
+        const tokenizerService = new TokenizerService()
+        const treeFormatterService = new TreeFormatterService()
+        const fileUtilsService = new FileUtilsService(fileSystem, path)
 
-	const ccpManager = container.resolve<IContextCherryPickerManager>('ccpManager')
-	const fileExplorerService = container.resolve<IFileExplorerService>('fileExplorerService')
-	const savedStatesService = container.resolve<ISavedStatesService>('savedStatesService')
-	const quickSettingsService = container.resolve<IQuickSettingsService>('quickSettingsService')
-	const windowAdapter = container.resolve<WindowAdapter>('window')
+        // Create manager service with aggregated dependencies
+        const ccpManager = new ContextCherryPickerManager({
+            contextDataCollector: contextDataCollectorService,
+            contextFormatting: contextFormattingService,
+            fileContentProvider: fileContentProviderService,
+            fileExplorer: fileExplorerService,
+            fileUtils: fileUtilsService,
+            googleGenAi: googleGenAiService,
+            quickSettings: quickSettingsService,
+            savedStates: savedStatesService,
+            storage: storageService,
+            tokenizer: tokenizerService,
+            treeFormatter: treeFormatterService,
+        })
 
-	const fileExplorerProvider = new FileExplorerViewProvider(fileExplorerService)
-	const savedStatesProvider = new SavedStatesViewProvider(savedStatesService)
-	const quickSettingsProvider = new QuickSettingsViewProvider(quickSettingsService)
+        // Create view providers
+        const fileExplorerProvider = new FileExplorerViewProvider(fileExplorerService)
+        const savedStatesProvider = new SavedStatesViewProvider(savedStatesService)
+        const quickSettingsProvider = new QuickSettingsViewProvider(quickSettingsService)
 
-	extensionContext.subscriptions.push(fileExplorerService)
+        // Register tree views
+        const explorerView = vscode.window.createTreeView(ccpConstants.views.contextCherryPicker.explorer, {
+            treeDataProvider: fileExplorerProvider,
+            showCollapseAll: true,
+            canSelectMany: true,
+        })
 
-	const explorerView: TreeView<FileExplorerItem> = extensionAPI.createTreeView(ccpConstants.views.contextCherryPicker.explorer, {
-		treeDataProvider: fileExplorerProvider,
-		showCollapseAll: true,
-		canSelectMany: true,
-	})
+        explorerView.onDidChangeCheckboxState((e: vscode.TreeCheckboxChangeEvent<any>) => {
+            for (const [item, state] of e.items) {
+                fileExplorerService.updateCheckboxState(item.uri, state)
+            }
+        })
 
-	windowAdapter.setExplorerView(explorerView)
+        const savedStatesView = vscode.window.createTreeView(ccpConstants.views.contextCherryPicker.savedStates, {
+            treeDataProvider: savedStatesProvider,
+        })
 
-	explorerView.onDidChangeCheckboxState((e: TreeCheckboxChangeEvent<FileExplorerItem>) => {
-		for (const [item, state] of e.items) {
-			fileExplorerService.updateCheckboxState(item.uri, state)
-		}
-	})
-	extensionContext.subscriptions.push(explorerView)
+        const quickSettingsView = vscode.window.registerWebviewViewProvider(
+            ccpConstants.views.contextCherryPicker.quickSettings,
+            quickSettingsProvider,
+        )
 
-	extensionContext.subscriptions.push(
-		extensionAPI.createTreeView(ccpConstants.views.contextCherryPicker.savedStates, {
-			treeDataProvider: savedStatesProvider,
-		}),
-	)
+        // Register all commands
+        const disposables = [
+            vscode.commands.registerCommand(ccpConstants.commands.contextCherryPicker.saveCheckedState, () => ccpManager.saveCurrentCheckedState()),
+            vscode.commands.registerCommand(ccpConstants.commands.contextCherryPicker.refreshExplorer, () => ccpManager.refreshExplorerView()),
+            vscode.commands.registerCommand(ccpConstants.commands.contextCherryPicker.deleteSavedState, (item: any) => ccpManager.deleteSavedState(item)),
+            vscode.commands.registerCommand(ccpConstants.commands.contextCherryPicker.loadSavedState, (item: any) => ccpManager.loadSavedStateIntoExplorer(item)),
+            vscode.commands.registerCommand(ccpConstants.commands.contextCherryPicker.clearAllCheckedInExplorer, () => ccpManager.clearAllCheckedInExplorer()),
+            vscode.commands.registerCommand(ccpConstants.commands.contextCherryPicker.copyContextOfCheckedItems, () => ccpManager.copyContextOfCheckedItems()),
+            explorerView,
+            savedStatesView,
+            quickSettingsView,
+        ]
 
-	extensionContext.subscriptions.push(
-		extensionAPI.registerWebviewViewProvider(
-			ccpConstants.views.contextCherryPicker.quickSettings,
-			quickSettingsProvider,
-		),
-	)
+        context.subscriptions.push(...disposables)
 
-	const commandDisposables: Disposable[] = [
-		extensionAPI.registerCommand(ccpConstants.commands.contextCherryPicker.saveCheckedState, () => ccpManager.saveCurrentCheckedState()),
-		extensionAPI.registerCommand(ccpConstants.commands.contextCherryPicker.refreshExplorer, () => ccpManager.refreshExplorerView()),
-		extensionAPI.registerCommand(ccpConstants.commands.contextCherryPicker.deleteSavedState, (item: SavedStateItem) => ccpManager.deleteSavedState(item)),
-		extensionAPI.registerCommand(ccpConstants.commands.contextCherryPicker.loadSavedState, (item: SavedStateItem) => ccpManager.loadSavedStateIntoExplorer(item)),
-		extensionAPI.registerCommand(ccpConstants.commands.contextCherryPicker.clearAllCheckedInExplorer, () => ccpManager.clearAllCheckedInExplorer()),
-		extensionAPI.registerCommand(ccpConstants.commands.contextCherryPicker.copyContextOfCheckedItems, () => ccpManager.copyContextOfCheckedItems()),
-	]
-
-	extensionContext.subscriptions.push(...commandDisposables)
-
-	// console.log(`[${ccpConstants.extension.name}] Activated and commands registered.`)
+        if (!IS_TEST_ENVIRONMENT) {
+            await vscode.window.showInformationMessage(`${ccpConstants.extension.name} activated successfully!`)
+        }
+    } catch (error) {
+        const errorMessage = `Failed to activate ${ccpConstants.extension.name}: ${error}`
+        if (!IS_TEST_ENVIRONMENT) {
+            await vscode.window.showErrorMessage(errorMessage)
+        } else {
+            throw new Error(errorMessage)
+        }
+    }
 }
 
 export function deactivate(): void {}

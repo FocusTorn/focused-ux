@@ -27,6 +27,29 @@ vi.mock('vscode', () => ({ //> Mock vscode globally (no real VSCode API calls)
     commands: {
         registerCommand: vi.fn(),
     },
+    Terminal: class MockTerminal {
+
+        constructor(public name?: string) {}
+        sendText = vi.fn()
+        show = vi.fn()
+	
+    },
+    TextEditor: class MockTextEditor {
+
+        document = {
+            uri: { fsPath: '/test/file.txt' },
+        }
+    
+    },
+    TreeItemCheckboxState: {
+        Unchecked: 0,
+        Checked: 1,
+    },
+    TreeItemCollapsibleState: {
+        None: 0,
+        Collapsed: 1,
+        Expanded: 2,
+    },
     window: {
         showInformationMessage: vi.fn(),
         showWarningMessage: vi.fn(),
@@ -47,27 +70,16 @@ vi.mock('vscode', () => ({ //> Mock vscode globally (no real VSCode API calls)
         },
     },
     Uri: {
-        file: vi.fn((path: string) =>
-            ({ fsPath: path })),
+        file: vi.fn((path: string) => ({ fsPath: path })),
+        parse: vi.fn(),
     },
     FileType: {
-        Directory: 1,
-        File: 2,
+        Unknown: 0,
+        File: 1,
+        Directory: 2,
+        SymbolicLink: 64,
     },
-    Terminal: class MockTerminal {
-
-        constructor(public name?: string) {}
-        sendText = vi.fn()
-        show = vi.fn()
-	
-    },
-    TextEditor: class MockTextEditor {
-
-        document = {
-            uri: { fsPath: '/test/file.txt' },
-        }
-	
-    },
+    
 })) //<
 
 

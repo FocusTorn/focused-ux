@@ -492,12 +492,13 @@ Extensions require careful dependency management to balance functionality with b
 
 #### **Runtime Dependency Decision Matrix**
 
-| Package Type         | Dependencies           | DevDependencies   | Rationale                                 |
-| -------------------- | ---------------------- | ----------------- | ----------------------------------------- |
-| **Core Package**     | ✅ Business logic      | ✅ Build tools    | Core consumed at runtime                  |
-| **External Runtime** | ✅ If imported in code | ❌ Never          | Extension uses at runtime                 |
-| **Build Tools**      | ❌ Never               | ✅ Always         | Only needed during build                  |
-| **Type Definitions** | ✅ For runtime deps    | ✅ For build deps | Types for runtime deps go in dependencies |
+| Package Type          | Dependencies           | DevDependencies   | Rationale                                   |
+| --------------------- | ---------------------- | ----------------- | ------------------------------------------- |
+| **Core Package**      | ✅ Runtime deps only   | ✅ Build tools    | Core consumed at runtime, deps externalized |
+| **Extension Package** | ✅ Core + runtime deps | ✅ Build tools    | Extension uses at runtime                   |
+| **External Runtime**  | ✅ If imported in code | ❌ Never          | Extension uses at runtime                   |
+| **Build Tools**       | ❌ Never               | ✅ Always         | Only needed during build                    |
+| **Type Definitions**  | ✅ For runtime deps    | ✅ For build deps | Types for runtime deps go in dependencies   |
 
 #### **External Runtime Dependencies Pattern**
 
@@ -546,6 +547,73 @@ import { load as loadYaml } from 'js-yaml' // Runtime import
 ```
 
 **Rationale**: Externalization keeps extension bundles small while ensuring runtime dependencies are available in the VSCode environment.
+
+### **Runtime Dependency Externalization Pattern**
+
+ALL packages (core, extension, shared) must follow this pattern to ensure proper externalization throughout the build chain:
+
+#### **Universal Dependency Pattern**
+
+**Core Package Example:**
+
+```json
+{
+    "dependencies": {
+        "gpt-tokenizer": "^3.0.1", // ✅ Runtime dependency - externalized
+        "micromatch": "^4.0.8", // ✅ Runtime dependency - externalized
+        "js-yaml": "^4.1.0" // ✅ Runtime dependency - externalized
+    },
+    "devDependencies": {
+        "@types/js-yaml": "^4.0.9", // ✅ Type definitions for runtime deps
+        "@types/micromatch": "^4.0.9", // ✅ Type definitions for runtime deps
+        "@types/node": "^24.5.2", // ✅ Build-time types
+        "typescript": "^5.9.2", // ✅ Build-time TypeScript
+        "vitest": "^3.2.4" // ✅ Test-time Vitest
+    }
+}
+```
+
+**Extension Package Example:**
+
+```json
+{
+    "dependencies": {
+        "@fux/context-cherry-picker-core": "workspace:*", // ✅ Core package
+        "gpt-tokenizer": "^3.0.1", // ✅ Runtime dependency - externalized
+        "js-yaml": "^4.1.0", // ✅ Runtime dependency - externalized
+        "micromatch": "^4.0.8" // ✅ Runtime dependency - externalized
+    },
+    "devDependencies": {
+        "@types/js-yaml": "^4.0.9", // ✅ Type definitions for runtime deps
+        "@types/micromatch": "^4.0.9", // ✅ Type definitions for runtime deps
+        "@types/node": "^24.5.2", // ✅ Build-time types
+        "@types/vscode": "^1.104.0", // ✅ Build-time VSCode types
+        "typescript": "^5.9.2", // ✅ Build-time TypeScript
+        "vitest": "^3.2.4" // ✅ Test-time Vitest
+    }
+}
+```
+
+#### **Universal Externalization Pattern**
+
+```json
+{
+    "external": [
+        "vscode", // ✅ Always externalize VSCode
+        "gpt-tokenizer", // ✅ Runtime dependency
+        "micromatch", // ✅ Runtime dependency
+        "js-yaml" // ✅ Runtime dependency
+    ]
+}
+```
+
+**Critical Principles**:
+
+- **Runtime dependencies** MUST go in `dependencies` for proper externalization
+- **Type definitions** for runtime deps go in `dependencies`
+- **Build tools** go in `devDependencies`
+- **Extension packages** must include ALL runtime deps from core packages
+- **Build chain externalization** requires runtime deps in `dependencies` at every level
 
 ## **Package Structure**
 

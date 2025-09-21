@@ -1,4 +1,3 @@
-/* eslint-disable fux-format/folding-brackets */
 {
     
     
@@ -63,11 +62,6 @@
         
         "l": {"run-from": "ext", "run-target": "lint:deps --output-style=stream"},
         "ct": {"run-from": "ext", "run-target": "check-types:deps --output-style=stream"}
-        
-        
-        
-        
-        
     },
     
     "not-nx-targets": {
@@ -153,10 +147,6 @@
             "name": "note-hub",
             "suffix": "ext"
         }, //<
-        
-        //= Utilities =========================================================== 
-        "mockly": "@fux/mockly",
-        "shared": "@fux/shared",
         
         //== Repo Utility Packages ============================================== 
         "vp"   : "@fux/vsix-packager",

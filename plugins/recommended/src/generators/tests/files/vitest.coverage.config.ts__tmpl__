@@ -8,4 +8,3 @@ export default mergeConfig(
         // Any package-specific overrides for coverage can go here
     }),
 )
-

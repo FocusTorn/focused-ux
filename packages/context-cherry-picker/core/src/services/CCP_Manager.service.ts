@@ -14,7 +14,7 @@ import type { IWindow } from '../_interfaces/IWindow.js'
 import type { IWorkspace } from '../_interfaces/IWorkspace.js'
 import type { IPath } from '../_interfaces/IPath.js'
 import type { IQuickSettingsService } from '../_interfaces/IQuickSettingsService.js'
-import type { IConfigurationService } from '@fux/shared'
+import type { IConfigurationService } from '../_interfaces/ILocalTypes.js'
 import type { ITreeItemFactory } from '../models/FileExplorerItem.js'
 
 //--------------------------------------------------------------------------------------------------------------<<

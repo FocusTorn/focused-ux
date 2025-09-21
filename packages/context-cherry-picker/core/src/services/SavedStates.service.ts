@@ -1,13 +1,13 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { Event, TreeItemLabel } from '@fux/shared'
+import type { IEvent, ITreeItemLabel } from '../_interfaces/ILocalTypes.js'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { ISavedStatesService } from '../_interfaces/ISavedStatesService.js'
 import type { IStorageService } from '../_interfaces/IStorageService.js'
 import { SavedStateItem } from '../models/SavedStateItem.js'
-import { EventEmitterAdapter } from '@fux/shared'
+import { EventEmitterAdapter } from '../_interfaces/ILocalTypes.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 

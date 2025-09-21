@@ -5,35 +5,32 @@
     "projectType": "application",
     "targets": {
 
-        "build": { //>
+        "build": {
             "executor": "@nx/esbuild:esbuild",
-            "outputs": [
-                "{options.outputPath}"
-            ],
-            "dependsOn": [
-                "^build"
-            ],
+            "outputs": ["{options.outputPath}"],
+            "dependsOn": [{
+                "projects": ["@fux/context-cherry-picker-core"],
+                "target": "build",
+                "params": "ignore"
+            }],
             "options": {
-                "entryPoints": [
-                    "packages/context-cherry-picker/ext/src/extension.ts"
-                ],
+                "main": "packages/context-cherry-picker/ext/src/extension.ts",
+                "tsConfig": "packages/context-cherry-picker/ext/tsconfig.json",
                 "outputPath": "packages/context-cherry-picker/ext/dist",
-                "format": [
-                    "cjs"
-                ],
-                "metafile": true,
-                "platform": "node",
+                
+                "format": ["cjs"],
                 "bundle": true,
+                
                 "external": [
                     "vscode",
-                    "awilix",
                     "gpt-tokenizer",
                     "js-yaml",
                     "micromatch"
                 ],
+                
+                "metafile": true,
                 "sourcemap": true,
-                "main": "packages/context-cherry-picker/ext/src/extension.ts",
-                "tsConfig": "packages/context-cherry-picker/ext/tsconfig.json",
+                
                 "assets": [
                     {
                         "glob": "**/*",
@@ -42,26 +39,22 @@
                     }
                 ]
             }
-        }, //<
-        "package": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": [
-                "build"
-            ],
+        },
+        "package": {
+            "executor": "@fux/vpack:pack",
+            "dependsOn": ["build", "@fux/vsix-packager:build"],
             "options": {
-                "command": "node scripts/create-vsix.js packages/context-cherry-picker/ext vsix_packages"
+                "targetPath": "{projectRoot}"
             }
-        }, //<
-        "package:dev": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": [
-                "build"
-            ],
+        },
+        "package:dev": {
+            "executor": "@fux/vpack:pack",
+            "dependsOn": ["build", "@fux/vsix-packager:build"],
             "options": {
-                "command": "node scripts/create-vsix.js packages/context-cherry-picker/ext vsix_packages --dev",
-                "outputPath": "vsix_packages"
+                "targetPath": "{projectRoot}",
+                "dev": true
             }
-        }, //<
+        },
         "publish": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["package"],
@@ -87,6 +80,14 @@
             "extends": "vite:test",
             "dependsOn": ["^build"]
         }, //<
+        "test:integration": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["^build"],
+            "options": {
+                "command": "vitest run --config vitest.integration.config.ts",
+                "cwd": "{projectRoot}"
+            }
+        },
         "test:full": { //>
             "extends": "vite:test",
             "dependsOn": ["^test"]

@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { Event } from '@fux/shared'
+import type { IEvent } from '../_interfaces/ILocalTypes.js'
 
 //= MISC ======================================================================================================
 import * as yaml from 'js-yaml'
@@ -13,7 +13,7 @@ import type { IWorkspace } from '../_interfaces/IWorkspace.js'
 import type { IFileSystem } from '../_interfaces/IFileSystem.js'
 import type { IPath } from '../_interfaces/IPath.js'
 import type { IContext } from '../_interfaces/IContext.js'
-import { EventEmitterAdapter } from '@fux/shared'
+import { EventEmitterAdapter } from '../_interfaces/ILocalTypes.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 

@@ -1,3 +1,2 @@
-// ESLint & Imports -->>
-export type { IFileSystem, DirectoryEntry } from '@fux/shared'
-//--------------------------------------------------------------------------------------------------------------<<
+// Local interface definitions following Core Package Architecture
+export type { IFileSystem, DirectoryEntry } from './ILocalTypes.js'

@@ -35,7 +35,7 @@ export async function testsGenerator(tree: Tree, options: TestsGeneratorSchema) 
         tree.write(mockStrategyPath, mockStrategyContent!)
     }
     
-    await formatFiles(tree)
+    // await formatFiles(tree)
 }
 
 export default testsGenerator

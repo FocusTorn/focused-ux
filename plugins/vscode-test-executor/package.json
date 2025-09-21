@@ -2,9 +2,9 @@
     "name": "@fux/vscode-test-executor",
     "version": "0.0.1",
     "dependencies": {
-        "@nx/devkit": "21.5.2",
-        "@fux/vscode-test-cli-config": "*",
-        "tslib": "^2.3.0"
+        "@nx/devkit": "21.5.3",
+        "@fux/vscode-test-cli-config": "workspace:*",
+        "tslib": "^2.8.1"
     },
     "private": true,
     "module": "./dist/index.js",

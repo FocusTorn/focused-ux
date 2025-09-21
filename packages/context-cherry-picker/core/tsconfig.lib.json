@@ -8,11 +8,8 @@
         "emitDeclarationOnly": true,
         "declaration": true,
         "declarationMap": true,
-        "composite": true,
+        "composite": true
         
-        "paths": {
-            "@fux/shared": ["../../../libs/shared"]
-        }
     },
     "include": [
         "src/**/*.ts"
@@ -20,8 +17,5 @@
     "exclude": [
         "src/**/*.spec.ts",
         "src/**/*.test.ts"
-    ],
-    "references": [
-        { "path": "../../../libs/shared/tsconfig.lib.json" }
     ]
 }

@@ -2,7 +2,7 @@
     "name": "@fux/recommended",
     "version": "0.0.1",
     "dependencies": {
-        "@nx/devkit": "21.5.2",
+        "@nx/devkit": "21.5.3",
         "tslib": "^2.8.1"
     },
     "private": true,
