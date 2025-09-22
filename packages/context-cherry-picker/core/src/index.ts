@@ -32,7 +32,7 @@ export { FileUtilsService } from './services/FileUtils.service.js'
 export { GoogleGenAiService } from './services/GoogleGenAi.service.js'
 export { QuickSettingsService } from './services/QuickSettings.service.js'
 export { SavedStatesService } from './services/SavedStates.service.js'
-export { StorageService } from './services/CCP_Storage.service.js'
+export { StorageService } from './services/Storage.service.js'
 export { TokenizerService } from './services/Tokenizer.service.js'
 export { TreeFormatterService } from './services/TreeFormatter.service.js'
 

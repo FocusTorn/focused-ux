@@ -4,7 +4,7 @@
     "targets": {
         
         //= Finalize ============================================================ 
-        "build": {
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": [ "{options.outputPath}" ],
             "options": {
@@ -22,7 +22,7 @@
                     "js-yaml"
                 ]
             }
-        },
+        }, //<
         
         //= Quality ============================================================= 
         "check-types": { "extends": "check-types" },
@@ -30,6 +30,43 @@
         
         "lint": { "extends": "lint" },
         "lint:deps": { "extends": "lint:deps" },
+        
+        "audit": { "extends": "audit-structure" },
+        "audit:code": { "extends": "audit-structure:code" },
+        "audit:test": { "extends": "audit-structure:test" },
+        "audit:all": { "extends": "audit-structure:all" },
+        
+        
+        // "audit": { //>
+        //     "executor": "@fux/recommended:audit-structure",
+        //     "options": {
+        //         "mode": "all",
+        //         "warnOnly": false,
+        //         "verbose": false
+        //     }
+        // }, //<
+        // "audit:code": { //>
+        //     "executor": "@fux/recommended:audit-structure:code",
+        //     "options": {
+        //         "warnOnly": false,
+        //         "verbose": false
+        //     }
+        // }, //<
+        // "audit:test": { //>
+        //     "executor": "@fux/recommended:audit-structure:test",
+        //     "options": {
+        //         "warnOnly": false,
+        //         "verbose": false
+        //     }
+        // }, //<
+        // "audit:all": { //>
+        //     "executor": "@fux/recommended:audit-structure:all",
+        //     "options": {
+        //         "warnOnly": false,
+        //         "verbose": false
+        //     }
+        // }, //<
+        
         
         //= Cleaning ============================================================ 
         "clean": { "extends": "clean" },
@@ -46,8 +83,8 @@
     
         // "validate": { "extends": "validate" },
         // "validate:deps": { "extends": "validate:deps" },
-        // "audit": { "extends": "audit" },
-        // "audit:full": { "extends": "audit:full" },
+        
+        
     },
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/context-cherry-picker/core/src",

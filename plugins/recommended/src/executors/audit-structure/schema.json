@@ -1,0 +1,26 @@
+{
+    "$schema": "https://json-schema.org/schema",
+    "version": 2,
+    "title": "AuditStructure executor",
+    "description": "Audits project structure for violations of architectural patterns and test structure",
+    "type": "object",
+    "properties": {
+        "mode": {
+            "type": "string",
+            "enum": ["code", "test", "all"],
+            "default": "all",
+            "description": "Audit mode: 'code' for code structure, 'test' for test structure, 'all' for both"
+        },
+        "warnOnly": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, exit with code 0 even if violations are found"
+        },
+        "verbose": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, show detailed output with line/column numbers"
+        }
+    },
+    "required": []
+}

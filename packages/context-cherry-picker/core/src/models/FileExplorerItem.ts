@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { ITreeItemCheckboxState, ITreeItemCollapsibleState } from '../_interfaces/ILocalTypes.js'
+import type { ITreeItemCheckboxState, ITreeItemCollapsibleState, TreeItemCheckboxState, TreeItemCollapsibleState } from '../_interfaces/ILocalTypes.js'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { IFileExplorerItem } from '../_interfaces/IFileExplorerItem.js'

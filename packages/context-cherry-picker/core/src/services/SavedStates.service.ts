@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { IEvent, ITreeItemLabel } from '../_interfaces/ILocalTypes.js'
+import type { IEvent, ITreeItemLabel, Event, TreeItemLabel } from '../_interfaces/ILocalTypes.js'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { ISavedStatesService } from '../_interfaces/ISavedStatesService.js'

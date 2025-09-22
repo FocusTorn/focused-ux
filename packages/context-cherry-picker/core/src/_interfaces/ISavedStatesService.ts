@@ -1,6 +1,6 @@
 // ESLint & Imports -->>
 
-import type { IEvent } from './ILocalTypes.js'
+import type { IEvent, Event } from './ILocalTypes.js'
 import type { SavedStateItem } from '../models/SavedStateItem.js'
 
 //--------------------------------------------------------------------------------------------------------------<<

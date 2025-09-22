@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { ITreeItemCheckboxState, ITreeItemCollapsibleState, IEvent } from '../_interfaces/ILocalTypes.js'
+import type { ITreeItemCheckboxState, ITreeItemCollapsibleState, IEvent, Event, TreeItemCheckboxState, TreeItemCollapsibleState } from '../_interfaces/ILocalTypes.js'
 
 //= MISC ======================================================================================================
 import * as micromatch from 'micromatch'

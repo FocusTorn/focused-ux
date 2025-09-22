@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { ITreeItemLabel } from './ILocalTypes.js'
+import type { ITreeItemLabel, TreeItemLabel } from './ILocalTypes.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 

@@ -125,34 +125,53 @@
                 }
             ]
         },
-        "audit": {
-            "executor": "nx:run-commands",
+        
+        "audit-structure": { //>
+            "executor": "@fux/recommended:audit-structure",
             "dependsOn": ["build", "^build"],
             "inputs": ["default", "^default"],
             "outputs": [],
             "cache": true,
             "options": {
-                "command": "tsx libs/tools/structure-auditor/src/main.ts {projectName}",
-                "cwd": "{workspaceRoot}"
+                "mode": "all",
+                "warnOnly": false,
+                "verbose": false
             }
-        },
-        "audit:full": {
-            "executor": "nx:run-commands",
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "audit",
-                    "params": "forward"
-                }
-            ],
+        }, //<
+        "audit-structure:code": { //>
+            "executor": "@fux/recommended:audit-structure:code",
+            "dependsOn": ["build", "^build"],
             "inputs": ["default", "^default"],
             "outputs": [],
             "cache": true,
             "options": {
-                "commands": ["nx run {projectName}:audit"],
-                "parallel": false
+                "warnOnly": false,
+                "verbose": false
             }
-        },
+        }, //<
+        "audit-structure:test": { //>
+            "executor": "@fux/recommended:audit-structure:test",
+            "dependsOn": ["build", "^build"],
+            "inputs": ["default", "^default"],
+            "outputs": [],
+            "cache": true,
+            "options": {
+                "warnOnly": false,
+                "verbose": false
+            }
+        }, //<
+        "audit-structure:all": { //>
+            "executor": "@fux/recommended:audit-structure:all",
+            "dependsOn": ["build", "^build"],
+            "inputs": ["default", "^default"],
+            "outputs": [],
+            "cache": true,
+            "options": {
+                "warnOnly": false,
+                "verbose": false
+            }
+        }, //<
+        
         "validate": {
             "executor": "nx:run-commands",
             "dependsOn": [],

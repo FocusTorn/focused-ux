@@ -1,5 +1,7 @@
 import { vi } from 'vitest'
 import { CCPTestMocks } from './helpers'
+import { encode } from 'gpt-tokenizer'
+import * as micromatch from 'micromatch'
 
 // Context Collection Scenarios
 export interface ContextCollectionScenarioOptions {
@@ -307,108 +309,6 @@ export function setupCCPManagerErrorScenario(
     }
 }
 
-// Enhanced CCP Mock Builder
-export class CCPMockBuilder {
-    constructor(private mocks: CCPTestMocks) {}
-
-    contextCollection(options: ContextCollectionScenarioOptions): CCPMockBuilder {
-        setupContextCollectionSuccessScenario(this.mocks, options)
-        return this
-    }
-
-    contextCollectionError(
-        operation: 'stat' | 'read',
-        errorMessage: string,
-        options: ContextCollectionScenarioOptions
-    ): CCPMockBuilder {
-        setupContextCollectionErrorScenario(this.mocks, operation, errorMessage, options)
-        return this
-    }
-
-    tokenCounting(options: TokenCountingScenarioOptions): CCPMockBuilder {
-        setupTokenCountingScenario(this.mocks, options)
-        return this
-    }
-
-    fileFiltering(options: FileFilteringScenarioOptions): CCPMockBuilder {
-        setupFileFilteringScenario(this.mocks, options)
-        return this
-    }
-
-    savedState(options: SavedStateScenarioOptions): CCPMockBuilder {
-        setupSavedStateSuccessScenario(this.mocks, options)
-        return this
-    }
-
-    savedStateError(
-        operation: 'read' | 'write',
-        errorMessage: string,
-        options: SavedStateScenarioOptions
-    ): CCPMockBuilder {
-        setupSavedStateErrorScenario(this.mocks, operation, errorMessage, options)
-        return this
-    }
-
-    ccpManager(options: CCPManagerScenarioOptions): CCPMockBuilder {
-        setupCCPManagerSuccessScenario(this.mocks, options)
-        return this
-    }
-
-    ccpManagerError(
-        operation: 'saveState' | 'deleteState' | 'loadState' | 'copyContext',
-        errorMessage: string,
-        options: CCPManagerScenarioOptions
-    ): CCPMockBuilder {
-        setupCCPManagerErrorScenario(this.mocks, operation, errorMessage, options)
-        return this
-    }
-
-    contextFormatting(options: ContextFormattingScenarioOptions): CCPMockBuilder {
-        setupContextFormattingSuccessScenario(this.mocks, options)
-        return this
-    }
-
-    contextFormattingError(
-        operation: 'generateTree' | 'buildInternalTree' | 'transformToFormatterTree',
-        errorMessage: string,
-        options: ContextFormattingScenarioOptions
-    ): CCPMockBuilder {
-        setupContextFormattingErrorScenario(this.mocks, operation, errorMessage, options)
-        return this
-    }
-
-    fileContentProvider(options: FileContentProviderScenarioOptions): CCPMockBuilder {
-        setupFileContentProviderSuccessScenario(this.mocks, options)
-        return this
-    }
-
-    fileContentProviderError(
-        operation: 'readFile' | 'calculateTokens' | 'estimateTokens',
-        errorMessage: string,
-        options: FileContentProviderScenarioOptions
-    ): CCPMockBuilder {
-        setupFileContentProviderErrorScenario(this.mocks, operation, errorMessage, options)
-        return this
-    }
-
-    tokenizer(options: TokenizerScenarioOptions): CCPMockBuilder {
-        setupTokenizerSuccessScenario(this.mocks, options)
-        return this
-    }
-
-    tokenizerError(
-        operation: 'encode',
-        errorMessage: string,
-        options: TokenizerScenarioOptions
-    ): CCPMockBuilder {
-        setupTokenizerErrorScenario(this.mocks, operation, errorMessage, options)
-        return this
-    }
-
-    build(): CCPTestMocks {
-        return this.mocks
-    }
-}
 
 // Context Formatting Scenarios
 export interface ContextFormattingScenarioOptions {
@@ -597,6 +497,581 @@ export function setupTokenizerErrorScenario(
             mocks.tokenizer.encode.mockImplementation(() => {
                 throw new Error(errorMessage)
             })
+            break
+    }
+}
+
+// File Explorer Scenarios
+export interface FileExplorerScenarioOptions {
+    operation: 'getChildren' | 'getTreeItem' | 'refresh' | 'clearAllCheckboxes' | 'updateCheckboxState' | 'getCheckboxState' | 'getAllCheckedItems' | 'loadCheckedState' | 'getCoreScanIgnoreGlobs' | 'getContextExplorerIgnoreGlobs' | 'getContextExplorerHideChildrenGlobs' | 'getProjectTreeAlwaysShowGlobs' | 'getProjectTreeAlwaysHideGlobs' | 'getProjectTreeShowIfSelectedGlobs' | 'getFileGroupsConfig' | 'calculateTokenCount' | 'formatTokenCount' | 'loadConfigurationPatterns' | 'dispose'
+    workspaceFolders?: any
+    expectedChildren?: any[]
+    entries?: any[]
+    element?: any
+    ignorePatterns?: string[]
+    hideChildrenPatterns?: string[]
+    checkboxState?: number
+    tokenCount?: number
+    isHidden?: boolean
+    initialStates?: Map<string, number>
+    uri?: string
+    state?: number
+    checkedItems?: string[]
+    itemsToLoad?: any[]
+    ignoreGlobs?: string[]
+    alwaysShowGlobs?: string[]
+    alwaysHideGlobs?: string[]
+    showIfSelectedGlobs?: string[]
+    fileGroupsConfig?: any
+    content?: string
+    expectedTokens?: number
+    count?: number
+    expected?: string
+    yamlContent?: string | null
+    expectedConfig?: any
+    vscodeSettings?: any
+    configFileExists?: boolean
+}
+
+export function setupFileExplorerSuccessScenario(
+    mocks: CCPTestMocks,
+    options: FileExplorerScenarioOptions
+): void {
+    const { 
+        operation, 
+        entries, 
+        content, 
+        expectedTokens, 
+        count, 
+        expected, 
+        yamlContent, 
+        expectedConfig, 
+        vscodeSettings, 
+        configFileExists,
+        ignoreGlobs,
+        alwaysShowGlobs,
+        alwaysHideGlobs,
+        showIfSelectedGlobs,
+        hideChildrenGlobs,
+        fileGroupsConfig
+    } = options
+
+    switch (operation) {
+        case 'getChildren':
+            if (entries) {
+                mocks.fileSystem.readDirectory.mockResolvedValue(entries)
+            }
+            // Mock configuration loading that happens on first getChildren call
+            mocks.fileSystem.readFile.mockResolvedValue('')
+            mocks.yaml.load.mockReturnValue({})
+            // Mock global micromatch for filtering
+            vi.mocked(micromatch.isMatch).mockReturnValue(false)
+            break
+
+        case 'getTreeItem':
+            // Mock token calculation
+            if (expectedTokens) {
+                mocks.tokenizer.calculateTokens.mockResolvedValue(expectedTokens)
+            }
+            // Mock global micromatch for filtering
+            vi.mocked(micromatch.isMatch).mockReturnValue(false)
+            break
+
+        case 'refresh':
+            if (yamlContent) {
+                mocks.fileSystem.readFile.mockResolvedValue(yamlContent)
+                mocks.yaml.load.mockReturnValue(expectedConfig)
+            } else if (configFileExists === false) {
+                mocks.fileSystem.readFile.mockRejectedValue(new Error('File not found'))
+            }
+            break
+
+        case 'calculateTokenCount':
+            if (content) {
+                mocks.fileSystem.readFile.mockResolvedValue(content)
+                // Use global gpt-tokenizer mock
+                vi.mocked(encode).mockReturnValue(Array.from({ length: expectedTokens || 0 }, (_, i) => i + 1))
+            } else {
+                // For directory calculation
+                mocks.fileSystem.stat.mockResolvedValue({ type: 'directory' })
+                mocks.fileSystem.readDirectory.mockResolvedValue(entries || [])
+                vi.mocked(encode).mockReturnValue(Array.from({ length: 100 }, (_, i) => i + 1)) // Default token count per file
+            }
+            break
+
+        case 'formatTokenCount':
+            // No specific mocking needed for formatting
+            break
+
+        case 'loadConfigurationPatterns':
+            if (yamlContent) {
+                mocks.fileSystem.readFile.mockResolvedValue(yamlContent)
+                mocks.yaml.load.mockReturnValue(expectedConfig)
+            } else if (vscodeSettings) {
+                mocks.fileSystem.readFile.mockRejectedValue(new Error('File not found'))
+            }
+            break
+
+        case 'getCoreScanIgnoreGlobs':
+            // Mock the configuration data
+            if (ignoreGlobs) {
+                // This would need to be set up in the service's internal state
+                // For now, we'll mock the file system to return the expected config
+                mocks.fileSystem.readFile.mockResolvedValue(`
+ContextCherryPicker:
+  ignore: ${JSON.stringify(ignoreGlobs)}
+`)
+                mocks.yaml.load.mockReturnValue({
+                    ContextCherryPicker: {
+                        ignore: ignoreGlobs
+                    }
+                })
+            }
+            break
+
+        case 'getContextExplorerIgnoreGlobs':
+            if (ignoreGlobs) {
+                mocks.fileSystem.readFile.mockResolvedValue(`
+ContextCherryPicker:
+  context_explorer:
+    ignore: ${JSON.stringify(ignoreGlobs)}
+`)
+                mocks.yaml.load.mockReturnValue({
+                    ContextCherryPicker: {
+                        context_explorer: {
+                            ignore: ignoreGlobs
+                        }
+                    }
+                })
+            }
+            break
+
+        case 'getContextExplorerHideChildrenGlobs':
+            if (hideChildrenGlobs) {
+                mocks.fileSystem.readFile.mockResolvedValue(`
+ContextCherryPicker:
+  context_explorer:
+    hide_children: ${JSON.stringify(hideChildrenGlobs)}
+`)
+                mocks.yaml.load.mockReturnValue({
+                    ContextCherryPicker: {
+                        context_explorer: {
+                            hide_children: hideChildrenGlobs
+                        }
+                    }
+                })
+            }
+            break
+
+        case 'getProjectTreeAlwaysShowGlobs':
+            if (alwaysShowGlobs) {
+                mocks.fileSystem.readFile.mockResolvedValue(`
+ContextCherryPicker:
+  project_tree:
+    always_show: ${JSON.stringify(alwaysShowGlobs)}
+`)
+                mocks.yaml.load.mockReturnValue({
+                    ContextCherryPicker: {
+                        project_tree: {
+                            always_show: alwaysShowGlobs
+                        }
+                    }
+                })
+            }
+            break
+
+        case 'getProjectTreeAlwaysHideGlobs':
+            if (alwaysHideGlobs) {
+                mocks.fileSystem.readFile.mockResolvedValue(`
+ContextCherryPicker:
+  project_tree:
+    always_hide: ${JSON.stringify(alwaysHideGlobs)}
+`)
+                mocks.yaml.load.mockReturnValue({
+                    ContextCherryPicker: {
+                        project_tree: {
+                            always_hide: alwaysHideGlobs
+                        }
+                    }
+                })
+            }
+            break
+
+        case 'getProjectTreeShowIfSelectedGlobs':
+            if (showIfSelectedGlobs) {
+                mocks.fileSystem.readFile.mockResolvedValue(`
+ContextCherryPicker:
+  project_tree:
+    show_if_selected: ${JSON.stringify(showIfSelectedGlobs)}
+`)
+                mocks.yaml.load.mockReturnValue({
+                    ContextCherryPicker: {
+                        project_tree: {
+                            show_if_selected: showIfSelectedGlobs
+                        }
+                    }
+                })
+            }
+            break
+
+        case 'getFileGroupsConfig':
+            if (fileGroupsConfig) {
+                mocks.fileSystem.readFile.mockResolvedValue(`
+ContextCherryPicker:
+  file_groups: ${JSON.stringify(fileGroupsConfig)}
+`)
+                mocks.yaml.load.mockReturnValue({
+                    ContextCherryPicker: {
+                        file_groups: fileGroupsConfig
+                    }
+                })
+            }
+            break
+    }
+}
+
+export function setupFileExplorerErrorScenario(
+    mocks: CCPTestMocks,
+    operation: 'readDirectory' | 'calculateTokenCount',
+    errorMessage: string,
+    options: FileExplorerScenarioOptions
+): void {
+    switch (operation) {
+        case 'readDirectory':
+            mocks.fileSystem.readDirectory.mockRejectedValue(new Error(errorMessage))
+            break
+
+        case 'calculateTokenCount':
+            mocks.fileSystem.stat.mockRejectedValue(new Error(errorMessage))
+            break
+    }
+}
+
+// File Utils Scenarios
+export interface FileUtilsScenarioOptions {
+    operation: 'formatFileSize'
+    bytes: number
+    expected: string
+}
+
+export function setupFileUtilsSuccessScenario(
+    mocks: CCPTestMocks,
+    options: FileUtilsScenarioOptions
+): void {
+    const { operation, bytes, expected } = options
+
+    switch (operation) {
+        case 'formatFileSize':
+            // No specific mocking needed for file size formatting
+            // This is a pure function that doesn't depend on external services
+            break
+    }
+}
+
+// Storage Scenarios
+export interface StorageScenarioOptions {
+    operation: 'saveState' | 'loadState' | 'loadAllSavedStates' | 'deleteState' | 'initializeStorage' | 'concurrentSave' | 'concurrentRead' | 'dataIntegrity'
+    name?: string
+    checkedItems?: any[]
+    expectedStorageData?: any
+    stateId?: string
+    expectedItems?: any[]
+    storageData?: any
+    expectedStates?: any[]
+    shouldDelete?: boolean
+    needsInitialization?: boolean
+    states?: any[]
+}
+
+export function setupStorageSuccessScenario(
+    mocks: CCPTestMocks,
+    options: StorageScenarioOptions
+): void {
+    const { operation, storageData, expectedStorageData, needsInitialization } = options
+
+    switch (operation) {
+        case 'saveState':
+            if (expectedStorageData) {
+                mocks.fileSystem.writeFile.mockResolvedValue(undefined)
+            }
+            break
+
+        case 'loadState':
+        case 'loadAllSavedStates':
+            if (storageData) {
+                mocks.fileSystem.readFile.mockResolvedValue(JSON.stringify(storageData))
+            }
+            break
+
+        case 'deleteState':
+            if (storageData) {
+                mocks.fileSystem.readFile.mockResolvedValue(JSON.stringify(storageData))
+                mocks.fileSystem.writeFile.mockResolvedValue(undefined)
+            }
+            break
+
+        case 'initializeStorage':
+            if (needsInitialization) {
+                mocks.fileSystem.stat.mockRejectedValue(new Error('File not found'))
+                mocks.fileSystem.createDirectory.mockResolvedValue(undefined)
+                mocks.fileSystem.writeFile.mockResolvedValue(undefined)
+            } else {
+                mocks.fileSystem.stat.mockResolvedValue({ type: 'file' })
+            }
+            break
+
+        case 'concurrentSave':
+        case 'concurrentRead':
+        case 'dataIntegrity':
+            // Setup for concurrent operations
+            mocks.fileSystem.readFile.mockResolvedValue('{}')
+            mocks.fileSystem.writeFile.mockResolvedValue(undefined)
+            break
+    }
+}
+
+export function setupStorageErrorScenario(
+    mocks: CCPTestMocks,
+    operation: 'readFile' | 'writeFile' | 'initializeStorage',
+    errorMessage: string,
+    options: StorageScenarioOptions
+): void {
+    switch (operation) {
+        case 'readFile':
+            mocks.fileSystem.readFile.mockRejectedValue(new Error(errorMessage))
+            break
+
+        case 'writeFile':
+            mocks.fileSystem.writeFile.mockRejectedValue(new Error(errorMessage))
+            break
+
+        case 'initializeStorage':
+            mocks.fileSystem.stat.mockRejectedValue(new Error(errorMessage))
+            mocks.fileSystem.createDirectory.mockRejectedValue(new Error(errorMessage))
+            break
+    }
+}
+
+// Tree Formatter Scenarios
+export interface TreeFormatterScenarioOptions {
+    operation: 'formatTree' | 'generateTreeString'
+    rootNode?: any
+    node?: any
+    prefix?: string
+    expectedOutput?: string
+}
+
+export function setupTreeFormatterSuccessScenario(
+    mocks: CCPTestMocks,
+    options: TreeFormatterScenarioOptions
+): void {
+    const { operation, rootNode, node, prefix, expectedOutput } = options
+
+    switch (operation) {
+        case 'formatTree':
+        case 'generateTreeString':
+            // No specific mocking needed for tree formatting
+            // This is a pure function that doesn't depend on external services
+            break
+    }
+}
+
+// Quick Settings Scenarios
+export interface QuickSettingsScenarioOptions {
+    operation: 'initialize' | 'getSettingState' | 'updateSettingState' | 'refresh' | 'getHtml' | 'concurrentUpdates'
+    configFileExists?: boolean
+    configData?: any
+    expectedSettings?: any
+    settingId?: string
+    expectedValue?: any
+    newValue?: any
+    shouldWriteToConfig?: boolean
+    shouldFireEvent?: boolean
+    initialConfig?: any
+    updatedConfig?: any
+    htmlTemplate?: string
+    cspSource?: string
+    nonce?: string
+    hasWorkspaceFolders?: boolean
+    settings?: any[]
+}
+
+export function setupQuickSettingsSuccessScenario(
+    mocks: CCPTestMocks,
+    options: QuickSettingsScenarioOptions
+): void {
+    const { operation, configData, htmlTemplate, hasWorkspaceFolders } = options
+
+    switch (operation) {
+        case 'initialize':
+            if (configData) {
+                mocks.fileSystem.readFile.mockResolvedValue('yaml content')
+                mocks.yaml.load.mockReturnValue(configData)
+            } else {
+                mocks.fileSystem.readFile.mockRejectedValue(new Error('File not found'))
+            }
+            break
+
+        case 'getSettingState':
+            // No specific mocking needed for getting setting state
+            break
+
+        case 'updateSettingState':
+            mocks.fileSystem.readFile.mockResolvedValue('{}')
+            mocks.yaml.load.mockReturnValue({})
+            mocks.yaml.dump.mockReturnValue('updated yaml')
+            mocks.fileSystem.writeFile.mockResolvedValue(undefined)
+            break
+
+        case 'refresh':
+            mocks.fileSystem.readFile.mockResolvedValue('yaml content')
+            mocks.yaml.load.mockReturnValue(configData || {})
+            break
+
+        case 'getHtml':
+            if (htmlTemplate) {
+                mocks.fileSystem.readFile.mockResolvedValue(htmlTemplate)
+            }
+            mocks.yaml.load.mockReturnValue(configData || {})
+            break
+
+        case 'concurrentUpdates':
+            mocks.fileSystem.readFile.mockResolvedValue('{}')
+            mocks.yaml.load.mockReturnValue({})
+            mocks.yaml.dump.mockReturnValue('updated yaml')
+            mocks.fileSystem.writeFile.mockResolvedValue(undefined)
+            break
+    }
+}
+
+export function setupQuickSettingsErrorScenario(
+    mocks: CCPTestMocks,
+    operation: 'readFile' | 'writeFile' | 'yamlLoad',
+    errorMessage: string,
+    options: QuickSettingsScenarioOptions
+): void {
+    switch (operation) {
+        case 'readFile':
+            mocks.fileSystem.readFile.mockRejectedValue(new Error(errorMessage))
+            break
+
+        case 'writeFile':
+            mocks.fileSystem.writeFile.mockRejectedValue(new Error(errorMessage))
+            break
+
+        case 'yamlLoad':
+            mocks.yaml.load.mockImplementation(() => {
+                throw new Error(errorMessage)
+            })
+            break
+    }
+}
+
+// Saved States Scenarios
+export interface SavedStatesScenarioOptions {
+    operation: 'getTreeItem' | 'getChildren' | 'refresh' | 'dispose' | 'concurrentGetChildren'
+    element?: any
+    expectedChildren?: any[]
+    savedStatesData?: any[]
+    shouldFireEvent?: boolean
+}
+
+export function setupSavedStatesSuccessScenario(
+    mocks: CCPTestMocks,
+    options: SavedStatesScenarioOptions
+): void {
+    const { operation, savedStatesData } = options
+
+    switch (operation) {
+        case 'getTreeItem':
+            // No specific mocking needed for getTreeItem
+            break
+
+        case 'getChildren':
+        case 'concurrentGetChildren':
+            if (savedStatesData) {
+                // Mock the storage service loadAllSavedStates method
+                // This would be set up in the test itself
+            }
+            break
+
+        case 'refresh':
+        case 'dispose':
+            // No specific mocking needed for refresh/dispose
+            break
+    }
+}
+
+export function setupSavedStatesErrorScenario(
+    mocks: CCPTestMocks,
+    operation: 'loadAllSavedStates',
+    errorMessage: string,
+    options: SavedStatesScenarioOptions
+): void {
+    switch (operation) {
+        case 'loadAllSavedStates':
+            // Mock the storage service to throw error
+            // This would be set up in the test itself
+            break
+    }
+}
+
+// Google GenAI Scenarios
+export interface GoogleGenAiScenarioOptions {
+    operation: 'countTokens' | 'concurrentCountTokens'
+    text?: string
+    texts?: string[]
+    apiKey?: string
+    apiKeyPath?: string
+    expectedTokens?: number
+    expectedTokensArray?: number[]
+    errorResponse?: any
+    invalidResponse?: any
+    networkError?: Error
+    rateLimitError?: any
+    quotaError?: any
+}
+
+export function setupGoogleGenAiSuccessScenario(
+    mocks: CCPTestMocks,
+    options: GoogleGenAiScenarioOptions
+): void {
+    const { operation, text, apiKey, expectedTokens } = options
+
+    switch (operation) {
+        case 'countTokens':
+            // Mock successful API response
+            if (apiKey && expectedTokens !== undefined) {
+                // This would be handled by the fetch mock in the test
+            }
+            break
+
+        case 'concurrentCountTokens':
+            // Mock multiple successful API responses
+            // This would be handled by the fetch mock in the test
+            break
+    }
+}
+
+export function setupGoogleGenAiErrorScenario(
+    mocks: CCPTestMocks,
+    operation: 'missingApiKey' | 'apiError' | 'invalidResponse' | 'networkError' | 'timeout' | 'rateLimit' | 'quotaExceeded' | 'invalidInput',
+    errorMessage: string,
+    options: GoogleGenAiScenarioOptions
+): void {
+    switch (operation) {
+        case 'missingApiKey':
+            // Mock workspace.get to return null/undefined
+            break
+
+        case 'apiError':
+        case 'invalidResponse':
+        case 'networkError':
+        case 'timeout':
+        case 'rateLimit':
+        case 'quotaExceeded':
+        case 'invalidInput':
+            // Mock fetch to reject or return error response
             break
     }
 }

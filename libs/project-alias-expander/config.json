@@ -43,8 +43,12 @@
         //= Adherance =========================================================== 
         "v" : "validate",
         "vf": "validate:deps",
-        "a" : "audit",
-        "af": "audit:full",
+        
+        "a": "audit",
+        "aa": "audit:all",
+        "at": "audit:test",
+        "ac": "audit:code",
+        
         //= Feature Specific - CMO ============================================== 
         "s" : "status",
         "o" : "optimize",

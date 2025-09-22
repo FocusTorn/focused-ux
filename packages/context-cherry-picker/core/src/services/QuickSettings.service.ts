@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { IEvent } from '../_interfaces/ILocalTypes.js'
+import type { IEvent, Event } from '../_interfaces/ILocalTypes.js'
 
 //= MISC ======================================================================================================
 import * as yaml from 'js-yaml'

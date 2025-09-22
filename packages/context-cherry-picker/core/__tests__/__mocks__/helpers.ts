@@ -8,7 +8,9 @@ export interface CCPTestMocks {
         copyFile: ReturnType<typeof vi.fn>
         access: ReturnType<typeof vi.fn>
         readdir: ReturnType<typeof vi.fn>
+        readDirectory: ReturnType<typeof vi.fn>
         mkdir: ReturnType<typeof vi.fn>
+        createDirectory: ReturnType<typeof vi.fn>
         rmdir: ReturnType<typeof vi.fn>
         unlink: ReturnType<typeof vi.fn>
     }
@@ -21,6 +23,7 @@ export interface CCPTestMocks {
     }
     yaml: {
         load: ReturnType<typeof vi.fn>
+        dump: ReturnType<typeof vi.fn>
     }
     tokenizer: {
         encode: ReturnType<typeof vi.fn>
@@ -41,7 +44,9 @@ export function setupTestEnvironment(): CCPTestMocks {
             copyFile: vi.fn(),
             access: vi.fn(),
             readdir: vi.fn(),
+            readDirectory: vi.fn(),
             mkdir: vi.fn(),
+            createDirectory: vi.fn(),
             rmdir: vi.fn(),
             unlink: vi.fn(),
         },
@@ -51,13 +56,16 @@ export function setupTestEnvironment(): CCPTestMocks {
             join: vi.fn(),
             resolve: vi.fn(),
             extname: vi.fn(),
+            relative: vi.fn(),
         },
         yaml: {
             load: vi.fn(),
+            dump: vi.fn(),
         },
         tokenizer: {
             encode: vi.fn(),
             decode: vi.fn(),
+            calculateTokens: vi.fn(),
         },
         micromatch: {
             isMatch: vi.fn(),
@@ -89,6 +97,13 @@ export function setupPathMocks(mocks: CCPTestMocks): void {
         const lastDot = path.lastIndexOf('.')
         return lastDot === -1 ? '' : path.slice(lastDot)
     })
+    mocks.path.relative.mockImplementation((from: string, to: string) => {
+        // Simple relative path calculation for testing
+        if (to.startsWith(from)) {
+            return to.substring(from.length + 1)
+        }
+        return to
+    })
 }
 
 export function setupYamlMocks(mocks: CCPTestMocks): void {
@@ -109,6 +124,10 @@ export function setupTokenizerMocks(mocks: CCPTestMocks): void {
         return Array.from({ length: Math.ceil(text.length / 4) }, (_, i) => i + 1)
     })
     mocks.tokenizer.decode.mockReturnValue('mock decoded text')
+    mocks.tokenizer.calculateTokens.mockImplementation((text: string) => {
+        // Simple mock: return token count based on text length
+        return Math.ceil(text.length / 4)
+    })
 }
 
 export function setupMicromatchMocks(mocks: CCPTestMocks): void {

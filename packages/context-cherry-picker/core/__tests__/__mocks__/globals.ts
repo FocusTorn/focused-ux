@@ -9,7 +9,9 @@ vi.mock('node:fs/promises', () => ({
     readFile: vi.fn(),
     writeFile: vi.fn(),
     readdir: vi.fn(),
+    readDirectory: vi.fn(),
     mkdir: vi.fn(),
+    createDirectory: vi.fn(),
     rmdir: vi.fn(),
     unlink: vi.fn(),
 }))
@@ -30,6 +32,7 @@ vi.mock('js-yaml', () => ({
         }
         return {}
     }),
+    dump: vi.fn((obj: any) => JSON.stringify(obj, null, 2)),
 }))
 
 vi.mock('node:path', () => ({
@@ -52,6 +55,7 @@ vi.mock('node:path', () => ({
 vi.mock('gpt-tokenizer', () => ({
     encode: vi.fn((text: string) => {
         // Simple mock: return array of numbers based on text length
+        // Can be overridden by individual tests
         return Array.from({ length: Math.ceil(text.length / 4) }, (_, i) => i + 1)
     }),
     decode: vi.fn((tokens: number[]) => {
@@ -90,6 +94,23 @@ afterAll(() => {
 afterEach(() => {
     vi.clearAllMocks()
 })
+
+// Global mock variables for tests
+declare global {
+    var mockYaml: any
+    var mockMicromatch: any
+}
+
+// Make mocks available globally
+globalThis.mockYaml = {
+    load: vi.fn(),
+    dump: vi.fn(),
+}
+
+globalThis.mockMicromatch = {
+    isMatch: vi.fn(),
+    match: vi.fn(),
+}
 
 // Console output control
 const ENABLE_CONSOLE_OUTPUT = process.env.ENABLE_TEST_CONSOLE === 'true'

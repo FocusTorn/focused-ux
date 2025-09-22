@@ -1,7 +1,7 @@
 // ESLint & Imports -->>
 
 //= VSCODE TYPES & MOCKED INTERNALS ===========================================================================
-import type { ITreeItemCheckboxState } from '../_interfaces/ILocalTypes.js'
+import type { ITreeItemCheckboxState, TreeItemCheckboxState } from '../_interfaces/ILocalTypes.js'
 
 //= IMPLEMENTATION TYPES ======================================================================================
 import type { ISavedStateItem } from '../_interfaces/ISavedStateItem.js'

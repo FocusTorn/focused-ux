@@ -8,10 +8,6 @@ import {
 } from '../__mocks__/mock-scenario-builder'
 
 // Mock service classes
-class MockFileSystem {
-    readFile = vi.fn()
-}
-
 class MockWindow {
     showWarningMessage = vi.fn()
     showErrorMessage = vi.fn()
@@ -23,7 +19,6 @@ class MockTokenizerService {
 
 describe('FileContentProviderService', () => {
     let service: FileContentProviderService
-    let mockFileSystem: MockFileSystem
     let mockWindow: MockWindow
     let mockTokenizer: MockTokenizerService
     let mocks: ReturnType<typeof setupTestEnvironment>
@@ -35,13 +30,12 @@ describe('FileContentProviderService', () => {
         resetAllMocks(mocks)
 
         // Initialize mock services
-        mockFileSystem = new MockFileSystem()
         mockWindow = new MockWindow()
         mockTokenizer = new MockTokenizerService()
 
         // Initialize service with mocked dependencies
         service = new FileContentProviderService(
-            mockFileSystem as any,
+            mocks.fileSystem as any,
             mockWindow as any,
             mockTokenizer as any
         )

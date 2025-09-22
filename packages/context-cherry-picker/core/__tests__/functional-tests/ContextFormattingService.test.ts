@@ -43,7 +43,7 @@ describe('ContextFormattingService', () => {
         service = new ContextFormattingService(
             mockTreeFormatter as any,
             mockFileUtils as any,
-            mockPath as any
+            mocks.path as any
         )
     })
 

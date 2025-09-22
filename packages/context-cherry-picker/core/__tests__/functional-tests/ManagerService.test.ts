@@ -1,14 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ContextCherryPickerManager } from '../../src/services/CCP_Manager.service.js'
-import { setupTestEnvironment, resetAllMocks, setupFileSystemMocks, setupPathMocks } from '../__mocks__/helpers'
-import { 
-    setupCCPManagerSuccessScenario, 
-    setupCCPManagerErrorScenario, 
-    createCCPMockBuilder 
-} from '../__mocks__/mock-scenario-builder'
+import { setupTestEnvironment, resetAllMocks, setupFileSystemMocks, setupPathMocks } from '../__mocks__/helpers.js'
+import {
+    setupCCPManagerSuccessScenario,
+    setupCCPManagerErrorScenario,
+    createCCPMockBuilder
+} from '../__mocks__/mock-scenario-builder.js'
 
 // Mock service classes
 class MockFileExplorerService {
+
     getAllCheckedItems = vi.fn()
     getCheckboxState = vi.fn()
     refresh = vi.fn()
@@ -21,35 +22,49 @@ class MockFileExplorerService {
     getProjectTreeAlwaysHideGlobs = vi.fn()
     getProjectTreeShowIfSelectedGlobs = vi.fn()
     getFileGroupsConfig = vi.fn()
+
 }
 
 class MockSavedStatesService {
+
     refresh = vi.fn()
+
 }
 
 class MockQuickSettingsService {
+
     getSettingState = vi.fn()
+
 }
 
 class MockStorageService {
+
     saveState = vi.fn()
     deleteState = vi.fn()
     loadState = vi.fn()
+
 }
 
 class MockContextDataCollectorService {
+
     collectContextData = vi.fn()
+
 }
 
 class MockFileContentProviderService {
+
     getFileContents = vi.fn()
+
 }
 
 class MockContextFormattingService {
+
     generateProjectTreeString = vi.fn()
+
 }
 
 class MockWindow {
+
     showTimedInformationMessage = vi.fn()
     showInputBox = vi.fn()
     showWarningMessage = vi.fn()
@@ -57,25 +72,34 @@ class MockWindow {
     setStatusBarMessage = vi.fn()
     showDropdownMessage = vi.fn()
     showDescriptionMessage = vi.fn()
+
 }
 
 class MockWorkspace {
+
     workspaceFolders = [{ uri: '/test/project' }]
+
 }
 
 class MockPath {
+
     basename = vi.fn()
+
 }
 
 class MockConfigurationService {
+
     get = vi.fn()
+
 }
 
 class MockTreeItemFactory {
+
     getCheckboxStateUnchecked = vi.fn()
+
 }
 
-describe('ContextCherryPickerManager', () => {
+describe('ManagerService', () => {
     let service: ContextCherryPickerManager
     let mockFileExplorer: MockFileExplorerService
     let mockSavedStates: MockSavedStatesService

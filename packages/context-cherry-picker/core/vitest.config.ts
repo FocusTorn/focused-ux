@@ -6,7 +6,11 @@ export default mergeConfig(
     defineConfig({
         test: {
             setupFiles: ['./__tests__/__mocks__/globals.ts'],
-            exclude: ['**/__tests__/integration/**', '**/__tests__/_out-tsc/**'],
+            exclude: [
+                '**/__tests__/integration/**', 
+                '**/__tests__/_out-tsc/**',
+                '**/node_modules/gpt-tokenizer/**'
+            ],
         },
     })
 )

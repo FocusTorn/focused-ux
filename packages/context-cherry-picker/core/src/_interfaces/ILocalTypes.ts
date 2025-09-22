@@ -6,6 +6,12 @@ export interface IEvent<T = any> {
     (listener: (e: T) => any, thisArgs?: any): any
 }
 
+// Type aliases for VSCode types
+export type Event<T = any> = IEvent<T>
+export type TreeItemCheckboxState = number
+export type TreeItemCollapsibleState = number
+export type TreeItemLabel = ITreeItemLabel
+
 export interface ITreeItemCheckboxState {
     Unchecked: 0
     Checked: 1
@@ -24,8 +30,10 @@ export interface ITreeItemLabel {
 
 export interface IFileSystem {
     readFile(path: string): Promise<string>
-    writeFile(path: string, content: string): Promise<void>
-    stat(path: string): Promise<{ type: 'file' | 'directory' }>
+    writeFile(path: string, content: string | Uint8Array): Promise<void>
+    stat(path: string): Promise<{ type: 'file' | 'directory'; size?: number }>
+    readDirectory(path: string): Promise<DirectoryEntry[]>
+    createDirectory(path: string): Promise<void>
     readdir(path: string): Promise<DirectoryEntry[]>
     mkdir(path: string): Promise<void>
     rmdir(path: string): Promise<void>

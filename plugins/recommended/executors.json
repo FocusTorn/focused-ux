@@ -1,0 +1,24 @@
+{
+    "executors": {
+        "audit-structure": {
+            "implementation": "./dist/executors/audit-structure/audit-structure",
+            "schema": "./dist/executors/audit-structure/schema.json",
+            "description": "Audits project structure for violations of architectural patterns and test structure"
+        },
+        "audit-structure:code": {
+            "implementation": "./dist/executors/audit-structure/audit-structure",
+            "schema": "./dist/executors/audit-structure/schema.json",
+            "description": "Audits code structure for architectural violations"
+        },
+        "audit-structure:test": {
+            "implementation": "./dist/executors/audit-structure/audit-structure",
+            "schema": "./dist/executors/audit-structure/schema.json",
+            "description": "Audits test structure for Enhanced Mock Strategy violations"
+        },
+        "audit-structure:all": {
+            "implementation": "./dist/executors/audit-structure/audit-structure",
+            "schema": "./dist/executors/audit-structure/schema.json",
+            "description": "Audits both code and test structure (same as audit-structure)"
+        }
+    }
+}
