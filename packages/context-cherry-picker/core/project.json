@@ -31,10 +31,10 @@
         "lint": { "extends": "lint" },
         "lint:deps": { "extends": "lint:deps" },
         
-        "audit": { "extends": "audit-structure" },
-        "audit:code": { "extends": "audit-structure:code" },
-        "audit:test": { "extends": "audit-structure:test" },
-        "audit:all": { "extends": "audit-structure:all" },
+        "audit": { "extends": "audit" },
+        "audit:code": { "extends": "audit:code" },
+        "audit:test": { "extends": "audit:test" },
+        "audit:all": { "extends": "audit:all" },
         
         
         // "audit": { //>
