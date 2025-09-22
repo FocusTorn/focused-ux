@@ -1,0 +1,39 @@
+{
+    "$schema": "https://json-schema.org/schema",
+    "$id": "PluginAddExecutor",
+    "title": "Plugin Add Executor",
+    "type": "object",
+    "properties": {
+        "pluginName": {
+            "type": "string",
+            "description": "The name of the existing plugin",
+            "$default": {
+                "$source": "argv",
+                "index": 0
+            },
+            "x-prompt": "What is the name of the existing plugin?"
+        },
+        "executorName": {
+            "type": "string",
+            "description": "The name of the executor to add",
+            "$default": {
+                "$source": "argv",
+                "index": 1
+            },
+            "x-prompt": "What is the name of the executor to add?"
+        },
+        "directory": {
+            "type": "string",
+            "description": "Directory where plugins are located",
+            "default": "./plugins",
+            "x-prompt": "Where are your plugins located?"
+        },
+        "scaffoldVariations": {
+            "type": "boolean",
+            "description": "Scaffold multiple variations (e.g., audit structure)",
+            "default": false,
+            "x-prompt": "Should we scaffold multiple variations?"
+        }
+    },
+    "required": ["pluginName", "executorName"]
+}

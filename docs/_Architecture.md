@@ -62,7 +62,7 @@ Is the package intended to be a VS Code extension?
 - **Pattern**: Use type imports only
 - **Implementation**: `import type { Uri } from 'vscode'`
 - **Rationale**: Core packages remain pure business logic without VSCode dependencies
-- **Testing**: Test business logic in complete isolation without VSCode mocking
+- **Testing**: See [Testing Strategy](../testing/_Testing-Strategy.md) for comprehensive testing patterns
 - **Local Interface Pattern**: Define local interfaces (e.g., `IUri`, `IUriFactory`) to replace VSCode value usage
 
 **Important Distinction**:
@@ -92,12 +92,12 @@ Is the package intended to be a VS Code extension?
     ```
 
 - **Rationale**: Extension packages handle VSCode integration through local adapters
-- **Testing**: Test VSCode integration through local adapters with API mocks
+- **Testing**: See [Testing Strategy](../testing/_Testing-Strategy.md) for comprehensive testing patterns
 
 ### **No Shared Package Usage**
 
 - **Rule**: Each package is completely self-contained
-- **Rationale**: Enables independent testing and validation
+- **Rationale**: Enables independent validation (see [Testing Strategy](../testing/_Testing-Strategy.md))
 - **Implementation**: No dependencies on `@fux/shared` or other shared packages
 
 ## **Build System Architecture**
@@ -287,48 +287,13 @@ While the architecture follows consistent patterns, some packages have legitimat
     - `tsconfig.json`: `./out-tsc/tsconfig.tsbuildinfo`
     - `tsconfig.lib.json`: `./out-tsc/lib/tsconfig.lib.tsbuildinfo`
 
-### **Test Configuration Consistency**
+### **Testing Architecture**
 
-- **Rule**: All packages must use direct `@nx/vite:test` executor, not extends
-- **Rationale**: Ensures consistent test execution and prevents configuration conflicts
-- **Implementation**: Explicit executor configuration in project.json test targets
-
-### **Comprehensive Testing Architecture**
-
-- **Authority**: The `docs/FocusedUX-Testing-Strategy.md` is the authoritative source for all testing dependencies and patterns
-- **Rule**:
-    - **Core packages**: Test business logic in complete isolation without VSCode dependencies
-    - **Extension packages**: Test VSCode integration through local adapters
-    - **No shared package testing**: Each package tests its own functionality independently
-- **Rationale**:
-    - Core packages can be tested without complex VSCode mocking
-    - Extension packages test real VSCode integration patterns
-    - Self-contained testing enables deep validation and fast execution
-- **Implementation**:
-    - Core packages: Mock all external dependencies, test pure business logic
-    - Extension packages: Test adapters with VSCode API mocks, validate integration flows
-    - Independent test suites enable comprehensive coverage and regression prevention
-- **Mock Precision**: Test mocks must precisely match actual API signatures and parameter handling patterns
-- **Real Behavior Validation**: Tests must validate actual runtime behavior, not just mock replacements
-- **Performance-Aware Testing**: Split large test files (500+ lines) proactively to prevent hanging and performance issues
-
-### **VS Code Extension Integration Testing**
-
-- **Rule**: VS Code extension integration tests require specific environment configuration to prevent UI operations from hanging
-- **Critical Requirements**:
-    - **Environment Variable**: Always set `VSCODE_TEST: '1'` in `.vscode-test.mjs` configuration
-    - **Setup Files**: Use `setupFiles` configuration option instead of `--require` parameter for module loading
-    - **Environment Detection**: Extensions must detect test environment with `process.env.VSCODE_TEST === '1'`
-    - **UI Operation Handling**: Skip UI operations (like `window.showInformationMessage()`) in test environment
-- **Rationale**:
-    - Missing `VSCODE_TEST` environment variable causes UI operations to hang indefinitely in test context
-    - `--require` parameter can cause module resolution issues in extension host context
-    - Test environment detection prevents extension from attempting UI operations that block test execution
-- **Implementation**:
-    - Configure `.vscode-test.mjs` with `env: { VSCODE_TEST: '1' }` and `setupFiles: ['./out-tsc/suite/index.js']`
-    - Use `const IS_TEST_ENVIRONMENT = process.env.VSCODE_TEST === '1'` in extension code
-    - Conditionally skip UI operations: `if (!IS_TEST_ENVIRONMENT) { await window.showInformationMessage(...) }`
-    - Throw errors in test environment for proper test failure reporting
+- **Authority**: See [Testing Strategy](../testing/_Testing-Strategy.md) for comprehensive testing patterns, configurations, and strategies
+- **Core Packages**: Business logic testing patterns
+- **Extension Packages**: VSCode integration testing patterns
+- **Configuration**: Test executor and target configurations
+- **Integration Testing**: VS Code extension testing requirements
 
 ### **Package.json Configuration**
 
@@ -485,7 +450,7 @@ Extensions require careful dependency management to balance functionality with b
     "devDependencies": {
         "@types/vscode": "^1.99.3", // ✅ Build-time VSCode types
         "typescript": "^5.9.2", // ✅ Build-time TypeScript
-        "vitest": "^3.2.4" // ✅ Test-time Vitest
+        "vitest": "^3.2.4" // ✅ Testing framework (see [Testing Strategy](../testing/_Testing-Strategy.md))
     }
 }
 ```
@@ -568,7 +533,7 @@ ALL packages (core, extension, shared) must follow this pattern to ensure proper
         "@types/micromatch": "^4.0.9", // ✅ Type definitions for runtime deps
         "@types/node": "^24.5.2", // ✅ Build-time types
         "typescript": "^5.9.2", // ✅ Build-time TypeScript
-        "vitest": "^3.2.4" // ✅ Test-time Vitest
+        "vitest": "^3.2.4" // ✅ Testing framework (see [Testing Strategy](../testing/_Testing-Strategy.md))
     }
 }
 ```
@@ -589,7 +554,7 @@ ALL packages (core, extension, shared) must follow this pattern to ensure proper
         "@types/node": "^24.5.2", // ✅ Build-time types
         "@types/vscode": "^1.104.0", // ✅ Build-time VSCode types
         "typescript": "^5.9.2", // ✅ Build-time TypeScript
-        "vitest": "^3.2.4" // ✅ Test-time Vitest
+        "vitest": "^3.2.4" // ✅ Testing framework (see [Testing Strategy](../testing/_Testing-Strategy.md))
     }
 }
 ```
@@ -628,10 +593,7 @@ packages/{feature}/core/
 │   ├── services/             # All services in flat structure
 │   ├── _config/              # Constants and configuration
 │   └── index.ts              # Comprehensive categorized exports
-├── __tests__/
-│   ├── functional-tests/     # Main integration tests
-│   ├── isolated-tests/       # Unit tests
-│   └── coverage-tests/       # Coverage reports
+├── __tests__/                # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 └── package.json              # Minimal dependencies
 ```
 
@@ -647,8 +609,7 @@ packages/{feature}/core/
 │   │       ├── _interfaces/  # Feature interfaces
 │   │       └── services/     # Feature services
 │   └── index.ts              # Individual exports for tree-shaking
-├── __tests__/
-│   └── functional-tests/     # Test business logic in isolation
+├── __tests__/                # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 └── package.json              # No shared dependencies
 ```
 
@@ -662,14 +623,7 @@ packages/{feature}/ext/
 │   ├── adapters/             # All VSCode adapters in flat structure
 │   ├── _config/              # Constants and configuration (if needed)
 │   └── extension.ts          # Main extension logic (direct entry point)
-├── __tests__/
-│   ├── functional-tests/     # Main adapter and service tests
-│   ├── integration-tests/    # VS Code extension integration tests
-│   │   ├── suite/            # Test files
-│   │   ├── mocked-workspace/ # Test workspace files
-│   │   ├── tsconfig.test.json # TypeScript config for tests
-│   │   └── .vscode-test.mjs  # VS Code test configuration
-│   └── coverage-tests/       # Coverage reports
+├── __tests__/                # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 └── package.json              # VSCode extension manifest
 ```
 
@@ -677,7 +631,7 @@ packages/{feature}/ext/
 
 - **Direct entry point** - No index.ts wrapper, use extension.ts directly
 - **Flat adapter structure** - All adapters in single directory
-- **Integration test structure** - Complete VS Code testing setup
+- **Test structure** - See [Testing Strategy](../testing/_Testing-Strategy.md)
 - **Modern packaging** - Use @fux/vpack:pack executor
 
 ### **Adapter Pattern Standards**
@@ -688,12 +642,12 @@ packages/{feature}/ext/
 - **Direct API calls** - Adapters should call VSCode APIs directly
 - **Context setters** - Use setter methods for context-dependent adapters (e.g., StorageAdapter)
 - **Local interfaces** - Define interfaces within each adapter file
-- **Comprehensive testing** - All adapters should have complete test coverage
+- **Testing** - See [Testing Strategy](../testing/_Testing-Strategy.md) for adapter testing patterns
 
 **Benefits:**
 
 - **Simpler architecture** - Less complexity and dependency management
-- **Better testability** - Easier to write comprehensive tests
+- **Better testability** - See [Testing Strategy](../testing/_Testing-Strategy.md)
 - **Proven approach** - Consistent pattern across all packages
 - **Complete coverage** - All adapters have tests
 

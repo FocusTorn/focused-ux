@@ -3,7 +3,7 @@
     "tags": [ "core" ],
     "targets": {
         
-        //= Finalize ============================================================ 
+        //= Prepare ============================================================= 
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": [ "{options.outputPath}" ],
@@ -36,38 +36,6 @@
         "audit:test": { "extends": "audit:test" },
         "audit:all": { "extends": "audit:all" },
         
-        
-        // "audit": { //>
-        //     "executor": "@fux/recommended:audit-structure",
-        //     "options": {
-        //         "mode": "all",
-        //         "warnOnly": false,
-        //         "verbose": false
-        //     }
-        // }, //<
-        // "audit:code": { //>
-        //     "executor": "@fux/recommended:audit-structure:code",
-        //     "options": {
-        //         "warnOnly": false,
-        //         "verbose": false
-        //     }
-        // }, //<
-        // "audit:test": { //>
-        //     "executor": "@fux/recommended:audit-structure:test",
-        //     "options": {
-        //         "warnOnly": false,
-        //         "verbose": false
-        //     }
-        // }, //<
-        // "audit:all": { //>
-        //     "executor": "@fux/recommended:audit-structure:all",
-        //     "options": {
-        //         "warnOnly": false,
-        //         "verbose": false
-        //     }
-        // }, //<
-        
-        
         //= Cleaning ============================================================ 
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
@@ -80,11 +48,6 @@
         //= Dependency Chain Testing ============================================ 
         "test:deps": { "extends": "test:deps" },
         "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" }
-    
-        // "validate": { "extends": "validate" },
-        // "validate:deps": { "extends": "validate:deps" },
-        
-        
     },
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/context-cherry-picker/core/src",

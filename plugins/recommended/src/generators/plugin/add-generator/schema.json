@@ -1,0 +1,39 @@
+{
+    "$schema": "https://json-schema.org/schema",
+    "$id": "PluginAddGenerator",
+    "title": "Plugin Add Generator",
+    "type": "object",
+    "properties": {
+        "pluginName": {
+            "type": "string",
+            "description": "The name of the existing plugin",
+            "$default": {
+                "$source": "argv",
+                "index": 0
+            },
+            "x-prompt": "What is the name of the existing plugin?"
+        },
+        "generatorName": {
+            "type": "string",
+            "description": "The name of the generator to add",
+            "$default": {
+                "$source": "argv",
+                "index": 1
+            },
+            "x-prompt": "What is the name of the generator to add?"
+        },
+        "directory": {
+            "type": "string",
+            "description": "Directory where plugins are located",
+            "default": "./plugins",
+            "x-prompt": "Where are your plugins located?"
+        },
+        "scaffoldVariations": {
+            "type": "boolean",
+            "description": "Scaffold multiple variations (e.g., audit structure)",
+            "default": false,
+            "x-prompt": "Should we scaffold multiple variations?"
+        }
+    },
+    "required": ["pluginName", "generatorName"]
+}

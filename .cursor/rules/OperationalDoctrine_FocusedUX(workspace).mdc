@@ -3,6 +3,12 @@ alwaysApply: false
 ---
 # AI-Optimized Project-FocusedUX Operational Doctrine
 
+[Architecture]: /docs/_Architecture.md
+[Package Archetypes]: /docs/_Package-Archetypes.md
+[SOP]: /docs/_SOP.md
+[Testing Strategy]: /docs/testing/_Testing-Strategy.md
+
+
 ## **DOCUMENT PURPOSE**
 
 **Primary Consumer**: AI Agent operating in FocusedUX workspace
@@ -30,8 +36,8 @@ alwaysApply: false
 
 **STEP 3: DOCUMENTATION FIRST COMPLIANCE**
 
-- [ ] **Architecture Check**: Have I checked `./docs/Architecture.md` for package structure and patterns?
-- [ ] **Testing Check**: Have I checked `./docs/FocusedUX-Testing-Strategy.md` for testing patterns?
+- [ ] **Architecture Check**: Have I checked [Architecture] for package structure and patterns?
+- [ ] **Testing Check**: Have I checked [Testing Strategy] for testing patterns?
 - [ ] **Previous Solutions**: Have I checked `./docs/Actions-Log.md` for existing implementations?
 
 **STEP 4: PACKAGE ANALYSIS COMPLIANCE**
@@ -46,14 +52,23 @@ alwaysApply: false
 
 **VIOLATION PENALTY**: Any failure to complete this checklist constitutes a critical failure requiring immediate acknowledgment and correction.
 
+
+
+
+
+
+
+
+
+
 ## **ARCHITECTURE EXECUTION FRAMEWORK**
 
 ### **REFERENCE DOCUMENTATION MAPPING**
 
 **PRIMARY REFERENCES:**
 
-- **Architecture**: `./docs/Architecture.md` - Package structure, build configurations, implementation patterns
-- **Testing**: `./docs/FocusedUX-Testing-Strategy.md` - Testing patterns and implementation guides
+- **Architecture**: [Architecture] - Package structure, build configurations, implementation patterns
+- **Testing**: [Testing Strategy] - Testing patterns and implementation guides
 - **Previous Solutions**: `./docs/Actions-Log.md` - Existing implementations and lessons learned
 
 ### **PACKAGE TYPE EXECUTION MATRIX**

@@ -1,44 +1,57 @@
 {
     "name": "@fux/vpack",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "plugins/vpack/src",
-    "projectType": "library",
+    "tags": [ "executor" ],
     "targets": {
         
-        "build": {
+        //= Prepare ============================================================= 
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": [
                 "{options.outputPath}"
             ],
             "options": {
                 
-                "main": "plugins/vpack/src/index.ts",
-                "tsConfig": "plugins/vpack/tsconfig.lib.json",
+                "main": "{projectRoot}/src/index.ts",
+                "tsConfig": "{projectRoot}/tsconfig.json",
 
                 "bundle": false,
                 
-                "assets": [
+                "assets": [ //>
                     {
-                        "input": "./plugins/vpack/src",
+                        "input": "{projectRoot}/src",
                         "glob": "**/!(*.ts)",
                         "output": "."
                     },
                     {
-                        "input": "./plugins/vpack/src",
+                        "input": "{projectRoot}/src",
                         "glob": "**/*.d.ts",
                         "output": "."
                     }
-                ]
+                ] //<
             }
 
-        },
+        }, //<
         
         //= Quality ============================================================= 
         "check-types": { "extends": "check-types" },
         
-        "lint": { "extends": "lint" }
+        "lint": { "extends": "lint" },
         
+        "audit": { "extends": "audit" },
+        "audit:code": { "extends": "audit:code" },
+        "audit:test": { "extends": "audit:test" },
+        "audit:all": { "extends": "audit:all" },
         
-    }
-  
+        //= Cleaning ============================================================ 
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+         
+        //= Single Package Testing ============================================== 
+        "test": { "extends": "test" },
+        "test:coverage-tests": { "extends": "test:coverage-tests" }
+    },
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "plugins/vpack/src",
+    "projectType": "library"
 }

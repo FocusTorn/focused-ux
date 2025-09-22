@@ -6,22 +6,67 @@ alwaysApply: true
 
 # FocusedUX AI Guidelines
 
+## CRITICAL ENFORCEMENT NOTICE
+
+**THESE ARE MANDATORY DIRECTIVES, NOT SUGGESTIONS**
+
+- **NO DEVIATION**: All rules must be followed exactly as written
+- **NO SKIPPING**: No steps may be skipped, abbreviated, or modified
+- **NO SELECTIVE COMPLIANCE**: All rules apply to all actions
+- **FAILURE TO COMPLY**: Violating these rules constitutes a critical protocol violation
+
+## CRITICAL PRE-RESPONSE VALIDATION FRAMEWORK
+
+### MANDATORY EXECUTION CHECKLIST
+
+**CRITICAL**: Before ANY response involving FocusedUX project operations, execute this validation sequence:
+
+**STEP 1: PAE ALIAS COMPLIANCE**
+
+- [ ] **Alias Discovery**: Will I attempt `pae help` first to discover available aliases?
+- [ ] **Alias Usage**: Will I use appropriate alias for the operation (e.g., `pae dc b` for dynamicons build)?
+- [ ] **Fallback Protocol**: Will I only use direct nx commands if no alias exists or alias fails?
+- [ ] **Documentation**: Will I document any missing aliases that should be added to PAE system?
+
+**STEP 2: BUILD ERROR RESOLUTION**
+
+- [ ] **Error Resolution**: Will I fix build errors immediately before proceeding?
+- [ ] **Cache Bypass**: Will I use `--skip-nx-cache` for troubleshooting when needed?
+
+**STEP 3: DOCUMENTATION FIRST COMPLIANCE**
+
+- [ ] **Architecture Check**: Have I checked `docs/Architecture.md` for package structure and patterns?
+- [ ] **Testing Check**: Have I checked `docs/FocusedUX-Testing-Strategy.md` for testing patterns?
+- [ ] **Previous Solutions**: Have I checked `./docs/Actions-Log.md` for existing implementations?
+
+**STEP 4: PACKAGE ANALYSIS COMPLIANCE**
+
+- [ ] **Project Details**: Will I use `nx_project_details` to understand package dependencies?
+- [ ] **Architectural Deviations**: Will I check for deviations from standard patterns?
+- [ ] **Package Type Verification**: Will I verify package type (core vs ext vs shared vs tool) and role?
+
+**STEP 5: SELF-CORRECTION**
+
+- [ ] **Violation Detection**: If I detect any protocol violation, will I acknowledge immediately?
+
+**VIOLATION PENALTY**: Any failure to complete this checklist constitutes a critical failure requiring immediate acknowledgment and correction.
+
 ## Core Processing Flow
 
 ### Pre-Action Pattern
 
-1. **Read Rules** → Always read this file first (natural habit)
-2. **Discover Tools** → Run `pae help` to see available commands
-3. **Check Docs** → Look in `docs/` before creating solutions
+1. **Read Rules** → MANDATORY: Read this file first before any action
+2. **Discover Tools** → MANDATORY: Run `pae help` to see available commands
+3. **Check Docs** → MANDATORY: Look in `docs/` before creating solutions
 
 ### Documentation First Protocol
 
 - **MANDATORY**: Check docs/ first before creating solutions
-- **Reference existing patterns** directly in responses
-- **Execute documented solutions** without additional analysis
-- **Prevent violations** by never creating solutions when documentation exists
-- **Testing Strategy**: ALWAYS check `docs/FocusedUX-Testing-Strategy.md` before creating any test setup
-- **Architecture Patterns**: ALWAYS check `docs/Architecture.md` before creating any package structure
+- **MANDATORY**: Reference existing patterns directly in responses
+- **MANDATORY**: Execute documented solutions without additional analysis
+- **MANDATORY**: Prevent violations by never creating solutions when documentation exists
+- **MANDATORY**: Testing Strategy - ALWAYS check `docs/FocusedUX-Testing-Strategy.md` before creating any test setup
+- **MANDATORY**: Architecture Patterns - ALWAYS check `docs/Architecture.md` before creating any package structure
 
 ### Personality Activation
 
@@ -63,9 +108,9 @@ alwaysApply: true
 
 ### Build Rules
 
-- **ALL packages** → Use `@nx/esbuild:esbuild` executor
-- **Libraries** → `bundle: false, format: ['esm']`
-- **Applications** → `bundle: true, format: ['cjs']`
+- **MANDATORY**: ALL packages → Use `@nx/esbuild:esbuild` executor
+- **MANDATORY**: Libraries → `bundle: false, format: ['esm']`
+- **MANDATORY**: Applications → `bundle: true, format: ['cjs']`
 
 ## Critical Anti-Patterns
 
@@ -75,6 +120,8 @@ alwaysApply: true
 - ❌ VSCode value imports outside adapters
 - ❌ Shared dependencies in core packages
 - ❌ DI containers in core packages
+- ❌ Incomplete consumer updates
+- ❌ VSCode extension configuration removal
 
 ### Testing Violations
 
@@ -82,6 +129,7 @@ alwaysApply: true
 - ❌ Test files >500 lines
 - ❌ Skipping tests for deadlines
 - ❌ Tests calling complex methods without mocking
+- ❌ Test simplification anti-pattern
 
 ### Build Violations
 
@@ -90,21 +138,40 @@ alwaysApply: true
 - ❌ Caching packaging targets
 - ❌ Direct Node.js imports in extensions
 
+### Documentation Violations
+
+- ❌ Skipping date verification
+- ❌ Making up dates
+- ❌ Premature completion claims
+- ❌ Historical reference modification
+
+### Validation Violations
+
+- ❌ Strict error throwing
+- ❌ User experience neglect
+
+### Refactoring Violations
+
+- ❌ Incremental renaming
+- ❌ Pattern deviation
+- ❌ Interface-first violations
+- ❌ Build-before-interface
+
 ## Command Execution
 
-### PAE Aliases (Always Use)
+### PAE Aliases (MANDATORY)
 
-- `pae help` → Discover available commands
-- `pae {alias} b` → Build
-- `pae {alias} t` → Test (fast)
-- `pae {alias} tc` → Test with coverage
-- `pae {alias} tcw` → Test with coverage (watch)
+- **MANDATORY**: `pae help` → Discover available commands
+- **MANDATORY**: `pae {alias} b` → Build
+- **MANDATORY**: `pae {alias} t` → Test (fast)
+- **MANDATORY**: `pae {alias} tc` → Test with coverage
+- **MANDATORY**: `pae {alias} tcw` → Test with coverage (watch)
 
 ### Profile Loading
 
-- Wait for "FocusedUX project profile loaded"
-- Wait for "Module loaded: PAE aliases"
-- Retry if `pae help` shows minimal output
+- **MANDATORY**: Wait for "FocusedUX project profile loaded"
+- **MANDATORY**: Wait for "Module loaded: PAE aliases"
+- **MANDATORY**: Retry if `pae help` shows minimal output
 
 ## Documentation Mapping
 
@@ -117,7 +184,7 @@ alwaysApply: true
 
 ### Workflow
 
-1. Read rules → 2. Discover tools → 3. Check docs → 4. Build → 5. Execute
+**MANDATORY**: 1. Read rules → 2. Discover tools → 3. Check docs → 4. Build → 5. Execute
 
 ### Common Commands
 
@@ -133,8 +200,6 @@ alwaysApply: true
 - 🚧 Blockers
 
 ## Natural Compliance Triggers
-
-### When I see "build" → I think "run build first"
 
 ### When I see "test" → I think "run tests"
 
@@ -168,15 +233,14 @@ alwaysApply: true
 
 ### Natural Stops
 
-- Business logic in extensions → "This belongs in core"
-- VSCode value imports → "Use type imports only"
-- Missing build → "Build first, then test"
-- Direct nx commands → "Use PAE aliases"
-- Test failures → "Check if build is clean first"
-- Documentation questions → "Check docs/ before creating"
-- Package confusion → "Check package type and path"
-- **Creating solutions without checking docs** → "STOP! Check docs/ first - this is a critical violation"
-- **Creating test setups without checking testing strategy** → "STOP! Check docs/FocusedUX-Testing-Strategy.md first - this is a critical violation"
+- **MANDATORY**: Business logic in extensions → "This belongs in core"
+- **MANDATORY**: VSCode value imports → "Use type imports only"
+- **MANDATORY**: Direct nx commands → "Use PAE aliases"
+- **MANDATORY**: Test failures → "Check if build is clean first"
+- **MANDATORY**: Documentation questions → "Check docs/ before creating"
+- **MANDATORY**: Package confusion → "Check package type and path"
+- **MANDATORY**: Creating solutions without checking docs → "STOP! Check docs/ first - this is a critical violation"
+- **MANDATORY**: Creating test setups without checking testing strategy → "STOP! Check docs/FocusedUX-Testing-Strategy.md first - this is a critical violation"
 
 ### Pattern Recognition
 
@@ -187,6 +251,37 @@ alwaysApply: true
 - Error context → Determines troubleshooting approach
 - User question type → Determines response strategy
 
+## Execution Priority Matrix
+
+### CRITICAL PRIORITY (Execute immediately)
+
+- PAE alias compliance verification
+- Documentation first verification
+- Package analysis execution
+- Anti-pattern violation detection
+
+### HIGH PRIORITY (Execute before proceeding)
+
+- Test execution and validation
+- Build error resolution
+- Pattern compliance verification
+- Tool usage verification
+
+### MEDIUM PRIORITY (Execute during normal operation)
+
+- Documentation updates
+- Pattern recognition
+- Performance measurement
+- Status reporting
+
+### LOW PRIORITY (Execute when time permits)
+
+- Process improvements
+- Pattern documentation
+- Lesson sharing
+- Future planning
+
 ## Dynamic Management Note
 
 This document is optimized for AI internal processing and may be updated dynamically based on operational needs and pattern recognition. The structure prioritizes natural compliance over complex enforcement mechanisms.
+

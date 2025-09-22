@@ -14,6 +14,26 @@
             "factory": "./dist/generators/tests/tests",
             "schema": "./dist/generators/tests/schema.json",
             "description": "tests generator"
+        },
+        "plugin": {
+            "factory": "./dist/generators/plugin/plugin",
+            "schema": "./dist/generators/plugin/schema.json",
+            "description": "plugin generator"
+        },
+        "plugin:add-app": {
+            "factory": "./dist/generators/plugin/add-app/add-app",
+            "schema": "./dist/generators/plugin/add-app/schema.json",
+            "description": "Add application-style plugin (placeholder for future development)"
+        },
+        "plugin:add-executor": {
+            "factory": "./dist/generators/plugin/add-executor/add-executor",
+            "schema": "./dist/generators/plugin/add-executor/schema.json",
+            "description": "Add executor to existing plugin with vpack-style configuration"
+        },
+        "plugin:add-generator": {
+            "factory": "./dist/generators/plugin/add-generator/add-generator",
+            "schema": "./dist/generators/plugin/add-generator/schema.json",
+            "description": "Add generator to existing plugin with vpack-style configuration"
         }
     }
 }

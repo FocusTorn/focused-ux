@@ -72,7 +72,7 @@ nx_workspace
 - [ ] **All package dependencies** and relationships identified
 - [ ] **Package types** (core/ext/shared/tool) and roles understood
 - [ ] **Build configurations** and variations mapped
-- [ ] **Testing strategies** across packages analyzed
+- [ ] **Testing strategies** across packages analyzed (see [Testing Strategy](../testing/_Testing-Strategy.md))
 - [ ] **Target package context** within overall system established
 
 ## **Confirmed Architecture Pattern**
@@ -103,7 +103,7 @@ nx_workspace
 - **Pattern**: Type imports only
 - **Implementation**: `import type { Uri } from 'vscode'`
 - **Rationale**: Core packages remain pure business logic without VSCode dependencies
-- **Testing**: Test business logic in complete isolation without VSCode mocking
+- **Testing**: See [Testing Strategy](../testing/_Testing-Strategy.md) for comprehensive testing patterns
 
 ### **Extension Package VSCode Imports**
 
@@ -126,12 +126,12 @@ nx_workspace
     ```
 
 - **Rationale**: Extension packages handle VSCode integration through local adapters
-- **Testing**: Test VSCode integration through local adapters with API mocks
+- **Testing**: See [Testing Strategy](../testing/_Testing-Strategy.md) for comprehensive testing patterns
 
 ### **No Shared Package Usage**
 
 - **Rule**: Each package is completely self-contained
-- **Rationale**: Enables independent testing and validation
+- **Rationale**: Enables independent validation (see [Testing Strategy](../testing/_Testing-Strategy.md))
 - **Implementation**: No dependencies on `@fux/shared` or other shared packages
 
 ## **Package Structure**
@@ -147,11 +147,7 @@ packages/package-name/core/
 │   ├── services/             # All services in flat structure
 │   ├── _config/              # Constants and configuration
 │   └── index.ts              # Comprehensive categorized exports
-├── __tests__/
-│   ├── _setup.ts             # Global test setup
-│   ├── functional-tests/     # Main integration tests
-│   ├── isolated-tests/       # Unit tests
-│   └── coverage-tests/       # Coverage reports
+├── __tests__/                # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 ├── package.json              # Core package config
 ├── project.json              # Nx build config
 ├── tsconfig.json             # TypeScript config
@@ -171,15 +167,7 @@ packages/package-name/core/
 │   │       ├── _interfaces/  # Feature interfaces
 │   │       └── services/     # Feature services
 │   └── index.ts              # Package exports
-├── __tests__/
-│   ├── _setup.ts             # Global test setup
-│   ├── functional-tests/     # Main test directory
-│   │   ├── _readme.md        # Functional test docs
-│   │   └── *.service.test.ts # Service tests
-│   ├── unit/                 # Specific isolated tests
-│   │   └── _readme.md        # Unit test docs
-│   └── coverage-tests/       # Coverage reports
-│       └── _readme.md        # Coverage docs
+├── __tests__/                # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 ├── package.json              # Core package config
 ├── project.json              # Nx build config
 ├── tsconfig.json             # TypeScript config
@@ -198,19 +186,7 @@ packages/package-name/ext/
 │   ├── adapters/             # All VSCode adapters in flat structure
 │   ├── _config/              # Configuration constants (if needed)
 │   └── extension.ts          # Main extension entry point (direct entry)
-├── __tests__/
-│   ├── functional-tests/     # Main test directory
-│   │   ├── _readme.md        # Functional test docs
-│   │   ├── extension.test.ts # Main extension test
-│   │   └── *.adapter.test.ts # Adapter tests
-│   ├── integration-tests/    # VS Code extension integration tests
-│   │   ├── suite/            # Test files
-│   │   ├── mocked-workspace/ # Test workspace files
-│   │   ├── tsconfig.test.json # TypeScript config for tests
-│   │   ├── .vscode-test.mjs  # VS Code test configuration
-│   │   └── _readme.md        # Integration test docs
-│   └── coverage-tests/       # Coverage reports
-│       └── _readme.md        # Coverage docs
+├── __tests__/                # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 ├── assets/                   # Extension assets
 ├── package.json              # Extension config
 ├── project.json              # Nx build config
@@ -224,7 +200,7 @@ packages/package-name/ext/
 
 - **Direct entry point** - No index.ts wrapper, use extension.ts directly
 - **Flat adapter structure** - All adapters in single directory
-- **Integration test structure** - Complete VS Code testing setup
+- **Test structure** - See [Testing Strategy](../testing/_Testing-Strategy.md)
 - **Modern packaging** - Use @fux/vpack:pack executor
 
 ## **Build Configuration**
@@ -274,7 +250,7 @@ packages/package-name/ext/
         "@types/js-yaml": "^4.0.9",
         "@types/node": "^20.0.0",
         "typescript": "^5.0.0",
-        "vitest": "^3.2.4"
+        "vitest": "^3.2.4" // ✅ Testing framework (see [Testing Strategy](../testing/_Testing-Strategy.md))
     }
 }
 ```
@@ -410,7 +386,7 @@ packages/package-name/ext/
         "@types/vscode": "^1.99.3",
         "@types/js-yaml": "^4.0.9",
         "typescript": "^5.8.3",
-        "vitest": "^3.2.4",
+        "vitest": "^3.2.4" // ✅ Testing framework (see [Testing Strategy](../testing/_Testing-Strategy.md)),
         "@vitest/coverage-v8": "^3.2.4"
     },
     "contributes": {
@@ -703,7 +679,7 @@ export class PackageManagerService implements IPackageManagerService {
 - **Better Dependency Management**: Single dependencies interface instead of multiple individual dependencies
 - **Cleaner Architecture**: Simplified constructor patterns and dependency injection
 - **Centralized Orchestration**: Manager service provides unified access to all functionality
-- **Improved Testability**: Easier to mock dependencies with single aggregated interface
+- **Improved Testability**: See [Testing Strategy](../testing/_Testing-Strategy.md) for dependency mocking patterns
 - **Consistency**: Uniform pattern across all packages in the monorepo
 
 ### **Complex Orchestration Pattern**
@@ -826,207 +802,13 @@ export function activate(context: vscode.ExtensionContext): void {
 export function deactivate(): void {}
 ```
 
-## **Testing Strategy Alignment Workflow**
+## **Testing Strategy**
 
-### **Testing Strategy as Authority**
-
-- **Authority Document**: The `docs/FocusedUX-Testing-Strategy.md` is the authoritative source for all testing dependencies and patterns
-- **Alignment Process**: When aligning packages, reference the testing strategy document rather than comparing packages
-- **Documentation-First**: Check existing documentation before implementing solutions to prevent reinvention
-
-### **Testing Strategy Alignment Steps**
-
-1. **Reference Testing Strategy**: Check `docs/FocusedUX-Testing-Strategy.md` for required dependencies and patterns
-2. **Identify Missing Elements**: Compare package implementation against strategy document requirements
-3. **Update Implementation**: Add missing dependencies or configurations to align with strategy
-4. **Update Documentation**: Ensure strategy document is complete and current
-5. **Verify Alignment**: Run tests to confirm proper alignment
-
-### **Strategy Document Maintenance**
-
-- **Completeness**: Keep testing strategy documentation complete with all required dependencies
-- **Current State**: Update strategy document when new patterns or dependencies are identified
-- **Authority**: Use strategy document as single source of truth for all testing implementations
-
-## **Testing Patterns**
-
-### **Core Package Testing**
-
-**Test Setup:**
-
-```typescript
-// packages/package-name/core/__tests__/_setup.ts
-import { vi, beforeAll, afterAll, afterEach } from 'vitest'
-
-// Mock external dependencies
-vi.mock('js-yaml', () => ({
-    load: vi.fn(),
-}))
-
-// Use fake timers globally
-beforeAll(() => {
-    vi.useFakeTimers()
-})
-
-afterAll(() => {
-    vi.useRealTimers()
-})
-
-// Keep mocks clean between tests
-afterEach(() => {
-    vi.clearAllMocks()
-})
-```
-
-**Service Test Pattern:**
-
-```typescript
-// packages/package-name/core/__tests__/functional/FeatureService.test.ts
-import { describe, it, expect, beforeEach } from 'vitest'
-import { FeatureService } from '../../src/features/feature-name/services/Feature.service.js'
-import type {
-    IDependency1,
-    IDependency2,
-} from '../../src/features/feature-name/_interfaces/IFeatureService.js'
-
-// Mock dependencies
-class MockDependency1 implements IDependency1 {
-    process = vi.fn()
-}
-
-class MockDependency2 implements IDependency2 {
-    format = vi.fn()
-}
-
-describe('FeatureService', () => {
-    let service: FeatureService
-    let mockDep1: MockDependency1
-    let mockDep2: MockDependency2
-
-    beforeEach(() => {
-        mockDep1 = new MockDependency1()
-        mockDep2 = new MockDependency2()
-        service = new FeatureService(mockDep1, mockDep2)
-    })
-
-    describe('performAction', () => {
-        it('should process input correctly', async () => {
-            // Arrange
-            mockDep1.process.mockResolvedValue('processed')
-            mockDep2.format.mockReturnValue('formatted')
-
-            // Act
-            const result = await service.performAction('test')
-
-            // Assert
-            expect(result).toBe('formatted')
-            expect(mockDep1.process).toHaveBeenCalledWith('test')
-            expect(mockDep2.format).toHaveBeenCalledWith('processed')
-        })
-    })
-})
-```
-
-### **Extension Package Testing**
-
-**Test Setup:**
-
-```typescript
-// packages/package-name/ext/__tests__/_setup.ts
-import { beforeEach, afterEach } from 'vitest'
-
-// Global test setup for extension package
-beforeEach(() => {
-    // Clear any test state
-})
-
-afterEach(() => {
-    // Cleanup after each test
-})
-```
-
-**Extension Test Pattern:**
-
-```typescript
-// packages/package-name/ext/__tests__/functional/extension.test.ts
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { activate, deactivate } from '../../src/extension.js'
-
-describe('Extension', () => {
-    let mockContext: any
-
-    beforeEach(() => {
-        mockContext = {
-            subscriptions: [],
-            globalState: {
-                get: vi.fn(),
-                update: vi.fn(),
-            },
-            workspaceState: {
-                get: vi.fn(),
-                update: vi.fn(),
-            },
-        }
-    })
-
-    describe('activate', () => {
-        it('should activate without errors', () => {
-            expect(() => {
-                activate(mockContext)
-            }).not.toThrow()
-        })
-
-        it('should register commands', () => {
-            activate(mockContext)
-            expect(mockContext.subscriptions).toHaveLength(1)
-        })
-    })
-
-    describe('deactivate', () => {
-        it('should deactivate without errors', () => {
-            expect(() => {
-                deactivate()
-            }).not.toThrow()
-        })
-    })
-})
-```
-
-## **Vitest Configuration**
-
-### **Core Package Test Config**
-
-```typescript
-// packages/package-name/core/vitest.config.ts
-import { defineConfig, mergeConfig } from 'vitest/config'
-import baseConfig from '../../../vitest.functional.base'
-
-export default mergeConfig(
-    baseConfig,
-    defineConfig({
-        test: {
-            setupFiles: ['./__tests__/_setup.ts'],
-        },
-    })
-)
-```
-
-### **Extension Package Test Config**
-
-```typescript
-// packages/package-name/ext/vitest.config.ts
-import { defineConfig, mergeConfig } from 'vitest/config'
-import baseConfig from '../../../vitest.functional.base'
-
-export default mergeConfig(
-    baseConfig,
-    defineConfig({
-        test: {
-            setupFiles: ['./__tests__/_setup.ts'],
-        },
-    })
-)
-```
+- **Authority**: See [Testing Strategy](../testing/_Testing-Strategy.md) for comprehensive testing patterns, configurations, and strategies
+- **Core Packages**: Business logic testing patterns
+- **Extension Packages**: VSCode integration testing patterns
+- **Configuration**: Test executor and target configurations
+- **Integration Testing**: VS Code extension testing requirements
 
 ## **Key Architectural Principles**
 
@@ -1035,14 +817,14 @@ export default mergeConfig(
 - Core packages use direct service instantiation
 - Extension packages use direct service instantiation
 - Dependencies are passed as constructor parameters
-- Simple and testable architecture
+- Simple architecture (see [Testing Strategy](../testing/_Testing-Strategy.md) for testing patterns)
 
 ### **2. No Shared Dependencies in Core**
 
 - Core packages are self-contained "guinea pig" packages
 - Only external dependencies are minimal utilities (e.g., `js-yaml`)
 - No `@fux/shared` or `@fux/mockly` dependencies
-- Enables independent testing and validation
+- Enables independent validation (see [Testing Strategy](../testing/_Testing-Strategy.md))
 
 ### **3. Thin Extension Wrappers**
 
@@ -1053,9 +835,7 @@ export default mergeConfig(
 
 ### **4. Simple Testing**
 
-- Core packages test business logic with mock dependencies
-- Extension packages test VSCode integration only
-- No complex DI container mocking
+- See [Testing Strategy](../testing/_Testing-Strategy.md) for comprehensive testing patterns
 - Clear separation of concerns
 
 ### **5. Comprehensive Export Strategy**
@@ -1146,38 +926,36 @@ export default mergeConfig(
 
 ### **Step 4: Update Tests**
 
-1. Move service tests to core package
-2. Create adapter tests in extension package
-3. Update extension tests with new architecture
+1. See [Testing Strategy](../testing/_Testing-Strategy.md) for migration testing patterns
 
 ### **Step 5: Update Build Configuration**
 
 1. Configure Nx targets for both packages
-2. Set up Vitest configurations
+2. Set up test configurations (see [Testing Strategy](../testing/_Testing-Strategy.md))
 3. Update command aliases
 
 ## **Quality Gates**
 
 ### **Core Package**
 
-- [ ] All services have functional tests
-- [ ] 100% test coverage for business logic
+- [ ] All services have functional tests (see [Testing Strategy](../testing/_Testing-Strategy.md))
+- [ ] Appropriate test coverage (see [Testing Strategy](../testing/_Testing-Strategy.md))
 - [ ] No VSCode dependencies
 - [ ] Clean interfaces defined
 - [ ] TypeScript compilation passes
 
 ### **Extension Package**
 
-- [ ] Extension activation test passes
-- [ ] All adapters have tests
-- [ ] Command registration tested
-- [ ] Error handling tested
+- [ ] Extension activation test passes (see [Testing Strategy](../testing/_Testing-Strategy.md))
+- [ ] All adapters have tests (see [Testing Strategy](../testing/_Testing-Strategy.md))
+- [ ] Command registration tested (see [Testing Strategy](../testing/_Testing-Strategy.md))
+- [ ] Error handling tested (see [Testing Strategy](../testing/_Testing-Strategy.md))
 - [ ] TypeScript compilation passes
 
 ### **Integration**
 
 - [ ] Both packages build successfully
-- [ ] All tests pass
+- [ ] All tests pass (see [Testing Strategy](../testing/_Testing-Strategy.md))
 - [ ] No circular dependencies
 - [ ] Clean separation of concerns
 
@@ -1186,8 +964,8 @@ export default mergeConfig(
 This architecture provides:
 
 - **Clean separation of concerns** between business logic and VSCode integration
-- **Simple and testable** code structure without complex DI containers
-- **Independent core packages** that can be tested and validated separately
+- **Simple** code structure without complex DI containers
+- **Independent core packages** that can be validated separately (see [Testing Strategy](../testing/_Testing-Strategy.md))
 - **Thin extension wrappers** that focus only on VSCode integration
 - **Consistent patterns** across all packages in the monorepo
 

@@ -38,7 +38,7 @@ export function auditCodeStructure(projectRoot: string, verbose = false): CodeSt
                 // Skip node_modules, dist, and test directories
                 if (['node_modules', 'dist', '__tests__', 'test'].includes(entry.name)) continue
                 findSourceFiles(fullPath)
-            } else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts') && !entry.name.endsWith('.test.ts') && !entry.name.endsWith('.spec.ts')) {
+            } else if ((entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts') && !entry.name.endsWith('.test.ts') && !entry.name.endsWith('.spec.ts')) || entry.name === 'package.json') {
                 sourceFiles.push(fullPath)
             }
         }
@@ -50,6 +50,7 @@ export function auditCodeStructure(projectRoot: string, verbose = false): CodeSt
     // Check each source file for violations
     for (const sourceFile of sourceFiles) {
         const fileViolations = checkSourceFile(sourceFile, projectRoot, verbose)
+
         violations.push(...fileViolations)
         
         if (fileViolations.length > 0) {
@@ -83,7 +84,8 @@ function checkSourceFile(filePath: string, projectRoot: string, verbose: boolean
         violations.push(...checkNodeJsImports(lines, relativePath))
         violations.push(...checkBusinessLogicInExtensions(lines, relativePath, filePath))
         violations.push(...checkDIContainerPatterns(lines, relativePath, filePath))
-
+        violations.push(...checkPackageJsonStructure(filePath, projectRoot))
+        violations.push(...checkDevDependenciesMisplacement(filePath, projectRoot))
     } catch (error) {
         if (verbose) {
             console.warn(`Warning: Could not read file ${filePath}: ${error}`)
@@ -110,6 +112,7 @@ function checkSharedReferences(lines: string[], filePath: string): CodeViolation
         
         // Skip comment lines
         const trimmedLine = line.trim()
+
         if (trimmedLine.startsWith('//') || trimmedLine.startsWith('/*') || trimmedLine.startsWith('*')) {
             continue
         }
@@ -149,6 +152,7 @@ function checkMocklyReferences(lines: string[], filePath: string): CodeViolation
         
         // Skip comment lines
         const trimmedLine = line.trim()
+
         if (trimmedLine.startsWith('//') || trimmedLine.startsWith('/*') || trimmedLine.startsWith('*')) {
             continue
         }
@@ -179,6 +183,7 @@ function checkVSCodeValueImports(lines: string[], filePath: string, fullPath: st
     
     // Skip adapter files, extension entry points, and test files - they are allowed VSCode imports
     const fileName = path.basename(fullPath)
+
     if (fileName.endsWith('.adapter.ts')
       || fileName === 'index.ts'
       || fileName === 'extension.ts'
@@ -342,6 +347,7 @@ function checkBusinessLogicInExtensions(lines: string[], filePath: string, fullP
 
     // Skip extension.ts as it is allowed to have some logic
     const fileName = path.basename(fullPath)
+
     if (fileName === 'extension.ts') {
         return violations
     }
@@ -380,7 +386,7 @@ function checkBusinessLogicInExtensions(lines: string[], filePath: string, fullP
 /**
  * Check for DI container patterns in core packages
  */
-function checkDIContainerPatterns(lines: string[], filePath: string, fullPath: string): CodeViolation[] {
+function checkDIContainerPatterns(lines: string[], filePath: string, _fullPath: string): CodeViolation[] {
     const violations: CodeViolation[] = []
     
     // Only check core packages
@@ -414,6 +420,193 @@ function checkDIContainerPatterns(lines: string[], filePath: string, fullPath: s
                 })
             }
         }
+    }
+
+    return violations
+}
+
+/**
+ * Check package.json structure compliance for core packages
+ */
+function checkPackageJsonStructure(filePath: string, projectRoot: string): CodeViolation[] {
+    const violations: CodeViolation[] = []
+    
+    // Only check package.json files in core packages
+    if (!filePath.includes('/core/') || !filePath.endsWith('package.json')) {
+        return violations
+    }
+
+    try {
+        const content = fs.readFileSync(filePath, 'utf-8')
+        const packageJson = JSON.parse(content)
+        const relativePath = path.relative(projectRoot, filePath)
+
+        // Check required fields
+        const requiredFields = [
+            'name', 'version', 'private', 'main', 'types', 'exports', 'devDependencies'
+        ]
+
+        for (const field of requiredFields) {
+            if (!(field in packageJson)) {
+                violations.push({
+                    category: 'Package.json Structure',
+                    severity: 'HIGH',
+                    file: relativePath,
+                    line: 1,
+                    column: 1,
+                    message: `Missing required field "${field}" in package.json`,
+                    suggestion: `Add "${field}" field to package.json`
+                })
+            }
+        }
+
+        // Check exports structure
+        if (packageJson.exports && typeof packageJson.exports === 'object') {
+            if (!packageJson.exports['.']) {
+                violations.push({
+                    category: 'Package.json Structure',
+                    severity: 'HIGH',
+                    file: relativePath,
+                    line: 1,
+                    column: 1,
+                    message: 'Missing "." export in exports field',
+                    suggestion: 'Add "." export with types, import, and default fields'
+                })
+            } else {
+                const dotExport = packageJson.exports['.']
+                const requiredExportFields = ['types', 'import', 'default']
+                
+                for (const field of requiredExportFields) {
+                    if (!(field in dotExport)) {
+                        violations.push({
+                            category: 'Package.json Structure',
+                            severity: 'HIGH',
+                            file: relativePath,
+                            line: 1,
+                            column: 1,
+                            message: `Missing "${field}" field in "." export`,
+                            suggestion: `Add "${field}" field to "." export`
+                        })
+                    }
+                }
+            }
+        }
+
+        // Check main and types paths
+        if (packageJson.main && !packageJson.main.startsWith('./dist/')) {
+            violations.push({
+                category: 'Package.json Structure',
+                severity: 'MEDIUM',
+                file: relativePath,
+                line: 1,
+                column: 1,
+                message: 'main field should point to "./dist/index.js"',
+                suggestion: 'Change main field to "./dist/index.js"'
+            })
+        }
+
+        if (packageJson.types && !packageJson.types.startsWith('./dist/')) {
+            violations.push({
+                category: 'Package.json Structure',
+                severity: 'MEDIUM',
+                file: relativePath,
+                line: 1,
+                column: 1,
+                message: 'types field should point to "./dist/index.d.ts"',
+                suggestion: 'Change types field to "./dist/index.d.ts"'
+            })
+        }
+
+        // Check required devDependencies
+        const requiredDevDeps = ['@types/node', 'typescript', 'vitest']
+
+        if (packageJson.devDependencies) {
+            for (const dep of requiredDevDeps) {
+                if (!(dep in packageJson.devDependencies)) {
+                    violations.push({
+                        category: 'Package.json Structure',
+                        severity: 'MEDIUM',
+                        file: relativePath,
+                        line: 1,
+                        column: 1,
+                        message: `Missing required devDependency "${dep}"`,
+                        suggestion: `Add "${dep}" to devDependencies`
+                    })
+                }
+            }
+        }
+    } catch (error) {
+        violations.push({
+            category: 'Package.json Structure',
+            severity: 'CRITICAL',
+            file: path.relative(projectRoot, filePath),
+            line: 1,
+            column: 1,
+            message: `Invalid package.json: ${error}`,
+            suggestion: 'Fix JSON syntax errors in package.json'
+        })
+    }
+
+    return violations
+}
+
+/**
+ * Check for devDependencies that should be in dependencies
+ */
+function checkDevDependenciesMisplacement(filePath: string, projectRoot: string): CodeViolation[] {
+    const violations: CodeViolation[] = []
+    
+    // Only check package.json files
+    if (!filePath.endsWith('package.json')) {
+        return violations
+    }
+
+    try {
+        const content = fs.readFileSync(filePath, 'utf-8')
+        const packageJson = JSON.parse(content)
+        const relativePath = path.relative(projectRoot, filePath)
+
+        // Common runtime dependencies that are often mistakenly placed in devDependencies
+        const runtimeDeps = [
+            'js-yaml', 'micromatch', 'gpt-tokenizer', 'typescript', 'lodash', 'moment', 'axios',
+            'uuid', 'crypto-js', 'jsonwebtoken', 'bcrypt', 'express', 'fastify', 'koa',
+            'mongoose', 'sequelize', 'prisma', 'redis', 'ioredis', 'pg', 'mysql2'
+        ]
+
+        if (packageJson.devDependencies) {
+            for (const [depName, _depVersion] of Object.entries(packageJson.devDependencies)) {
+                if (runtimeDeps.includes(depName)) {
+                    violations.push({
+                        category: 'DevDependencies Misplacement',
+                        severity: 'HIGH',
+                        file: relativePath,
+                        line: 1,
+                        column: 1,
+                        message: `"${depName}" is a runtime dependency but is listed in devDependencies`,
+                        suggestion: `Move "${depName}" from devDependencies to dependencies`
+                    })
+                }
+            }
+        }
+
+        // Check for @types packages in dependencies (should be in devDependencies)
+        if (packageJson.dependencies) {
+            for (const depName of Object.keys(packageJson.dependencies)) {
+                if (depName.startsWith('@types/')) {
+                    violations.push({
+                        category: 'DevDependencies Misplacement',
+                        severity: 'HIGH',
+                        file: relativePath,
+                        line: 1,
+                        column: 1,
+                        message: `"${depName}" is a type definition package but is listed in dependencies`,
+                        suggestion: `Move "${depName}" from dependencies to devDependencies`
+                    })
+                }
+            }
+        }
+    } catch (_error) {
+        // Skip invalid JSON files - they're handled by the package.json structure check
     }
 
     return violations

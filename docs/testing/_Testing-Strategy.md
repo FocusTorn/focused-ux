@@ -1717,3 +1717,73 @@ it('should handle command registration with error', () => {
 
 This comprehensive mocking strategy provides the perfect balance between centralized control and individual test flexibility, making your test suite more maintainable, readable, and efficient across both core business logic and VSCode extension functionality.
 
+---
+
+## Testing Strategy Alignment Workflow
+
+### Testing Strategy as Authority
+
+- **Authority Document**: This document is the authoritative source for all testing dependencies and patterns
+- **Alignment Process**: When aligning packages, reference this document rather than comparing packages
+- **Documentation-First**: Check existing documentation before implementing solutions to prevent reinvention
+
+### Testing Strategy Alignment Steps
+
+1. **Reference Testing Strategy**: Check this document for required dependencies and patterns
+2. **Identify Missing Elements**: Compare package implementation against strategy document requirements
+3. **Update Implementation**: Add missing dependencies or configurations to align with strategy
+4. **Update Documentation**: Ensure strategy document is complete and current
+5. **Verify Alignment**: Run tests to confirm proper alignment
+
+### Strategy Document Maintenance
+
+- **Completeness**: Keep testing strategy documentation complete with all required dependencies
+- **Current State**: Update strategy document when new patterns or dependencies are identified
+- **Authority**: Use strategy document as single source of truth for all testing implementations
+
+---
+
+## Package-Specific Testing Strategies
+
+### Direct TSX Executed (`libs/tools/`)
+
+- **Testing Strategy**: Direct execution tests, CLI testing patterns
+- **Test Structure**: `__tests__/` directory with execution-focused tests
+- **Dependencies**: Minimal external dependencies
+- **Build Configuration**: `bundle: false, format: ['esm']`
+
+### Shared Utility (`libs/`)
+
+- **Testing Strategy**: Standard library testing, unit tests
+- **Test Structure**: `__tests__/` directory with utility-focused tests
+- **Dependencies**: No VSCode dependencies
+- **Build Configuration**: `bundle: false, format: ['esm']`
+
+### Feature Utility (`packages/{feature}/`)
+
+- **Testing Strategy**: Feature-specific utility testing, integration tests
+- **Test Structure**: `__tests__/` directory with feature-specific tests
+- **Dependencies**: Feature-specific dependencies
+- **Build Configuration**: `bundle: false, format: ['esm']`
+
+### Core Extension Feature Logic (`packages/{feature-name}/core`)
+
+- **Testing Strategy**: Core package testing pattern, business logic validation
+- **Test Structure**:
+    - `__tests__/functional-tests/` - Main integration tests
+    - `__tests__/isolated-tests/` - Specific isolated tests
+    - `__tests__/coverage-tests/` - Coverage reports
+- **Dependencies**: Minimal external dependencies, no VSCode value imports
+- **Build Configuration**: `bundle: false, format: ['esm']`
+
+### Pre-Packaged Extension (`packages/{feature-name}/ext`)
+
+- **Testing Strategy**: Extension package testing pattern, dual testing strategy
+- **Test Structure**:
+    - `__tests__/functional-tests/` - Standard Vitest tests
+    - `__tests__/integration-tests/` - VS Code extension integration tests
+    - `__tests__/isolated-tests/` - Specific isolated tests
+    - `__tests__/coverage-tests/` - Coverage reports
+- **Dependencies**: Core package + VSCode APIs
+- **Build Configuration**: `bundle: true, format: ['cjs']`
+

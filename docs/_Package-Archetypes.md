@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document serves as the **single source of truth** for package classification in the FocusedUX monorepo. All packages must be classified according to this system, which determines architectural patterns, build configurations, testing strategies, and development workflows.
+This document serves as the **single source of truth** for package classification in the FocusedUX monorepo. All packages must be classified according to this system, which determines architectural patterns, build configurations, and development workflows.
+
+**📋 Testing Reference**: See [Testing Strategy](../testing/_Testing-Strategy.md) for comprehensive testing strategies and patterns.
 
 ## Package Classification System
 
@@ -13,7 +15,7 @@ This document serves as the **single source of truth** for package classificatio
 **Purpose**: Standalone utilities with direct execution capabilities
 **Architecture**: Direct execution, minimal dependencies, CLI-focused
 **Build Configuration**: `bundle: false, format: ['esm']`
-**Testing Strategy**: Direct execution tests, CLI testing patterns
+**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Examples**:
 
@@ -35,7 +37,7 @@ libs/tools/{tool-name}/
 │   ├── cli/           # CLI entry points
 │   ├── lib/           # Core functionality
 │   └── index.ts       # Main exports
-├── __tests__/         # Test files
+├── __tests__/         # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 ├── package.json       # Tool configuration
 └── project.json       # Nx configuration
 ```
@@ -47,7 +49,7 @@ libs/tools/{tool-name}/
 **Purpose**: Shared utilities across multiple packages
 **Architecture**: Pure functions, clear exports, no side effects
 **Build Configuration**: `bundle: false, format: ['esm']`
-**Testing Strategy**: Standard library testing, unit tests
+**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Examples**:
 
@@ -71,7 +73,7 @@ libs/{utility-name}/
 │   ├── _config/       # Configuration constants
 │   ├── features/      # Feature-specific modules
 │   └── index.ts       # Main exports
-├── __tests__/         # Test files
+├── __tests__/         # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 ├── package.json       # Package configuration
 └── project.json       # Nx configuration
 ```
@@ -83,7 +85,7 @@ libs/{utility-name}/
 **Purpose**: Feature-specific utilities and processing logic
 **Architecture**: Feature-specific processing, specialized functionality
 **Build Configuration**: `bundle: false, format: ['esm']`
-**Testing Strategy**: Feature-specific utility testing, integration tests
+**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Examples**:
 
@@ -106,7 +108,7 @@ packages/{feature}/{utility-name}/
 │   ├── orchestrators/ # Workflow orchestration
 │   ├── utils/         # Utility functions
 │   └── index.ts       # Main exports
-├── __tests__/         # Test files
+├── __tests__/         # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 ├── assets/            # Asset files (if applicable)
 ├── scripts/           # Processing scripts
 ├── package.json       # Package configuration
@@ -120,7 +122,7 @@ packages/{feature}/{utility-name}/
 **Purpose**: Pure business logic, self-contained feature implementation
 **Architecture**: Type imports only, no VSCode value imports, minimal external dependencies
 **Build Configuration**: `bundle: false, format: ['esm']`
-**Testing Strategy**: Core package testing pattern, business logic validation
+**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Examples**:
 
@@ -145,11 +147,7 @@ packages/{feature-name}/core/
 │   ├── _config/       # Configuration constants
 │   ├── features/      # Feature-specific services
 │   └── index.ts       # Package exports
-├── __tests__/
-│   ├── functional-tests/    # Main test directory
-│   ├── isolated-tests/     # Specific isolated tests
-│   ├── coverage-tests/     # Coverage reports
-│   └── _reports/           # Test reports
+├── __tests__/              # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 ├── vitest.config.ts        # Test config
 ├── vitest.coverage.config.ts # Coverage config
 └── project.json            # Nx configuration
@@ -162,7 +160,7 @@ packages/{feature-name}/core/
 **Purpose**: VSCode extension wrapper for core logic
 **Architecture**: Local adapters, CommonJS bundle, VSCode integration
 **Build Configuration**: `bundle: true, format: ['cjs']`
-**Testing Strategy**: Extension package testing pattern, dual testing strategy
+**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Examples**:
 
@@ -189,13 +187,7 @@ packages/{feature-name}/ext/
 │   ├── services/      # Extension-specific services
 │   ├── extension.ts   # Main extension entry point
 │   └── index.ts       # Package exports
-├── __tests__/
-│   ├── functional-tests/    # Standard Vitest tests
-│   ├── integration-tests/   # VS Code integration tests
-│   ├── isolated-tests/     # Specific isolated tests
-│   ├── coverage-tests/     # Coverage reports
-│   ├── _out-tsc/           # Compiled integration tests
-│   └── _reports/            # Test reports
+├── __tests__/              # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 ├── assets/            # Extension assets
 ├── vitest.config.ts   # Standard test config
 ├── vitest.coverage.config.ts # Coverage config
@@ -213,7 +205,7 @@ packages/{feature-name}/ext/
 **Purpose**: Will replace current generator packages with Nx-aligned generators
 **Status**: Currently in development
 **Architecture**: TBD when implemented
-**Testing Strategy**: TBD when implemented
+**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Planned Examples**:
 
@@ -227,7 +219,7 @@ packages/{feature-name}/ext/
 **Purpose**: Single orchestrator extension that manages multiple features
 **Status**: Planned for future development
 **Architecture**: TBD when implemented
-**Testing Strategy**: TBD when implemented
+**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Characteristics** (Planned):
 
@@ -251,7 +243,7 @@ packages/{feature-name}/ext/
 2. **Consumable Package: Shared Utility** (`libs/`)
     - ✅ Utilities used by multiple features
     - ✅ Common abstractions and helpers
-    - ✅ Testing utilities
+    - ✅ Testing utilities (see [Testing Strategy](../testing/_Testing-Strategy.md))
     - ❌ Don't use for feature-specific logic
 
 3. **Consumable Package: Feature Utility** (`packages/{feature}/`)
@@ -290,7 +282,7 @@ packages/{feature-name}/ext/
 ### **File Names**
 
 - **TypeScript**: Use kebab-case (e.g., `asset-processor.ts`)
-- **Test Files**: Use kebab-case with `.test.ts` suffix
+- **Test Files**: Use kebab-case with `.test.ts` suffix (see [Testing Strategy](../testing/_Testing-Strategy.md))
 - **Configuration**: Use kebab-case (e.g., `vitest.config.ts`)
 
 ## Migration Guidelines
@@ -313,13 +305,11 @@ packages/{feature-name}/ext/
     - Register commands with core logic
 
 4. **Update Tests**
-    - Move service tests to core package
-    - Create adapter tests in extension package
-    - Update extension tests with new architecture
+    - See [Testing Strategy](../testing/_Testing-Strategy.md) for migration testing patterns
 
 5. **Update Build Configuration**
     - Configure Nx targets for both packages
-    - Set up Vitest configurations
+    - Set up test configurations (see [Testing Strategy](../testing/_Testing-Strategy.md))
     - Update command aliases
 
 ## Quality Gates
@@ -331,7 +321,7 @@ For each package type, ensure:
 - [ ] **Correct Classification**: Package follows appropriate archetype
 - [ ] **Proper Dependencies**: Dependencies align with package purpose
 - [ ] **Build Configuration**: Build settings match archetype requirements
-- [ ] **Testing Strategy**: Tests follow archetype testing patterns
+- [ ] **Testing Strategy**: Tests follow patterns in [Testing Strategy](../testing/_Testing-Strategy.md)
 - [ ] **Naming Conventions**: Names follow established conventions
 - [ ] **Documentation**: Package purpose and usage is documented
 
@@ -340,7 +330,7 @@ For each package type, ensure:
 - [ ] **Separation of Concerns**: Business logic separated from VSCode integration
 - [ ] **Dependency Direction**: Dependencies flow in correct direction
 - [ ] **Interface Contracts**: Clear interfaces between packages
-- [ ] **Testing Coverage**: Appropriate test coverage for package type
+- [ ] **Testing Coverage**: Appropriate test coverage (see [Testing Strategy](../testing/_Testing-Strategy.md))
 - [ ] **Build Success**: All packages build without errors
 - [ ] **Integration**: Packages integrate correctly with each other
 

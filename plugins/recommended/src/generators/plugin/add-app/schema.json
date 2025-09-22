@@ -1,0 +1,24 @@
+{
+    "$schema": "https://json-schema.org/schema",
+    "$id": "PluginAddApp",
+    "title": "Plugin Add App",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "The name of the application plugin",
+            "$default": {
+                "$source": "argv",
+                "index": 0
+            },
+            "x-prompt": "What is the name of the application plugin?"
+        },
+        "directory": {
+            "type": "string",
+            "description": "Directory where the plugin will be created",
+            "default": "./plugins",
+            "x-prompt": "Where should the plugin be created?"
+        }
+    },
+    "required": ["name"]
+}

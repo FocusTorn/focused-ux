@@ -1,23 +1,19 @@
 {
     "name": "@fux/ghost-writer-core",
     "version": "0.0.1",
+    "private": true,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        }
+    },
     "devDependencies": {
         "@types/node": "^24.5.2",
         "typescript": "^5.9.2",
         "vitest": "^3.2.4"
-    },
-    "engines": {
-        "node": ">=18.0.0"
-    },
-    "private": true,
-    "type": "module",
-    "main": "./dist/index.js",
-    "types": "./dist/packages/ghost-writer/core/src/index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./dist/packages/ghost-writer/core/src/index.d.ts",
-            "import": "./dist/index.js",
-            "default": "./dist/index.js"
-        }
     }
 }

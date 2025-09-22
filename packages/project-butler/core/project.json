@@ -3,8 +3,8 @@
     "tags": [ "core" ],
     "targets": {
         
-        //= Finalize ============================================================ 
-        "build": {
+        //= Prepare ============================================================= 
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": [ "{options.outputPath}" ],
             "options": {
@@ -20,7 +20,7 @@
                     "js-yaml"
                 ]
             }
-        },
+        }, //<
         
         //= Quality ============================================================= 
         "check-types": { "extends": "check-types" },
@@ -28,6 +28,11 @@
         
         "lint": { "extends": "lint" },
         "lint:deps": { "extends": "lint:deps" },
+        
+        "audit": { "extends": "audit" },
+        "audit:code": { "extends": "audit:code" },
+        "audit:test": { "extends": "audit:test" },
+        "audit:all": { "extends": "audit:all" },
         
         //= Cleaning ============================================================ 
         "clean": { "extends": "clean" },
@@ -41,11 +46,6 @@
         //= Dependency Chain Testing ============================================ 
         "test:deps": { "extends": "test:deps" },
         "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" }
-    
-        // "validate": { "extends": "validate" },
-        // "validate:deps": { "extends": "validate:deps" },
-        // "audit": { "extends": "audit" },
-        // "audit:full": { "extends": "audit:full" },
     },
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/project-butler/core/src",

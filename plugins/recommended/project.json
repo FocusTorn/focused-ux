@@ -1,12 +1,10 @@
 {
     "name": "@fux/recommended",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "plugins/recommended/src",
-    "projectType": "library",
+    "tags": [ "executor" ],
     "targets": {
         
-        
-        "build": {
+        //= Prepare ============================================================= 
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": [
                 "{options.outputPath}"
@@ -14,11 +12,11 @@
             "options": {
                 
                 "main": "plugins/recommended/src/index.ts",
-                "tsConfig": "plugins/recommended/tsconfig.lib.json",
+                "tsConfig": "plugins/recommended/tsconfig.json",
 
                 "bundle": false,
                 
-                "assets": [
+                "assets": [ //>
                     {
                         "input": "./plugins/recommended/src",
                         "glob": "**/!(*.ts)",
@@ -29,11 +27,31 @@
                         "glob": "**/*.d.ts",
                         "output": "."
                     }
-                ]
+                ] //<
             }
 
-        }
-       
-    }
-  
+        }, //<
+        
+        //= Quality ============================================================= 
+        "check-types": { "extends": "check-types" },
+        
+        "lint": { "extends": "lint" },
+        
+        "audit": { "extends": "audit" },
+        "audit:code": { "extends": "audit:code" },
+        "audit:test": { "extends": "audit:test" },
+        "audit:all": { "extends": "audit:all" },
+        
+        //= Cleaning ============================================================ 
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+         
+        //= Single Package Testing ============================================== 
+        "test": { "extends": "test" },
+        "test:coverage-tests": { "extends": "test:coverage-tests" }
+    },
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "plugins/recommended/src",
+    "projectType": "library"
 }

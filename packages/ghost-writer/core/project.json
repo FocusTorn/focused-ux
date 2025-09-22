@@ -3,6 +3,7 @@
     "tags": [ "core" ],
     "targets": {
         
+        //= Prepare ============================================================= 
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": [ "{options.outputPath}" ],
@@ -28,6 +29,11 @@
         "lint": { "extends": "lint" },
         "lint:deps": { "extends": "lint:deps" },
         
+        "audit": { "extends": "audit" },
+        "audit:code": { "extends": "audit:code" },
+        "audit:test": { "extends": "audit:test" },
+        "audit:all": { "extends": "audit:all" },
+        
         //= Cleaning ============================================================ 
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
@@ -39,15 +45,8 @@
         
         //= Dependency Chain Testing ============================================ 
         "test:deps": { "extends": "test:deps" },
-        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" },
-    
-    
-        // "validate": { "extends": "validate" },
-        // "validate:deps": { "extends": "validate:deps" },
-        "audit": { "extends": "audit" }
-        // "audit:full": { "extends": "audit:full" },
+        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" }
     },
-    
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/ghost-writer/core/src",
     "projectType": "library"

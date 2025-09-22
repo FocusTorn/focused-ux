@@ -12,11 +12,11 @@
         }
     },
     "dependencies": {
+        "@types/js-yaml": "^4.0.9",
+        "@types/micromatch": "^4.0.9",
         "gpt-tokenizer": "^3.0.1",
         "micromatch": "^4.0.8",
-        "js-yaml": "^4.1.0",
-        "@types/js-yaml": "^4.0.9",
-        "@types/micromatch": "^4.0.9"
+        "js-yaml": "^4.1.0"
     },
     "devDependencies": {
         "@types/node": "^24.5.2",

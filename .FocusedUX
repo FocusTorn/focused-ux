@@ -111,8 +111,7 @@ ProjectButler:
     - bin
     - scripts
     - sideEffects
-    - dependencies
-    - devDependencies
+
     - peerDependencies
     - contributes
     - activationEvents
@@ -128,3 +127,5 @@ ProjectButler:
     - types
     - workspaces
     - exports
+    - dependencies
+    - devDependencies
