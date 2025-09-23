@@ -1,5 +1,6 @@
 // Interfaces
 export type { IIconActionsService } from './_interfaces/IIconActionsService.js'
+export type { IDynamiconsManagerService, IDynamiconsDependencies } from './_interfaces/IDynamiconsManagerService.js'
 export type { IIconThemeGeneratorService } from './_interfaces/IIconThemeGeneratorService.js'
 export type { ICommands } from './_interfaces/ICommands.js'
 export type { ICommonUtils } from './_interfaces/ICommonUtils.js'
@@ -14,6 +15,7 @@ export type { IUri, IUriFactory } from './_interfaces/IUri.js'
 
 // Services
 export { IconActionsService } from './services/IconActionsService.js'
+export { DynamiconsManagerService } from './services/DynamiconsManager.service.js'
 export { IconThemeGeneratorService } from './services/IconThemeGeneratorService.js'
 export { ConfigurationService, type IConfigurationService } from './services/ConfigurationService.js'
 export { IconDiscoveryService, type IIconDiscoveryService } from './services/IconDiscoveryService.js'

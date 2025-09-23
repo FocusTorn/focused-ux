@@ -36,4 +36,17 @@ export const dynamiconsConstants = { //>
 	assets: {
 		themesPath: 'assets/themes',
 	},
+	errorMessages: {
+		MISSING_REQUIRED_PARAMETER: 'Missing required parameter',
+		INVALID_INPUT: 'Invalid input provided',
+		INVALID_RESOURCE_URI: 'Invalid resource URI provided',
+		INVALID_ICON_NAME: 'Invalid icon name provided',
+		WORKFLOW_EXECUTION_FAILED: 'Workflow execution failed',
+		ORCHESTRATION_FAILED: 'Complex orchestration failed',
+		ICON_ASSIGNMENT_FAILED: 'Icon assignment operation failed',
+		THEME_GENERATION_FAILED: 'Theme generation failed',
+		NO_RESOURCES_SELECTED: 'No resources selected',
+		NO_ICON_SELECTED: 'No icon selected',
+		CONFIGURATION_UPDATE_FAILED: 'Configuration update failed',
+	},
 } as const
