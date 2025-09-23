@@ -5,16 +5,8 @@
         
         //= Prepare ============================================================= 
         "build": { //>
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": [ "{options.outputPath}" ],
+            "extends": "build:core",
             "options": {
-                "main": "packages/context-cherry-picker/core/src/index.ts",
-                "outputPath": "packages/context-cherry-picker/core/dist",
-                "declarationRootDir": "packages/context-cherry-picker/core/src",
-                
-                "format": [ "esm" ],
-                "bundle": false,
-                
                 "external": [
                     "vscode",
                     "gpt-tokenizer",

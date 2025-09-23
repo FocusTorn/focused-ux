@@ -1,60 +1,23 @@
 {
     "name": "@fux/context-cherry-picker-ext",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/context-cherry-picker/ext/src",
-    "projectType": "application",
+    "tags": [ "ext" ],
     "targets": {
 
-        "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
+        //= Finalize ============================================================ 
+        "build": { //>
+            "extends": "build:ext",
             "dependsOn": [{
                 "projects": ["@fux/context-cherry-picker-core"],
                 "target": "build",
                 "params": "ignore"
             }],
             "options": {
-                "main": "packages/context-cherry-picker/ext/src/extension.ts",
-                "tsConfig": "packages/context-cherry-picker/ext/tsconfig.json",
-                "outputPath": "packages/context-cherry-picker/ext/dist",
-                
-                "format": ["cjs"],
-                "bundle": true,
-                
                 "external": [
                     "vscode",
-                    "gpt-tokenizer",
-                    "js-yaml",
-                    "micromatch"
-                ],
-                
-                "metafile": true,
-                "sourcemap": true,
-                
-                "assets": [
-                    {
-                        "glob": "**/*",
-                        "input": "packages/context-cherry-picker/ext/assets/",
-                        "output": "./assets/"
-                    }
+                    "js-yaml"
                 ]
             }
-        },
-        "package": {
-            "executor": "@fux/vpack:pack",
-            "dependsOn": ["build", "@fux/vsix-packager:build"],
-            "options": {
-                "targetPath": "{projectRoot}"
-            }
-        },
-        "package:dev": {
-            "executor": "@fux/vpack:pack",
-            "dependsOn": ["build", "@fux/vsix-packager:build"],
-            "options": {
-                "targetPath": "{projectRoot}",
-                "dev": true
-            }
-        },
+        }, //<
         "publish": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["package"],
@@ -63,131 +26,39 @@
                 "cwd": "{projectRoot}"
             }
         }, //<
+        "package": { "extends": "package" },
+        "package:dev": { "extends": "package:dev" },
         
+        ///= Quality ============================================================= 
         "check-types": { "extends": "check-types" },
+        "check-types:deps": { "extends": "check-types:deps" },
+        
         "lint": { "extends": "lint" },
         "lint:deps": { "extends": "lint:deps" },
-        "validate": { "extends": "validate" },
-        "validate:deps": { "extends": "validate:deps" },
-        "audit": { "extends": "audit" },
-        "audit:full": { "extends": "audit:full" },
         
+        "audit": { "extends": "audit" },
+        "audit:code": { "extends": "audit:code" },
+        "audit:test": { "extends": "audit:test" },
+        "audit:all": { "extends": "audit:all" },
+        
+        //= Cleaning ============================================================ 
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
-
-        "test": { //>
-            "extends": "vite:test",
-            "dependsOn": ["^build"]
-        }, //<
-        "test:integration": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["^build"],
-            "options": {
-                "command": "vitest run --config vitest.integration.config.ts",
-                "cwd": "{projectRoot}"
-            }
-        },
-        "test:full": { //>
-            "extends": "vite:test",
-            "dependsOn": ["^test"]
-        } //<
         
+        //= Single Package Testing ============================================== 
+        "test": { "extends": "test" },
+        "test:coverage-tests": { "extends": "test:coverage-tests" },
         
+        //= Dependency Chain Testing ============================================ 
+        "test:deps": { "extends": "test:deps" },
+        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" },
+         
+        //= Integration Testing ================================================= 
+        "test:integration": { "extends": "test:integration" }
         
     },
-    "tags": [
-        "ext"
-    ]
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/context-cherry-picker/ext/src",
+    "projectType": "application"
 }
-
-// "lint": {
-//     "executor": "@nx/eslint:lint",
-//     "dependsOn": [
-//         "^build"
-//     ],
-//     "inputs": [
-//         "lint"
-//     ]
-// },
-// "lint:deps": {
-//     "executor": "nx:run-commands",
-//     "dependsOn": [
-//         "^lint",
-//         "lint"
-//     ],
-//     "options": {
-//         "commands": [],
-//         "parallel": false
-//     }
-// },
-// "check-types": {
-//     "executor": "@nx/js:tsc",
-//     "outputs": [
-//         "{options.outputPath}"
-//     ],
-//     "dependsOn": [
-//         "^build"
-//     ],
-//     "options": {
-//         "tsConfig": "{projectRoot}/tsconfig.json",
-//         "main": "{projectRoot}/src/index.ts",
-//         "outputPath": "{projectRoot}/dist"
-//     }
-// },
-// "check-types:full": {
-//     "executor": "nx:run-commands",
-//     "dependsOn": [
-//         "^check-types",
-//         "check-types"
-//     ],
-//     "options": {
-//         "commands": [],
-//         "parallel": false
-//     }
-// },
-// "validate": {
-//     "executor": "nx:run-commands",
-//     "dependsOn": [
-//         "lint",
-//         "check-types"
-//     ],
-//     "options": {
-//         "commands": [],
-//         "parallel": false
-//     }
-// },
-// "validate:deps": {
-//     "executor": "nx:run-commands",
-//     "dependsOn": [
-//         "lint:deps",
-//         "check-types:full"
-//     ],
-//     "options": {
-//         "commands": [],
-//         "parallel": false
-//     }
-// },
-// "test": {
-//     "executor": "@nx/vite:test",
-//     "outputs": [
-//         "{options.reportsDirectory}"
-//     ],
-//     "options": {
-//         "passWithNoTests": true,
-//         "reportsDirectory": "packages/context-cherry-picker/ext/test-output/vitest/coverage"
-//     }
-// },
-// "test:full": {
-//     "executor": "@nx/vite:test",
-//     "outputs": [
-//         "{options.reportsDirectory}"
-//     ],
-//     "dependsOn": [
-//         "^build"
-//     ],
-//     "options": {
-//         "passWithNoTests": true,
-//         "reportsDirectory": "packages/context-cherry-picker/ext/test-output/vitest/coverage"
-//     }
-// },

@@ -139,14 +139,70 @@ Is the package intended to be a VS Code extension?
 }
 ```
 
-### **Core Package Build Configuration**
+### **Build Configuration Architecture**
 
-- **Executor**: `@nx/esbuild:esbuild` (MANDATORY)
-- **Bundle**: `false` (library mode)
-- **Format**: `["esm"]` (ES modules)
-- **Declaration**: `true` with `declarationMap: true`
-- **External Dependencies**: All runtime dependencies must be externalized
-- **TypeScript Config**: Uses `tsconfig.lib.json` for build, `tsconfig.json` for IDE support
+The FocusedUX monorepo uses a **target inheritance system** in `nx.json` to provide consistent build patterns while allowing package-specific customization.
+
+#### **Global Build Targets**
+
+**Base Executor Configuration** (`@nx/esbuild:esbuild`):
+
+- **Entry Point**: `{workspaceRoot}/{projectRoot}/src/index.ts` (default)
+- **Output Path**: `{projectRoot}/dist`
+- **TypeScript Config**: `{workspaceRoot}/{projectRoot}/tsconfig.json`
+- **Format**: `["esm"]` (default)
+- **Bundle**: `false` (default)
+- **Platform**: `node`
+- **Target**: `es2022`
+- **External**: `["vscode"]` (default)
+- **Source Maps**: `true`
+
+**Specialized Build Targets**:
+
+1. **`build:core`** - Core package pattern:
+    - **Entry Point**: `{workspaceRoot}/{projectRoot}/src/index.ts`
+    - **Format**: `["esm"]`
+    - **Bundle**: `false` (library mode)
+    - **Declaration**: `true` with `declarationMap: true`
+
+2. **`build:ext`** - Extension package pattern:
+    - **Entry Point**: `{workspaceRoot}/{projectRoot}/src/extension.ts`
+    - **Format**: `["cjs"]` (CommonJS for VSCode)
+    - **Bundle**: `true` (application mode)
+    - **Metafile**: `true` (for bundle analysis)
+
+#### **Package-Specific Configuration**
+
+**Core Package Pattern**:
+
+```json
+{
+    "targets": {
+        "build": {
+            "extends": "build:core",
+            "options": {
+                "external": ["vscode", "js-yaml"]
+            }
+        }
+    }
+}
+```
+
+**Extension Package Pattern**:
+
+```json
+{
+    "targets": {
+        "build": {
+            "extends": "build:ext",
+            "dependsOn": [{ "projects": ["@fux/package-core"], "target": "build" }],
+            "options": {
+                "external": ["vscode", "js-yaml"]
+            }
+        }
+    }
+}
+```
 
 ### **Package-Specific Exceptions**
 
@@ -164,23 +220,6 @@ While the architecture follows consistent patterns, some packages have legitimat
 
 - **Flat Structure (Preferred)**: Project Butler Core uses a flat structure with all interfaces in `_interfaces/` and services in `services/`
 - **Feature-Based Structure**: Some packages may use feature-based organization, but flat structure is preferred for simplicity
-
-### **Extension Package Build Configuration**
-
-- **Executor**: `@nx/esbuild:esbuild` (MANDATORY)
-- **Bundle**: `true` (application mode)
-- **Format**: `["cjs"]` (CommonJS for VSCode)
-- **External Dependencies**: `vscode` and core package dependencies
-- **TypeScript Config**: Single `tsconfig.json` with cross-project references
-
-### **Tool Package Build Configuration**
-
-- **Executor**: `@nx/esbuild:esbuild` (MANDATORY)
-- **Bundle**: `false` (utility mode)
-- **Format**: `["esm"]` (ES modules)
-- **Declaration**: `false` (no declarations needed for utilities)
-- **External Dependencies**: All runtime dependencies must be externalized
-- **TypeScript Config**: Uses `tsconfig.json` for compilation
 
 ## **Critical Architectural Rules**
 

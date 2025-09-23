@@ -37,3 +37,4 @@
     },
     "required": ["pluginName", "generatorName"]
 }
+

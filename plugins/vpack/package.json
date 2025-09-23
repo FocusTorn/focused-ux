@@ -1,12 +1,8 @@
 {
     "name": "@fux/vpack",
     "version": "0.0.1",
-    "dependencies": {
-        "@nx/devkit": "21.5.3",
-        "adm-zip": "^0.5.16",
-        "rimraf": "^6.0.1"
-    },
     "private": true,
+    "executors": "./executors.json",
     "module": "./dist/index.js",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -18,10 +14,14 @@
             "default": "./dist/index.js"
         }
     },
-    "executors": "./executors.json",
     "files": [
         "dist",
         "!**/*.tsbuildinfo",
         "executors.json"
-    ]
+    ],
+    "dependencies": {
+        "@nx/devkit": "21.5.3",
+        "adm-zip": "^0.5.16",
+        "rimraf": "^6.0.1"
+    }
 }

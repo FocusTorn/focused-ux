@@ -21,10 +21,27 @@ const runExecutor: PromiseExecutor<AuditStructureExecutorSchema> = async (option
 
     const { warnOnly = false, verbose = false } = options
     const projectRoot = context.root
-    const projectPath = context.projectName ? path.join(projectRoot, 'packages', context.projectName) : projectRoot
+    
+    // Extract package name from project name (e.g., "@fux/project-butler-ext" -> "project-butler-ext")
+    let projectPath = projectRoot
+    if (context.projectName) {
+        const packageName = context.projectName.replace('@fux/', '')
+        // Handle sub-packages (e.g., "project-butler-ext" -> "project-butler/ext")
+        if (packageName.includes('-ext')) {
+            const baseName = packageName.replace('-ext', '')
+            projectPath = path.join(projectRoot, 'packages', baseName, 'ext')
+        } else if (packageName.includes('-core')) {
+            const baseName = packageName.replace('-core', '')
+            projectPath = path.join(projectRoot, 'packages', baseName, 'core')
+        } else {
+            projectPath = path.join(projectRoot, 'packages', packageName)
+        }
+    }
 
     console.log(`🔍 Auditing structure for: ${context.projectName || 'workspace'}`)
     console.log(`📋 Mode: ${mode}`)
+    console.log(`📁 Project root: ${projectRoot}`)
+    console.log(`📁 Project path: ${projectPath}`)
     console.log('')
 
     let hasViolations = false
@@ -47,17 +64,19 @@ const runExecutor: PromiseExecutor<AuditStructureExecutorSchema> = async (option
 
         if (mode === 'code' || mode === 'all') {
             console.log('🏗️  Running code structure audit...')
+            console.log(' ')
             const codeResult = auditCodeStructure(projectPath, verbose)
             
             if (codeResult.violations.length > 0) {
                 hasViolations = true
                 printCodeViolations(codeResult.violations, verbose)
+                console.log(' ')
             } else {
                 console.log('✅ No code structure violations found')
+                console.log('')
             }
             
             console.log(`📊 Code audit summary: ${codeResult.violations.length} violations in ${codeResult.filesWithViolations}/${codeResult.totalFiles} files`)
-            console.log('')
         }
 
         if (hasViolations) {
@@ -113,8 +132,15 @@ function printTestViolations(violations: TestViolation[], verbose: boolean) {
 }
 
 function printCodeViolations(violations: CodeViolation[], verbose: boolean) {
-    console.log('🚨 Code Structure Violations Found:')
-    console.log('')
+    // Color codes matching the old libs auditor
+    const sectionTitle = 179
+    const filePath = 38
+    const lineCol = 214 // Bright yellow for line:column
+    const parentheses = 37
+    const failurePoint = 196 // Bright red for failure points
+
+    // Color function
+    const color = (code: number): string => `\x1B[38;5;${code}m`
 
     // Group violations by category
     const groupedViolations = violations.reduce((acc, violation) => {
@@ -125,21 +151,30 @@ function printCodeViolations(violations: CodeViolation[], verbose: boolean) {
         return acc
     }, {} as Record<string, CodeViolation[]>)
 
-    // Print violations by category
+    // Print violations by category in old libs auditor format with colors
     for (const [category, categoryViolations] of Object.entries(groupedViolations)) {
-        console.log(`📁 ${category} (${categoryViolations.length} violations)`)
+        console.log(`${color(sectionTitle)}${category}:\x1B[0m`)
         
         for (const violation of categoryViolations) {
-            const severityIcon = getSeverityIcon(violation.severity)
-            const location = verbose 
-                ? `${violation.file}:${violation.line}:${violation.column}`
-                : `${violation.file}:${violation.line}`
+            const location = `${violation.file}:${violation.line}:${violation.column}`
+            let message = `${location}: ${violation.message}`
             
-            console.log(`  ${severityIcon} ${location}: ${violation.message}`)
+            // Convert all paths to Unix style first
+            let unixMessage = message.replace(/\\/g, '/')
             
-            if (violation.suggestion && verbose) {
-                console.log(`    💡 Suggestion: ${violation.suggestion}`)
-            }
+            // Colorize line:column numbers in bright yellow FIRST (before file paths)
+            let colorizedMessage = unixMessage.replace(/:(\d+):(\d+)/g, `:${color(lineCol)}$1:$2\x1B[0m`)
+
+            // Colorize file paths in specific blue (but exclude the already colored line:column)
+            colorizedMessage = colorizedMessage.replace(/([a-zA-Z0-9\/\-_\.]+\.(json|ts|js|md))(?=:)/g, `${color(filePath)}$1\x1B[0m`)
+
+            // Colorize directory paths (failure points) in bright red
+            colorizedMessage = colorizedMessage.replace(/([a-zA-Z0-9\/\-_\.]+\/):/g, `${color(failurePoint)}$1\x1B[0m:`)
+
+            // Make parentheses brighter (light gray)
+            colorizedMessage = colorizedMessage.replace(/(\([^)]+\))/g, `\x1B[${parentheses}m$1\x1B[0m`)
+            
+            console.log(`    ${colorizedMessage}`)
         }
         console.log('')
     }

@@ -484,13 +484,13 @@ importers:
       '@fux/project-butler-core':
         specifier: workspace:*
         version: link:../core
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
     devDependencies:
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@types/node':
         specifier: 24.5.2
         version: 24.5.2

@@ -4,3 +4,4 @@ export interface PluginAddGeneratorSchema {
     directory?: string
     scaffoldVariations?: boolean
 }
+

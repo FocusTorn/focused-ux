@@ -6,30 +6,20 @@
         //= Prepare ============================================================= 
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
-            "outputs": [
-                "{options.outputPath}"
-            ],
             "options": {
-                
-                "main": "plugins/recommended/src/index.ts",
-                "tsConfig": "plugins/recommended/tsconfig.json",
-
-                "bundle": false,
-                
-                "assets": [ //>
+                "assets": [
                     {
-                        "input": "./plugins/recommended/src",
+                        "input": "{projectRoot}/src",
                         "glob": "**/!(*.ts)",
                         "output": "."
                     },
                     {
-                        "input": "./plugins/recommended/src",
+                        "input": "{projectRoot}/src",
                         "glob": "**/*.d.ts",
                         "output": "."
                     }
-                ] //<
+                ]
             }
-
         }, //<
         
         //= Quality ============================================================= 

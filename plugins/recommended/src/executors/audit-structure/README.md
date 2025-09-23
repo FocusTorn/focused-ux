@@ -100,6 +100,18 @@ The test audit checks for the following violations based on the Enhanced Mock St
 - **Pattern**: Tests not following Enhanced Mock Strategy structure
 - **Example**: Missing `let mocks: ReturnType<typeof setupTestEnvironment>`
 
+### 8. Missing Scenario Builder Usage
+
+- **Severity**: MEDIUM
+- **Pattern**: Manual mock setup instead of using scenario builder functions
+- **Example**: `mocks.fileSystem.readFile.mockResolvedValue()` instead of using `setupFileExplorerSuccessScenario()`
+
+### 9. Mock Service Class Patterns
+
+- **Severity**: MEDIUM/LOW
+- **Pattern**: Mock service classes not following consistent patterns
+- **Example**: Missing `vi.fn()` mocking or constructor initialization
+
 ## Code Structure Violations
 
 The code audit checks for the following violations based on FocusedUX architectural patterns:

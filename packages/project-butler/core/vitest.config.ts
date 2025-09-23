@@ -1,8 +1,6 @@
 import { defineConfig, mergeConfig } from 'vitest/config'
 import baseConfig from '../../../vitest.functional.base'
 
-// console.log('🎯 Loading packages/project-butler/core/vitest.config.ts')
-
 export default mergeConfig(
     baseConfig,
     defineConfig({

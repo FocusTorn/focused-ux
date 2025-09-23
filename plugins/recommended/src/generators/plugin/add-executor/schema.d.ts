@@ -4,3 +4,4 @@ export interface PluginAddExecutorSchema {
     directory?: string
     scaffoldVariations?: boolean
 }
+

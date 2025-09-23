@@ -83,6 +83,8 @@ function checkTestFile(filePath: string, projectRoot: string, verbose: boolean):
         violations.push(...checkDirectGlobalMockReferences(lines, relativePath))
         violations.push(...checkUnnecessaryGlobalDeclarations(lines, relativePath))
         violations.push(...checkTestStructurePatterns(lines, relativePath))
+        violations.push(...checkMissingScenarioBuilderUsage(lines, relativePath, content))
+        violations.push(...checkMockServiceClassPatterns(lines, relativePath))
 
     } catch (error) {
         if (verbose) {
@@ -353,5 +355,106 @@ function checkTestStructurePatterns(lines: string[], filePath: string): TestViol
         })
     }
 
+    return violations
+}
+
+/**
+ * Check for missing scenario builder usage
+ */
+function checkMissingScenarioBuilderUsage(lines: string[], filePath: string, content: string): TestViolation[] {
+    const violations: TestViolation[] = []
+    
+    // Check if file has manual mock setup patterns
+    const hasManualMockSetup = content.includes('mocks.fileSystem.readFile.mockResolvedValue') ||
+                             content.includes('mocks.yaml.load.mockReturnValue') ||
+                             content.includes('mocks.micromatch.isMatch.mockReturnValue') ||
+                             content.includes('mocks.tokenizer.encode.mockReturnValue')
+    
+    // Check if file imports scenario builder functions
+    const hasScenarioBuilderImports = content.includes('setupFileExplorerSuccessScenario') ||
+                                     content.includes('setupContextDataCollectorSuccessScenario') ||
+                                     content.includes('setupQuickSettingsSuccessScenario') ||
+                                     content.includes('CCPMockBuilder')
+    
+    // Check if file uses scenario builder functions
+    const usesScenarioBuilder = content.includes('setupFileExplorerSuccessScenario(') ||
+                              content.includes('setupContextDataCollectorSuccessScenario(') ||
+                              content.includes('setupQuickSettingsSuccessScenario(') ||
+                              content.includes('new CCPMockBuilder(')
+    
+    if (hasManualMockSetup && !hasScenarioBuilderImports && !usesScenarioBuilder) {
+        violations.push({
+            category: 'Missing Scenario Builder Usage',
+            severity: 'MEDIUM',
+            file: filePath,
+            line: 1,
+            column: 1,
+            message: 'Manual mock setup detected but scenario builder not used. Consider using scenario builder for complex test setup.',
+            suggestion: 'Import and use scenario builder functions like setupFileExplorerSuccessScenario() or CCPMockBuilder'
+        })
+    }
+    
+    return violations
+}
+
+/**
+ * Check for inconsistent mock service class patterns
+ */
+function checkMockServiceClassPatterns(lines: string[], filePath: string): TestViolation[] {
+    const violations: TestViolation[] = []
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
+        
+        // Look for mock service class definitions
+        if (line.includes('class Mock') && line.includes('Service')) {
+            // Check if the class has proper vi.fn() patterns
+            let hasProperMocking = false
+            let hasConstructor = false
+            
+            // Look ahead a few lines to check the class structure
+            for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
+                const classLine = lines[j]
+                
+                if (classLine.includes('vi.fn()')) {
+                    hasProperMocking = true
+                }
+                
+                if (classLine.includes('constructor()')) {
+                    hasConstructor = true
+                }
+                
+                // Stop if we hit the end of the class
+                if (classLine.includes('}') && !classLine.includes('{')) {
+                    break
+                }
+            }
+            
+            if (!hasProperMocking) {
+                violations.push({
+                    category: 'Mock Service Class Patterns',
+                    severity: 'MEDIUM',
+                    file: filePath,
+                    line: i + 1,
+                    column: line.indexOf('class') + 1,
+                    message: 'Mock service class found but methods not properly mocked with vi.fn()',
+                    suggestion: 'Ensure all methods are mocked with vi.fn() for consistency'
+                })
+            }
+            
+            if (!hasConstructor) {
+                violations.push({
+                    category: 'Mock Service Class Patterns',
+                    severity: 'LOW',
+                    file: filePath,
+                    line: i + 1,
+                    column: line.indexOf('class') + 1,
+                    message: 'Mock service class found but missing constructor for proper initialization',
+                    suggestion: 'Add constructor() method for proper initialization if needed'
+                })
+            }
+        }
+    }
+    
     return violations
 }

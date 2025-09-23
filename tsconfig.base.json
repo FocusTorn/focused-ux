@@ -14,7 +14,7 @@
         
         // LANGUAGE & ENVIRONMENT =======================================
         "lib": ["ES2022", "DOM"],
-        "types": ["node"],
+        "types": ["node", "vitest", "@types/vscode", "vitest/globals", "mocha"],
         "target": "ES2022",
         "skipLibCheck": true,
         "useDefineForClassFields": true,

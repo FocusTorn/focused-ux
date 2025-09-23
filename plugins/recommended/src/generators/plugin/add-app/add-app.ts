@@ -21,3 +21,4 @@ export default async function addAppGenerator(tree: Tree, options: PluginAddAppS
     // TODO: Implement application plugin generation
     // This will be implemented in future development
 }
+

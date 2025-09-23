@@ -4,33 +4,7 @@
     "targets": {
         
         //= Prepare ============================================================= 
-        "build": { //>
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": [
-                "{options.outputPath}"
-            ],
-            "options": {
-                
-                "main": "{projectRoot}/src/index.ts",
-                "tsConfig": "{projectRoot}/tsconfig.json",
-
-                "bundle": false,
-                
-                "assets": [ //>
-                    {
-                        "input": "{projectRoot}/src",
-                        "glob": "**/!(*.ts)",
-                        "output": "."
-                    },
-                    {
-                        "input": "{projectRoot}/src",
-                        "glob": "**/*.d.ts",
-                        "output": "."
-                    }
-                ] //<
-            }
-
-        }, //<
+        "build": { "executor": "@nx/esbuild:esbuild" },
         
         //= Quality ============================================================= 
         "check-types": { "extends": "check-types" },
@@ -55,3 +29,32 @@
     "sourceRoot": "plugins/vpack/src",
     "projectType": "library"
 }
+
+
+// "build": { //>
+// "executor": "@nx/esbuild:esbuild",
+// "outputs": [
+//     "{options.outputPath}"
+// ],
+// "options": {
+    
+//     "main": "{projectRoot}/src/index.ts",
+//     "tsConfig": "{projectRoot}/tsconfig.json",
+
+//     "bundle": false
+    
+//     // "assets": [ //>
+//     //     {
+//     //         "input": "{projectRoot}/src",
+//     //         "glob": "**/!(*.ts)",
+//     //         "output": "."
+//     //     },
+//     //     {
+//     //         "input": "{projectRoot}/src",
+//     //         "glob": "**/*.d.ts",
+//     //         "output": "."
+//     //     }
+//     // ] //<
+// }
+
+// }, //<

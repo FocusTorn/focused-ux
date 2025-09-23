@@ -85,7 +85,7 @@ nx_workspace
 - **No Shared Dependencies**: Self-contained "guinea pig" packages
 - **Complete Interface Implementation**: All service interface methods must be implemented
 - **VSCode Imports**: Type imports only (`import type { Uri } from 'vscode'`)
-- **Build**: `@nx/esbuild:esbuild` with `bundle: false`, `format: ["esm"]`
+- **Build**: Extends `build:core` target with package-specific external dependencies
 
 ### **Extension Package (`@fux/package-name-ext`)**
 
@@ -94,7 +94,7 @@ nx_workspace
 - **No DI Container**: Direct service instantiation
 - **VSCode Adapters**: Local adapters with VSCode value imports
 - **No Shared Dependencies**: Self-contained with local adapters only
-- **Build**: `@nx/esbuild:esbuild` with `bundle: true`, `format: ["cjs"]`
+- **Build**: Extends `build:ext` target with package-specific external dependencies
 
 ## **VSCode Import Patterns**
 
@@ -204,6 +204,41 @@ packages/package-name/ext/
 - **Modern packaging** - Use @fux/vpack:pack executor
 
 ## **Build Configuration**
+
+### **Target Inheritance Architecture**
+
+**CRITICAL**: ALL packages use target inheritance from global `nx.json` configuration for consistent build patterns.
+
+#### **Global Build Targets**
+
+The `nx.json` file defines specialized build targets that packages extend:
+
+- **`build:core`**: Core package pattern (ESM, unbundled, declarations)
+- **`build:ext`**: Extension package pattern (CJS, bundled, VSCode-compatible)
+
+#### **Package Configuration Pattern**
+
+All packages use minimal `project.json` configurations:
+
+```json
+{
+    "targets": {
+        "build": {
+            "extends": "build:core", // or "build:ext" for extensions
+            "options": {
+                "external": ["vscode", "package-specific-deps"]
+            }
+        }
+    }
+}
+```
+
+#### **Benefits**
+
+- **Consistency**: All packages follow the same build patterns
+- **Maintainability**: Changes to build logic happen in one place (`nx.json`)
+- **Simplicity**: Package configs only specify what's different
+- **Directory Independence**: Builds work from any directory using `{workspaceRoot}` paths
 
 ### **Universal Build Executor Rule**
 

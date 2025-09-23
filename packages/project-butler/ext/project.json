@@ -1,35 +1,21 @@
 {
     "name": "@fux/project-butler-ext",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/project-butler/ext/src",
-    "projectType": "application",
+    "tags": [ "ext" ],
     "targets": {
 
         //= Finalize ============================================================ 
-        "build"   : { //>
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "dependsOn": [{ //>
+        "build": { //>
+            "extends": "build:ext",
+            "dependsOn": [{
                 "projects": ["@fux/project-butler-core"],
                 "target": "build",
                 "params": "ignore"
-            }], //<
+            }],
             "options": {
-                "main": "packages/project-butler/ext/src/extension.ts",
-                "tsConfig": "packages/project-butler/ext/tsconfig.json",
-                "outputPath": "packages/project-butler/ext/dist",                
-                
-                "format": ["cjs"],
-
                 "external": [
                     "vscode",
                     "js-yaml"
-                ],
-                
-                "metafile": true,
-                "bundle": true,
-                "sourcemap": true
-                
+                ]
             }
         }, //<
         "publish": { //>
@@ -43,121 +29,36 @@
         "package": { "extends": "package" },
         "package:dev": { "extends": "package:dev" },
         
-        //= Quality ============================================================= 
+        ///= Quality ============================================================= 
         "check-types": { "extends": "check-types" },
         "check-types:deps": { "extends": "check-types:deps" },
-         
+        
         "lint": { "extends": "lint" },
         "lint:deps": { "extends": "lint:deps" },
-         
+        
+        "audit": { "extends": "audit" },
+        "audit:code": { "extends": "audit:code" },
+        "audit:test": { "extends": "audit:test" },
+        "audit:all": { "extends": "audit:all" },
+        
         //= Cleaning ============================================================ 
         "clean": { "extends": "clean" },
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
-         
+        
         //= Single Package Testing ============================================== 
         "test": { "extends": "test" },
         "test:coverage-tests": { "extends": "test:coverage-tests" },
-         
+        
         //= Dependency Chain Testing ============================================ 
         "test:deps": { "extends": "test:deps" },
         "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" },
          
         //= Integration Testing ================================================= 
         "test:integration": { "extends": "test:integration" }
-       
-        // "validate": { "extends": "validate" },
-        // "validate:deps": { "extends": "validate:deps" },
-        // "audit": { "extends": "audit" },
-        // "audit:full": { "extends": "audit:full" },
         
     },
-    "tags": [ "ext" ]
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/project-butler/ext/src",
+    "projectType": "application"
 }
-
-//    "package:dev:orriginal": { //>
-//         "executor": "nx:run-commands",
-//         "inputs": ["production", "^production", "{workspaceRoot}/libs/vsix-packager/dist/cli/index.js"],
-//         "outputs": ["{options.outputPath}"],
-            
-//         "dependsOn": ["build", "@fux/vsix-packager:cli"],
-//         "options": {
-//             "commands": [
-//                 "node libs/vsix-packager/dist/cli/index.js {projectRoot} vsix_packages --dev"
-//             ],
-//             "outputPath": "vsix_packages"
-//         },
-//         "cache": false
-//     }, //<
-
-// "test:integration:noisy": { //>
-//     "executor": "@fux/vscode-test-executor:test-integration",
-//     "dependsOn": ["build"],
-//     "cache": false,
-//     "options": {
-//         "tsConfig": "{projectRoot}/__tests__/integration-tests/tsconfig.test.json",
-//         "config": "{projectRoot}/__tests__/integration-tests/.vscode-test.mjs",
-//         "timeout": 20000,
-//         "filterOutput": false
-//     },
-//     "description": "Run VS Code extension integration tests with full output"
-// } //<
-        
-// //= OLD Integration Testing (commented out) ============================== 
-// "test:compile": { //>
-//     "executor": "nx:run-commands",
-//     "outputs": ["{projectRoot}/__tests__/integration-tests/_out-tsc"],
-//     "options": {
-//         "commands": [
-//             "tsc -p packages/project-butler/ext/__tests__/integration-tests/tsconfig.test.json"
-//         ]
-//     }
-// }, //<
-// "test:integration": { //>
-//     "executor": "nx:run-commands",
-//     "dependsOn": [
-//         "build",
-//         "test:compile"
-//     ],
-//     "cache": false,
-//     "options": {
-//         "commands": [
-//             "powershell -Command \"& {vscode-test --config __tests__/integration-tests/.vscode-test.mjs --verbose --timeout 20000 --reporter spec 2>&1 | Select-String -NotMatch 'extensionEnabledApiProposals', 'ChatSessionStore', 'update#setState disabled', 'update#ctor', 'Started local extension host', 'Settings Sync'}\""
-//         ],
-//         "cwd": "packages/project-butler/ext"
-//     },
-//     "description": "Run VS Code extension integration tests with detailed output"
-// }, //<
-// "test:integration:noisy": { //>
-//     "executor": "nx:run-commands",
-//     "dependsOn": [
-//         "build",
-//         "test:compile"
-//     ],
-//     "cache": false,
-//     "options": {
-//         "commands": [
-//             // "rimraf ../../../.vscode-test/user-data/fux-project-butler",
-//             "vscode-test --config __tests__/integration-tests/.vscode-test.mjs --verbose --timeout 20000 --reporter spec"
-//         ],
-//         "cwd": "packages/project-butler/ext"
-//     },
-//     "description": "Run VS Code extension integration tests with detailed output"
-// } //<
-        
-
-
-// "package:dev": { //>
-//     "executor": "@fux/vpack:pack",
-//     "outputs": ["{options.outputPath}"],
-//     "options": {
-//         "targetPath": "{projectRoot}",
-//         "outputPath": "vsix_packages",
-//         "keepDeploy": true,
-//         "deployPath": ".vpack/deploy",
-//         "freshDeploy": true,
-//         "extractContents": true,
-//         "contentsPath": ".vpack/contents",
-//         "dev": true
-//     }
-// }, //<

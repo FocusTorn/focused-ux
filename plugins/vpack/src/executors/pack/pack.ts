@@ -1,5 +1,6 @@
 import { ExecutorContext, logger, workspaceRoot } from '@nx/devkit'
 import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, unlinkSync, readdirSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import { join, resolve, isAbsolute } from 'node:path'
 // CommonJS requires are used for cjs-compatible build output
 import { execSync, spawnSync } from 'node:child_process'
@@ -40,15 +41,15 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         const uniqueId = `${baseHash}-${process.pid}-${Math.floor(Math.random() * 1_000_000)}`
 
         // Self-standing defaults (mirroring previous config.json):
-        // deployPath: staging/deploy, keepDeploy (persistent): true, freshDeploy (overwrite): true,
-        // extractContents: true, contentsPath: staging/contents, outputPath: staging/vsix_packages
+        // deployPath: output/deploy, keepDeploy (persistent): true, freshDeploy (overwrite): true,
+        // extractContents: true, contentsPath: output/contents, outputPath: vsix_packages
         const pluginRoot = join(__dirname, '../../..') // Go up from executors/pack/pack.ts to plugins/vpack
-        const deployBase = options.deployPath || join(pluginRoot, 'staging/deploy')
+        const deployBase = options.deployPath || join(pluginRoot, 'output/deploy')
         const overwrite = options.freshDeploy ?? true
         const keepDeploy = options.keepDeploy ?? true
         const extract = options.extractContents ?? true
-        const extractBase = options.contentsPath || join(pluginRoot, 'staging/contents')
-        const finalOutputDir = options.outputPath ? join(workspaceRoot, options.outputPath) : join(pluginRoot, 'staging/vsix_packages')
+        const extractBase = options.contentsPath || join(pluginRoot, 'output/contents')
+        const finalOutputDir = options.outputPath ? join(workspaceRoot, options.outputPath) : join(pluginRoot, 'vsix_packages')
 
         const deployDirName = overwrite ? `${vsixBaseName}-local` : `${vsixBaseName}-${uniqueId}`
         const deployDir = join(deployBase, deployDirName)
@@ -204,16 +205,55 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
             } catch {}
         }
 
-        // Cleanup deploy
+        // Cleanup based on configuration
         if (!keepDeploy) {
             try {
-                const { sync: rimrafSync } = await import('rimraf')
-
-                rimrafSync(deployDir)
-            } catch {}
+                logger.info(`Attempting to clean up deploy directory: ${deployDir}`)
+                await rm(deployDir, { recursive: true, force: true })
+                logger.info(`Successfully cleaned up deploy directory: ${deployDir}`)
+            } catch (err) {
+                logger.error(`Failed to clean up deploy directory: ${err}`)
+            }
         }
 
-        logger.info(vsixOutputPath)
+        if (!extract) {
+            try {
+                const contentsDir = join(workspaceRoot, extractBase, `${outputVsixName}`)
+
+                if (existsSync(contentsDir)) {
+                    logger.info(`Attempting to clean up contents directory: ${contentsDir}`)
+                    await rm(contentsDir, { recursive: true, force: true })
+                    logger.info(`Successfully cleaned up contents directory: ${contentsDir}`)
+                }
+            } catch (err) {
+                logger.error(`Failed to clean up contents directory: ${err}`)
+            }
+        }
+
+        // If both keepDeploy and extract are false, clean up the entire .vpack directory
+        if (!keepDeploy && !extract) {
+            try {
+                const vpackDir = join(extensionDir, '.vpack')
+
+                if (existsSync(vpackDir)) {
+                    logger.info(`Attempting to clean up .vpack directory: ${vpackDir}`)
+                    await rm(vpackDir, { recursive: true, force: true })
+                    logger.info(`Successfully cleaned up .vpack directory: ${vpackDir}`)
+                }
+            } catch (err) {
+                logger.error(`Failed to clean up .vpack directory: ${err}`)
+            }
+        }
+
+        // Log staging output paths
+        logger.info(`Staging deploy directory: ${deployDir}`)
+        logger.info(`Staging output directory: ${finalOutputDir}`)
+        if (extract) {
+            const extractDir = join(workspaceRoot, extractBase, `${outputVsixName}`)
+
+            logger.info(`Staging contents directory: ${extractDir}`)
+        }
+        logger.info(`Final VSIX: ${vsixOutputPath}`)
         return { success: true }
     } catch (err) {
         logger.error(`Packaging failed: ${err instanceof Error ? err.message : String(err)}`)

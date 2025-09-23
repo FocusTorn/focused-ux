@@ -20,10 +20,15 @@ export interface CodeStructureResult {
 /**
  * Scans source files for architectural violations based on FocusedUX patterns
  */
-export function auditCodeStructure(projectRoot: string, verbose = false): CodeStructureResult {
+export function auditCodeStructure(projectPath: string, verbose = false): CodeStructureResult {
     const violations: CodeViolation[] = []
     const sourceFiles: string[] = []
     const filesWithViolations = new Set<string>()
+
+    // Calculate workspace root from project path
+    // projectPath is like "D:\_dev\_Projects\_fux\_FocusedUX\packages\project-butler\ext"
+    // workspace root is "D:\_dev\_Projects\_fux\_FocusedUX"
+    const workspaceRoot = path.resolve(projectPath, '../../../')
 
     // Find all source files
     function findSourceFiles(dir: string) {
@@ -38,18 +43,26 @@ export function auditCodeStructure(projectRoot: string, verbose = false): CodeSt
                 // Skip node_modules, dist, and test directories
                 if (['node_modules', 'dist', '__tests__', 'test'].includes(entry.name)) continue
                 findSourceFiles(fullPath)
-            } else if ((entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts') && !entry.name.endsWith('.test.ts') && !entry.name.endsWith('.spec.ts')) || entry.name === 'package.json') {
+            } else if ((entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts') && !entry.name.endsWith('.test.ts') && !entry.name.endsWith('.spec.ts')) || entry.name === 'package.json' || entry.name === 'tsconfig.json') {
                 sourceFiles.push(fullPath)
             }
         }
     }
 
-    // Start scanning from project root
-    findSourceFiles(projectRoot)
+    // Start scanning from project path
+    findSourceFiles(projectPath)
+
+    if (verbose) {
+        console.log(`📁 Found ${sourceFiles.length} files to audit:`)
+        sourceFiles.forEach(file => console.log(`  - ${file}`))
+    }
 
     // Check each source file for violations
     for (const sourceFile of sourceFiles) {
-        const fileViolations = checkSourceFile(sourceFile, projectRoot, verbose)
+        if (verbose) {
+            console.log(`📁 Processing file: ${sourceFile}`)
+        }
+        const fileViolations = checkSourceFile(sourceFile, workspaceRoot, verbose)
 
         violations.push(...fileViolations)
         
@@ -86,6 +99,7 @@ function checkSourceFile(filePath: string, projectRoot: string, verbose: boolean
         violations.push(...checkDIContainerPatterns(lines, relativePath, filePath))
         violations.push(...checkPackageJsonStructure(filePath, projectRoot))
         violations.push(...checkDevDependenciesMisplacement(filePath, projectRoot))
+        violations.push(...checkTsconfigStructure(filePath, projectRoot))
     } catch (error) {
         if (verbose) {
             console.warn(`Warning: Could not read file ${filePath}: ${error}`)
@@ -297,8 +311,8 @@ function checkDynamicImports(lines: string[], filePath: string): CodeViolation[]
 function checkNodeJsImports(lines: string[], filePath: string): CodeViolation[] {
     const violations: CodeViolation[] = []
     
-    // Skip core packages - they can use Node.js modules
-    if (filePath.includes('/core/')) {
+    // Skip VSCode extensions - they are allowed to use Node.js built-in modules
+    if (filePath.includes('/ext/') || filePath.includes('\\ext\\')) {
         return violations
     }
 
@@ -324,8 +338,8 @@ function checkNodeJsImports(lines: string[], filePath: string): CodeViolation[] 
                     file: filePath,
                     line: i + 1,
                     column: line.indexOf('import') + 1,
-                    message: 'VSCode extensions should not include Node.js built-in modules. Use VSCode APIs or shared adapters.',
-                    suggestion: 'Use VSCode APIs or create adapters in shared package'
+                    message: 'Core packages should not directly import Node.js built-in modules. Use shared adapters instead.',
+                    suggestion: 'Create adapters in shared package and import those instead'
                 })
             }
         }
@@ -566,12 +580,29 @@ function checkDevDependenciesMisplacement(filePath: string, projectRoot: string)
         const packageJson = JSON.parse(content)
         const relativePath = path.relative(projectRoot, filePath)
 
+        // Check if this is a VSCode extension (has engines.vscode)
+        const isVSCodeExtension = packageJson.engines && packageJson.engines.vscode
+        
         // Common runtime dependencies that are often mistakenly placed in devDependencies
+        // Note: typescript is only flagged if it's actually imported/used at runtime
         const runtimeDeps = [
-            'js-yaml', 'micromatch', 'gpt-tokenizer', 'typescript', 'lodash', 'moment', 'axios',
+            'js-yaml', 'micromatch', 'gpt-tokenizer', 'lodash', 'moment', 'axios',
             'uuid', 'crypto-js', 'jsonwebtoken', 'bcrypt', 'express', 'fastify', 'koa',
             'mongoose', 'sequelize', 'prisma', 'redis', 'ioredis', 'pg', 'mysql2'
         ]
+        
+        // Special handling for typescript - only flag if it's actually used at runtime
+        // For VSCode extensions, typescript is typically only needed for compilation
+        if (packageJson.devDependencies && packageJson.devDependencies.typescript) {
+            // Check if typescript is imported/used at runtime in the source code
+            const projectDir = path.dirname(filePath)
+            const srcDir = path.join(projectDir, 'src')
+            const hasTypeScriptRuntimeUsage = checkTypeScriptRuntimeUsage(srcDir)
+            
+            if (hasTypeScriptRuntimeUsage) {
+                runtimeDeps.push('typescript')
+            }
+        }
 
         if (packageJson.devDependencies) {
             for (const [depName, _depVersion] of Object.entries(packageJson.devDependencies)) {
@@ -607,6 +638,178 @@ function checkDevDependenciesMisplacement(filePath: string, projectRoot: string)
         }
     } catch (_error) {
         // Skip invalid JSON files - they're handled by the package.json structure check
+    }
+
+    return violations
+}
+
+/**
+ * Check if TypeScript is used at runtime (imported/required in source code)
+ */
+function checkTypeScriptRuntimeUsage(srcDir: string): boolean {
+    if (!fs.existsSync(srcDir)) return false
+    
+    try {
+        const files = fs.readdirSync(srcDir, { recursive: true })
+        
+        for (const file of files) {
+            if (typeof file === 'string' && (file.endsWith('.ts') || file.endsWith('.js'))) {
+                const filePath = path.join(srcDir, file)
+                const content = fs.readFileSync(filePath, 'utf-8')
+                
+                // Check for TypeScript imports/requires
+                if (content.includes('import') && content.includes('typescript')) {
+                    return true
+                }
+                if (content.includes('require') && content.includes('typescript')) {
+                    return true
+                }
+                if (content.includes('from') && content.includes('typescript')) {
+                    return true
+                }
+            }
+        }
+    } catch (error) {
+        // If we can't read the files, assume no runtime usage
+        return false
+    }
+    
+    return false
+}
+
+/**
+ * Check tsconfig.json structure compliance
+ */
+function checkTsconfigStructure(filePath: string, projectRoot: string): CodeViolation[] {
+    const violations: CodeViolation[] = []
+    
+    // Only check tsconfig.json files
+    if (!filePath.endsWith('tsconfig.json')) {
+        return violations
+    }
+
+
+    try {
+        const content = fs.readFileSync(filePath, 'utf-8')
+        const tsconfig = JSON.parse(content)
+        const relativePath = path.relative(projectRoot, filePath)
+
+        // Define the canonical PBC structure
+        const canonicalStructure = {
+            "extends": "../../../tsconfig.base.json",
+            "include": ["src/**/*.ts"],
+            "exclude": [
+                "node_modules",
+                "dist/**/*",
+                "__tests__/**/*"
+            ],
+            "compilerOptions": {
+                "rootDir": "./src",
+                "outDir": "./dist",
+                "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
+            }
+        }
+
+        // Check if this is a core package (should match exactly)
+        const isCorePackage = filePath.includes('/core/') || filePath.includes('\\core\\')
+        const isExtPackage = filePath.includes('/ext/') || filePath.includes('\\ext\\')
+        
+
+        if (isCorePackage) {
+            // Core packages must match canonical structure exactly (no references)
+            if (JSON.stringify(tsconfig, null, 4) !== JSON.stringify(canonicalStructure, null, 4)) {
+                violations.push({
+                    category: 'Tsconfig Structure',
+                    severity: 'CRITICAL',
+                    file: relativePath,
+                    line: 1,
+                    column: 1,
+                    message: 'Core package tsconfig.json must match canonical PBC structure exactly',
+                    suggestion: 'Update tsconfig.json to match the canonical structure from packages/project-butler/core/tsconfig.json'
+                })
+            }
+        } else if (isExtPackage) {
+            // Ext packages must match canonical structure but may have references
+            const tsconfigWithoutReferences = { ...tsconfig }
+            delete tsconfigWithoutReferences.references
+
+
+            if (JSON.stringify(tsconfigWithoutReferences, null, 4) !== JSON.stringify(canonicalStructure, null, 4)) {
+                violations.push({
+                    category: 'Tsconfig Structure',
+                    severity: 'CRITICAL',
+                    file: relativePath,
+                    line: 1,
+                    column: 1,
+                    message: 'Extension package tsconfig.json must match canonical PBC structure (excluding references)',
+                    suggestion: 'Update tsconfig.json to match the canonical structure from packages/project-butler/core/tsconfig.json'
+                })
+            }
+
+            // If references exist, validate they point to core
+            if (tsconfig.references) {
+                if (!Array.isArray(tsconfig.references)) {
+                    violations.push({
+                        category: 'Tsconfig Structure',
+                        severity: 'HIGH',
+                        file: relativePath,
+                        line: 1,
+                        column: 1,
+                        message: 'References must be an array',
+                        suggestion: 'Change references to an array format'
+                    })
+                } else {
+                    for (const ref of tsconfig.references) {
+                        if (typeof ref !== 'object' || !ref.path) {
+                            violations.push({
+                                category: 'Tsconfig Structure',
+                                severity: 'HIGH',
+                                file: relativePath,
+                                line: 1,
+                                column: 1,
+                                message: 'Reference must have a "path" property',
+                                suggestion: 'Add "path" property to reference object'
+                            })
+                        } else if (ref.path !== '../core') {
+                            violations.push({
+                                category: 'Tsconfig Structure',
+                                severity: 'HIGH',
+                                file: relativePath,
+                                line: 1,
+                                column: 1,
+                                message: `Reference path must be "../core", found "${ref.path}"`,
+                                suggestion: 'Change reference path to "../core"'
+                            })
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check for tsconfig.lib.json files (should not exist)
+        const tsconfigLibPath = filePath.replace('tsconfig.json', 'tsconfig.lib.json')
+        if (fs.existsSync(tsconfigLibPath)) {
+            violations.push({
+                category: 'Tsconfig Structure',
+                severity: 'CRITICAL',
+                file: path.relative(projectRoot, tsconfigLibPath),
+                line: 1,
+                column: 1,
+                message: 'tsconfig.lib.json should not exist. Only one tsconfig.json allowed per sub-package.',
+                suggestion: 'Delete tsconfig.lib.json and use only tsconfig.json'
+            })
+        }
+
+    } catch (error) {
+        violations.push({
+            category: 'Tsconfig Structure',
+            severity: 'CRITICAL',
+            file: path.relative(projectRoot, filePath),
+            line: 1,
+            column: 1,
+            message: `Invalid tsconfig.json: ${error}`,
+            suggestion: 'Fix JSON syntax errors in tsconfig.json'
+        })
     }
 
     return violations

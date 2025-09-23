@@ -74,33 +74,7 @@ ContextCherryPicker:
     ignore: null
     hide_children:
       - '**/tests/integration/test-user-data'
-TerminalButler:
-  packageJson-order:
-    - displayName
-    - description
-    - publisher
-    - repository
-    - version
-    - bin
-    - scripts
-    - sideEffects
-    - dependencies
-    - devDependencies
-    - peerDependencies
-    - contributes
-    - activationEvents
-    - license
-    - icon
-    - categories
-    - keywords
-    - engines
-    - private
-    - type
-    - module
-    - main
-    - types
-    - workspaces
-    - exports
+
 ProjectButler:
   packageJson-order:
     - displayName
@@ -111,8 +85,6 @@ ProjectButler:
     - bin
     - scripts
     - sideEffects
-
-    - peerDependencies
     - contributes
     - activationEvents
     - license
@@ -122,10 +94,15 @@ ProjectButler:
     - engines
     - private
     - type
+    - generators
+    - executors
     - module
     - main
     - types
     - workspaces
     - exports
+    - files
     - dependencies
     - devDependencies
+    - peerDependencies
+    

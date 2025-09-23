@@ -5,16 +5,8 @@
         
         //= Prepare ============================================================= 
         "build": { //>
-            "executor": "@nx/esbuild:esbuild",
-            "outputs": [ "{options.outputPath}" ],
+            "extends": "build:core",
             "options": {
-                "main": "packages/project-butler/core/src/index.ts",
-                "outputPath": "packages/project-butler/core/dist",
-                "declarationRootDir": "packages/project-butler/core/src",
-                
-                "format": [ "esm" ],
-                "bundle": false,
-                
                 "external": [
                     "vscode",
                     "js-yaml"
@@ -45,7 +37,11 @@
         
         //= Dependency Chain Testing ============================================ 
         "test:deps": { "extends": "test:deps" },
-        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" }
+        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" },
+        
+        //= Integration Testing ================================================= 
+        "test:integration": { "extends": "test:integration" }
+        
     },
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/project-butler/core/src",

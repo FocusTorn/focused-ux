@@ -8,13 +8,46 @@ This document serves as the **single source of truth** for package classificatio
 
 ## Package Classification System
 
+### **Build Configuration Architecture**
+
+The FocusedUX monorepo uses **target inheritance** in `nx.json` to provide consistent build patterns:
+
+#### **Global Build Targets**
+
+- **`build:core`**: Core package pattern (ESM, unbundled, declarations)
+- **`build:ext`**: Extension package pattern (CJS, bundled, VSCode-compatible)
+
+#### **Package Configuration Pattern**
+
+All packages use minimal `project.json` configurations that extend global targets:
+
+```json
+{
+    "targets": {
+        "build": {
+            "extends": "build:core", // or "build:ext" for extensions
+            "options": {
+                "external": ["vscode", "package-specific-deps"]
+            }
+        }
+    }
+}
+```
+
+#### **Benefits**
+
+- **Consistency**: All packages follow the same build patterns
+- **Maintainability**: Changes to build logic happen in one place
+- **Simplicity**: Package configs only specify what's different
+- **Directory Independence**: Builds work from any directory
+
 ### **Current Implemented Package Types**
 
 #### 1. **Direct TSX Executed** (`libs/tools/`)
 
 **Purpose**: Standalone utilities with direct execution capabilities
 **Architecture**: Direct execution, minimal dependencies, CLI-focused
-**Build Configuration**: `bundle: false, format: ['esm']`
+**Build Configuration**: Extends `build:core` target with package-specific external dependencies
 **Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Examples**:
@@ -48,7 +81,7 @@ libs/tools/{tool-name}/
 
 **Purpose**: Shared utilities across multiple packages
 **Architecture**: Pure functions, clear exports, no side effects
-**Build Configuration**: `bundle: false, format: ['esm']`
+**Build Configuration**: Extends `build:core` target with package-specific external dependencies
 **Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Examples**:
@@ -84,7 +117,7 @@ libs/{utility-name}/
 
 **Purpose**: Feature-specific utilities and processing logic
 **Architecture**: Feature-specific processing, specialized functionality
-**Build Configuration**: `bundle: false, format: ['esm']`
+**Build Configuration**: Extends `build:core` target with package-specific external dependencies
 **Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Examples**:
@@ -121,7 +154,7 @@ packages/{feature}/{utility-name}/
 
 **Purpose**: Pure business logic, self-contained feature implementation
 **Architecture**: Type imports only, no VSCode value imports, minimal external dependencies
-**Build Configuration**: `bundle: false, format: ['esm']`
+**Build Configuration**: Extends `build:core` target with package-specific external dependencies
 **Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Examples**:
@@ -159,7 +192,7 @@ packages/{feature-name}/core/
 
 **Purpose**: VSCode extension wrapper for core logic
 **Architecture**: Local adapters, CommonJS bundle, VSCode integration
-**Build Configuration**: `bundle: true, format: ['cjs']`
+**Build Configuration**: Extends `build:ext` target with package-specific external dependencies
 **Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
 
 **Examples**:
