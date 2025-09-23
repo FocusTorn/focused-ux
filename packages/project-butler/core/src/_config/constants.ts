@@ -46,7 +46,12 @@ export const ERROR_MESSAGES = {
     PACKAGE_JSON_PARSE_ERROR: 'Could not parse \'package.json\' file',
     BACKUP_CREATION_FAILED: 'Failed to create backup',
     TERMINAL_PATH_UPDATE_FAILED: 'Failed to update terminal path',
-    POETRY_SHELL_FAILED: 'Failed to enter Poetry shell'
+    POETRY_SHELL_FAILED: 'Failed to enter Poetry shell',
+    MISSING_REQUIRED_PARAMETER: 'Missing required parameter',
+    INVALID_INPUT: 'Invalid input provided',
+    INVALID_FILE_PATH: 'Invalid file path provided',
+    WORKFLOW_EXECUTION_FAILED: 'Workflow execution failed',
+    ORCHESTRATION_FAILED: 'Complex orchestration failed'
 } as const
 
 // Success messages

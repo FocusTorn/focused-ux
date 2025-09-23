@@ -127,4 +127,200 @@ describe('ProjectButlerManager Integration', () => {
             expect(mocks.path.dirname).toHaveBeenCalledWith(filePath)
         })
     })
+
+    describe('Complex Orchestration Methods', () => {
+        describe('formatPackageJsonWithBackup', () => {
+            it('should format package.json and create backup in one operation', async () => {
+                // Arrange
+                const packageJsonPath = '/test/package.json'
+                const workspaceRoot = '/test'
+                const backupPath = '/test/package.json.bak'
+                const configContent = 'ProjectButler:\n  packageJson-order:\n    - name\n    - version\n    - scripts'
+                const packageContent = JSON.stringify({
+                    scripts: { test: 'jest' },
+                    name: 'test-package',
+                    version: '1.0.0',
+                }, null, 2)
+
+                setupPackageJsonSuccessScenario(mocks, {
+                    packageJsonPath,
+                    workspaceRoot,
+                    configContent,
+                    packageContent,
+                    expectedOrder: ['name', 'version', 'scripts']
+                })
+
+                setupBackupSuccessScenario(mocks, { 
+                    sourcePath: packageJsonPath, 
+                    backupPath 
+                })
+
+                // Act
+                const result = await projectButlerManager.formatPackageJsonWithBackup(packageJsonPath, workspaceRoot)
+
+                // Assert
+                expect(result).toEqual({
+                    backupPath,
+                    formatted: true
+                })
+                expect(mocks.fileSystem.copyFile).toHaveBeenCalledWith(packageJsonPath, backupPath)
+                expect(mocks.fileSystem.writeFile).toHaveBeenCalledWith(
+                    packageJsonPath,
+                    expect.stringContaining('"name": "test-package"')
+                )
+            })
+
+            it('should throw error for invalid parameters', async () => {
+                // Act & Assert
+                await expect(projectButlerManager.formatPackageJsonWithBackup('', '/test'))
+                    .rejects.toThrow('Invalid file path provided')
+                
+                await expect(projectButlerManager.formatPackageJsonWithBackup('/test/package.json', ''))
+                    .rejects.toThrow('Invalid file path provided')
+            })
+        })
+
+        describe('completeProjectSetupWorkflow', () => {
+            it('should execute complete project setup workflow', async () => {
+                // Arrange
+                const packageJsonPath = '/test/package.json'
+                const workspaceRoot = '/test'
+                const filePath = '/test/file.txt'
+                const backupPath = '/test/package.json.bak'
+                const directoryPath = '/test'
+                const configContent = 'ProjectButler:\n  packageJson-order:\n    - name\n    - version\n    - scripts'
+                const packageContent = JSON.stringify({
+                    scripts: { test: 'jest' },
+                    name: 'test-package',
+                    version: '1.0.0',
+                }, null, 2)
+
+                setupPackageJsonSuccessScenario(mocks, {
+                    packageJsonPath,
+                    workspaceRoot,
+                    configContent,
+                    packageContent,
+                    expectedOrder: ['name', 'version', 'scripts']
+                })
+
+                setupBackupSuccessScenario(mocks, { 
+                    sourcePath: packageJsonPath, 
+                    backupPath 
+                })
+
+                mocks.fileSystem.stat.mockResolvedValue({ type: 'file' })
+                mocks.path.dirname.mockReturnValue(directoryPath)
+
+                // Act
+                const result = await projectButlerManager.completeProjectSetupWorkflow(
+                    packageJsonPath, 
+                    workspaceRoot, 
+                    filePath
+                )
+
+                // Assert
+                expect(result).toEqual({
+                    backupPath,
+                    formatted: true,
+                    terminalCommand: expect.stringContaining('cd')
+                })
+                expect(mocks.fileSystem.copyFile).toHaveBeenCalledWith(packageJsonPath, backupPath)
+                expect(mocks.fileSystem.writeFile).toHaveBeenCalledWith(
+                    packageJsonPath,
+                    expect.stringContaining('"name": "test-package"')
+                )
+                expect(mocks.fileSystem.stat).toHaveBeenCalledWith(filePath)
+            })
+
+            it('should throw error for invalid parameters', async () => {
+                // Act & Assert
+                await expect(projectButlerManager.completeProjectSetupWorkflow('', '/test', '/test/file.txt'))
+                    .rejects.toThrow('Invalid file path provided')
+                
+                await expect(projectButlerManager.completeProjectSetupWorkflow('/test/package.json', '', '/test/file.txt'))
+                    .rejects.toThrow('Invalid file path provided')
+                
+                await expect(projectButlerManager.completeProjectSetupWorkflow('/test/package.json', '/test', ''))
+                    .rejects.toThrow('Invalid file path provided')
+            })
+        })
+
+        describe('poetryEnvironmentSetup', () => {
+            it('should setup poetry environment with terminal navigation', async () => {
+                // Arrange
+                const filePath = '/test/file.txt'
+                const directoryPath = '/test'
+                
+                mocks.fileSystem.stat.mockResolvedValue({ type: 'file' })
+                mocks.path.dirname.mockReturnValue(directoryPath)
+
+                // Act
+                const result = await projectButlerManager.poetryEnvironmentSetup(filePath)
+
+                // Assert
+                expect(result).toEqual({
+                    poetryCommand: expect.stringContaining('poetry shell'),
+                    terminalCommand: expect.stringContaining('cd'),
+                    backupPath: undefined
+                })
+                expect(mocks.fileSystem.stat).toHaveBeenCalledWith(filePath)
+            })
+
+            it('should setup poetry environment with package.json formatting', async () => {
+                // Arrange
+                const filePath = '/test/file.txt'
+                const packageJsonPath = '/test/package.json'
+                const workspaceRoot = '/test'
+                const backupPath = '/test/package.json.bak'
+                const directoryPath = '/test'
+                const configContent = 'ProjectButler:\n  packageJson-order:\n    - name\n    - version\n    - scripts'
+                const packageContent = JSON.stringify({
+                    scripts: { test: 'jest' },
+                    name: 'test-package',
+                    version: '1.0.0',
+                }, null, 2)
+
+                setupPackageJsonSuccessScenario(mocks, {
+                    packageJsonPath,
+                    workspaceRoot,
+                    configContent,
+                    packageContent,
+                    expectedOrder: ['name', 'version', 'scripts']
+                })
+
+                setupBackupSuccessScenario(mocks, { 
+                    sourcePath: packageJsonPath, 
+                    backupPath 
+                })
+
+                mocks.fileSystem.stat.mockResolvedValue({ type: 'file' })
+                mocks.path.dirname.mockReturnValue(directoryPath)
+
+                // Act
+                const result = await projectButlerManager.poetryEnvironmentSetup(
+                    filePath, 
+                    packageJsonPath, 
+                    workspaceRoot
+                )
+
+                // Assert
+                expect(result).toEqual({
+                    poetryCommand: expect.stringContaining('poetry shell'),
+                    terminalCommand: expect.stringContaining('cd'),
+                    backupPath
+                })
+                expect(mocks.fileSystem.copyFile).toHaveBeenCalledWith(packageJsonPath, backupPath)
+                expect(mocks.fileSystem.writeFile).toHaveBeenCalledWith(
+                    packageJsonPath,
+                    expect.stringContaining('"name": "test-package"')
+                )
+            })
+
+            it('should throw error for invalid file path', async () => {
+                // Act & Assert
+                await expect(projectButlerManager.poetryEnvironmentSetup(''))
+                    .rejects.toThrow('Invalid file path provided')
+            })
+        })
+    })
 })

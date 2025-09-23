@@ -72,4 +72,15 @@ export const constants = {
 			idPrefix: `${EXT_ID_PREFIX}.quickSetting.fileGroupVisibility`, // e.g., ccp.quickSetting.fileGroupVisibility.build
 		},
 	},
+	errorMessages: {
+		MISSING_REQUIRED_PARAMETER: 'Missing required parameter',
+		INVALID_INPUT: 'Invalid input provided',
+		INVALID_STATE_NAME: 'Invalid state name provided',
+		WORKFLOW_EXECUTION_FAILED: 'Workflow execution failed',
+		ORCHESTRATION_FAILED: 'Complex orchestration failed',
+		CONTEXT_COLLECTION_FAILED: 'Context collection failed',
+		STATE_SAVE_FAILED: 'State save operation failed',
+		NO_WORKSPACE_FOLDER: 'No workspace folder open',
+		NO_CHECKED_ITEMS: 'No items are checked',
+	},
 } as const

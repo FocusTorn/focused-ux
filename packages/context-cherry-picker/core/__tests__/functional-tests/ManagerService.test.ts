@@ -101,18 +101,7 @@ class MockTreeItemFactory {
 
 describe('ManagerService', () => {
     let service: ContextCherryPickerManager
-    let mockFileExplorer: MockFileExplorerService
-    let mockSavedStates: MockSavedStatesService
-    let mockQuickSettings: MockQuickSettingsService
-    let mockStorage: MockStorageService
-    let mockContextDataCollector: MockContextDataCollectorService
-    let mockFileContentProvider: MockFileContentProviderService
-    let mockContextFormatter: MockContextFormattingService
-    let mockWindow: MockWindow
-    let mockWorkspace: MockWorkspace
-    let mockPath: MockPath
-    let mockConfiguration: MockConfigurationService
-    let mockTreeItemFactory: MockTreeItemFactory
+    let mockDependencies: any
     let mocks: ReturnType<typeof setupTestEnvironment>
 
     beforeEach(() => {
@@ -121,35 +110,24 @@ describe('ManagerService', () => {
         setupPathMocks(mocks)
         resetAllMocks(mocks)
 
-        // Initialize mock services
-        mockFileExplorer = new MockFileExplorerService()
-        mockSavedStates = new MockSavedStatesService()
-        mockQuickSettings = new MockQuickSettingsService()
-        mockStorage = new MockStorageService()
-        mockContextDataCollector = new MockContextDataCollectorService()
-        mockFileContentProvider = new MockFileContentProviderService()
-        mockContextFormatter = new MockContextFormattingService()
-        mockWindow = new MockWindow()
-        mockWorkspace = new MockWorkspace()
-        mockPath = new MockPath()
-        mockConfiguration = new MockConfigurationService()
-        mockTreeItemFactory = new MockTreeItemFactory()
+        // Initialize mock dependencies
+        mockDependencies = {
+            fileExplorerService: new MockFileExplorerService(),
+            savedStatesService: new MockSavedStatesService(),
+            quickSettingsService: new MockQuickSettingsService(),
+            storageService: new MockStorageService(),
+            contextDataCollector: new MockContextDataCollectorService(),
+            fileContentProvider: new MockFileContentProviderService(),
+            contextFormatter: new MockContextFormattingService(),
+            window: new MockWindow(),
+            workspace: new MockWorkspace(),
+            path: new MockPath(),
+            configurationService: new MockConfigurationService(),
+            treeItemFactory: new MockTreeItemFactory(),
+        }
 
         // Initialize service with mocked dependencies
-        service = new ContextCherryPickerManager(
-            mockFileExplorer as any,
-            mockSavedStates as any,
-            mockQuickSettings as any,
-            mockStorage as any,
-            mockContextDataCollector as any,
-            mockFileContentProvider as any,
-            mockContextFormatter as any,
-            mockWindow as any,
-            mockWorkspace as any,
-            mockPath as any,
-            mockConfiguration as any,
-            mockTreeItemFactory as any
-        )
+        service = new ContextCherryPickerManager(mockDependencies)
     })
 
     describe('saveCurrentCheckedState', () => {
