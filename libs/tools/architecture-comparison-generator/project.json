@@ -1,0 +1,31 @@
+{
+    "name": "@fux/architecture-comparison-generator",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/tools/architecture-comparison-generator/src",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "extends": "build:core",
+            "options": {
+                "external": ["node:child_process", "node:fs", "node:path"]
+            }
+        },
+        "test": {
+            "extends": "test"
+        },
+        "test:coverage-tests": {
+            "extends": "test:coverage-tests"
+        },
+        "lint": {
+            "extends": "lint"
+        },
+        "run": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "node dist/libs/tools/architecture-comparison-generator/index.js",
+                "cwd": "."
+            }
+        }
+    },
+    "tags": ["tool", "architecture", "analysis", "generator"]
+}

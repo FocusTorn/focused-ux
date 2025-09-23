@@ -34,6 +34,71 @@
             "factory": "./dist/generators/plugin/add-generator/add-generator",
             "schema": "./dist/generators/plugin/add-generator/schema.json",
             "description": "Add generator to existing plugin with vpack-style configuration"
+        },
+        "PackageConfig: Feat-Ext": {
+            "factory": "./dist/generators/PackageConfig/Feat-Ext/Feat-Ext",
+            "schema": "./dist/generators/PackageConfig/Feat-Ext/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: Feat-Ext: Test": {
+            "factory": "./dist/generators/PackageConfig/Feat-Ext/Test/Test",
+            "schema": "./dist/generators/PackageConfig/Feat-Ext/Test/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: Feat-Ext: TS": {
+            "factory": "./dist/generators/PackageConfig/Feat-Ext/TS/TS",
+            "schema": "./dist/generators/PackageConfig/Feat-Ext/TS/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: Feat-Ext: Proj": {
+            "factory": "./dist/generators/PackageConfig/Feat-Ext/Proj/Proj",
+            "schema": "./dist/generators/PackageConfig/Feat-Ext/Proj/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: Feat-Core": {
+            "factory": "./dist/generators/PackageConfig/Feat-Core/Feat-Core",
+            "schema": "./dist/generators/PackageConfig/Feat-Core/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: Feat-Core: Test": {
+            "factory": "./dist/generators/PackageConfig/Feat-Core/Test/Test",
+            "schema": "./dist/generators/PackageConfig/Feat-Core/Test/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: Feat-Core: TS": {
+            "factory": "./dist/generators/PackageConfig/Feat-Core/TS/TS",
+            "schema": "./dist/generators/PackageConfig/Feat-Core/TS/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: Feat-Core: Proj": {
+            "factory": "./dist/generators/PackageConfig/Feat-Core/Proj/Proj",
+            "schema": "./dist/generators/PackageConfig/Feat-Core/Proj/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: Plugin": {
+            "factory": "./dist/generators/PackageConfig/Plugin/Plugin",
+            "schema": "./dist/generators/PackageConfig/Plugin/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: Plugin: Test": {
+            "factory": "./dist/generators/PackageConfig/Plugin/Test/Test",
+            "schema": "./dist/generators/PackageConfig/Plugin/Test/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: Plugin: TS": {
+            "factory": "./dist/generators/PackageConfig/Plugin/TS/TS",
+            "schema": "./dist/generators/PackageConfig/Plugin/TS/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: Plugin: Proj": {
+            "factory": "./dist/generators/PackageConfig/Plugin/Proj/Proj",
+            "schema": "./dist/generators/PackageConfig/Plugin/Proj/schema.json",
+            "description": "Generate config files: Nx plugin"
+        },
+        "PackageConfig: lib": {
+            "factory": "./dist/generators/PackageConfig/lib/lib",
+            "schema": "./dist/generators/PackageConfig/lib/schema.json",
+            "description": "Generate config files: Nx plugin"
         }
     }
 }

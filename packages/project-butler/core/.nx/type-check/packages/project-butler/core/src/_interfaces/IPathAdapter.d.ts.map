@@ -1,1 +1,0 @@
-{"version":3,"file":"IPathAdapter.d.ts","sourceRoot":"","sources":["../../../../../../../src/_interfaces/IPathAdapter.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,YAAY;IACzB,OAAO,EAAE,CAAC,IAAI,EAAE,MAAM,KAAK,MAAM,CAAA;IACjC,QAAQ,EAAE,CAAC,IAAI,EAAE,MAAM,KAAK,MAAM,CAAA;IAClC,IAAI,EAAE,CAAC,GAAG,KAAK,EAAE,MAAM,EAAE,KAAK,MAAM,CAAA;CACvC"}

@@ -1,8 +1,9 @@
 {
-    "name": "@fux/project-butler-core",
+    "name": "@fux/dynamicons-core",
     "version": "0.1.0",
     "private": true,
     "main": "./dist/index.js",
+    "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
         ".": {

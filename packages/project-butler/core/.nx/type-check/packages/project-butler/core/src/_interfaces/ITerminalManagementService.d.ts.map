@@ -1,1 +1,0 @@
-{"version":3,"file":"ITerminalManagementService.d.ts","sourceRoot":"","sources":["../../../../../../../src/_interfaces/ITerminalManagementService.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,0BAA0B;IACvC;;;;OAIA;IACA,kBAAkB,EAAE,CAAC,QAAQ,EAAE,MAAM,KAAK,OAAO,CAAC,gBAAgB,CAAC,CAAA;CACtE;AAED,MAAM,WAAW,gBAAgB;IAC7B,OAAO,EAAE,MAAM,CAAA;IACf,kBAAkB,EAAE,OAAO,CAAA;CAC9B"}

@@ -1,0 +1,414 @@
+---
+description: Shall only be executed when directed to do any definitional variation of "doing a 'DPC' "
+alwaysApply: false
+---
+
+# Protocol: Deep-Package-Comprehension v2.mdc
+
+**Location**: .cursor/rules/\_\_AI-Task---Deep-Package-Comprehension v2.mdc
+
+## **CRITICAL ENFORCEMENT NOTICE**
+
+**THESE ARE MANDATORY DIRECTIVES, NOT SUGGESTIONS**
+
+- **NO DEVIATION**: All rules must be followed exactly as written
+- **NO SKIPPING**: No steps may be skipped, abbreviated, or modified
+- **NO SELECTIVE COMPLIANCE**: All rules apply to all actions
+- **FAILURE TO COMPLY**: Violating these rules constitutes a critical protocol violation
+
+## **AI AGENT EXECUTION PROTOCOL**
+
+**CRITICAL**: This protocol is designed for AI agent consumption and MUST be followed exactly as structured. Each section contains explicit validation requirements that MUST be completed before proceeding.
+
+**ENFORCEMENT MECHANISM**: This protocol uses **CONCRETE EVIDENCE REQUIREMENTS** and **MANDATORY TOOL EXECUTION** to prevent skipping or incomplete execution.
+
+**CRITICAL OUTPUT REQUIREMENT**:
+
+- **NO ANALYSIS RESULTS IN CHAT**: All analysis results, findings, and detailed analysis MUST appear ONLY in the created documents
+- **CHAT RESPONSES**: Chat responses should contain ONLY status updates, confirmations, and references to created documents
+- **DOCUMENT-ONLY ANALYSIS**: Detailed analysis, findings, and comprehensive results are FORBIDDEN in chat responses
+- **REFERENCE ONLY**: Chat may reference document locations and confirm completion status
+
+## **CRITICAL PRE-DPC VALIDATION FRAMEWORK**
+
+### MANDATORY EXECUTION CHECKLIST
+
+**CRITICAL**: Before ANY DPC execution, execute this validation sequence:
+
+**STEP 1: WORKSPACE COMPLIANCE VERIFICATION**
+
+- [ ] **Documentation Check**: Have I checked `docs/Architecture.md` for package structure and patterns?
+- [ ] **Testing Check**: Have I checked `docs/FocusedUX-Testing-Strategy.md` for testing patterns?
+- [ ] **Previous Solutions**: Have I checked `./docs/Actions-Log.md` for existing implementations?
+- [ ] **Package Analysis**: Will I use `nx_project_details` to understand package dependencies?
+
+**STEP 2: DPC PREPARATION COMPLIANCE**
+
+- [ ] **Target Package**: Is the target package clearly identified and accessible?
+- [ ] **Resource Allocation**: Is sufficient context window allocated for deep analysis?
+- [ ] **Tool Availability**: Are all required tools available and functional?
+- [ ] **Documentation Access**: Is package documentation and README accessible?
+
+**STEP 3: ENFORCEMENT VERIFICATION**
+
+- [ ] **Violation Detection**: If I detect any protocol violation, will I acknowledge immediately?
+- [ ] **Evidence Requirements**: Will I provide concrete evidence for each validation step?
+- [ ] **Tool Execution**: Will I execute all required tools with documented results?
+
+**VIOLATION PENALTY**: Any failure to complete this checklist constitutes a critical failure requiring immediate acknowledgment and correction.
+
+## **EXECUTION BLOCKING REQUIREMENTS**
+
+### **BLOCK 0: PRE-COMPREHENSION PREPARATION**
+
+**🚫 EXECUTION BLOCK**: You cannot proceed past this point until pre-comprehension preparation is completed.
+
+**MANDATORY PREPARATION CHECKLIST WITH CONCRETE EVIDENCE**:
+
+- [ ] **CRITICAL**: Target package identified and accessible
+    - **EVIDENCE REQUIRED**: Specific package path documented (e.g., `packages/ghost-writer/core/`)
+    - **TOOL PROOF**: `list_dir` tool executed on package directory with results documented
+- [ ] **CRITICAL**: All source code files accessible (src/, tests/, config files)
+    - **EVIDENCE REQUIRED**: Complete file listing with counts and types documented
+    - **TOOL PROOF**: `list_dir` tool executed on src/, tests/, and config directories
+- [ ] **CRITICAL**: Package documentation and README available
+    - **EVIDENCE REQUIRED**: Specific README file path and content summary documented
+    - **TOOL PROOF**: `read_file` tool executed on README with content analysis
+- [ ] **CRITICAL**: Workspace architecture context understood
+    - **EVIDENCE REQUIRED**: Workspace structure documented with package relationships
+    - **TOOL PROOF**: `mcp_nx-mcp_nx_project_details` tool executed with results documented
+- [ ] **CRITICAL**: Sufficient context window allocated for deep analysis
+    - **EVIDENCE REQUIRED**: Context window allocation strategy documented
+    - **TOOL PROOF**: File count and size analysis completed
+- [ ] **CRITICAL**: Package type classification completed (core, ext, shared, tool)
+    - **EVIDENCE REQUIRED**: Specific package type with architectural justification documented
+    - **TOOL PROOF**: Package structure analysis with type-specific patterns identified
+- [ ] **CRITICAL**: Integration patterns with other packages understood
+    - **EVIDENCE REQUIRED**: Cross-package dependencies mapped with specific file references
+    - **TOOL PROOF**: `grep` tool executed for cross-package imports with results documented
+- [ ] **CRITICAL**: Build and deployment configuration analyzed
+    - **EVIDENCE REQUIRED**: Build configuration files analyzed with specific settings documented
+    - **TOOL PROOF**: `read_file` tool executed on project.json and package.json with analysis
+
+**🚫 VALIDATION BLOCK**: Before proceeding, you MUST provide **CONCRETE EVIDENCE** of completion:
+
+**MANDATORY VALIDATION EVIDENCE**:
+
+1. **PACKAGE PATH DOCUMENTED**: `packages/{package-name}/core/` with specific path
+2. **FILE LISTING EVIDENCE**: Complete directory listing with file counts and types
+3. **README ANALYSIS EVIDENCE**: Specific README content summary with key points
+4. **WORKSPACE CONTEXT EVIDENCE**: Nx project details with dependencies and targets
+5. **PACKAGE TYPE EVIDENCE**: Specific type classification with architectural justification
+6. **INTEGRATION EVIDENCE**: Cross-package imports mapped with specific file references
+7. **BUILD CONFIG EVIDENCE**: Project.json and package.json analysis with specific settings
+
+**VALIDATION STATEMENT**: "PRE-COMPREHENSION PREPARATION COMPLETED: Package path {specific-path}, {file-count} files accessible, README analyzed at {readme-path}, workspace context from Nx project {project-name}, package type {type} with {architectural-pattern}, {cross-package-count} cross-package dependencies mapped, build config analyzed with {build-targets} targets."
+
+### **BLOCK 1: MANDATORY GREP-BASED DEPENDENCY ANALYSIS**
+
+**🚫 EXECUTION BLOCK**: You cannot proceed past this point until ALL grep-based dependency analysis is completed.
+
+**CRITICAL**: This block is MANDATORY and cannot be skipped, abbreviated, or substituted. Every grep command MUST be executed and results documented.
+
+**MANDATORY GREP EXECUTION CHECKLIST WITH CONCRETE EVIDENCE**:
+
+- [ ] **CRITICAL**: All import statements traced using grep with specific commands
+    - **EVIDENCE REQUIRED**: Complete grep results with file paths, line numbers, and import statements
+    - **TOOL PROOF**: `grep` tool executed with exact command and results documented
+- [ ] **CRITICAL**: External package imports cataloged with grep results
+    - **EVIDENCE REQUIRED**: Specific external packages with import locations and usage context
+    - **TOOL PROOF**: `grep` tool executed for external imports with results documented
+- [ ] **CRITICAL**: Cross-package imports identified with grep evidence
+    - **EVIDENCE REQUIRED**: Specific cross-package imports with file paths and line numbers
+    - **TOOL PROOF**: `grep` tool executed for cross-package imports with results documented
+- [ ] **CRITICAL**: Node.js built-in usage cataloged with grep results
+    - **EVIDENCE REQUIRED**: Specific Node.js built-ins with usage locations and context
+    - **TOOL PROOF**: `grep` tool executed for node: imports with results documented
+- [ ] **CRITICAL**: VSCode API usage patterns counted with grep evidence
+    - **EVIDENCE REQUIRED**: Specific VSCode API usage with file paths and line numbers
+    - **TOOL PROOF**: `grep` tool executed for vscode imports with results documented
+- [ ] **CRITICAL**: Type-only imports identified with grep analysis
+    - **EVIDENCE REQUIRED**: Specific type-only imports with file paths and line numbers
+    - **TOOL PROOF**: `grep` tool executed for type imports with results documented
+- [ ] **CRITICAL**: Circular dependency detection completed with grep analysis
+    - **EVIDENCE REQUIRED**: Specific circular dependencies with file paths and import chains
+    - **TOOL PROOF**: `grep` tool executed for circular patterns with results documented
+- [ ] **CRITICAL**: Runtime vs dev dependency validation completed with grep evidence
+    - **EVIDENCE REQUIRED**: Specific dependency misclassifications with file paths and evidence
+    - **TOOL PROOF**: `grep` tool executed for dependency validation with results documented
+
+**MANDATORY GREP COMMANDS TO EXECUTE**:
+
+```bash
+# 1. ALL IMPORT STATEMENTS - MANDATORY
+grep -r "import.*from" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 2. EXTERNAL PACKAGE IMPORTS - MANDATORY
+grep -r "import.*from ['\"][^./]" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 3. CROSS-PACKAGE IMPORTS - MANDATORY
+grep -r "import.*from ['\"]@fux/" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 4. NODE.JS BUILT-IN IMPORTS - MANDATORY
+grep -r "import.*from ['\"]node:" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 5. VSCode API IMPORTS - MANDATORY
+grep -r "import.*from ['\"]vscode" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 6. TYPE-ONLY IMPORTS - MANDATORY
+grep -r "import type" packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 7. RELATIVE IMPORTS - MANDATORY
+grep -r "import.*from ['\"]\." packages/{package-name}/core/src/ --include="*.ts" -n
+
+# 8. DYNAMIC IMPORTS - MANDATORY
+grep -r "import(" packages/{package-name}/core/src/ --include="*.ts" -n
+```
+
+**🚫 VALIDATION BLOCK**: Before proceeding, you MUST provide **CONCRETE EVIDENCE** of completion:
+
+**MANDATORY VALIDATION EVIDENCE**:
+
+1. **GREP COMMAND EVIDENCE**: All 8 mandatory grep commands executed with specific results
+2. **IMPORT TRACING EVIDENCE**: Complete import statements with file paths and line numbers
+3. **EXTERNAL DEPENDENCY EVIDENCE**: Specific external packages with usage locations
+4. **CROSS-PACKAGE EVIDENCE**: Specific cross-package imports with file references
+5. **NODE.JS EVIDENCE**: Specific Node.js built-ins with usage locations
+6. **VSCode API EVIDENCE**: Specific VSCode API usage with file references
+7. **TYPE IMPORT EVIDENCE**: Specific type-only imports with file references
+8. **CIRCULAR DEPENDENCY EVIDENCE**: Specific circular dependencies with import chains
+9. **DEPENDENCY VIOLATION EVIDENCE**: Specific misclassifications with file paths and evidence
+
+**VALIDATION STATEMENT**: "GREP-BASED DEPENDENCY ANALYSIS COMPLETED: {import-count} imports traced, {external-count} external packages cataloged, {cross-package-count} cross-package imports identified, {nodejs-count} Node.js built-ins found, {vscode-count} VSCode API usages counted, {type-count} type-only imports identified, {circular-count} circular dependencies detected, {violation-count} dependency violations identified with specific evidence."
+
+### **BLOCK 2: RUNTIME DEPENDENCY VALIDATION**
+
+**🚫 EXECUTION BLOCK**: You cannot proceed past this point until runtime dependency validation is completed.
+
+**MANDATORY RUNTIME VALIDATION CHECKLIST WITH CONCRETE EVIDENCE**:
+
+- [ ] **CRITICAL**: Every import statement analyzed for runtime vs build usage
+    - **EVIDENCE REQUIRED**: Specific import statements with runtime/build classification and justification
+    - **TOOL PROOF**: `read_file` tool executed on source files with usage analysis documented
+- [ ] **CRITICAL**: Dependency misclassification detection completed
+    - **EVIDENCE REQUIRED**: Specific misclassifications with file paths, line numbers, and evidence
+    - **TOOL PROOF**: `grep` tool results compared with package.json dependencies documented
+- [ ] **CRITICAL**: Externalized dependency verification completed
+    - **EVIDENCE REQUIRED**: Specific externalized dependencies with build config verification
+    - **TOOL PROOF**: `read_file` tool executed on project.json with externalization analysis
+- [ ] **CRITICAL**: Version compatibility analysis completed
+    - **EVIDENCE REQUIRED**: Specific version mismatches with compatibility impact assessment
+    - **TOOL PROOF**: Package.json analysis with version comparison documented
+- [ ] **CRITICAL**: Security vulnerability assessment completed
+    - **EVIDENCE REQUIRED**: Specific security vulnerabilities with impact assessment
+    - **TOOL PROOF**: Dependency security analysis with vulnerability documentation
+
+**🚫 VALIDATION BLOCK**: Before proceeding, you MUST provide **CONCRETE EVIDENCE** of completion:
+
+**MANDATORY VALIDATION EVIDENCE**:
+
+1. **IMPORT ANALYSIS EVIDENCE**: Specific import statements with runtime/build classification
+2. **MISCLASSIFICATION EVIDENCE**: Specific dependency misclassifications with file paths and evidence
+3. **EXTERNALIZATION EVIDENCE**: Specific externalized dependencies with build config verification
+4. **VERSION COMPATIBILITY EVIDENCE**: Specific version mismatches with impact assessment
+5. **SECURITY VULNERABILITY EVIDENCE**: Specific security vulnerabilities with impact assessment
+
+**VALIDATION STATEMENT**: "RUNTIME DEPENDENCY VALIDATION COMPLETED: {import-count} imports analyzed for runtime usage, {misclassification-count} dependency misclassifications identified with specific violations at {file-paths}, {externalized-count} externalized dependencies verified, {version-mismatch-count} version compatibility issues assessed, {vulnerability-count} security vulnerabilities identified with impact assessment."
+
+### **BLOCK 3: FOUNDATIONAL KNOWLEDGE ACQUISITION**
+
+**STOP**: You cannot proceed past this point until foundational knowledge is acquired.
+
+**MANDATORY FOUNDATIONAL ANALYSIS CHECKLIST**:
+
+- [ ] Package Identity Analysis completed (What, Why, Who, How)
+- [ ] Architectural Pattern Recognition completed (Package Type, Design Patterns, Integration Patterns)
+- [ ] Core Functionality Mapping completed (Data Flow, Service Architecture, Algorithms)
+- [ ] User Experience Simulation completed (Workflows, Interface, Configuration)
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "FOUNDATIONAL KNOWLEDGE ACQUIRED: Package identity, architecture, functionality, and user experience fully understood."
+
+### **BLOCK 4: IMPLEMENTATION PATTERN LEARNING**
+
+**STOP**: You cannot proceed past this point until implementation patterns are learned.
+
+**MANDATORY IMPLEMENTATION ANALYSIS CHECKLIST**:
+
+- [ ] Code Structure Comprehension completed (Organization, Strategy, Quality)
+- [ ] Dependency and Integration Mapping completed (Direct, Indirect, Integration)
+- [ ] State Management Understanding completed (Transitions, Lifecycle, Memory)
+- [ ] Event-Driven Architecture Understanding completed (Propagation, Async, Listeners)
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "IMPLEMENTATION PATTERNS LEARNED: Code structure, dependencies, state management, and event architecture fully analyzed."
+
+### **BLOCK 5: COMPLEX ALGORITHM AND BUSINESS LOGIC COMPREHENSION**
+
+**STOP**: You cannot proceed past this point until complex algorithms are comprehended.
+
+**MANDATORY ALGORITHM ANALYSIS CHECKLIST**:
+
+- [ ] Complex Algorithm Analysis completed (Complexity, Business Logic, Data Transformation)
+- [ ] Error Handling and Edge Case Management completed (Cascading, Edge Cases, Recovery)
+- [ ] Configuration and Environment Management completed (Dynamic, Environment-Specific, Validation)
+- [ ] Integration and Communication Patterns completed (Inter-Package, Serialization, Protocols)
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "COMPLEX ALGORITHMS COMPREHENDED: Algorithm complexity, error handling, configuration, and integration patterns fully understood."
+
+### **BLOCK 6: RESOURCE MANAGEMENT AND OPTIMIZATION COMPREHENSION**
+
+**STOP**: You cannot proceed past this point until resource management is comprehended.
+
+**MANDATORY RESOURCE ANALYSIS CHECKLIST**:
+
+- [ ] Resource Management and Optimization completed (Pool Management, Memory, Performance)
+- [ ] Testing Strategy and Quality Assurance completed (Complex Scenarios, Mock Strategy, Test Data)
+- [ ] Performance and Reliability Comprehension completed (Baseline, Optimization, Testing)
+- [ ] Testing and Deployment Comprehension completed (Strategy, Implementation, Integration)
+- [ ] **CRITICAL**: Build System Analysis completed (Configuration, Process, Optimization)
+- [ ] **CRITICAL**: Security Analysis completed (Code Security, Implementation, Compliance)
+- [ ] **CRITICAL**: Performance Baseline Analysis completed (Metrics, Benchmarking, Monitoring)
+- [ ] **CRITICAL**: Data Flow and State Synchronization completed (Consistency, Conflict Resolution)
+- [ ] **CRITICAL**: Integration Testing and Compatibility completed (API Compatibility, Migration)
+- [ ] **CRITICAL**: Monitoring and Observability completed (Logging, Metrics, Health Checks)
+- [ ] **CRITICAL**: Documentation and Knowledge Transfer completed (Code Docs, API Docs, Maintenance)
+- [ ] **CRITICAL**: Compliance and Standards completed (Coding Standards, Architecture Compliance)
+- [ ] **CRITICAL**: Scalability and Extensibility completed (Scaling Patterns, Extension Points)
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "RESOURCE MANAGEMENT COMPREHENDED: Resource management, testing strategy, performance, deployment, reliability patterns, build system, security, performance baseline, data flow, integration testing, monitoring, documentation, compliance, and scalability fully analyzed."
+
+### **BLOCK 7: KNOWLEDGE INTEGRATION AND RETENTION**
+
+**STOP**: You cannot proceed past this point until knowledge is integrated and retained.
+
+**MANDATORY INTEGRATION ANALYSIS CHECKLIST**:
+
+- [ ] Cross-Aspect Integration completed (Feature Integration, Cross-Package, System Behavior)
+- [ ] Knowledge Organization and Retention completed (Mental Model, Retrieval, Maintenance)
+- [ ] Completeness Validation completed (Coverage, Accuracy, Integration, Retrieval, Patterns, Context)
+- [ ] Knowledge Application Framework completed (Implementation, Troubleshooting, Optimization, Extension, Integration, User Support)
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "KNOWLEDGE INTEGRATION COMPLETED: Cross-aspect integration, knowledge organization, and application framework fully established."
+
+### **BLOCK 8: OUTPUT DOCUMENTATION FRAMEWORK**
+
+**STOP**: You cannot proceed past this point until output documentation is completed.
+
+**MANDATORY DOCUMENTATION CHECKLIST**:
+
+- [ ] **CRITICAL**: Comprehensive Package Comprehension Model documented
+- [ ] **CRITICAL**: Detailed Knowledge Structure established
+- [ ] **CRITICAL**: Executive Knowledge Summary completed
+- [ ] **CRITICAL**: Mental model organization documented
+- [ ] **CRITICAL**: Pattern catalog completed
+- [ ] **CRITICAL**: Relationship mapping documented
+- [ ] **CRITICAL**: Implementation examples cataloged
+
+**VALIDATION**: Before proceeding, you MUST explicitly state: "OUTPUT DOCUMENTATION COMPLETED: Comprehensive package comprehension model, detailed knowledge structure, and executive summary fully documented."
+
+## **FINAL VALIDATION BLOCK**
+
+**STOP**: You cannot claim DPC completion until ALL validation requirements are met.
+
+**MANDATORY FINAL VALIDATION CHECKLIST**:
+
+- [ ] All 8 execution blocks completed with explicit validation statements
+- [ ] All mandatory analysis checklists completed
+- [ ] All validation statements explicitly stated
+- [ ] Comprehensive package comprehension model documented
+- [ ] Detailed knowledge structure established
+- [ ] All required tools used appropriately
+- [ ] **CRITICAL**: All 8 mandatory grep commands executed with results documented
+- [ ] **CRITICAL**: Dependency validation completed with specific violations identified
+- [ ] **CRITICAL**: Cross-package dependencies mapped with evidence
+- [ ] **CRITICAL**: Circular dependencies detected and documented
+- [ ] **CRITICAL**: Architectural compliance violations documented with evidence
+- [ ] **CRITICAL**: All devDependency runtime usage violations identified and documented
+
+**🚫 FINAL VALIDATION BLOCK**: Before claiming DPC completion, you MUST provide **CONCRETE EVIDENCE** of completion:
+
+**MANDATORY FINAL VALIDATION EVIDENCE**:
+
+1. **BLOCK COMPLETION EVIDENCE**: All 8 execution blocks completed with specific validation statements
+2. **TOOL EXECUTION EVIDENCE**: All required tools executed with documented results
+3. **DEPENDENCY ANALYSIS EVIDENCE**: Complete dependency analysis with specific counts and violations
+4. **ARCHITECTURAL VIOLATION EVIDENCE**: Specific architectural violations with file paths and evidence
+5. **KNOWLEDGE STRUCTURE EVIDENCE**: Comprehensive knowledge structure with specific patterns and relationships
+6. **COMPREHENSION MODEL EVIDENCE**: Complete package comprehension model with specific insights
+
+**FINAL VALIDATION STATEMENT**: "DPC PROTOCOL COMPLETED: All 8 execution blocks completed with full validation. Package comprehension model established with {pattern-count} patterns and {relationship-count} relationships. Dependency analysis completed with {violation-count} violations documented at {specific-file-paths}. All architectural violations documented with specific evidence. Knowledge structure established with {insight-count} insights and {template-count} analysis templates."
+
+**🚨 FAILURE DETECTION**: If any evidence is missing or validation statement is generic → **AUTOMATIC RESTART FROM BLOCK 0**
+
+## **ENFORCEMENT MECHANISMS**
+
+### **🚫 BLOCKING PROGRESSION**
+
+- Each block contains explicit **🚫 EXECUTION BLOCK** instructions
+- **CONCRETE EVIDENCE** required before progression
+- No section can be skipped or abbreviated
+- All checklists must be completed with **TOOL PROOF**
+- **CRITICAL**: Block 1 (grep-based analysis) cannot be bypassed
+
+### **🔍 EXPLICIT VALIDATION REQUIREMENTS**
+
+- Each block requires **CONCRETE EVIDENCE** of completion
+- Validation statements must include **SPECIFIC COUNTS AND REFERENCES**
+- No "good enough" or "sufficient" analysis is acceptable
+- All requirements must be met with **TOOL EXECUTION PROOF**
+- **CRITICAL**: Grep results must be documented with **SPECIFIC EVIDENCE**
+
+### **⚡ SYSTEMATIC ENFORCEMENT**
+
+- Protocol is structured as sequential blocks with **🚫 EXECUTION BLOCKS**
+- Each block builds on previous blocks with **EVIDENCE REQUIREMENTS**
+- No shortcuts or workarounds are possible
+- Complete execution is the only acceptable outcome
+- **CRITICAL**: Dependency analysis must be **EVIDENCE-BASED WITH TOOL PROOF**
+
+### **🚨 FAILURE DETECTION AND CORRECTION**
+
+**AUTOMATIC FAILURE DETECTION**:
+
+- **MISSING EVIDENCE**: If validation statement lacks specific counts/references → **AUTOMATIC RESTART**
+- **MISSING TOOL PROOF**: If required tools not executed → **AUTOMATIC RESTART**
+- **VAGUE VALIDATION**: If validation statement is generic → **AUTOMATIC RESTART**
+- **INCOMPLETE CHECKLIST**: If any checklist item incomplete → **AUTOMATIC RESTART**
+
+**CORRECTION MECHANISM**:
+
+- **RESTART FROM BLOCK 0**: Failed execution requires complete restart
+- **EVIDENCE VERIFICATION**: All evidence must be verifiable and specific
+- **TOOL EXECUTION VERIFICATION**: All required tools must be executed with documented results
+- **NO PARTIAL COMPLETION**: Either complete execution or complete restart
+
+## **AI AGENT COMPLIANCE REQUIREMENTS**
+
+### **MANDATORY EXECUTION PATTERN**
+
+1. **Read Block 0** → **Complete Block 0** → **State Validation** → **Proceed to Block 1**
+2. **Read Block 1** → **Execute ALL 8 grep commands** → **Document results** → **State Validation** → **Proceed to Block 2**
+3. **Read Block 2** → **Complete Block 2** → **State Validation** → **Proceed to Block 3**
+4. **Continue pattern** until all 8 blocks completed
+5. **Complete Final Validation** → **Claim DPC completion**
+
+### **NO DEVIATION ALLOWED**
+
+- No skipping blocks
+- No abbreviating requirements
+- No "good enough" analysis
+- No proceeding without validation
+- No claiming completion without final validation
+- **CRITICAL**: No bypassing grep-based dependency analysis
+
+### **EXPLICIT ACKNOWLEDGMENT REQUIRED**
+
+- Each block requires explicit validation statement
+- Validation statements must be verbatim
+- No variations or substitutions allowed
+- All requirements must be met before progression
+- **CRITICAL**: Grep results must be explicitly documented
+
+---
+
+_This protocol ensures systematic, comprehensive, and validated package comprehension through enforced execution blocks, mandatory grep-based dependency analysis, and explicit validation requirements designed specifically for AI agent consumption. The v2 protocol incorporates structural improvements from workspace compliance analysis to ensure mandatory directive compliance._
+
