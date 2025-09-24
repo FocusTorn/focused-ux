@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-describe('Coverage Tests - Project Butler Core', () => {
+describe('Coverage Tests - Note Hub Core', () => {
     it('should handle undefined dependencies for coverage', () => {
         // This test covers the error path when dependencies are undefined
         expect(() => {
@@ -18,3 +18,6 @@ describe('Coverage Tests - Project Butler Core', () => {
         }).toBeDefined()
     })
 })
+
+
+

@@ -23,7 +23,9 @@ alwaysApply: true
 
 **STEP 1: PAE ALIAS COMPLIANCE**
 
+
 - [ ] **Alias Discovery**: Will I attempt `pae help` first to discover available aliases?
+- [ ] **Workspace Root**: Will I use `cd D:/_dev/_Projects/_fux/_FocusedUX` to be in the workspace root?
 - [ ] **Alias Usage**: Will I use appropriate alias for the operation (e.g., `pae dc b` for dynamicons build)?
 - [ ] **Fallback Protocol**: Will I only use direct nx commands if no alias exists or alias fails?
 - [ ] **Documentation**: Will I document any missing aliases that should be added to PAE system?

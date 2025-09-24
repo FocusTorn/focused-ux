@@ -1,5 +1,7 @@
 # Functional Tests
 
+**Purpose**: Main vitest test suites containing the core functionality tests. These tests verify that the package's features work correctly and meet the expected behavior.
+
 This directory contains integration tests that validate the real runtime behavior of the ghost-writer core services.
 
 ## Test Strategy
@@ -14,3 +16,4 @@ This directory contains integration tests that validate the real runtime behavio
 - `ClipboardService.test.ts` - Test clipboard functionality
 - `ImportGeneratorService.test.ts` - Test import generation
 - `ConsoleLoggerService.test.ts` - Test console logging generation
+

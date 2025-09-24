@@ -14,11 +14,11 @@
 ```typescript
 // trial-coverage-test.test-cov.ts
 import { describe, it, expect } from 'vitest'
-import { ProjectButlerManager } from '../../src/services/ProjectButlerManager.service.js'
+import { NotesHubManagerService } from '../../src/services/NotesHubManager.service.js'
 
-describe('Coverage Tests - Project Butler Manager', () => {
+describe('Coverage Tests - Notes Hub Manager', () => {
     it('should handle undefined input for coverage', () => {
-        const manager = new ProjectButlerManager()
+        const manager = new NotesHubManagerService()
         // This test specifically covers the undefined input path
         expect(() => manager.processData(undefined)).toThrow()
     })
@@ -31,3 +31,5 @@ describe('Coverage Tests - Project Butler Manager', () => {
 - **Branch Coverage**: Cover all conditional branches
 - **Function Coverage**: Ensure all functions are called
 - **Statement Coverage**: Cover all executable statements
+
+

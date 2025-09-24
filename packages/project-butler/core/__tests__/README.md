@@ -181,3 +181,4 @@ $env:ENABLE_TEST_CONSOLE="true"; nx test @fux/project-butler-core
 - Mock path utilities for cross-platform consistency
 - Mock YAML parsing for configuration testing
 - Use realistic mock data for comprehensive testing
+

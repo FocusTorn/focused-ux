@@ -1,53 +1,38 @@
 {
-    
-    
-    // targets is now package-targets
-    
-    // added feature-targets
-    // this is the configuration for when pb is ran instead of pbe or pbc where it 
-    // uses the "full": true and would 
-    
-    // "feature-targets": {
-    //     "t": {"run-from": "ext", "run-target": "td -s"},
-    
-    //     "ti": {"run-from": "ext", "run-target": "test:integration"},
-    //     "l": {"run-from": "ext", "run-target": "lint:deps"}
-    // },
-    
-    // The above would cause @fux/ghost-writer-ext:test:deps when pb t is used
-    // The above would cause @fux/ghost-writer-ext:lint:deps when pb l is used
-    
-    
     "package-targets": {
         //= Prepare ============================================================= 
         "b"  : "build",
         "p"  : "package",
         "pd" : "package:dev",
         "pub": "publish",
-        //= Linting ============================================================= 
+        
+        //= Adherance =========================================================== 
+        //- Check-Types ------------------------------------- 
         "ct" : "check-types",
         "ctd": "check-types:deps",
-        //= Linting ============================================================= 
+        //- Linting ----------------------------------------- 
         "l" : "lint",
         "lf": "lint:deps",
+        //- Validation -------------------------------------- 
+        "v" : "validate",
+        "vf": "validate:deps",
+        //- Auditing ---------------------------------------- 
+        "a": "audit",
+        "aa": "audit:all",
+        "at": "audit:test",
+        "ac": "audit:code",
+        
         //= Testing ============================================================= 
         "t"  : "test",
         "tc" : "test:coverage-tests",
         "td" : "test:deps",
         "tdc": "test:deps:coverage-tests",
         "ti" : "test:integration",
+        
         //= Cleaning ============================================================ 
         "c" : "clean",
         "cc": "clean:cache",
         "cd": "clean:dist",
-        //= Adherance =========================================================== 
-        "v" : "validate",
-        "vf": "validate:deps",
-        
-        "a": "audit",
-        "aa": "audit:all",
-        "at": "audit:test",
-        "ac": "audit:code",
         
         //= Feature Specific - CMO ============================================== 
         "s" : "status",
@@ -55,33 +40,101 @@
         "m" : "monitor"
     },
       
+    
     "feature-targets": {
-        // "t": {"run-from": "ext", "run-target": "test:deps"},
-        // "ti": {"run-from": "ext", "run-target": "test:integration"},
-        // "l": {"run-from": "ext", "run-target": "lint:deps"}
-        
+        //= Prepare ============================================================= 
         "b": {"run-from": "ext", "run-target": "build"},
+        
+        //= Testing ============================================================= 
         "t": {"run-from": "ext", "run-target": "test:deps --output-style=stream"},
         "ti": {"run-from": "ext", "run-target": "test:integration"},
         "tsc": {"run-from": "ext", "run-target": "type-check"},
-        
+
+        //= Adherance =========================================================== 
         "l": {"run-from": "ext", "run-target": "lint:deps --output-style=stream"},
         "ct": {"run-from": "ext", "run-target": "check-types:deps --output-style=stream"}
     },
     
+    
     "not-nx-targets": {
         "esv": "npx esbuild-visualizer --metadata"
     },
+    
+    
+    /**
+     * EXPANDABLES SYSTEM
+     * ===================
+     * 
+     * The expandables system allows dynamic command expansion with template-based variable substitution.
+     * This enables powerful runtime modifications to PAE commands without hardcoding every variation.
+     * 
+     * SYNTAX SUPPORT:
+     * - Both `-key=value` and `-key:value` syntax are supported
+     * - Multiple expansions can be combined: `-sto=5 -mem=2048 -f`
+     * 
+     * POSITIONING:
+     * - "prefix": Expands at the very start of the command
+     * - "pre-args": Expands before flags but after the base command  
+     * - "suffix": Expands at the very end, after all flags
+     * 
+     * TEMPLATE SYSTEM:
+     * - Use {variable} placeholders in templates
+     * - Defaults provide fallback values when no value is specified
+     * - String literals can be used for simple expansions
+     * 
+     * USAGE EXAMPLES:
+     * 
+     * Simple String Expansions:
+     *   pae pbc t -f                    → pae pbc t --fix
+     *   pae pbc t -v                    → pae pbc t --verbose
+     * 
+     * Template Expansions with Defaults:
+     *   pae pbc t -sto                  → timeout 10s pae pbc t
+     *   pae pbc t -mem                  → node --max-old-space-size=4096MB pae pbc t
+     * 
+     * Custom Values:
+     *   pae pbc t -sto=5                → timeout 5s pae pbc t
+     *   pae pbc t -mem=2048             → node --max-old-space-size=2048MB pae pbc t
+     * 
+     * Multiple Expansions:
+     *   pae pbc t -sto=5 -mem=2048 -f   → timeout 5s node --max-old-space-size=2048MB pae pbc t --fix
+     *   pae pbc t -sto:5 -mem=2048      → timeout 5s node --max-old-space-size=2048MB pae pbc t
+     * 
+     * CONFIGURATION EXAMPLES:
+     * 
+     * Simple String:
+     *   "f": "--fix"
+     * 
+     * Template with Defaults:
+     *   "sto": {
+     *     "position": "prefix",
+     *     "defaults": {"command": "timeout", "duration": "10"},
+     *     "template": "{command} {duration}s"
+     *   }
+     * 
+     * Template with Position:
+     *   "f": {
+     *     "position": "suffix", 
+     *     "template": "--fix"
+     *   }
+     */
     "expandables": {
-        "f": "fix",
-        "s": "skip-nx-cache",
-        "v": "verbose",
-        "d": "debug",
-        "watch": "watch",
-        "stream": "output-style=stream",
-        "tui": "output-style=tui",
-        "echo": "pae-echo"
+        "f": "--fix",
+        "s": "--skip-nx-cache",
+        "v": "--verbose",
+        "d": "--debug",
+        "watch": "--watch",
+        "echo": "--pae-echo",
+        
+        // output-style=[stream, tui]
+        "os": {
+            "position": "suffix",
+            "defaults": {"style": "stream"},
+            "template": "--output-style={style}"
+        }
     },
+    
+    
     "packages": {
         "ccp" : { //>
             "name": "context-cherry-picker",
