@@ -65,7 +65,7 @@
         "test": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build"],
+            // "dependsOn": ["build"],
             "options": {
                 "configFile": "{projectRoot}/vitest.config.ts",
                 "reportsDirectory": "__tests__/_reports/functional",
@@ -75,7 +75,7 @@
         "test:coverage-tests": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build"],
+            // "dependsOn": ["build"],
             "options": {
                 "configFile": "{projectRoot}/vitest.coverage.config.ts",
                 "reportsDirectory": "__tests__/_reports/coverage",

@@ -36,8 +36,18 @@
             "cache": true,
             "syncGenerators": ["@nx/js:typescript-sync"]
         }, //<
+        "build:lib": { //>
+            "executor": "@nx/esbuild:esbuild"
+            // "options": {
+            //     "main": "{workspaceRoot}/{projectRoot}/src/index.ts",
+            //     "format": ["esm"],
+            //     "bundle": false,
+            //     "metafile": true
+            // }
+        }, //<
         "build:core": { //>
             "executor": "@nx/esbuild:esbuild"
+            
         }, //<
         "build:ext": { //>
             "executor": "@nx/esbuild:esbuild",
