@@ -3,16 +3,16 @@ import { setupPaeTestEnvironment, resetPaeMocks } from '../__mocks__/helpers'
 import { createPaeMockBuilder } from '../__mocks__/mock-scenario-builder'
 import { resolveProjectForAliasWithTarget, resolveProjectForFeatureTarget } from '../../src/cli'
 
-describe('PAE CLI Advanced Resolution Functions', () => {
+describe('Resolution', () => {
     let mocks: Awaited<ReturnType<typeof setupPaeTestEnvironment>>
 
-    beforeEach(async () => {
+    beforeEach(async () => { //>
         mocks = await setupPaeTestEnvironment()
         await resetPaeMocks(mocks)
-    })
+    }) //<
 
     describe('resolveProjectForAliasWithTarget', () => {
-        it('should resolve integration test target to ext package', () => {
+        it('should resolve integration test target to ext package', () => { //>
             // Arrange
             const aliasValue = { name: 'project-butler', suffix: 'core' as const }
             const target = 'test:integration'
@@ -23,9 +23,8 @@ describe('PAE CLI Advanced Resolution Functions', () => {
             // Assert
             expect(result.project).toBe('@fux/project-butler-ext')
             expect(result.full).toBe(false)
-        })
-
-        it('should resolve regular target normally', () => {
+        }) //<
+        it('should resolve regular target normally', () => { //>
             // Arrange
             const aliasValue = { name: 'project-butler', suffix: 'core' as const }
             const target = 'build'
@@ -36,9 +35,8 @@ describe('PAE CLI Advanced Resolution Functions', () => {
             // Assert
             expect(result.project).toBe('@fux/project-butler-core')
             expect(result.full).toBe(false)
-        })
-
-        it('should handle string alias values', () => {
+        }) //<
+        it('should handle string alias values', () => { //>
             // Arrange
             const aliasValue = '@fux/project-butler-core'
             const target = 'test:integration'
@@ -49,9 +47,8 @@ describe('PAE CLI Advanced Resolution Functions', () => {
             // Assert
             expect(result.project).toBe('@fux/project-butler-core')
             expect(result.full).toBe(false)
-        })
-
-        it('should preserve full flag for integration tests', () => {
+        }) //<
+        it('should preserve full flag for integration tests', () => { //>
             // Arrange
             const aliasValue = { name: 'project-butler', suffix: 'core' as const, full: true }
             const target = 'test:integration'
@@ -62,11 +59,11 @@ describe('PAE CLI Advanced Resolution Functions', () => {
             // Assert
             expect(result.project).toBe('@fux/project-butler-ext')
             expect(result.full).toBe(true)
-        })
+        }) //<
     })
 
     describe('resolveProjectForFeatureTarget', () => {
-        it('should resolve feature target for object alias', () => {
+        it('should resolve feature target for object alias', () => { //>
             // Arrange
             const aliasValue = { name: 'project-butler', suffix: 'core' as const }
             const featureTarget = { 'run-from': 'ext' as const, 'run-target': 'build' }
@@ -77,9 +74,8 @@ describe('PAE CLI Advanced Resolution Functions', () => {
             // Assert
             expect(result.project).toBe('@fux/project-butler-ext')
             expect(result.full).toBe(false)
-        })
-
-        it('should resolve feature target for core run-from', () => {
+        }) //<
+        it('should resolve feature target for core run-from', () => { //>
             // Arrange
             const aliasValue = { name: 'project-butler', suffix: 'ext' as const }
             const featureTarget = { 'run-from': 'core' as const, 'run-target': 'test' }
@@ -90,9 +86,8 @@ describe('PAE CLI Advanced Resolution Functions', () => {
             // Assert
             expect(result.project).toBe('@fux/project-butler-core')
             expect(result.full).toBe(false)
-        })
-
-        it('should preserve full flag', () => {
+        }) //<
+        it('should preserve full flag', () => { //>
             // Arrange
             const aliasValue = { name: 'project-butler', suffix: 'ext' as const, full: true }
             const featureTarget = { 'run-from': 'core' as const, 'run-target': 'test' }
@@ -103,9 +98,8 @@ describe('PAE CLI Advanced Resolution Functions', () => {
             // Assert
             expect(result.project).toBe('@fux/project-butler-core')
             expect(result.full).toBe(true)
-        })
-
-        it('should fallback to normal resolution for string alias', () => {
+        }) //<
+        it('should fallback to normal resolution for string alias', () => { //>
             // Arrange
             const aliasValue = '@fux/project-butler-core'
             const featureTarget = { 'run-from': 'ext' as const, 'run-target': 'build' }
@@ -116,7 +110,7 @@ describe('PAE CLI Advanced Resolution Functions', () => {
             // Assert
             expect(result.project).toBe('@fux/project-butler-core')
             expect(result.full).toBe(false)
-        })
+        }) //<
     })
 })
 

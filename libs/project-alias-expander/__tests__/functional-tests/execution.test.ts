@@ -3,16 +3,16 @@ import { setupPaeTestEnvironment, resetPaeMocks } from '../__mocks__/helpers'
 import { createPaeMockBuilder } from '../__mocks__/mock-scenario-builder'
 import { runNx, runMany, installAliases } from '../../src/cli'
 
-describe('PAE CLI Execution Functions', () => {
+describe('Execution', () => {
     let mocks: Awaited<ReturnType<typeof setupPaeTestEnvironment>>
 
-    beforeEach(async () => {
+    beforeEach(async () => { //>
         mocks = await setupPaeTestEnvironment()
         await resetPaeMocks(mocks)
-    })
+    }) //<
 
     describe('runNx', () => {
-        it('should execute nx command successfully', async () => {
+        it('should execute nx command successfully', async () => { //>
             // Arrange
             const argv = ['build', '@fux/project-butler-core']
             
@@ -32,9 +32,8 @@ describe('PAE CLI Execution Functions', () => {
             // Assert
             expect(result).toBe(0)
             expect(mocks.childProcess.spawnSync).toHaveBeenCalledWith('nx', argv, expect.any(Object))
-        })
-
-        it('should handle nx command failure', async () => {
+        }) //<
+        it('should handle nx command failure', async () => { //>
             // Arrange
             const argv = ['build', '@fux/project-butler-core']
             
@@ -53,9 +52,8 @@ describe('PAE CLI Execution Functions', () => {
 
             // Assert
             expect(result).toBe(1)
-        })
-
-        it('should handle echo mode', () => {
+        }) //<
+        it('should handle echo mode', () => { //>
             // Arrange
             const argv = ['build', '@fux/project-butler-core']
             const originalEcho = process.env.PAE_ECHO
@@ -73,11 +71,11 @@ describe('PAE CLI Execution Functions', () => {
             } else {
                 process.env.PAE_ECHO = originalEcho
             }
-        })
+        }) //<
     })
 
     describe('runMany', () => {
-        it('should run command for all ext packages', async () => {
+        it('should run command for all ext packages', async () => { //>
             // Arrange
             const config = {
                 packages: {
@@ -104,9 +102,8 @@ describe('PAE CLI Execution Functions', () => {
 
             // Assert
             expect(result).toBe(0)
-        })
-
-        it('should run command for all core packages', async () => {
+        }) //<
+        it('should run command for all core packages', async () => { //>
             // Arrange
             const config = {
                 packages: {
@@ -133,9 +130,8 @@ describe('PAE CLI Execution Functions', () => {
 
             // Assert
             expect(result).toBe(0)
-        })
-
-        it('should run command for all packages', async () => {
+        }) //<
+        it('should run command for all packages', async () => { //>
             // Arrange
             const config = {
                 packages: {
@@ -162,9 +158,8 @@ describe('PAE CLI Execution Functions', () => {
 
             // Assert
             expect(result).toBe(0)
-        })
-
-        it('should handle no packages found', () => {
+        }) //<
+        it('should handle no packages found', () => { //>
             // Arrange
             const config = {
                 packages: {
@@ -180,9 +175,8 @@ describe('PAE CLI Execution Functions', () => {
 
             // Assert
             expect(result).toBe(1)
-        })
-
-        it('should auto-inject stream output for test:full', async () => {
+        }) //<
+        it('should auto-inject stream output for test:full', async () => { //>
             // Arrange
             const config = {
                 packages: {
@@ -206,11 +200,11 @@ describe('PAE CLI Execution Functions', () => {
 
             // Assert
             expect(result).toBe(0)
-        })
+        }) //<
     })
 
     describe('installAliases', () => {
-        it('should generate PowerShell module successfully', async () => {
+        it('should generate PowerShell module successfully', async () => { //>
             // Arrange
             const config = {
                 packages: {
@@ -255,9 +249,8 @@ describe('PAE CLI Execution Functions', () => {
                 expect.stringContaining('pae-aliases.sh'),
                 expect.stringContaining('alias pbc=')
             )
-        })
-
-        it('should handle verbose output', async () => {
+        }) //<
+        it('should handle verbose output', async () => { //>
             // Arrange
             const config = {
                 packages: {
@@ -287,9 +280,8 @@ describe('PAE CLI Execution Functions', () => {
 
             // Assert
             expect(mocks.fileSystem.writeFile).toHaveBeenCalled()
-        })
-
-        it('should detect PowerShell shell', async () => {
+        }) //<
+        it('should detect PowerShell shell', async () => { //>
             // Arrange
             const config = {
                 packages: {
@@ -322,9 +314,8 @@ describe('PAE CLI Execution Functions', () => {
 
             // Assert
             expect(mocks.fileSystem.writeFile).toHaveBeenCalled()
-        })
-
-        it('should detect Git Bash shell', async () => {
+        }) //<
+        it('should detect Git Bash shell', async () => { //>
             // Arrange
             const config = {
                 packages: {
@@ -357,7 +348,7 @@ describe('PAE CLI Execution Functions', () => {
 
             // Assert
             expect(mocks.fileSystem.writeFile).toHaveBeenCalled()
-        })
+        }) //<
     })
 })
 

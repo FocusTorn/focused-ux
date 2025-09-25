@@ -1,5 +1,5 @@
 {
-    "package-targets": {
+    "package-targets": { //>
         //= Prepare ============================================================= 
         "b"  : "build",
         "p"  : "package",
@@ -38,10 +38,9 @@
         "s" : "status",
         "o" : "optimize",
         "m" : "monitor"
-    },
-      
+    }, //<
     
-    "feature-targets": {
+    "feature-targets": { //>
         //= Prepare ============================================================= 
         "b": {"run-from": "ext", "run-target": "build"},
         
@@ -53,12 +52,11 @@
         //= Adherance =========================================================== 
         "l": {"run-from": "ext", "run-target": "lint:deps --output-style=stream"},
         "ct": {"run-from": "ext", "run-target": "check-types:deps --output-style=stream"}
-    },
+    }, //<
     
-    
-    "not-nx-targets": {
+    "not-nx-targets": { //>
         "esv": "npx esbuild-visualizer --metadata"
-    },
+    }, //<
     
     
     /**
@@ -124,29 +122,32 @@
         "v": "--verbose",
         "d": "--debug",
         "c": "--coverage",
+
         "watch": "--watch",
         "echo": "--pae-echo",
         
-        // output-style=[stream, tui]
-        "os": {
+
+        "name": { //> output-style=[stream, tui]
+            "position": "suffix",
+            "defaults": {"namePattern": "stream"},
+            "template": "--testNamePattern='{namePattern}'"
+        }, //<
+        
+        "os": { //> output-style=[stream, tui]
             "position": "suffix",
             "defaults": {"style": "stream"},
             "template": "--output-style={style}"
-        },
-        
-        // timeout for hanging tests
-        "sto": {
+        }, //<
+        "sto": { //> system timeout // timeout {duration}s [10] 
             "position": "prefix",
             "defaults": {"duration": "10"},
-            "template": "timeout {duration}s"
-        },
-        
-        // memory limit for Node.js processes
-        "mem": {
+            "template": "timeout {duration}s" // [10]
+        }, //<
+        "mem": { //> memory limit for Node.js // node --max-old-space-size={size}MB [4096]
             "position": "prefix",
             "defaults": {"size": "4096"},
             "template": "node --max-old-space-size={size}MB"
-        }
+        } //<
     },
     
     

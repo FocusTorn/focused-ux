@@ -7,7 +7,7 @@ export default mergeConfig(
         test: {
             setupFiles: ['./__tests__/__mocks__/globals.ts'],
             include: [
-                '__tests__/**/*.{test}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+                './__tests__/functional-tests/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
             ],
             exclude: [
                 '**/__tests__/integration-tests/**',
