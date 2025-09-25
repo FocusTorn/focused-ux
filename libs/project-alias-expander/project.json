@@ -5,7 +5,7 @@
     "projectType": "library",
     "targets": {
      
-     
+        //= Finalize ============================================================ 
         "build:compile": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
@@ -43,46 +43,6 @@
                 "parallel": false
             }
         }, //<
-        
-        // "build:move": { //>
-        //     "executor": "nx:run-commands",
-        //     "dependsOn": ["build:compile"],
-        //     "outputs": [
-        //         "{projectRoot}/dist/pae-functions.psm1"
-        //     ],
-        //     "inputs": [
-        //         "production",
-        //         "^production",
-        //         "{projectRoot}/config.json"
-        //     ],
-        //     "options": {
-        //         "commands": ["node libs/project-alias-expander/dist/cli.js install-aliases"],
-        //         // "powershell -Command \"New-Item -ItemType Directory -Path 'C:\\Users\\slett\\Documents\\WindowsPowerShell\\Modules\\PAE' -Force\"",
-        //         // "powershell -Command \"Copy-Item 'libs\\project-alias-expander\\dist\\pae-functions.psm1' 'C:\\Users\\slett\\Documents\\WindowsPowerShell\\Modules\\PAE\\PAE.psm1' -Force\""
-                
-        //         "parallel": false
-        //     }
-        // }, //<
-
-        
-        // "build": {
-        //     "executor": "nx:run-commands",
-        //     "outputs": [
-        //         "{projectRoot}/dist",
-        //         "{projectRoot}/dist/pae-functions.psm1"
-        //     ],
-        //     "options": {
-        //         "commands": [
-        //             "nx run @fux/project-alias-expander:build:compile",
-        //             "node libs/project-alias-expander/dist/cli.js install-aliases",
-        //     "powershell -Command \"New-Item -ItemType Directory -Path 'C:\\Users\\slett\\Documents\\WindowsPowerShell\\Modules\\PAE' -Force\"",
-        //     "powershell -Command \"Copy-Item 'libs\\project-alias-expander\\dist\\pae-functions.psm1' 'C:\\Users\\slett\\Documents\\WindowsPowerShell\\Modules\\PAE\\PAE.psm1' -Force\""
-        // ],
-        //         "parallel": false,
-        //         "cwd": "{workspaceRoot}"
-        //     }
-        // },
-            
         
         //= Quality ============================================================= 
         "check-types": { "extends": "check-types" },

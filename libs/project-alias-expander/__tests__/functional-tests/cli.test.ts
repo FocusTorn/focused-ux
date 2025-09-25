@@ -12,15 +12,15 @@ import {
 } from '../../src/cli'
 
 describe('PAE CLI Core Functions', () => {
-    let mocks: ReturnType<typeof setupPaeTestEnvironment>
+    let mocks: Awaited<ReturnType<typeof setupPaeTestEnvironment>>
 
-    beforeEach(() => {
-        mocks = setupPaeTestEnvironment()
-        resetPaeMocks(mocks)
+    beforeEach(async () => {
+        mocks = await setupPaeTestEnvironment()
+        await resetPaeMocks(mocks)
     })
 
     describe('loadAliasConfig', () => {
-        it('should load and parse config successfully', () => {
+        it('should load and parse config successfully', async () => {
             // Arrange
             const configContent = JSON.stringify({
                 packages: {
@@ -33,12 +33,13 @@ describe('PAE CLI Core Functions', () => {
                 }
             })
 
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .configExists({
                     configPath: '/config.json',
                     configContent
                 })
-                .build()
+            configuredBuilder.build()
 
             // Act
             const config = loadAliasConfig()
@@ -49,28 +50,30 @@ describe('PAE CLI Core Functions', () => {
             expect(config['package-targets']).toEqual({ b: 'build', t: 'test' })
         })
 
-        it('should handle config file not found', () => {
+        it('should handle config file not found', async () => {
             // Arrange
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .configNotExists({
                     configPath: '/config.json',
                     configContent: ''
                 })
-                .build()
+            configuredBuilder.build()
 
             // Act & Assert
             expect(() => loadAliasConfig()).toThrow()
         })
 
-        it('should handle invalid JSON in config', () => {
+        it('should handle invalid JSON in config', async () => {
             // Arrange
             const invalidJson = '{ invalid json }'
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .configExists({
                     configPath: '/config.json',
                     configContent: invalidJson
                 })
-                .build()
+            configuredBuilder.build()
 
             // Act & Assert
             expect(() => loadAliasConfig()).toThrow()

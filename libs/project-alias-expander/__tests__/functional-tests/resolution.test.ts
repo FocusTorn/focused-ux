@@ -4,11 +4,11 @@ import { createPaeMockBuilder } from '../__mocks__/mock-scenario-builder'
 import { resolveProjectForAliasWithTarget, resolveProjectForFeatureTarget } from '../../src/cli'
 
 describe('PAE CLI Advanced Resolution Functions', () => {
-    let mocks: ReturnType<typeof setupPaeTestEnvironment>
+    let mocks: Awaited<ReturnType<typeof setupPaeTestEnvironment>>
 
-    beforeEach(() => {
-        mocks = setupPaeTestEnvironment()
-        resetPaeMocks(mocks)
+    beforeEach(async () => {
+        mocks = await setupPaeTestEnvironment()
+        await resetPaeMocks(mocks)
     })
 
     describe('resolveProjectForAliasWithTarget', () => {

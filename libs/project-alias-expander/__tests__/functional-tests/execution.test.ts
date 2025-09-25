@@ -4,26 +4,27 @@ import { createPaeMockBuilder } from '../__mocks__/mock-scenario-builder'
 import { runNx, runMany, installAliases } from '../../src/cli'
 
 describe('PAE CLI Execution Functions', () => {
-    let mocks: ReturnType<typeof setupPaeTestEnvironment>
+    let mocks: Awaited<ReturnType<typeof setupPaeTestEnvironment>>
 
-    beforeEach(() => {
-        mocks = setupPaeTestEnvironment()
-        resetPaeMocks(mocks)
+    beforeEach(async () => {
+        mocks = await setupPaeTestEnvironment()
+        await resetPaeMocks(mocks)
     })
 
     describe('runNx', () => {
-        it('should execute nx command successfully', () => {
+        it('should execute nx command successfully', async () => {
             // Arrange
             const argv = ['build', '@fux/project-butler-core']
             
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .commandSuccess({
                     command: 'nx',
                     args: argv,
                     exitCode: 0,
                     stdout: 'Build successful'
                 })
-                .build()
+            configuredBuilder.build()
 
             // Act
             const result = runNx(argv)
@@ -33,18 +34,19 @@ describe('PAE CLI Execution Functions', () => {
             expect(mocks.childProcess.spawnSync).toHaveBeenCalledWith('nx', argv, expect.any(Object))
         })
 
-        it('should handle nx command failure', () => {
+        it('should handle nx command failure', async () => {
             // Arrange
             const argv = ['build', '@fux/project-butler-core']
             
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .commandFailure({
                     command: 'nx',
                     args: argv,
                     exitCode: 1,
                     stderr: 'Build failed'
                 })
-                .build()
+            configuredBuilder.build()
 
             // Act
             const result = runNx(argv)
@@ -75,26 +77,27 @@ describe('PAE CLI Execution Functions', () => {
     })
 
     describe('runMany', () => {
-        it('should run command for all ext packages', () => {
+        it('should run command for all ext packages', async () => {
             // Arrange
             const config = {
                 packages: {
-                    pbc: { name: 'project-butler', suffix: 'core' },
-                    pbe: { name: 'project-butler', suffix: 'ext' },
-                    gwc: { name: 'ghost-writer', suffix: 'core' },
-                    gwe: { name: 'ghost-writer', suffix: 'ext' }
+                    pbc: { name: 'project-butler', suffix: 'core' as const },
+                    pbe: { name: 'project-butler', suffix: 'ext' as const },
+                    gwc: { name: 'ghost-writer', suffix: 'core' as const },
+                    gwe: { name: 'ghost-writer', suffix: 'ext' as const }
                 }
             }
             const targets = ['build']
             const flags: string[] = []
 
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .commandSuccess({
                     command: 'nx',
                     args: expect.arrayContaining(['run-many', '--target=build', '--projects=@fux/project-butler-ext,@fux/ghost-writer-ext']),
                     exitCode: 0
                 })
-                .build()
+            configuredBuilder.build()
 
             // Act
             const result = runMany('ext', targets, flags, config)
@@ -103,26 +106,27 @@ describe('PAE CLI Execution Functions', () => {
             expect(result).toBe(0)
         })
 
-        it('should run command for all core packages', () => {
+        it('should run command for all core packages', async () => {
             // Arrange
             const config = {
                 packages: {
-                    pbc: { name: 'project-butler', suffix: 'core' },
-                    pbe: { name: 'project-butler', suffix: 'ext' },
-                    gwc: { name: 'ghost-writer', suffix: 'core' },
-                    gwe: { name: 'ghost-writer', suffix: 'ext' }
+                    pbc: { name: 'project-butler', suffix: 'core' as const },
+                    pbe: { name: 'project-butler', suffix: 'ext' as const },
+                    gwc: { name: 'ghost-writer', suffix: 'core' as const },
+                    gwe: { name: 'ghost-writer', suffix: 'ext' as const }
                 }
             }
             const targets = ['test']
             const flags: string[] = []
 
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .commandSuccess({
                     command: 'nx',
                     args: expect.arrayContaining(['run-many', '--target=test', '--projects=@fux/project-butler-core,@fux/ghost-writer-core']),
                     exitCode: 0
                 })
-                .build()
+            configuredBuilder.build()
 
             // Act
             const result = runMany('core', targets, flags, config)
@@ -131,26 +135,27 @@ describe('PAE CLI Execution Functions', () => {
             expect(result).toBe(0)
         })
 
-        it('should run command for all packages', () => {
+        it('should run command for all packages', async () => {
             // Arrange
             const config = {
                 packages: {
-                    pbc: { name: 'project-butler', suffix: 'core' },
-                    pbe: { name: 'project-butler', suffix: 'ext' },
-                    gwc: { name: 'ghost-writer', suffix: 'core' },
-                    gwe: { name: 'ghost-writer', suffix: 'ext' }
+                    pbc: { name: 'project-butler', suffix: 'core' as const },
+                    pbe: { name: 'project-butler', suffix: 'ext' as const },
+                    gwc: { name: 'ghost-writer', suffix: 'core' as const },
+                    gwe: { name: 'ghost-writer', suffix: 'ext' as const }
                 }
             }
             const targets = ['lint']
             const flags: string[] = []
 
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .commandSuccess({
                     command: 'nx',
                     args: expect.arrayContaining(['run-many', '--target=lint', '--projects=@fux/project-butler-core,@fux/project-butler-ext,@fux/ghost-writer-core,@fux/ghost-writer-ext']),
                     exitCode: 0
                 })
-                .build()
+            configuredBuilder.build()
 
             // Act
             const result = runMany('all', targets, flags, config)
@@ -163,8 +168,8 @@ describe('PAE CLI Execution Functions', () => {
             // Arrange
             const config = {
                 packages: {
-                    pbc: { name: 'project-butler', suffix: 'core' },
-                    pbe: { name: 'project-butler', suffix: 'ext' }
+                    pbc: { name: 'project-butler', suffix: 'core' as const },
+                    pbe: { name: 'project-butler', suffix: 'ext' as const }
                 }
             }
             const targets = ['build']
@@ -177,23 +182,24 @@ describe('PAE CLI Execution Functions', () => {
             expect(result).toBe(1)
         })
 
-        it('should auto-inject stream output for test:full', () => {
+        it('should auto-inject stream output for test:full', async () => {
             // Arrange
             const config = {
                 packages: {
-                    pbe: { name: 'project-butler', suffix: 'ext' }
+                    pbe: { name: 'project-butler', suffix: 'ext' as const }
                 }
             }
             const targets = ['test:full']
             const flags: string[] = []
 
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .commandSuccess({
                     command: 'nx',
                     args: expect.arrayContaining(['--output-style=stream']),
                     exitCode: 0
                 })
-                .build()
+            configuredBuilder.build()
 
             // Act
             const result = runMany('ext', targets, flags, config)
@@ -204,29 +210,32 @@ describe('PAE CLI Execution Functions', () => {
     })
 
     describe('installAliases', () => {
-        it('should generate PowerShell module successfully', () => {
+        it('should generate PowerShell module successfully', async () => {
             // Arrange
             const config = {
                 packages: {
-                    pbc: { name: 'project-butler', suffix: 'core' },
-                    pbe: { name: 'project-butler', suffix: 'ext' }
+                    pbc: { name: 'project-butler', suffix: 'core' as const },
+                    pbe: { name: 'project-butler', suffix: 'ext' as const }
                 }
             }
 
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder1 = await builder
                 .configExists({
                     configPath: '/config.json',
                     configContent: JSON.stringify(config)
                 })
+            const configuredBuilder2 = await configuredBuilder1
                 .fileWrite({
                     targetPath: '/dist/pae-functions.psm1',
                     content: expect.stringContaining('Invoke-pbc')
                 })
+            const configuredBuilder3 = await configuredBuilder2
                 .fileWrite({
                     targetPath: '/dist/pae-aliases.sh',
                     content: expect.stringContaining('alias pbc=')
                 })
-                .build()
+            configuredBuilder3.build()
 
             // Mock the config loading
             vi.doMock('../../src/cli', () => ({
@@ -248,23 +257,24 @@ describe('PAE CLI Execution Functions', () => {
             )
         })
 
-        it('should handle verbose output', () => {
+        it('should handle verbose output', async () => {
             // Arrange
             const config = {
                 packages: {
-                    pbc: { name: 'project-butler', suffix: 'core' }
+                    pbc: { name: 'project-butler', suffix: 'core' as const }
                 }
             }
 
             // Mock process.argv to include verbose flag
             mocks.process.argv = ['node', 'cli.js', 'install-aliases', '--verbose']
 
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .configExists({
                     configPath: '/config.json',
                     configContent: JSON.stringify(config)
                 })
-                .build()
+            configuredBuilder.build()
 
             // Mock the config loading
             vi.doMock('../../src/cli', () => ({
@@ -279,11 +289,11 @@ describe('PAE CLI Execution Functions', () => {
             expect(mocks.fileSystem.writeFile).toHaveBeenCalled()
         })
 
-        it('should detect PowerShell shell', () => {
+        it('should detect PowerShell shell', async () => {
             // Arrange
             const config = {
                 packages: {
-                    pbc: { name: 'project-butler', suffix: 'core' }
+                    pbc: { name: 'project-butler', suffix: 'core' as const }
                 }
             }
 
@@ -293,12 +303,13 @@ describe('PAE CLI Execution Functions', () => {
                 POWERSHELL_DISTRIBUTION_CHANNEL: 'PSGallery'
             }
 
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .configExists({
                     configPath: '/config.json',
                     configContent: JSON.stringify(config)
                 })
-                .build()
+            configuredBuilder.build()
 
             // Mock the config loading
             vi.doMock('../../src/cli', () => ({
@@ -313,11 +324,11 @@ describe('PAE CLI Execution Functions', () => {
             expect(mocks.fileSystem.writeFile).toHaveBeenCalled()
         })
 
-        it('should detect Git Bash shell', () => {
+        it('should detect Git Bash shell', async () => {
             // Arrange
             const config = {
                 packages: {
-                    pbc: { name: 'project-butler', suffix: 'core' }
+                    pbc: { name: 'project-butler', suffix: 'core' as const }
                 }
             }
 
@@ -327,12 +338,13 @@ describe('PAE CLI Execution Functions', () => {
                 SHELL: '/usr/bin/bash'
             }
 
-            createPaeMockBuilder(mocks)
+            const builder = await createPaeMockBuilder(mocks)
+            const configuredBuilder = await builder
                 .configExists({
                     configPath: '/config.json',
                     configContent: JSON.stringify(config)
                 })
-                .build()
+            configuredBuilder.build()
 
             // Mock the config loading
             vi.doMock('../../src/cli', () => ({

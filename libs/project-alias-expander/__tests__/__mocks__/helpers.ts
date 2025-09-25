@@ -5,29 +5,28 @@ let mockStrategy: any = null
 
 async function getMockStrategy() {
     if (!mockStrategy) {
-        // Try different import paths
         try {
-            mockStrategy = await import('@fux/mock-strategy')
-        } catch {
-            try {
-                mockStrategy = await import('../../mock-strategy/dist/index.js')
-            } catch {
-                // Fallback to a mock implementation for testing
-                mockStrategy = {
-                    setupLibTestEnvironment: () => ({
-                        fileSystem: { stat: vi.fn(), readFile: vi.fn(), writeFile: vi.fn() },
-                        path: { join: vi.fn(), resolve: vi.fn() },
-                        process: { cwd: vi.fn(), exit: vi.fn(), argv: [], env: {} },
-                        childProcess: { spawn: vi.fn(), exec: vi.fn() }
-                    }),
-                    resetLibMocks: vi.fn(),
-                    setupLibFileSystemMocks: vi.fn(),
-                    setupLibPathMocks: vi.fn(),
-                    setupLibProcessMocks: vi.fn(),
-                    setupLibChildProcessMocks: vi.fn()
-                }
-            }
+            mockStrategy = await import('../../../mock-strategy/dist/index.js')
+        } catch (_error) {
+            console.log('\x1b[31m❌ Import failed. mock-strategy/dist/index.js\x1b[0m')
         }
+    
+        // } catch {
+        //     // Fallback to a mock implementation for testing
+        //     mockStrategy = {
+        //         setupLibTestEnvironment: () => ({
+        //             fileSystem: { stat: vi.fn(), readFile: vi.fn(), writeFile: vi.fn() },
+        //             path: { join: vi.fn(), resolve: vi.fn() },
+        //             process: { cwd: vi.fn(), exit: vi.fn(), argv: [], env: {} },
+        //             childProcess: { spawn: vi.fn(), exec: vi.fn() }
+        //         }),
+        //         resetLibMocks: vi.fn(),
+        //         setupLibFileSystemMocks: vi.fn(),
+        //         setupLibPathMocks: vi.fn(),
+        //         setupLibProcessMocks: vi.fn(),
+        //         setupLibChildProcessMocks: vi.fn()
+        //     }
+        // }
     }
     return mockStrategy
 }

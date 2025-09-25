@@ -126,7 +126,6 @@
         "c": "--coverage",
         "watch": "--watch",
         "echo": "--pae-echo",
-        "y": "-- YARRRR",
         
         // output-style=[stream, tui]
         "os": {

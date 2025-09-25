@@ -5,20 +5,19 @@ let mockStrategy: any = null
 
 async function getMockStrategy() {
     if (!mockStrategy) {
-        // Try different import paths
         try {
-            mockStrategy = await import('@fux/mock-strategy')
-        } catch {
-            try {
-                mockStrategy = await import('../../mock-strategy/dist/index.js')
-            } catch {
-                // Fallback to a mock implementation for testing
-                mockStrategy = {
-                    setupLibTestEnvironment: vi.fn(),
-                    resetLibMocks: vi.fn()
-                }
-            }
+            mockStrategy = await import('../../../mock-strategy/dist/index.js')
+        } catch (_error) {
+            console.log('\x1b[31m❌ Import failed. mock-strategy/dist/index.js\x1b[0m')
         }
+        
+        // } catch {
+        //     // Fallback to a mock implementation for testing
+        //     mockStrategy = {
+        //         setupLibTestEnvironment: vi.fn(),
+        //         resetLibMocks: vi.fn()
+        //     }
+        // }
     }
     return mockStrategy
 }
