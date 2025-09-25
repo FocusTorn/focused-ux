@@ -1,36 +1,18 @@
 import { vi, beforeAll, afterAll, afterEach } from 'vitest'
+import { setupLibTestEnvironment, resetLibMocks, LibTestMocks } from '@fux/mock-strategy/lib'
 
-// Conditional import for testing only
-let mockStrategy: any = null
-
-async function getMockStrategy() {
-    if (!mockStrategy) {
-        try {
-            mockStrategy = await import('../../../mock-strategy/dist/index.js')
-        } catch (_error) {
-            console.log('\x1b[31m❌ Import failed. mock-strategy/dist/index.js\x1b[0m')
-        }
-        
-        // } catch {
-        //     // Fallback to a mock implementation for testing
-        //     mockStrategy = {
-        //         setupLibTestEnvironment: vi.fn(),
-        //         resetLibMocks: vi.fn()
-        //     }
-        // }
-    }
-    return mockStrategy
-}
+// Global mock state
+let globalMocks: LibTestMocks | null = null
 
 // Setup library-specific test environment
-beforeAll(async () => {
-    const strategy = await getMockStrategy()
-    strategy.setupLibTestEnvironment()
+beforeAll(() => {
+    globalMocks = setupLibTestEnvironment()
 })
 
-afterAll(async () => {
-    const strategy = await getMockStrategy()
-    strategy.resetLibMocks()
+afterAll(() => {
+    if (globalMocks) {
+        resetLibMocks(globalMocks)
+    }
 })
 
 afterEach(() => {

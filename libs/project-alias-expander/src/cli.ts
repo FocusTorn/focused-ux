@@ -356,6 +356,117 @@ function detectShell(): 'powershell' | 'gitbash' | 'unknown' {
     return 'unknown'
 }
 
+function generateLocalFiles() {
+    const config = loadAliasConfig()
+    const aliases = Object.keys(config.packages)
+    const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
+    const shell = detectShell()
+	
+    if (isVerbose) {
+        console.log(`Detected shell: ${shell}`)
+        console.log(`Found ${aliases.length} aliases: ${aliases.join(', ')}`)
+        console.log('Generating local files only (build process)')
+    }
+	
+    // Generate PowerShell module content - Simple approach
+    const moduleContent = `# PAE Global Aliases - Auto-generated PowerShell Module
+# Generated from config.json - DO NOT EDIT MANUALLY
+# Simple approach: each alias just calls 'pae <alias> <args>'
+
+${aliases.map(alias =>
+    `function Invoke-${alias} { 
+    [CmdletBinding()] 
+    param([Parameter(Position = 0, ValueFromRemainingArguments = $true)][string[]]$Arguments) 
+    pae ${alias} @Arguments
+}
+
+# Alias for backward compatibility
+Set-Alias -Name ${alias} -Value Invoke-${alias}`).join('\n\n')}
+
+# Refresh function to reload aliases
+function Invoke-PaeRefresh {
+    Write-Host "Refreshing [PWSH] PAE aliases..." -ForegroundColor Yellow
+    
+    # Find workspace root by looking for nx.json
+    $workspaceRoot = $PWD
+    while ($workspaceRoot -and -not (Test-Path (Join-Path $workspaceRoot "nx.json"))) {
+        $workspaceRoot = Split-Path $workspaceRoot -Parent
+    }
+    
+    if (-not $workspaceRoot) {
+        Write-Error "Could not find workspace root (nx.json not found)"
+        return 1
+    }
+    
+    $modulePath = Join-Path $workspaceRoot "libs\\project-alias-expander\\dist\\pae-functions.psm1"
+    Import-Module $modulePath -Force
+    Write-Host "[PWSH] PAE aliases refreshed!" -ForegroundColor Green
+}
+
+# Alias for backward compatibility
+Set-Alias -Name pae-refresh -Value Invoke-PaeRefresh
+
+# Export all functions and aliases
+Export-ModuleMember -Function ${aliases.map(alias => `Invoke-${alias}`).join(', ')}, Invoke-PaeRefresh
+Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh
+
+# Display startup message when module is loaded
+Write-Host -ForegroundColor DarkGreen "  - Module loaded: [PWSH] PAE aliases (simple)"
+`
+	
+    // Generate Git Bash aliases content - Simple approach
+    const bashAliasesContent = `# PAE Global Aliases - Auto-generated Git Bash Aliases
+# Generated from config.json - DO NOT EDIT MANUALLY
+# Simple approach: each alias just calls 'pae <alias> <args>'
+
+# Prevent double-loading
+if [ -n "$PAE_ALIASES_LOADED" ]; then
+    return 0
+fi
+export PAE_ALIASES_LOADED=1
+
+${aliases.map(alias => `alias ${alias}='pae ${alias}'`).join('\n')}
+
+# Refresh function
+function pae-refresh {
+    echo "Refreshing [GitBash] PAE aliases..."
+    unset PAE_ALIASES_LOADED
+    source libs/project-alias-expander/dist/pae-aliases.sh
+    echo "[GitBash] PAE aliases refreshed!"
+}
+
+# Display startup message
+echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
+`
+	
+    // Write files to the dist directory
+    const distDir = path.join(PACKAGE_ROOT, 'dist')
+
+    if (!fs.existsSync(distDir)) {
+        fs.mkdirSync(distDir, { recursive: true })
+    }
+    
+    // Always generate PowerShell module
+    const modulePath = path.join(distDir, 'pae-functions.psm1')
+
+    fs.writeFileSync(modulePath, moduleContent)
+    
+    // Generate Git Bash aliases
+    const bashAliasesPath = path.join(distDir, 'pae-aliases.sh')
+
+    fs.writeFileSync(bashAliasesPath, bashAliasesContent)
+    
+    if (isVerbose) {
+        console.log(`PowerShell module generated: ${modulePath}`)
+        console.log(`Git Bash aliases generated: ${bashAliasesPath}`)
+        console.log(`Detected shell: ${shell}`)
+    }
+    
+    console.log('\x1b[32m✅ Local files generated successfully!\x1b[0m')
+    console.log('')
+    console.log('\x1b[33m⚠️  Run "pae install-aliases" to install to system locations\x1b[0m')
+}
+
 function installAliases() {
     // Prevent multiple installations during the same process
     if (process.env.PAE_INSTALLING === '1') {
@@ -670,6 +781,11 @@ function main() {
         return
     }
     
+    if (args.length > 0 && args[0] === 'install') {
+        installAliases()
+        return
+    }
+    
     if (args.length > 0 && args[0] === 'refresh') {
         refreshAliases()
         return
@@ -698,7 +814,13 @@ function main() {
         rest = args.slice(1)
     }
 
-    if (!alias || alias === '-h' || alias === '--help' || alias === 'help') {
+    if (!alias) {
+        // When run without arguments, generate files locally (for build process - cacheable)
+        generateLocalFiles()
+        return
+    }
+
+    if (alias === '-h' || alias === '--help' || alias === 'help') {
         const config = loadAliasConfig()
         const targets = config['package-targets'] ?? { b: 'build', l: 'lint', t: 'test' }
         const notNxTargets = config['not-nx-targets'] ?? {}

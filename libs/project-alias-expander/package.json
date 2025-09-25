@@ -28,7 +28,8 @@
         "strip-json-comments": "^5.0.3"
     },
     "devDependencies": {
-        "@types/node": "^24.5.2"
+        "@types/node": "^24.5.2",
+        "@fux/mock-strategy": "workspace:*"
     },
     "author": "FocusedUX"
 }

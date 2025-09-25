@@ -257,6 +257,9 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3
     devDependencies:
+      '@fux/mock-strategy':
+        specifier: workspace:*
+        version: link:../mock-strategy
       '@types/node':
         specifier: 24.5.2
         version: 24.5.2

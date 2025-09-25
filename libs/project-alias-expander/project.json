@@ -39,7 +39,7 @@
                 "{projectRoot}/config.json"
             ],
             "options": {
-                "commands": ["node libs/project-alias-expander/dist/cli.js install-aliases"],
+                "commands": ["node libs/project-alias-expander/dist/cli.js"], // Generate scripts
                 "parallel": false
             }
         }, //<

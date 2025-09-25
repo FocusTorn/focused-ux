@@ -1,51 +1,24 @@
 import { vi } from 'vitest'
-
-// Conditional import for testing only
-let mockStrategy: any = null
-
-async function getMockStrategy() {
-    if (!mockStrategy) {
-        try {
-            mockStrategy = await import('../../../mock-strategy/dist/index.js')
-        } catch (_error) {
-            console.log('\x1b[31m❌ Import failed. mock-strategy/dist/index.js\x1b[0m')
-        }
-    
-        // } catch {
-        //     // Fallback to a mock implementation for testing
-        //     mockStrategy = {
-        //         setupLibTestEnvironment: () => ({
-        //             fileSystem: { stat: vi.fn(), readFile: vi.fn(), writeFile: vi.fn() },
-        //             path: { join: vi.fn(), resolve: vi.fn() },
-        //             process: { cwd: vi.fn(), exit: vi.fn(), argv: [], env: {} },
-        //             childProcess: { spawn: vi.fn(), exec: vi.fn() }
-        //         }),
-        //         resetLibMocks: vi.fn(),
-        //         setupLibFileSystemMocks: vi.fn(),
-        //         setupLibPathMocks: vi.fn(),
-        //         setupLibProcessMocks: vi.fn(),
-        //         setupLibChildProcessMocks: vi.fn()
-        //     }
-        // }
-    }
-    return mockStrategy
-}
+import { 
+    setupLibTestEnvironment, 
+    resetLibMocks, 
+    setupLibFileSystemMocks,
+    setupLibPathMocks,
+    setupLibProcessMocks,
+    setupLibChildProcessMocks,
+    LibTestMocks 
+} from '@fux/mock-strategy/lib'
 
 // Add package-specific mock helpers for PAE-specific functionality
-export interface PaeTestMocks {
-    fileSystem: any
-    path: any
-    process: any
-    childProcess: any
+export interface PaeTestMocks extends LibTestMocks {
     stripJsonComments: ReturnType<typeof vi.fn>
     url: {
         fileURLToPath: ReturnType<typeof vi.fn>
     }
 }
 
-export async function setupPaeTestEnvironment(): Promise<PaeTestMocks> {
-    const strategy = await getMockStrategy()
-    const baseMocks = strategy.setupLibTestEnvironment()
+export function setupPaeTestEnvironment(): PaeTestMocks {
+    const baseMocks = setupLibTestEnvironment()
     
     return {
         ...baseMocks,
@@ -56,31 +29,26 @@ export async function setupPaeTestEnvironment(): Promise<PaeTestMocks> {
     }
 }
 
-export async function resetPaeMocks(mocks: PaeTestMocks): Promise<void> {
-    const strategy = await getMockStrategy()
-    strategy.resetLibMocks(mocks)
+export function resetPaeMocks(mocks: PaeTestMocks): void {
+    resetLibMocks(mocks)
     mocks.stripJsonComments.mockReset()
     mocks.url.fileURLToPath.mockReset()
 }
 
-export async function setupPaeFileSystemMocks(mocks: PaeTestMocks): Promise<void> {
-    const strategy = await getMockStrategy()
-    strategy.setupLibFileSystemMocks(mocks)
+export function setupPaeFileSystemMocks(mocks: PaeTestMocks): void {
+    setupLibFileSystemMocks(mocks)
 }
 
-export async function setupPaePathMocks(mocks: PaeTestMocks): Promise<void> {
-    const strategy = await getMockStrategy()
-    strategy.setupLibPathMocks(mocks)
+export function setupPaePathMocks(mocks: PaeTestMocks): void {
+    setupLibPathMocks(mocks)
 }
 
-export async function setupPaeProcessMocks(mocks: PaeTestMocks): Promise<void> {
-    const strategy = await getMockStrategy()
-    strategy.setupLibProcessMocks(mocks)
+export function setupPaeProcessMocks(mocks: PaeTestMocks): void {
+    setupLibProcessMocks(mocks)
 }
 
-export async function setupPaeChildProcessMocks(mocks: PaeTestMocks): Promise<void> {
-    const strategy = await getMockStrategy()
-    strategy.setupLibChildProcessMocks(mocks)
+export function setupPaeChildProcessMocks(mocks: PaeTestMocks): void {
+    setupLibChildProcessMocks(mocks)
 }
 
 export function setupPaeUrlMocks(mocks: PaeTestMocks): void {
