@@ -1979,24 +1979,22 @@
               "outputs": [
                 "{options.reportsDirectory}"
               ],
-              "dependsOn": [
-                "build"
-              ],
               "options": {
                 "configFile": "libs/project-alias-expander/vitest.config.ts",
                 "reportsDirectory": "__tests__/_reports/functional",
                 "passWithNoTests": true
               },
               "configurations": {},
-              "parallelism": true
+              "parallelism": true,
+              "dependsOn": [
+                "build",
+                "^build"
+              ]
             },
             "test:coverage-tests": {
               "executor": "@nx/vite:test",
               "outputs": [
                 "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "build"
               ],
               "options": {
                 "configFile": "libs/project-alias-expander/vitest.coverage.config.ts",
@@ -2004,7 +2002,11 @@
                 "passWithNoTests": true
               },
               "configurations": {},
-              "parallelism": true
+              "parallelism": true,
+              "dependsOn": [
+                "build",
+                "^build"
+              ]
             }
           },
           "name": "@fux/project-alias-expander",

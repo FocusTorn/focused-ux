@@ -10,7 +10,7 @@ import { notesHubConstants } from '../_config/constants.js'
 
 //--------------------------------------------------------------------------------------------------------------<<
 
-const _LOG_PREFIX = `[${notesHubConstants.featureName || 'NotesHub'} - NH_Manager]:`
+const _LOG_PREFIX = `[NotesHub - NH_Manager]:`
 
 export class NotesHubManagerService implements INotesHubManagerService {
 

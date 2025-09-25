@@ -4,7 +4,7 @@
 import type { IWindow } from './IWindow.js'
 import type { IWorkspace } from './IWorkspace.js'
 import type { ICommands } from './ICommands.js'
-import type { IDisposable } from './IDisposable.js'
+import type { Disposable } from './IDisposable.js'
 import type { INotesHubService } from './INotesHubService.js'
 import type { INotesHubDataProvider } from './INotesHubDataProvider.js'
 import type { INotesHubItem } from './INotesHubItem.js'
@@ -47,7 +47,7 @@ export interface INotesHubDependencies {
 export interface INotesHubManagerService {
     // Core service methods
     initializeNotesHub: (configPrefix?: string, commandPrefix?: string) => Promise<void>
-    dispose: () => void
+	dispose: Disposable['dispose']
     getNotesHubConfig: () => NotesHubConfig
     getProviderForNote: (item: INotesHubItem) => Promise<INotesHubDataProvider | undefined>
     refreshProviders: (providersToRefresh?: 'project' | 'remote' | 'global' | 'all' | Array<'project' | 'remote' | 'global'>) => void
