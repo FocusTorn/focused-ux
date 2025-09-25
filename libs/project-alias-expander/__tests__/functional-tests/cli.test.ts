@@ -1,136 +1,373 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { setupTestEnvironment, resetAllMocks, setupFileSystemMocks, setupPathMocks } from '../_setup'
+import { setupPaeTestEnvironment, resetPaeMocks } from '../__mocks__/helpers'
+import { createPaeMockBuilder } from '../__mocks__/mock-scenario-builder'
+import {
+    loadAliasConfig,
+    resolveProjectForAlias,
+    expandTargetShortcuts,
+    expandTemplate,
+    parseExpandableFlag,
+    expandFlags,
+    normalizeFullSemantics,
+} from '../../src/cli'
 
-// Mock the CLI module
-vi.mock('../cli', () => ({
-	loadAliasConfig: vi.fn(),
-	resolveProjectForAlias: vi.fn(),
-	expandTargetShortcuts: vi.fn(),
-	expandFlags: vi.fn(),
-	runNx: vi.fn(),
-	runCommand: vi.fn(),
-	installAliases: vi.fn(),
-}))
+describe('PAE CLI Core Functions', () => {
+    let mocks: ReturnType<typeof setupPaeTestEnvironment>
 
-describe('PAE CLI', () => {
-	let mocks: ReturnType<typeof setupTestEnvironment>
+    beforeEach(() => {
+        mocks = setupPaeTestEnvironment()
+        resetPaeMocks(mocks)
+    })
 
-	beforeEach(() => {
-		mocks = setupTestEnvironment()
-		resetAllMocks(mocks)
-		setupFileSystemMocks(mocks)
-		setupPathMocks(mocks)
-	})
+    describe('loadAliasConfig', () => {
+        it('should load and parse config successfully', () => {
+            // Arrange
+            const configContent = JSON.stringify({
+                packages: {
+                    pbc: { name: 'project-butler', suffix: 'core' },
+                    pbe: { name: 'project-butler', suffix: 'ext' }
+                },
+                'package-targets': {
+                    b: 'build',
+                    t: 'test'
+                }
+            })
 
-	describe('Configuration Loading', () => {
-		it('should load configuration from config.json', () => {
-			// This would test the loadAliasConfig function
-			// Implementation would depend on how we structure the tests
-			expect(true).toBe(true) // Placeholder
-		})
+            createPaeMockBuilder(mocks)
+                .configExists({
+                    configPath: '/config.json',
+                    configContent
+                })
+                .build()
 
-		it('should handle missing config file gracefully', () => {
-			mocks.fs.existsSync.mockReturnValue(false)
-			// Test error handling for missing config
-			expect(true).toBe(true) // Placeholder
-		})
-	})
+            // Act
+            const config = loadAliasConfig()
 
-	describe('Alias Resolution', () => {
-		it('should resolve simple string aliases', () => {
-			// Test resolveProjectForAlias with string values
-			expect(true).toBe(true) // Placeholder
-		})
+            // Assert
+            expect(config.packages).toBeDefined()
+            expect(config.packages.pbc).toEqual({ name: 'project-butler', suffix: 'core' })
+            expect(config['package-targets']).toEqual({ b: 'build', t: 'test' })
+        })
 
-		it('should resolve object aliases with suffixes', () => {
-			// Test resolveProjectForAlias with object values
-			expect(true).toBe(true) // Placeholder
-		})
+        it('should handle config file not found', () => {
+            // Arrange
+            createPaeMockBuilder(mocks)
+                .configNotExists({
+                    configPath: '/config.json',
+                    configContent: ''
+                })
+                .build()
 
-		it('should handle integration test routing', () => {
-			// Test resolveProjectForAliasWithTarget for test:integration
-			expect(true).toBe(true) // Placeholder
-		})
-	})
+            // Act & Assert
+            expect(() => loadAliasConfig()).toThrow()
+        })
 
-	describe('Target Expansion', () => {
-		it('should expand target shortcuts', () => {
-			// Test expandTargetShortcuts function
-			expect(true).toBe(true) // Placeholder
-		})
+        it('should handle invalid JSON in config', () => {
+            // Arrange
+            const invalidJson = '{ invalid json }'
+            createPaeMockBuilder(mocks)
+                .configExists({
+                    configPath: '/config.json',
+                    configContent: invalidJson
+                })
+                .build()
 
-		it('should handle unknown targets', () => {
-			// Test behavior with unknown target shortcuts
-			expect(true).toBe(true) // Placeholder
-		})
-	})
+            // Act & Assert
+            expect(() => loadAliasConfig()).toThrow()
+        })
+    })
 
-	describe('Flag Expansion', () => {
-		it('should expand single flags', () => {
-			// Test expandFlags with single flag
-			expect(true).toBe(true) // Placeholder
-		})
+    describe('resolveProjectForAlias', () => {
+        it('should resolve string alias to project name', () => {
+            // Arrange
+            const aliasValue = '@fux/project-butler'
 
-		it('should expand bundled flags', () => {
-			// Test expandFlags with bundled flags like -fs
-			expect(true).toBe(true) // Placeholder
-		})
+            // Act
+            const result = resolveProjectForAlias(aliasValue)
 
-		it('should handle unknown flags', () => {
-			// Test behavior with unknown flags
-			expect(true).toBe(true) // Placeholder
-		})
-	})
+            // Assert
+            expect(result.project).toBe('@fux/project-butler')
+            expect(result.full).toBe(false)
+        })
 
-	describe('PowerShell Module Generation', () => {
-		it('should generate PowerShell module with all aliases', () => {
-			// Test installAliases function
-			expect(true).toBe(true) // Placeholder
-		})
+        it('should resolve object alias with suffix', () => {
+            // Arrange
+            const aliasValue = { name: 'project-butler', suffix: 'core' as const }
 
-		it('should create dist directory if it does not exist', () => {
-			mocks.fs.existsSync.mockReturnValue(false)
-			// Test directory creation
-			expect(true).toBe(true) // Placeholder
-		})
+            // Act
+            const result = resolveProjectForAlias(aliasValue)
 
-		it('should write module content to correct path', () => {
-			// Test file writing
-			expect(true).toBe(true) // Placeholder
-		})
-	})
+            // Assert
+            expect(result.project).toBe('@fux/project-butler-core')
+            expect(result.full).toBe(false)
+        })
 
-	describe('Command Execution', () => {
-		it('should execute Nx commands correctly', () => {
-			// Test runNx function
-			expect(true).toBe(true) // Placeholder
-		})
+        it('should resolve object alias with full flag', () => {
+            // Arrange
+            const aliasValue = { name: 'project-butler', suffix: 'ext' as const, full: true }
 
-		it('should execute non-Nx commands correctly', () => {
-			// Test runCommand function
-			expect(true).toBe(true) // Placeholder
-		})
+            // Act
+            const result = resolveProjectForAlias(aliasValue)
 
-		it('should handle echo mode', () => {
-			// Test PAE_ECHO environment variable handling
-			expect(true).toBe(true) // Placeholder
-		})
-	})
+            // Assert
+            expect(result.project).toBe('@fux/project-butler-ext')
+            expect(result.full).toBe(true)
+        })
 
-	describe('Multi-Project Operations', () => {
-		it('should run commands for all extension packages', () => {
-			// Test ext command
-			expect(true).toBe(true) // Placeholder
-		})
+        it('should add @fux/ prefix for string aliases without it', () => {
+            // Arrange
+            const aliasValue = 'project-butler'
 
-		it('should run commands for all core packages', () => {
-			// Test core command
-			expect(true).toBe(true) // Placeholder
-		})
+            // Act
+            const result = resolveProjectForAlias(aliasValue)
 
-		it('should run commands for all packages', () => {
-			// Test all command
-			expect(true).toBe(true) // Placeholder
-		})
-	})
+            // Assert
+            expect(result.project).toBe('@fux/project-butler')
+            expect(result.full).toBe(false)
+        })
+    })
+
+    describe('expandTargetShortcuts', () => {
+        it('should expand target shortcuts', () => {
+            // Arrange
+            const args = ['b', '--coverage']
+            const targets = { b: 'build', t: 'test' }
+
+            // Act
+            const result = expandTargetShortcuts(args, targets)
+
+            // Assert
+            expect(result.args).toEqual(['build', '--coverage'])
+            expect(result.wasFeatureTarget).toBe(false)
+        })
+
+        it('should handle feature targets for full packages', () => {
+            // Arrange
+            const args = ['b', '--coverage']
+            const targets = { b: 'build' }
+            const featureTargets = { b: { 'run-from': 'ext' as const, 'run-target': 'build' } }
+
+            // Act
+            const result = expandTargetShortcuts(args, targets, featureTargets, true)
+
+            // Assert
+            expect(result.args).toEqual(['build', '--coverage'])
+            expect(result.wasFeatureTarget).toBe(true)
+        })
+
+        it('should return original args when no shortcut found', () => {
+            // Arrange
+            const args = ['unknown', '--coverage']
+            const targets = { b: 'build' }
+
+            // Act
+            const result = expandTargetShortcuts(args, targets)
+
+            // Assert
+            expect(result.args).toEqual(['unknown', '--coverage'])
+            expect(result.wasFeatureTarget).toBe(false)
+        })
+
+        it('should handle empty args', () => {
+            // Arrange
+            const args: string[] = []
+            const targets = { b: 'build' }
+
+            // Act
+            const result = expandTargetShortcuts(args, targets)
+
+            // Assert
+            expect(result.args).toEqual([])
+            expect(result.wasFeatureTarget).toBe(false)
+        })
+    })
+
+    describe('expandTemplate', () => {
+        it('should expand template with variables', () => {
+            // Arrange
+            const template = 'timeout {duration}s {command}'
+            const variables = { duration: '10', command: 'nx test' }
+
+            // Act
+            const result = expandTemplate(template, variables)
+
+            // Assert
+            expect(result).toBe('timeout 10s nx test')
+        })
+
+        it('should handle missing variables', () => {
+            // Arrange
+            const template = 'timeout {duration}s {command}'
+            const variables = { duration: '10' }
+
+            // Act
+            const result = expandTemplate(template, variables)
+
+            // Assert
+            expect(result).toBe('timeout 10s {command}')
+        })
+
+        it('should handle empty template', () => {
+            // Arrange
+            const template = ''
+            const variables = { duration: '10' }
+
+            // Act
+            const result = expandTemplate(template, variables)
+
+            // Assert
+            expect(result).toBe('')
+        })
+    })
+
+    describe('parseExpandableFlag', () => {
+        it('should parse equal syntax flag', () => {
+            // Arrange
+            const flag = '-sto=5'
+
+            // Act
+            const result = parseExpandableFlag(flag)
+
+            // Assert
+            expect(result.key).toBe('sto')
+            expect(result.value).toBe('5')
+        })
+
+        it('should parse colon syntax flag', () => {
+            // Arrange
+            const flag = '-mem:2048'
+
+            // Act
+            const result = parseExpandableFlag(flag)
+
+            // Assert
+            expect(result.key).toBe('mem')
+            expect(result.value).toBe('2048')
+        })
+
+        it('should parse flag without value', () => {
+            // Arrange
+            const flag = '-f'
+
+            // Act
+            const result = parseExpandableFlag(flag)
+
+            // Assert
+            expect(result.key).toBe('f')
+            expect(result.value).toBeUndefined()
+        })
+
+        it('should handle invalid flag format', () => {
+            // Arrange
+            const flag = 'invalid'
+
+            // Act
+            const result = parseExpandableFlag(flag)
+
+            // Assert
+            expect(result.key).toBe('invalid')
+            expect(result.value).toBeUndefined()
+        })
+    })
+
+    describe('expandFlags', () => {
+        it('should expand simple string flags', () => {
+            // Arrange
+            const args = ['-f', '-s', 'test']
+            const expandables = { f: '--fix', s: '--skip-nx-cache' }
+
+            // Act
+            const result = expandFlags(args, expandables)
+
+            // Assert
+            expect(result.prefix).toEqual([])
+            expect(result.preArgs).toEqual([])
+            expect(result.suffix).toEqual(['--fix', '--skip-nx-cache'])
+            expect(result.remainingArgs).toEqual(['test'])
+        })
+
+        it('should expand template flags with defaults', () => {
+            // Arrange
+            const args = ['-sto', 'test']
+            const expandables = {
+                sto: {
+                    position: 'prefix' as const,
+                    defaults: { duration: '10' },
+                    template: 'timeout {duration}s'
+                }
+            }
+
+            // Act
+            const result = expandFlags(args, expandables)
+
+            // Assert
+            expect(result.prefix).toEqual(['timeout 10s'])
+            expect(result.remainingArgs).toEqual(['test'])
+        })
+
+        it('should expand template flags with custom values', () => {
+            // Arrange
+            const args = ['-sto=5', 'test']
+            const expandables = {
+                sto: {
+                    position: 'prefix' as const,
+                    defaults: { duration: '10' },
+                    template: 'timeout {duration}s'
+                }
+            }
+
+            // Act
+            const result = expandFlags(args, expandables)
+
+            // Assert
+            expect(result.prefix).toEqual(['timeout 5s'])
+            expect(result.remainingArgs).toEqual(['test'])
+        })
+
+        it('should handle short bundle flags', () => {
+            // Arrange
+            const args = ['-fs', 'test']
+            const expandables = { f: '--fix', s: '--skip-nx-cache' }
+
+            // Act
+            const result = expandFlags(args, expandables)
+
+            // Assert
+            expect(result.suffix).toEqual(['--fix', '--skip-nx-cache'])
+            expect(result.remainingArgs).toEqual(['test'])
+        })
+
+        it('should preserve double-dash flags', () => {
+            // Arrange
+            const args = ['--coverage', 'test']
+            const expandables = { f: '--fix' }
+
+            // Act
+            const result = expandFlags(args, expandables)
+
+            // Assert
+            expect(result.remainingArgs).toEqual(['--coverage', 'test'])
+        })
+    })
+
+    describe('normalizeFullSemantics', () => {
+        it('should normalize targets for full packages', () => {
+            // Act & Assert
+            expect(normalizeFullSemantics(true, 'l')).toBe('lint:deps')
+            expect(normalizeFullSemantics(true, 'lint')).toBe('lint:deps')
+            expect(normalizeFullSemantics(true, 'test')).toBe('test:full')
+            expect(normalizeFullSemantics(true, 'validate')).toBe('validate:deps')
+        })
+
+        it('should return original target for non-full packages', () => {
+            // Act & Assert
+            expect(normalizeFullSemantics(false, 'l')).toBe('l')
+            expect(normalizeFullSemantics(false, 'lint')).toBe('lint')
+            expect(normalizeFullSemantics(false, 'test')).toBe('test')
+            expect(normalizeFullSemantics(false, 'unknown')).toBe('unknown')
+        })
+    })
 })
+
+
+

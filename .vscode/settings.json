@@ -37,38 +37,6 @@
             "source.fixAll.eslint": "explicit"
         }
     }
-    // "eslint.run": "onType",
-    // "eslint.codeActionsOnSave.mode": "all",
-    // "eslint.useFlatConfig": true,
-    // "eslint.format.enable": true,
-    // "eslint.validate": [
-    //     "javascript",
-    //     "javascriptreact",
-    //     "typescript",
-    //     "typescriptreact",
-    //     "json",
-    //     "jsonc"
-    // ],
-    // "eslint.options": {
-    //     "overrideConfigFile": "./eslint.config.js"
-    // },
-    // "eslint.workingDirectories": [
-    //     {
-    //         "directory": "./",
-    //         "changeProcessCWD": true
-    //     }
-    // ],
-    // "eslint.workspaceFolder": true,
-    // "eslint.enable": true,
-    // "eslint.lintTask.enable": true,
-    // "eslint.probe": [
-    //     "javascript",
-    //     "javascriptreact", 
-    //     "typescript",
-    //     "typescriptreact",
-    //     "json",
-    //     "jsonc"
-    // ]
-    
+   
 
 }

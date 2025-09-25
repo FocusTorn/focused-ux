@@ -242,6 +242,15 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
 
+  libs/mock-strategy:
+    devDependencies:
+      '@types/node':
+        specifier: 24.5.2
+        version: 24.5.2
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+
   libs/project-alias-expander:
     dependencies:
       strip-json-comments:

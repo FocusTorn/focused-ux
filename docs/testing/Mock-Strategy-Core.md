@@ -571,7 +571,91 @@ describe('Backup Management', () => {
 
 ## 🔄 Migration Guide
 
-### Step 1: Update Imports
+### **Option 1: Migrate to Mock Strategy Library (Recommended)**
+
+The **Mock Strategy Library** (`@fux/mock-strategy`) provides a standardized foundation that packages can extend with their specific needs.
+
+#### **Step 1: Install Library**
+
+```bash
+# Add to package dependencies
+pnpm add @fux/mock-strategy
+```
+
+#### **Step 2: Update Package `__mocks__` Files**
+
+```typescript
+// packages/my-feature/core/__tests__/__mocks__/helpers.ts
+import { 
+  CoreTestMocks, 
+  setupCoreTestEnvironment,
+  setupFileSystemMocks,
+  setupPathMocks,
+  resetCoreMocks
+} from '@fux/mock-strategy/core'
+import { vi } from 'vitest'
+
+// Extend base mocks with package-specific needs
+export interface MyFeatureTestMocks extends CoreTestMocks {
+  mySpecificService: {
+    processData: ReturnType<typeof vi.fn>
+    validateInput: ReturnType<typeof vi.fn>
+  }
+}
+
+export function setupMyFeatureTestEnvironment(): MyFeatureTestMocks {
+  const baseMocks = setupCoreTestEnvironment()
+  
+  return {
+    ...baseMocks,
+    mySpecificService: {
+      processData: vi.fn(),
+      validateInput: vi.fn(),
+    }
+  }
+}
+
+export function setupMySpecificMocks(mocks: MyFeatureTestMocks): void {
+  mocks.mySpecificService.processData.mockResolvedValue('processed')
+  mocks.mySpecificService.validateInput.mockReturnValue(true)
+}
+
+export function resetMyFeatureMocks(mocks: MyFeatureTestMocks): void {
+  resetCoreMocks(mocks) // Reset base mocks
+  Object.values(mocks.mySpecificService).forEach(mock => mock.mockReset())
+}
+```
+
+#### **Step 3: Update Test Files**
+
+```typescript
+// packages/my-feature/core/__tests__/functional-tests/MyService.test.ts
+import { 
+  setupMyFeatureTestEnvironment,
+  setupMySpecificMocks,
+  resetMyFeatureMocks
+} from '../__mocks__/helpers'
+
+describe('MyService', () => {
+  let mocks: ReturnType<typeof setupMyFeatureTestEnvironment>
+
+  beforeEach(() => {
+    mocks = setupMyFeatureTestEnvironment()
+    setupMySpecificMocks(mocks)
+    resetMyFeatureMocks(mocks)
+  })
+
+  it('should process data successfully', () => {
+    // Test logic here
+  })
+})
+```
+
+### **Option 2: Legacy Migration (Manual Setup)**
+
+For packages that prefer to maintain their own mock setup:
+
+#### **Step 1: Update Imports**
 
 ```typescript
 // Before
@@ -592,7 +676,7 @@ import {
 } from '../__mocks__/mock-scenario-builder'
 ```
 
-### Step 2: Replace Manual Mock Setup
+#### **Step 2: Replace Manual Mock Setup**
 
 ```typescript
 // Before
@@ -614,7 +698,7 @@ beforeEach(() => {
 })
 ```
 
-### Step 3: Use Scenarios for Complex Setup
+#### **Step 3: Use Scenarios for Complex Setup**
 
 ```typescript
 // Before
@@ -636,7 +720,7 @@ it('should test backup creation', () => {
 })
 ```
 
-### Step 4: Update Vitest Configuration
+#### **Step 4: Update Vitest Configuration**
 
 ```typescript
 // vitest.config.ts
@@ -650,6 +734,40 @@ export default mergeConfig(
     })
 )
 ```
+
+## 📋 Mock Strategy Decision Guidelines
+
+### **When to Use Mock Strategy Library**
+
+✅ **Use `@fux/mock-strategy/core` when**:
+- You need **standard Node.js API mocks** (file system, path, etc.)
+- You want **consistent mock patterns** across packages
+- You prefer **centralized maintenance** of common mocks
+- You're building **new packages** and want to start with proven patterns
+
+### **When to Extend Library in Package `__mocks__`**
+
+✅ **Extend library in package `__mocks__` when**:
+- You need **package-specific business logic mocks**
+- You have **domain-specific scenarios** not suitable for the library
+- You want to **compose** library mocks with package-specific mocks
+- You need **complex mock compositions** specific to your package
+
+### **When to Add Mocks at File Level**
+
+✅ **Add mocks at file level when**:
+- You need **test-specific mocks** used by multiple test cases in one file
+- You have **simple mocks** that don't benefit from centralized management
+- You're **experimenting** with mock patterns
+- You have **temporary mocks** for specific test scenarios
+
+### **When to Add Inline Mocks**
+
+✅ **Add inline mocks when**:
+- You need **single-use mocks** within one test
+- You have **simple mock return values** that don't need abstraction
+- You're **debugging** specific test scenarios
+- You have **quick mock setups** for simple test cases
 
 ## 🚨 Common Pitfalls & Solutions
 

@@ -11,6 +11,3 @@ This directory contains tests specifically for achieving high code coverage.
 
 ## Test Structure
 
-- `ClipboardService.coverage.test.ts` - Coverage tests for clipboard service
-- `ImportGeneratorService.coverage.test.ts` - Coverage tests for import generator
-- `ConsoleLoggerService.coverage.test.ts` - Coverage tests for console logger

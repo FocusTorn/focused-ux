@@ -1,34 +1,35 @@
 {
     "name": "@fux/project-alias-expander",
-    "version": "0.0.1",
     "description": "Global CLI tool for expanding project aliases and running Nx commands",
-    "main": "dist/index.js",
+    "version": "0.0.1",
     "bin": {
         "pae": "dist/cli.js"
     },
-    "type": "module",
-    "files": [
-        "dist",
-        "config.json",
-        "dist/pae-functions.psm1"
-    ],
     "scripts": {
         "build": "nx build project-alias-expander",
         "lint": "nx lint project-alias-expander",
         "test": "nx test project-alias-expander"
     },
+    "license": "MIT",
     "keywords": [
         "cli",
         "nx",
         "alias",
         "project-management"
     ],
-    "author": "FocusedUX",
-    "license": "MIT",
+    "type": "module",
+    "main": "dist/index.js",
+    "files": [
+        "dist",
+        "config.json",
+        "dist/pae-functions.psm1"
+    ],
     "dependencies": {
         "strip-json-comments": "^5.0.3"
     },
     "devDependencies": {
-        "@types/node": "^24.5.2"
-    }
+        "@types/node": "^24.5.2",
+        "@fux/mock-strategy": "workspace:*"
+    },
+    "author": "FocusedUX"
 }

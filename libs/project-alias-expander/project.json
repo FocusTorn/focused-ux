@@ -4,6 +4,8 @@
     "sourceRoot": "libs/project-alias-expander/src",
     "projectType": "library",
     "targets": {
+     
+     
         "build:compile": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
@@ -28,6 +30,7 @@
             "executor": "nx:run-commands",
             "dependsOn": ["build:compile"],
             "outputs": [
+                "{projectRoot}/dist",
                 "{projectRoot}/dist/pae-functions.psm1"
             ],
             "inputs": [
@@ -41,73 +44,88 @@
             }
         }, //<
         
-        "lint": { "executor": "@nx/eslint:lint" },
-        
-        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-        // │           The below targets run test suites only on the package that contains them           │
-        // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
-        "test": { // run just functional-tests //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
-            "options": {
+        // "build:move": { //>
+        //     "executor": "nx:run-commands",
+        //     "dependsOn": ["build:compile"],
+        //     "outputs": [
+        //         "{projectRoot}/dist/pae-functions.psm1"
+        //     ],
+        //     "inputs": [
+        //         "production",
+        //         "^production",
+        //         "{projectRoot}/config.json"
+        //     ],
+        //     "options": {
+        //         "commands": ["node libs/project-alias-expander/dist/cli.js install-aliases"],
+        //         // "powershell -Command \"New-Item -ItemType Directory -Path 'C:\\Users\\slett\\Documents\\WindowsPowerShell\\Modules\\PAE' -Force\"",
+        //         // "powershell -Command \"Copy-Item 'libs\\project-alias-expander\\dist\\pae-functions.psm1' 'C:\\Users\\slett\\Documents\\WindowsPowerShell\\Modules\\PAE\\PAE.psm1' -Force\""
                 
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "passWithNoTests": true
-            }
-        }, //<
-        "test:coverage-tests": { // run {functional,coverage}-tests, with coverage report //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.coverage.config.ts",
-                "reportsDirectory": "{projectRoot}/__tests__/_reports/coverage",
-                "passWithNoTests": true
-            }
-        }, //<
+        //         "parallel": false
+        //     }
+        // }, //<
 
         
-        // ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-        // │       These run test suites on the package that contain them and full dependency chain       │
-        // └──────────────────────────────────────────────────────────────────────────────────────────────┘                
-        "test:deps": { // run just functional-tests //>
+        // "build": {
+        //     "executor": "nx:run-commands",
+        //     "outputs": [
+        //         "{projectRoot}/dist",
+        //         "{projectRoot}/dist/pae-functions.psm1"
+        //     ],
+        //     "options": {
+        //         "commands": [
+        //             "nx run @fux/project-alias-expander:build:compile",
+        //             "node libs/project-alias-expander/dist/cli.js install-aliases",
+        //     "powershell -Command \"New-Item -ItemType Directory -Path 'C:\\Users\\slett\\Documents\\WindowsPowerShell\\Modules\\PAE' -Force\"",
+        //     "powershell -Command \"Copy-Item 'libs\\project-alias-expander\\dist\\pae-functions.psm1' 'C:\\Users\\slett\\Documents\\WindowsPowerShell\\Modules\\PAE\\PAE.psm1' -Force\""
+        // ],
+        //         "parallel": false,
+        //         "cwd": "{workspaceRoot}"
+        //     }
+        // },
+            
+        
+        //= Quality ============================================================= 
+        "check-types": { "extends": "check-types" },
+        "check-types:deps": { "extends": "check-types:deps" },
+         
+        "lint": { "extends": "lint" },
+        "lint:deps": { "extends": "lint:deps" },
+         
+        "audit": { "extends": "audit" },
+        "audit:code": { "extends": "audit:code" },
+        "audit:test": { "extends": "audit:test" },
+        "audit:all": { "extends": "audit:all" },
+         
+        //= Cleaning ============================================================ 
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+         
+        //= Single Package Testing ============================================== 
+        "test": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test",
-                    "params": "forward"
-                }
-            ],
+            "dependsOn": ["@fux/mock-strategy:build"],
             "options": {
                 "configFile": "{projectRoot}/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
                 "passWithNoTests": true
             }
-        }, //<
-        "test:deps:coverage-tests": { // run {functional,coverage}-tests, with coverage report //>
+        },
+        "test:coverage-tests": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test:coverage-tests",
-                    "params": "forward"
-                }
-            ],
             "options": {
                 "configFile": "{projectRoot}/vitest.coverage.config.ts",
-                "reportsDirectory": "{projectRoot}/__tests__/_reports/coverage",
+                "reportsDirectory": "__tests__/_reports/coverage",
                 "passWithNoTests": true
             }
-        } //<
-        
+        }
+         
     },
     
     "tags": ["tool"]
 }
-
 
 
 // "test": { //>
@@ -133,5 +151,3 @@
 //         "passWithNoTests": true
 //     }
 // } //<
-
-    

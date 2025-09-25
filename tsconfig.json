@@ -53,6 +53,9 @@
         },
         {
             "path": "./plugins/ft-typescript"
+        },
+        {
+            "path": "./libs/mock-strategy"
         }
     ]
 }

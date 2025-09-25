@@ -1,0 +1,49 @@
+{
+    "name": "@fux/mock-strategy",
+    "tags": ["scope:shared", "type:utility"],
+    "targets": {
+       
+        //= Prepare ============================================================= 
+        "build": { //>
+            "extends": "build:core",
+            "options": {
+                "external": [
+                    "vscode",
+                    "js-yaml"
+                ]
+            }
+        }, //<
+        
+        //= Quality ============================================================= 
+        "check-types": { "extends": "check-types" },
+        "check-types:deps": { "extends": "check-types:deps" },
+        
+        "lint": { "extends": "lint" },
+        "lint:deps": { "extends": "lint:deps" },
+        
+        "audit": { "extends": "audit" },
+        "audit:code": { "extends": "audit:code" },
+        "audit:test": { "extends": "audit:test" },
+        "audit:all": { "extends": "audit:all" },
+        
+        //= Cleaning ============================================================ 
+        "clean": { "extends": "clean" },
+        "clean:dist": { "extends": "clean:dist" },
+        "clean:cache": { "extends": "clean:cache" },
+        
+        //= Single Package Testing ============================================== 
+        "test": { "extends": "test" },
+        "test:coverage-tests": { "extends": "test:coverage-tests" },
+        
+        //= Dependency Chain Testing ============================================ 
+        "test:deps": { "extends": "test:deps" },
+        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" },
+        
+        //= Integration Testing ================================================= 
+        "test:integration": { "extends": "test:integration" }
+        
+    },
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/mock-strategy/src",
+    "projectType": "library"
+}

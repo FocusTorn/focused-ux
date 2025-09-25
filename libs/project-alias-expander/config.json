@@ -123,14 +123,30 @@
         "s": "--skip-nx-cache",
         "v": "--verbose",
         "d": "--debug",
+        "c": "--coverage",
         "watch": "--watch",
         "echo": "--pae-echo",
+        "y": "-- YARRRR",
         
         // output-style=[stream, tui]
         "os": {
             "position": "suffix",
             "defaults": {"style": "stream"},
             "template": "--output-style={style}"
+        },
+        
+        // timeout for hanging tests
+        "sto": {
+            "position": "prefix",
+            "defaults": {"duration": "10"},
+            "template": "timeout {duration}s"
+        },
+        
+        // memory limit for Node.js processes
+        "mem": {
+            "position": "prefix",
+            "defaults": {"size": "4096"},
+            "template": "node --max-old-space-size={size}MB"
         }
     },
     
@@ -208,9 +224,9 @@
         
         //== Repo Utility Packages ============================================== 
         "vp"   : "@fux/vsix-packager",
-        "obs"  : "@fux/observability",
         "vsct" : "@fux/vscode-test-cli-config",
-        "alias": "@fux/project-alias-expander",
+        "aka": "@fux/project-alias-expander",
+        "ms": "@fux/mock-strategy",
         
         //= TSX Executed CLI tools ============================================== 
         "audit": "@fux/structure-auditor",

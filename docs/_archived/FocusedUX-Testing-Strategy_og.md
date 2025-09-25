@@ -60,8 +60,10 @@ packages/{feature-name}/
 │   │   │   ├── suite/                  # Test suites
 │   │   │   ├── mocked-workspace/       # Mock workspace files
 │   │   │   └── index.ts                # Test runner entry point
-│   │   ├── coverage-tests/             # Coverage reports
-│   │   │   └── _readme.md              # Coverage docs
+│   │   ├── coverage-tests/             # Coverage tests for 100% coverage
+│   │   │   ├── _readme.md              # Coverage test documentation
+│   │   │   ├── *.test-cov.ts           # Coverage test files (e.g., core.test-cov.ts)
+│   │   │   └── coverage/              # Coverage reports
 │   │   └── _reports/                   # Test reports and coverage output
 │   │       └── coverage/               # Coverage reports
 │   ├── src/

@@ -3,7 +3,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
-import { spawnSync } from 'node:child_process'
+import { spawnSync, execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import stripJsonComments from 'strip-json-comments'
 
@@ -20,17 +20,28 @@ type FeatureTarget = {
     'run-target': string
 }
 
+type ExpandableValue = string | {
+    position?: 'prefix' | 'pre-args' | 'suffix'
+    defaults?: Record<string, string>
+    template: string
+}
+
 interface AliasConfig {
     'package-targets'?: TargetsMap
     'feature-targets'?: Record<string, FeatureTarget>
     'not-nx-targets'?: Record<string, string>
-    'expandables'?: Record<string, string>
+    'expandables'?: Record<string, ExpandableValue>
     'packages': Record<string, AliasValue>
 }
 
 function loadAliasConfig(): AliasConfig {
     // The config.json is in the package root directory
     const configPath = path.join(PACKAGE_ROOT, 'config.json')
+    
+    if (process.argv.includes('--debug-workspace')) {
+        console.log('DEBUG: configPath:', configPath)
+        console.log('DEBUG: config exists:', fs.existsSync(configPath))
+    }
     
     if (!fs.existsSync(configPath)) {
         console.error(`Config file not found at: ${configPath}`)
@@ -73,6 +84,7 @@ function resolveProjectForFeatureTarget(value: AliasValue, featureTarget: Featur
     }
 
     const project = `@fux/${value.name}-${featureTarget['run-from']}`
+
     return { project, full: value.full === true }
 }
 
@@ -85,6 +97,7 @@ function expandTargetShortcuts(args: string[], targets: TargetsMap, featureTarge
     // Check feature-targets first if this is a full package
     if (isFull && featureTargets && featureTargets[t0]) {
         const featureTarget = featureTargets[t0]
+
         return { args: [featureTarget['run-target'], ...args.slice(1)], wasFeatureTarget: true }
     }
 
@@ -102,38 +115,133 @@ function expandTargetShortcuts(args: string[], targets: TargetsMap, featureTarge
     return { args, wasFeatureTarget: false }
 }
 
-function expandFlags(args: string[], expandables: Record<string, string> = {}): string[] {
-    const expanded: string[] = []
+function expandTemplate(template: string, variables: Record<string, string>): string {
+    return template.replace(/\{(\w+)\}/g, (match, varName) => {
+        return variables[varName] || match
+    })
+}
 
-    for (const a of args) {
-        if (a.startsWith('--')) {
-            expanded.push(a)
+function parseExpandableFlag(flag: string): { key: string, value?: string } {
+    // Handle both -key=value and -key:value syntax
+    const equalMatch = flag.match(/^-([^=]+)=(.*)$/)
+
+    if (equalMatch) {
+        return { key: equalMatch[1], value: equalMatch[2] }
+    }
+    
+    const colonMatch = flag.match(/^-([^:]+):(.*)$/)
+
+    if (colonMatch) {
+        return { key: colonMatch[1], value: colonMatch[2] }
+    }
+    
+    // No value provided
+    return { key: flag.slice(1) }
+}
+
+function expandFlags(args: string[], expandables: Record<string, ExpandableValue> = {}): {
+    prefix: string[],
+    preArgs: string[],
+    suffix: string[],
+    remainingArgs: string[]
+} {
+    const prefix: string[] = []
+    const preArgs: string[] = []
+    const suffix: string[] = []
+    const remainingArgs: string[] = []
+
+    for (const arg of args) {
+        if (arg.startsWith('--')) {
+            remainingArgs.push(arg)
             continue
         }
-        if (a.startsWith('-') && a.length > 1) {
-            const token = a.slice(1)
+        
+        if (arg.startsWith('-') && arg.length > 1) {
+            const { key, value } = parseExpandableFlag(arg)
+            
+            // Check if this is an expandable
+            if (expandables[key]) {
+                const expandable = expandables[key]
+                
+                if (typeof expandable === 'string') {
+                    // Simple string expansion - default to suffix position
+                    suffix.push(expandable)
+                } else {
+                    // Template-based expansion
+                    const variables = { ...expandable.defaults }
 
-            // exact multi-key mapping: e.g., -stream
-            if (expandables[token]) {
-                expanded.push(`--${expandables[token]}`)
+                    if (value !== undefined) {
+                        // Use the provided value for the first variable in defaults
+                        const firstVar = Object.keys(expandable.defaults || {})[0]
+
+                        if (firstVar) {
+                            variables[firstVar] = value
+                        }
+                    }
+                    
+                    const expanded = expandTemplate(expandable.template, variables)
+                    const position = expandable.position || 'suffix'
+                    
+                    switch (position) {
+                        case 'prefix':
+                            prefix.push(expanded)
+                            break
+                        case 'pre-args':
+                            preArgs.push(expanded)
+                            break
+                        case 'suffix':
+                        default:
+                            suffix.push(expanded)
+                            break
+                    }
+                }
                 continue
             }
-
-            // split short bundle like -fs or -sf
-            const shorts = token.split('')
-
+            
+            // Handle short bundle flags like -fs or -sf
+            const shorts = key.split('')
+            let hasExpandable = false
+            
             for (const s of shorts) {
-                const mapped = expandables[s]
+                if (expandables[s]) {
+                    hasExpandable = true
 
-                if (mapped)
-                    expanded.push(`--${mapped}`)
-                else expanded.push(`-${s}`)
+                    const expandable = expandables[s]
+                    
+                    if (typeof expandable === 'string') {
+                        suffix.push(expandable)
+                    } else {
+                        const expanded = expandTemplate(expandable.template, expandable.defaults || {})
+                        const position = expandable.position || 'suffix'
+                        
+                        switch (position) {
+                            case 'prefix':
+                                prefix.push(expanded)
+                                break
+                            case 'pre-args':
+                                preArgs.push(expanded)
+                                break
+                            case 'suffix':
+                            default:
+                                suffix.push(expanded)
+                                break
+                        }
+                    }
+                } else {
+                    remainingArgs.push(`-${s}`)
+                }
+            }
+            
+            if (!hasExpandable) {
+                remainingArgs.push(arg)
             }
             continue
         }
-        expanded.push(a)
+        
+        remainingArgs.push(arg)
     }
-    return expanded
+    
+    return { prefix, preArgs, suffix, remainingArgs }
 }
 
 function normalizeFullSemantics(isFull: boolean, target: string): string {
@@ -156,8 +264,8 @@ function runNx(argv: string[]): number {
         return 0
     }
 
-    const res = spawnSync('nx', argv, { 
-        stdio: 'inherit', 
+    const res = spawnSync('nx', argv, {
+        stdio: 'inherit',
         shell: process.platform === 'win32',
         timeout: 300000, // 5 minute timeout
         killSignal: 'SIGTERM'
@@ -172,8 +280,8 @@ function runCommand(command: string, args: string[]): number {
         return 0
     }
 
-    const res = spawnSync(command, args, { 
-        stdio: 'inherit', 
+    const res = spawnSync(command, args, {
+        stdio: 'inherit',
         shell: process.platform === 'win32',
         timeout: 300000, // 5 minute timeout
         killSignal: 'SIGTERM'
@@ -224,6 +332,30 @@ function runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: stri
     return runNx(['run-many', `--target=${target}`, `--projects=${projects.join(',')}`, `--parallel=${par}`, ...enhancedFlags, ...targets.slice(1)])
 }
 
+function detectShell(): 'powershell' | 'gitbash' | 'unknown' {
+    // Check for PowerShell first (more specific indicators)
+    if (process.env.PSModulePath
+        || process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+        || process.env.PSExecutionPolicyPreference
+        || process.env.PSExecutionPolicyPreference
+        || (process.env.TERM_PROGRAM === 'vscode' && process.env.PSModulePath)) {
+        return 'powershell'
+    }
+    
+    // Check for Git Bash/WSL (more specific)
+    if (process.env.MSYS_ROOT
+        || process.env.MINGW_ROOT
+        || process.env.WSL_DISTRO_NAME
+        || process.env.WSLENV
+        || process.env.SHELL?.includes('bash')
+        || process.env.SHELL?.includes('git-bash')
+        || process.env.SHELL?.includes('bash.exe')) {
+        return 'gitbash'
+    }
+    
+    return 'unknown'
+}
+
 function installAliases() {
     // Prevent multiple installations during the same process
     if (process.env.PAE_INSTALLING === '1') {
@@ -234,18 +366,35 @@ function installAliases() {
     const config = loadAliasConfig()
     const aliases = Object.keys(config.packages)
     const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
+    const autoRefresh = process.argv.includes('--auto-refresh')
+    const shell = detectShell()
 	
     if (isVerbose) {
-        console.log('Generating PowerShell module...')
+        console.log(`Detected shell: ${shell}`)
         console.log(`Found ${aliases.length} aliases: ${aliases.join(', ')}`)
+        if (autoRefresh) {
+            console.log('Auto-refresh enabled')
+        }
     }
 	
-    // Generate PowerShell module content
+    // Generate PowerShell module content - Simple approach
     const moduleContent = `# PAE Global Aliases - Auto-generated PowerShell Module
 # Generated from config.json - DO NOT EDIT MANUALLY
+# Simple approach: each alias just calls 'pae <alias> <args>'
 
-function Invoke-PaeAlias {
-    param([Parameter(Mandatory = $true)][string]$Alias, [string[]]$Arguments = @())
+${aliases.map(alias =>
+    `function Invoke-${alias} { 
+    [CmdletBinding()] 
+    param([Parameter(Position = 0, ValueFromRemainingArguments = $true)][string[]]$Arguments) 
+    pae ${alias} @Arguments
+}
+
+# Alias for backward compatibility
+Set-Alias -Name ${alias} -Value Invoke-${alias}`).join('\n\n')}
+
+# Refresh function to reload aliases
+function Invoke-PaeRefresh {
+    Write-Host "Refreshing [PWSH] PAE aliases..." -ForegroundColor Yellow
     
     # Find workspace root by looking for nx.json
     $workspaceRoot = $PWD
@@ -258,50 +407,249 @@ function Invoke-PaeAlias {
         return 1
     }
     
-    $cliPath = Join-Path $workspaceRoot "libs/project-alias-expander/dist/cli.js"
-    if (-not (Test-Path $cliPath)) {
-        Write-Error "PAE CLI not found at: $cliPath"
-        return 1
-    }
-    
-    node $cliPath $Alias @Arguments
+    $modulePath = Join-Path $workspaceRoot "libs\\project-alias-expander\\dist\\pae-functions.psm1"
+    Import-Module $modulePath -Force
+    Write-Host "[PWSH] PAE aliases refreshed!" -ForegroundColor Green
 }
 
-${aliases.map(alias =>
-    `function ${alias} { 
-    [CmdletBinding()] 
-    param([Parameter(Position = 0, ValueFromRemainingArguments = $true)][string[]]$Arguments) 
-    Invoke-PaeAlias -Alias '${alias}' -Arguments $Arguments 
-}`).join('\n\n')}
+# Alias for backward compatibility
+Set-Alias -Name pae-refresh -Value Invoke-PaeRefresh
 
-# Export all functions
-Export-ModuleMember -Function ${aliases.join(', ')}
+# Export all functions and aliases
+Export-ModuleMember -Function ${aliases.map(alias => `Invoke-${alias}`).join(', ')}, Invoke-PaeRefresh
+Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh
 
 # Display startup message when module is loaded
-Write-Host -ForegroundColor DarkGreen "  - Module loaded: PAE aliases "
+Write-Host -ForegroundColor DarkGreen "  - Module loaded: [PWSH] PAE aliases (simple)"
 `
 	
-    // Write the module to the dist directory
-    const modulePath = path.join(PACKAGE_ROOT, 'dist', 'pae-functions.psm1')
+    // Generate Git Bash aliases content - Simple approach
+    const bashAliasesContent = `# PAE Global Aliases - Auto-generated Git Bash Aliases
+# Generated from config.json - DO NOT EDIT MANUALLY
+# Simple approach: each alias just calls 'pae <alias> <args>'
+
+# Prevent double-loading
+if [ -n "$PAE_ALIASES_LOADED" ]; then
+    return 0
+fi
+export PAE_ALIASES_LOADED=1
+
+${aliases.map(alias => `alias ${alias}='pae ${alias}'`).join('\n')}
+
+# Refresh function to reload aliases
+function pae-refresh {
+    echo "Refreshing [GitBash] PAE aliases..."
+    unset PAE_ALIASES_LOADED
+    source libs/project-alias-expander/dist/pae-aliases.sh
+    echo "[GitBash] PAE aliases refreshed!"
+}
+
+# Display startup message
+echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
+`
 	
-    // Ensure dist directory exists
-    const distDir = path.dirname(modulePath)
+    // Write files to the dist directory
+    const distDir = path.join(PACKAGE_ROOT, 'dist')
 
     if (!fs.existsSync(distDir)) {
         fs.mkdirSync(distDir, { recursive: true })
     }
-	
+    
+    // Always generate PowerShell module
+    const modulePath = path.join(distDir, 'pae-functions.psm1')
+
     fs.writeFileSync(modulePath, moduleContent)
-	
-    // Display yellow warning about shell restart
-    console.log('\n\x1b[33m⚠️  IMPORTANT: Restart your shell to apply PAE alias changes!\x1b[0m')
-    console.log('\x1b[90m   The PowerShell module has been updated. You need to restart your shell\x1b[0m')
-    console.log('\x1b[90m   or reload the module to use the updated aliases.\x1b[0m\n')
+    
+    // Generate Git Bash aliases
+    const bashAliasesPath = path.join(distDir, 'pae-aliases.sh')
+
+    fs.writeFileSync(bashAliasesPath, bashAliasesContent)
+    
+    // Handle shell-specific auto-loading
+    if (shell === 'powershell') {
+        console.log('\n\x1b[32m✅ PowerShell module generated successfully!\x1b[0m\n')
+        console.log('\x1b[33m⚠️  Run \x1b[1;93mpae-refresh\x1b[0;33m to reload the aliases into the current shell\x1b[0m')
+    } else if (shell === 'gitbash') {
+        console.log('\n\x1b[32m✅ Git Bash aliases generated successfully!\x1b[0m\n')
+        console.log('\x1b[33m⚠️  Run \x1b[1;93mpae-refresh\x1b[0;33m to reload the aliases into the current shell\x1b[0m')
+    } else {
+        // Unknown shell - show manual instructions
+        console.log('\n\x1b[33m⚠️  Shell detection failed. Manual setup required:\x1b[0m')
+        console.log('\x1b[90m   PowerShell: Import-Module libs/project-alias-expander/dist/pae-functions.psm1\x1b[0m')
+        console.log('\x1b[90m   Git Bash: source libs/project-alias-expander/dist/pae-aliases.sh\x1b[0m\n')
+    }
 	
     if (isVerbose) {
         console.log(`PowerShell module generated: ${modulePath}`)
-        console.log('Import the module in your PowerShell profile with:')
-        console.log('Import-Module libs/project-alias-expander/dist/pae-functions.psm1')
+        console.log(`Git Bash aliases generated: ${bashAliasesPath}`)
+        console.log(`Detected shell: ${shell}`)
+    }
+    
+    // Install PowerShell module to native location if on Windows
+    if (process.platform === 'win32' && shell === 'powershell') {
+        try {
+            const psModuleDir = path.join(process.env.USERPROFILE || '', 'Documents', 'WindowsPowerShell', 'Modules', 'PAE')
+            const psModulePath = path.join(psModuleDir, 'PAE.psm1')
+            
+            if (isVerbose) {
+                console.log(`Installing PowerShell module to: ${psModulePath}`)
+            }
+            
+            // Create module directory if it doesn't exist
+            if (!fs.existsSync(psModuleDir)) {
+                fs.mkdirSync(psModuleDir, { recursive: true })
+                if (isVerbose) {
+                    console.log(`Created module directory: ${psModuleDir}`)
+                }
+            }
+            
+            // Copy the module file
+            fs.copyFileSync(modulePath, psModulePath)
+            
+            console.log('\x1b[32m✅ PowerShell module installed to native location!\x1b[0m')
+            console.log(`\x1b[36m   Module location: ${psModulePath}\x1b[0m`)
+            
+            // Try to auto-refresh the module in the current session
+            try {
+                console.log('\x1b[33m🔄 Attempting to auto-refresh module in current session...\x1b[0m')
+                
+                const psCommand = 'Import-Module PAE -Force; Write-Host "Module loaded successfully!" -ForegroundColor Green'
+                
+                execSync(`powershell -Command "${psCommand}"`, {
+                    stdio: 'inherit',
+                    cwd: process.cwd(),
+                    timeout: 5000
+                })
+                
+                console.log('\x1b[32m✅ Module auto-refreshed in current session!\x1b[0m')
+                
+            } catch (error) {
+                console.log('\x1b[33m⚠️  Auto-refresh failed. Manual refresh required.\x1b[0m')
+                console.log('\x1b[36m   Run: pae-refresh\x1b[0m')
+                console.log('\x1b[90m   Or: Import-Module PAE -Force\x1b[0m')
+                if (isVerbose) {
+                    console.log(`Error: ${error}`)
+                }
+            }
+            
+        } catch (error) {
+            console.log('\x1b[33m⚠️  Failed to install PowerShell module to native location.\x1b[0m')
+            if (isVerbose) {
+                console.log(`Error: ${error}`)
+            }
+            console.log('\x1b[90m   Manual installation required:\x1b[0m')
+            console.log('\x1b[90m   Import-Module libs/project-alias-expander/dist/pae-functions.psm1 -Force\x1b[0m')
+        }
+    }
+    
+    // Auto-refresh if requested
+    if (autoRefresh) {
+        console.log('\n\x1b[33m🔄 Auto-refreshing aliases in current session...\x1b[0m')
+        try {
+            if (shell === 'powershell') {
+                // Try to auto-refresh PowerShell module
+                try {
+                    console.log('\x1b[33m🔄 Attempting to auto-refresh PowerShell module...\x1b[0m')
+                    
+                    // Try to execute PowerShell command to import the module
+                    const psCommand = 'Import-Module PAE -Force; Write-Host "Module refreshed successfully!" -ForegroundColor Green'
+                    
+                    execSync(`powershell -Command "${psCommand}"`, {
+                        stdio: 'inherit',
+                        cwd: process.cwd(),
+                        timeout: 5000
+                    })
+                    
+                    console.log('\x1b[32m✅ PowerShell module auto-refreshed successfully!\x1b[0m')
+                    
+                } catch (error) {
+                    console.log('\x1b[33m⚠️  Auto-refresh failed. Manual refresh required.\x1b[0m')
+                    console.log('\x1b[36m   Run: pae-refresh\x1b[0m')
+                    console.log('\x1b[90m   Or: Import-Module PAE -Force\x1b[0m')
+                    if (isVerbose) {
+                        console.log(`Error: ${error}`)
+                    }
+                }
+            } else if (shell === 'gitbash') {
+                // For Git Bash, source the aliases and then run pae-refresh
+                try {
+                    const aliasFile = path.resolve(bashAliasesPath).replace(/\\/g, '/')
+
+                    execSync(`bash -c "source '${aliasFile}' && pae-refresh"`, {
+                        stdio: 'inherit',
+                        cwd: process.cwd(),
+                        timeout: 5000
+                    })
+                    console.log('\x1b[32m✅ Git Bash aliases refreshed successfully!\x1b[0m')
+                } catch (_error) {
+                    console.log('\x1b[33m⚠️  Auto-refresh failed. Manual refresh required.\x1b[0m')
+                    console.log('\x1b[36m   Run: pae-refresh\x1b[0m')
+                    console.log('\x1b[90m   Or: source libs/project-alias-expander/dist/pae-aliases.sh\x1b[0m')
+                }
+            } else {
+                console.log('\x1b[33m⚠️  Unknown shell - manual refresh required.\x1b[0m')
+            }
+        } catch (error) {
+            console.log('\x1b[31m❌ Auto-refresh failed. Manual refresh required.\x1b[0m')
+            if (isVerbose) {
+                console.log(`Error: ${error}`)
+            }
+        }
+    }
+}
+
+function refreshAliases() {
+    const shell = detectShell()
+    const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
+    
+    if (isVerbose) {
+        console.log(`Refreshing aliases for detected shell: ${shell}`)
+    }
+    
+    // Regenerate the alias files
+    installAliases()
+    
+    // Now try to reload them in the current session
+    if (shell === 'powershell') {
+        console.log('\n\x1b[33m⚠️  PowerShell refresh requires manual reload:\x1b[0m')
+        console.log('\x1b[36m   Import-Module libs/project-alias-expander/dist/pae-functions.psm1 -Force\x1b[0m\n')
+    } else if (shell === 'gitbash') {
+        console.log('\n\x1b[33m⚠️  Git Bash refresh requires manual reload:\x1b[0m')
+        console.log('\x1b[36m   source libs/project-alias-expander/dist/pae-aliases.sh\x1b[0m\n')
+    } else {
+        console.log('\n\x1b[33m⚠️  Unknown shell. Manual reload required:\x1b[0m')
+        console.log('\x1b[90m   PowerShell: Import-Module libs/project-alias-expander/dist/pae-functions.psm1 -Force\x1b[0m')
+        console.log('\x1b[90m   Git Bash: source libs/project-alias-expander/dist/pae-aliases.sh\x1b[0m\n')
+    }
+}
+
+function refreshAliasesDirect() {
+    const shell = detectShell()
+    
+    try {
+        if (shell === 'powershell') {
+            // Execute pae-refresh in PowerShell (load module first)
+            const modulePath = path.resolve('libs/project-alias-expander/dist/pae-functions.psm1')
+
+            execSync(`powershell -Command "Import-Module '${modulePath}' -Force; pae-refresh"`, {
+                stdio: 'inherit',
+                cwd: process.cwd(),
+                timeout: 5000
+            })
+        } else if (shell === 'gitbash') {
+            // Execute pae-refresh in Git Bash
+            execSync('pae-refresh', {
+                stdio: 'inherit',
+                cwd: process.cwd(),
+                timeout: 5000
+            })
+        } else {
+            console.log('\x1b[33m⚠️  Unknown shell. Manual refresh required.\x1b[0m')
+        }
+    } catch (_error) {
+        console.log('\x1b[31m❌ Refresh failed. Manual refresh required.\x1b[0m')
+        console.log('\x1b[90m   PowerShell: pae-refresh\x1b[0m')
+        console.log('\x1b[90m   Git Bash: pae-refresh\x1b[0m')
     }
 }
 
@@ -309,9 +657,29 @@ function main() {
     const [, , ...args] = process.argv
     const previousEcho = process.env.PAE_ECHO
     
+    // Debug mode - show workspace detection info
+    if (args.includes('--debug-workspace')) {
+        console.log('DEBUG: process.argv[1]:', process.argv[1])
+        console.log('DEBUG: import.meta.url:', import.meta.url)
+        console.log('DEBUG: PACKAGE_ROOT:', PACKAGE_ROOT)
+        console.log('DEBUG: process.cwd():', process.cwd())
+        console.log('DEBUG: __filename:', __filename)
+        return
+    }
+    
     // Handle special commands
     if (args.length > 0 && args[0] === 'install-aliases') {
         installAliases()
+        return
+    }
+    
+    if (args.length > 0 && args[0] === 'refresh') {
+        refreshAliases()
+        return
+    }
+    
+    if (args.length > 0 && args[0] === 'refresh-aliases') {
+        refreshAliasesDirect()
         return
     }
     
@@ -336,7 +704,7 @@ function main() {
     if (!alias || alias === '-h' || alias === '--help' || alias === 'help') {
         const config = loadAliasConfig()
         const targets = config['package-targets'] ?? { b: 'build', l: 'lint', t: 'test' }
-        const notNxTargets = (config as any)['not-nx-targets'] ?? {}
+        const notNxTargets = config['not-nx-targets'] ?? {}
         const expandMap = config.expandables ?? { f: 'fix', s: 'skip-nx-cache' }
         
         console.log('pae <alias> <target> [flags]')
@@ -375,8 +743,14 @@ function main() {
         }
         console.log('')
         console.log('FLAG EXPANSIONS:')
-        for (const [short, flag] of Object.entries(expandMap)) {
-            console.log(`  -${short.padEnd(7)} -> --${flag}`)
+        for (const [short, expandable] of Object.entries(expandMap)) {
+            if (typeof expandable === 'string') {
+                console.log(`  -${short.padEnd(7)} -> ${expandable}`)
+            } else {
+                const example = expandTemplate(expandable.template, expandable.defaults || {})
+
+                console.log(`  -${short.padEnd(7)} -> ${example} (template: ${expandable.template})`)
+            }
         }
         console.log('')
         console.log('EXAMPLES:')
@@ -392,13 +766,14 @@ function main() {
         console.log('  pae pbc esv')
         console.log('  pae pbc -f -s')
         console.log('  pae install-aliases --verbose')
+        console.log('  pae refresh --verbose')
         process.exit(0)
     }
 
     const config = loadAliasConfig()
     const targets = config['package-targets'] ?? { b: 'build', l: 'lint', t: 'test' }
     const featureTargets = config['feature-targets']
-    const notNxTargets = (config as any)['not-nx-targets'] ?? {}
+    const notNxTargets = config['not-nx-targets'] ?? {}
     const expandMap = config.expandables ?? { f: 'fix', s: 'skip-nx-cache' }
     
     // Get the alias value to determine if it's a full package
@@ -409,7 +784,9 @@ function main() {
     let processedArgs = targetExpansion.args
     const wasFeatureTarget = targetExpansion.wasFeatureTarget
 
-    processedArgs = expandFlags(processedArgs, expandMap)
+    const flagExpansion = expandFlags(processedArgs, expandMap)
+
+    processedArgs = [...flagExpansion.prefix, ...flagExpansion.remainingArgs, ...flagExpansion.preArgs, ...flagExpansion.suffix]
 
     // Handle ephemeral echo flag: "-echo" -> "--pae-echo"
     const paeEchoEnabled = processedArgs.includes('--pae-echo')
@@ -418,6 +795,34 @@ function main() {
     if (paeEchoEnabled) {
         processedArgs = processedArgs.filter(a =>
             a !== '--pae-echo')
+    }
+
+    // Special handling for 'alias' command - call PAE CLI directly
+    if (alias === 'alias') {
+        const target = processedArgs[0]
+        const flags = processedArgs.filter(a =>
+            a.startsWith('--'))
+
+        const previousEcho = process.env.PAE_ECHO
+
+        if (paeEchoEnabled) {
+            process.env.PAE_ECHO = '1'
+        }
+
+        // Call the PAE CLI directly with the target and flags
+        const code = runNx([target, ...flags])
+
+        // Restore echo environment
+        if (paeEchoEnabled) {
+            if (previousEcho === undefined) {
+                delete process.env.PAE_ECHO
+            }
+            else {
+                process.env.PAE_ECHO = previousEcho
+            }
+        }
+
+        process.exit(code)
     }
 
     if (alias === 'ext' || alias === 'core' || alias === 'all') {
@@ -431,7 +836,7 @@ function main() {
             process.env.PAE_ECHO = '1'
         }
 
-        const code = runMany(alias as any, [target], flags, config)
+        const code = runMany(alias as 'ext' | 'core' | 'all', [target], flags, config)
 
         // Restore echo environment
         if (paeEchoEnabled) {
@@ -468,11 +873,13 @@ function main() {
         const originalTarget = rest[0] // The original target before expansion
         const featureTarget = featureTargets![originalTarget]
         const resolved = resolveProjectForFeatureTarget(aliasVal, featureTarget)
+
         project = resolved.project
         full = resolved.full
     } else {
         // Use target-aware resolution for integration tests
         const resolved = resolveProjectForAliasWithTarget(aliasVal, target)
+
         project = resolved.project
         full = resolved.full
     }
@@ -601,7 +1008,26 @@ function main() {
         process.exit(rc)
 }
 
-main()
+// Export functions for testing
+export {
+    loadAliasConfig,
+    resolveProjectForAlias,
+    expandTargetShortcuts,
+    expandTemplate,
+    parseExpandableFlag,
+    expandFlags,
+    runNx,
+    installAliases,
+    runMany,
+    normalizeFullSemantics,
+    resolveProjectForAliasWithTarget,
+    resolveProjectForFeatureTarget
+}
+
+// Only run main if this file is executed directly
+if (import.meta.url.endsWith(process.argv[1]) || process.argv[1]?.includes('cli.js')) {
+    main()
+}
 
 // Test comment in source code
 // Test comment in source code again ascf

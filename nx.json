@@ -45,8 +45,6 @@
                 "main": "{workspaceRoot}/{projectRoot}/src/extension.ts",
                 "format": ["cjs"],
                 "bundle": true,
-                "sourcemap": true,
-                "deleteOutputPath": true,
                 "metafile": true
             }
         }, //<
