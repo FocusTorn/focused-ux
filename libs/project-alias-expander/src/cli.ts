@@ -522,7 +522,6 @@ echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
                 })
                 
                 console.log('\x1b[32m✅ Module auto-refreshed in current session!\x1b[0m')
-                
             } catch (error) {
                 console.log('\x1b[33m⚠️  Auto-refresh failed. Manual refresh required.\x1b[0m')
                 console.log('\x1b[36m   Run: pae-refresh\x1b[0m')
@@ -531,7 +530,6 @@ echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
                     console.log(`Error: ${error}`)
                 }
             }
-            
         } catch (error) {
             console.log('\x1b[33m⚠️  Failed to install PowerShell module to native location.\x1b[0m')
             if (isVerbose) {
@@ -561,7 +559,6 @@ echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
                     })
                     
                     console.log('\x1b[32m✅ PowerShell module auto-refreshed successfully!\x1b[0m')
-                    
                 } catch (error) {
                     console.log('\x1b[33m⚠️  Auto-refresh failed. Manual refresh required.\x1b[0m')
                     console.log('\x1b[36m   Run: pae-refresh\x1b[0m')
