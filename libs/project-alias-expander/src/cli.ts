@@ -44,8 +44,7 @@ function loadAliasConfig(): AliasConfig {
     }
     
     if (!fs.existsSync(configPath)) {
-        console.error(`Config file not found at: ${configPath}`)
-        process.exit(1)
+        throw new Error(`Config file not found at: ${configPath}`)
     }
     
     const raw = fs.readFileSync(configPath, 'utf-8')
@@ -462,9 +461,7 @@ echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
         console.log(`Detected shell: ${shell}`)
     }
     
-    console.log('\x1b[32m✅ Local files generated successfully!\x1b[0m')
-    console.log('')
-    console.log('\x1b[33m⚠️  Run "pae install-aliases" to install to system locations\x1b[0m')
+    // Silent during build - if files aren't generated, build will fail
 }
 
 function installAliases() {
@@ -579,10 +576,8 @@ echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
     // Handle shell-specific auto-loading
     if (shell === 'powershell') {
         console.log('\n\x1b[32m✅ PowerShell module generated successfully!\x1b[0m\n')
-        console.log('\x1b[33m⚠️  Run \x1b[1;93mpae-refresh\x1b[0;33m to reload the aliases into the current shell\x1b[0m')
     } else if (shell === 'gitbash') {
         console.log('\n\x1b[32m✅ Git Bash aliases generated successfully!\x1b[0m\n')
-        console.log('\x1b[33m⚠️  Run \x1b[1;93mpae-refresh\x1b[0;33m to reload the aliases into the current shell\x1b[0m')
     } else {
         // Unknown shell - show manual instructions
         console.log('\n\x1b[33m⚠️  Shell detection failed. Manual setup required:\x1b[0m')
@@ -618,13 +613,13 @@ echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
             fs.copyFileSync(modulePath, psModulePath)
             
             console.log('\x1b[32m✅ PowerShell module installed to native location!\x1b[0m')
-            console.log(`\x1b[36m   Module location: ${psModulePath}\x1b[0m`)
+            console.log(`\x1b[36m   - Module location: ${psModulePath}\x1b[0m`)
             
             // Try to auto-refresh the module in the current session
             try {
-                console.log('\x1b[33m🔄 Attempting to auto-refresh module in current session...\x1b[0m')
+                console.log('\x1b[90mAttempting to load module in current session...\x1b[0m')
                 
-                const psCommand = 'Import-Module PAE -Force; Write-Host "Module loaded successfully!" -ForegroundColor Green'
+                const psCommand = 'Import-Module PAE -Force'
                 
                 execSync(`powershell -Command "${psCommand}"`, {
                     stdio: 'inherit',
@@ -632,7 +627,7 @@ echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
                     timeout: 5000
                 })
                 
-                console.log('\x1b[32m✅ Module auto-refreshed in current session!\x1b[0m')
+                console.log('')
             } catch (error) {
                 console.log('\x1b[33m⚠️  Auto-refresh failed. Manual refresh required.\x1b[0m')
                 console.log('\x1b[36m   Run: pae-refresh\x1b[0m')
@@ -1140,7 +1135,14 @@ export {
     runMany,
     normalizeFullSemantics,
     resolveProjectForAliasWithTarget,
-    resolveProjectForFeatureTarget
+    resolveProjectForFeatureTarget,
+    // Internal functions for testing
+    detectShell,
+    generateLocalFiles,
+    refreshAliases,
+    refreshAliasesDirect,
+    runCommand,
+    main
 }
 
 // Only run main if this file is executed directly

@@ -125,6 +125,7 @@
 
         "watch": "--watch",
         "echo": "--pae-echo",
+        "dr": "--pae-echo",
         
 
         "name": { //> output-style=[stream, tui]

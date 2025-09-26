@@ -1,62 +1,29 @@
----
-description: Shall only be executed when directed to do any definitional variation of "doing a 'LAT' "
-alwaysApply: false
----
+# Log Actions (LAT)
 
-# Protocol: LogActions.mdc
+## Purpose
 
-**Location:**: .cursor/rules/Protocol-LogActions.mdc
+Execute comprehensive action logging following the Protocol-LogActions guidelines to document all significant development activities, failures, recoveries, and lessons learned.
 
-## **Purpose**
+## **CRITICAL: PROTOCOL COMMAND RECOGNITION**
 
-This protocol defines the comprehensive structure and content requirements for action logs, ensuring consistent, detailed, and valuable documentation of all significant development activities, failures, recoveries, and lessons learned.
+**MANDATORY**: When user executes ANY `/` command, this is a **PROTOCOL EXECUTION** that MUST be followed exactly as written with NO DEVIATION, NO SKIPPING, and NO MODIFICATION.
 
-## **MANDATORY EXECUTION REQUIREMENTS**
+**PROTOCOL VIOLATION PENALTY**: Any deviation from `/` command protocols constitutes a critical failure requiring immediate acknowledgment and correction.
 
-**CRITICAL**: This protocol MUST be executed without failure. Every step, item, and requirement outlined in this protocol MUST be completed in full before the task is considered complete.
+## Execution Steps
 
-**NO DEVIATION PROTOCOL**:
+**CRITICAL: Execution Expectation** → MANDATORY: This command MUST be executed exactly as written with NO DEVIATION, NO SKIPPING, and NO MODIFICATION.
 
-- All outlined steps/items must be executed without failure
-- No steps may be skipped, abbreviated, or modified
-- No "good enough" or "sufficient" analysis is acceptable
-- Additional data points or modifications must be referenced at the end AFTER all outlined steps are completed
-- If additional data would be beneficial, note it in the "Additional Analysis Recommendations" section
-- If any data point should be removed as not value-add, note it in the "Protocol Improvement Recommendations" section
+### **STEP 0: PROTOCOL COMPLIANCE VERIFICATION**
 
-**EXECUTION VALIDATION**: Each step must be validated as complete before proceeding to the next step. The validation checklist must be completed in full before task completion.
+**MANDATORY PRE-EXECUTION CHECKLIST**:
 
-## **Quick Reference**
-
-- **6 Core Sections**: Summary, Root Cause Analysis, What Was Tried and Failed, Critical Failures and Recovery, Files Created/Modified, Prevention Strategy
-- **2 Optional Sections**: Key Implementations (if complex), Lessons Learned (if non-obvious)
-- **Critical Tools**: PowerShell Get-FileStats.ps1, nx_project_details, read_file, search_replace
-- **Common Violations**: Incomplete conversation coverage, estimated timestamps, missing failed attempts documentation
-- **Recovery Commands**: `.\scripts\Get-FileStats.ps1 -FilePaths @("file.ts")`, `mcp_nx-mcp_nx_project_details`
-- **Task Organization Protocol**: Tasks exist in either Current/Pending OR Future Enhancement Suggestions, but not both
-- **New Task Tracker Section**: Strengthening Weak/Flaky Implementations (identify fragile areas requiring future strengthening)
-- **Alias Resolution**: Aliases are case-sensitive and must resolve to exactly one file in `.cursor/rules` named `__AI-Task---*---(ALIAS).mdc`; halt on 0 or >1 matches
-
-### Term Definitions
-
-- **package-top-level**:
-    - `libs/{name}` (e.g., `libs/mockly`)
-    - `libs/tools/{name}` (e.g., `libs/tools/structure-auditor`)
-    - `packages/{feature}` (e.g., `packages/dynamicons`)
-- **subpackage-name**:
-    - For `packages/{feature}/core|ext|assets|libs` → use `core|ext|assets|libs`
-    - For `libs/*` and `libs/tools/*` → use the package directory name (e.g., `vsix-packager`, `mockly`)
-- **package docs directory**: `{package-top-level}/_docs`
-
-#### Examples by Type
-
-- `packages/{feature}/core` → `{package-top-level}/_docs/_core_*`
-- `packages/{feature}/ext` → `{package-top-level}/_docs/_ext_*`
-- `packages/{feature}/assets` → `{package-top-level}/_docs/_assets_*`
-- `libs/{name}` → `{package-top-level}/_docs/_{name}_*`
-- `libs/tools/{name}` → `{package-top-level}/_docs/_{name}_*`
-
-## **Protocol Requirements**
+- [ ] **Protocol Recognition**: Identified this as a `/` command requiring exact protocol compliance
+- [ ] **No Deviation**: Committed to following ALL steps exactly as written
+- [ ] **No Skipping**: Committed to executing ALL mandatory sections
+- [ ] **No Modification**: Committed to using exact formats and structures specified
+- [ ] **Complete Coverage**: Committed to documenting ENTIRE conversation scope
+- [ ] **Task Tracker Integration**: Committed to updating ALL required task tracker files
 
 ### **STEP 1: Data Acquisition and Information Gathering**
 
@@ -85,8 +52,8 @@ Following the Protocol-LogActions guidelines, let me create a comprehensive acti
 #### **STEP 1.2: Data Verification Protocol**
 
 - **MANDATORY File Timestamp Verification**: Use PowerShell `Get-FileStats.ps1` to get actual file modification times
-- **Specific Files**: `.\scripts\Get-FileStats.ps1 -FilePaths @("file1.ts", "file2.js")`
-- **Project Directory**: `.\scripts\Get-FileStats.ps1 -Directories @("packages/project-name")`
+- **Specific Files**: `_scripts\ps\Get-FileStats.ps1 -FilePaths @("file1.ts", "file2.js")`
+- **Project Directory**: `_scripts\ps\Get-FileStats.ps1 -Directories @("packages/project-name")`
 - **Format**: Use `[YYYY-MM-DD HH:MM:SS]` format from verification output
 - **NEVER**: Use estimated dates, current system time, or placeholders
 - **CRITICAL**: Every action log entry MUST include actual file timestamps from PowerShell verification
@@ -99,11 +66,11 @@ Following the Protocol-LogActions guidelines, let me create a comprehensive acti
 
 ```powershell
 # Default text output (no flags)
-./scripts/Get-FileStats.ps1 -FilePaths @('path1','path2')
-./scripts/Get-FileStats.ps1 -Directories @('dir1','dir2')
+_scripts\ps\Get-FileStats.ps1 -FilePaths @('path1','path2')
+_scripts\ps\Get-FileStats.ps1 -Directories @('dir1','dir2')
 
 # Object mode when you need properties
-$s = ./scripts/Get-FileStats.ps1 -FilePaths @('path1','path2') -Output object
+$s = _scripts\ps\Get-FileStats.ps1 -FilePaths @('path1','path2') -Output object
 $s.Maximum.ToString('yyyy-MM-dd HH:mm:ss')  # Latest mod time for log entries
 
 # Per-file verification (optional)
@@ -111,7 +78,7 @@ $files = @('path1','path2')
 $files | ForEach-Object { '{0}  {1}' -f $_, (Get-Item $_).LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss') }
 
 # Text with per-file list
-./scripts/Get-FileStats.ps1 -FilePaths @('path1','path2') -PerFile
+_scripts\ps\Get-FileStats.ps1 -FilePaths @('path1','path2') -PerFile
 ```
 
 **Output Interpretation**:
@@ -132,9 +99,26 @@ $files | ForEach-Object { '{0}  {1}' -f $_, (Get-Item $_).LastWriteTime.ToString
 - **Documentation-Only Changes Excluded**: Documentation-only changes (updating docs, comments, README files) should NOT be tracked in completed tasks or actions log
 - **Code/Implementation Focus**: Only track changes that involve actual code implementation, bug fixes, feature additions, or architectural changes
 
-#### **STEP 1.4: Multi-Package Documentation Protocol**
+#### **STEP 1.4: MANDATORY DECISION LOGIC APPLICATION**
 
-- **Project-Level Actions**: For project-wide changes (build system, tooling, architecture), use `docs/_FocusedUX-Actions-Log.md`
+**CRITICAL**: Before proceeding, MUST determine documentation scope using exact decision criteria:
+
+1. **Is this project-targeted change?** (build system, tooling, architecture affecting multiple packages)
+    - YES → Write to `docs/FOCUSEDUX-Actions-Log.md` ONLY
+    - NO → Continue to step 2
+
+2. **Is this multi-package conversation?** (multiple packages referenced)
+    - YES → Update EACH referenced package's logs and task tracker
+    - NO → Continue to step 3
+
+3. **Is this single subpackage only?**
+    - YES → Update ONLY that package's logs and task tracker
+
+**VIOLATION**: Any failure to apply this decision logic constitutes a critical protocol violation.
+
+#### **STEP 1.5: Multi-Package Documentation Protocol**
+
+- **Project-Level Actions**: For project-wide changes (build system, tooling, architecture), use `docs/FOCUSEDUX-Actions-Log.md`
 - **Package-Specific Logs**: `{package-top-level}/_docs/_{subpackage-name}_Actions-Log.md`
 - **Package Task Tracker**: `{package-top-level}/_docs/_{subpackage-name}_Task-Tracker.md`
 - **Comprehensive Coverage**: Each package log must include the same level of detail as the main Actions Log
@@ -146,15 +130,23 @@ $files | ForEach-Object { '{0}  {1}' -f $_, (Get-Item $_).LastWriteTime.ToString
     - `libs/vsix-packager/_docs/_vsix-packager_Task-Tracker.md`
     - `packages/dynamicons/_docs/_assets_Actions-Log.md`
     - `packages/dynamicons/_docs/_assets_Task-Tracker.md`
-- **Decision Helper**:
-    - **Project-targeted change** (build system, tooling, architecture) → write to `docs/_FocusedUX-Actions-Log.md`. Only add package logs if specific packages were modified as part of this project-targeted action.
-    - **Multi-package conversation** (multiple packages referenced) → update each referenced package’s `{package-top-level}/_docs/_{subpackage-name}_Actions-Log.md` and `_Task-Tracker.md`. Do NOT write to the project log unless the change is project-targeted.
-    - **Single subpackage only** → update only that package’s logs and task tracker.
 - **Decision Criteria**:
     - **Project-Level**: Changes affecting multiple packages, build system, tooling, or overall architecture
     - **Package-Level**: Changes specific to a single package's functionality, implementation, or features
 
-#### **STEP 1.5: Task Tracker Integration Protocol**
+#### **STEP 1.6: MANDATORY TASK TRACKER INTEGRATION**
+
+**CRITICAL**: EVERY action log entry MUST update corresponding task tracker files. This is NON-NEGOTIABLE.
+
+**MANDATORY STEPS**:
+
+1. **Read Current Task Tracker**: Load `{package-top-level}/_docs/_{subpackage-name}_Task-Tracker.md`
+2. **Move Completed Tasks**: Move ALL completed tasks from "Pending Tasks" to "Completed Tasks" with timestamps
+3. **Add New Tasks**: Add ANY new tasks identified during conversation to "Pending Tasks"
+4. **Update Future Enhancements**: Add new proposed enhancements to "Future Enhancement Suggestions"
+5. **Apply Task Organization Protocol**: Ensure tasks exist in either Current/Pending OR Future Enhancements, not both
+
+**VIOLATION**: Any action log entry without corresponding task tracker updates constitutes a critical protocol violation.
 
 - **Automatic Updates**: Action log entries MUST automatically update the corresponding task tracker file
 - **Completed Tasks**: Move completed tasks from "Pending Tasks" to "Completed Tasks" section with timestamp
@@ -164,7 +156,7 @@ $files | ForEach-Object { '{0}  {1}' -f $_, (Get-Item $_).LastWriteTime.ToString
 - **Consolidation**: Maintain consolidated "Future Enhancement Suggestions" section that aggregates all suggestions
 - **Deduplication**: When new enhancements are proposed, add them to consolidated list if unique, or add sub-bullets to existing items
 
-#### **STEP 1.6: Default Action Log Structure Protocol**
+#### **STEP 1.7: Default Action Log Structure Protocol**
 
 - **Completed Tasks Placement**: Completed tasks MUST be placed underneath the "Future Enhancement Suggestions" section
 - **Combined Format**: Use simple flat list format with `- [x]` checkboxes for completed tasks
@@ -172,7 +164,7 @@ $files | ForEach-Object { '{0}  {1}' -f $_, (Get-Item $_).LastWriteTime.ToString
 - **Chronological Order**: List completed tasks in chronological order of completion
 - **Comprehensive Coverage**: Include ALL completed tasks from the entire conversation, not just recent ones
 
-#### **STEP 1.7: Conversation Analysis Protocol**
+#### **STEP 1.8: Conversation Analysis Protocol**
 
 - **Systematic Review**: Review every turn of the conversation from initial user request to completion
 - **Self-Critical Focus**: Focus on failures, corrections, and actionable lessons
@@ -183,6 +175,20 @@ $files | ForEach-Object { '{0}  {1}' -f $_, (Get-Item $_).LastWriteTime.ToString
 ### **STEP 2: Mandatory Task Tracker Updates**
 
 Every action log entry MUST also update the corresponding task tracker file with the following process:
+
+#### **STEP 2.0: MANDATORY TASK TRACKER INTEGRATION**
+
+**CRITICAL**: EVERY action log entry MUST update corresponding task tracker files. This is NON-NEGOTIABLE.
+
+**MANDATORY STEPS**:
+
+1. **Read Current Task Tracker**: Load `{package-top-level}/_docs/_{subpackage-name}_Task-Tracker.md`
+2. **Move Completed Tasks**: Move ALL completed tasks from "Pending Tasks" to "Completed Tasks" with timestamps
+3. **Add New Tasks**: Add ANY new tasks identified during conversation to "Pending Tasks"
+4. **Update Future Enhancements**: Add new proposed enhancements to "Future Enhancement Suggestions"
+5. **Apply Task Organization Protocol**: Ensure tasks exist in either Current/Pending OR Future Enhancements, not both
+
+**VIOLATION**: Any action log entry without corresponding task tracker updates constitutes a critical protocol violation.
 
 #### **STEP 2.1: Task Tracker Update Process**
 
@@ -631,7 +637,7 @@ This protocol MUST be followed for all action log entries to ensure:
 
 #### **STEP 9.3: Error Recovery Patterns**
 
-- **Missing Timestamps**: Use `.\scripts\Get-FileStats.ps1 -FilePaths @("file.ts")`
+- **Missing Timestamps**: Use `_scripts\ps\Get-FileStats.ps1 -FilePaths @("file.ts")`
 - **Estimated Timestamps**: IMMEDIATELY replace with actual PowerShell verification results
 - **Wrong Timestamp Format**: Convert to [YYYY-MM-DD HH:MM:SS] format from verification output
 - **Incomplete Coverage**: Review conversation from first user prompt
@@ -645,15 +651,37 @@ This protocol MUST be followed for all action log entries to ensure:
 - **Package Analysis**: `mcp_nx-mcp_nx_project_details` tool
 - **Task Updates**: `search_replace` tool for task tracker modifications
 
-#### **STEP 9.5: Additional Analysis Recommendations**
+#### **STEP 9.7: PROTOCOL VIOLATION DETECTION**
 
-**Note**: Any additional data points or analysis that would be beneficial but are not part of the mandatory protocol should be documented here AFTER all outlined steps are completed.
+**MANDATORY**: Before finalizing any entry, verify compliance with ALL protocol requirements:
 
-#### **STEP 9.6: Protocol Improvement Recommendations**
+- [ ] **Protocol Recognition**: Identified this as a `/` command requiring exact protocol compliance
+- [ ] **Decision Logic Applied**: Correctly determined documentation scope using exact criteria
+- [ ] **Package Logs Created**: Created package-specific logs for all affected packages
+- [ ] **Task Tracker Updated**: Updated ALL corresponding task tracker files
+- [ ] **Complete Coverage**: Documented ENTIRE conversation from first prompt
+- [ ] **Verified Timestamps**: Used actual PowerShell verification results
+- [ ] **All Mandatory Sections**: Included all required sections with proper formatting
 
-**Note**: Any data points that should be removed as not value-add or protocol improvements should be documented here AFTER all outlined steps are completed.
+**CRITICAL**: Any missing element constitutes a protocol violation requiring immediate correction.
+
+## Usage
+
+Execute when user requests comprehensive action logging or when directed to do any definitional variation of "doing a 'LAT'".
+
+## Critical Requirements
+
+- **NO DEVIATION**: All rules must be followed exactly as written
+- **NO SKIPPING**: No steps may be skipped, abbreviated, or modified
+- **NO SELECTIVE COMPLIANCE**: All rules apply to all actions
+- **FAILURE TO COMPLY**: Violating these rules constitutes a critical protocol violation
+- **MANDATORY TIMESTAMPS**: Every action log entry MUST include actual file timestamps from PowerShell verification
+- **COMPLETE COVERAGE**: Document the ENTIRE conversation from initial prompt to completion
+- **TASK TRACKER SYNC**: Both Actions Log entries and Task Tracker updates MUST reference the complete conversation
+- **DECISION LOGIC MANDATORY**: MUST apply exact decision criteria to determine documentation scope
+- **PACKAGE LOGS MANDATORY**: MUST create package-specific logs for all affected packages
+- **PROTOCOL RECOGNITION**: `/` commands are PROTOCOLS that must be followed exactly, not suggestions
 
 ---
 
 _This protocol ensures that all action logs provide comprehensive, detailed, and valuable documentation of development activities, failures, recoveries, and lessons learned for future reference and improvement._
-

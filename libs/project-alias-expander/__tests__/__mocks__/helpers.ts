@@ -15,6 +15,12 @@ export interface PaeTestMocks extends LibTestMocks {
     url: {
         fileURLToPath: ReturnType<typeof vi.fn>
     }
+    fs: {
+        existsSync: ReturnType<typeof vi.fn>
+        readFileSync: ReturnType<typeof vi.fn>
+        writeFileSync: ReturnType<typeof vi.fn>
+        mkdirSync: ReturnType<typeof vi.fn>
+    }
 }
 
 export function setupPaeTestEnvironment(): PaeTestMocks {
@@ -26,6 +32,12 @@ export function setupPaeTestEnvironment(): PaeTestMocks {
         url: {
             fileURLToPath: vi.fn(),
         },
+        fs: {
+            existsSync: vi.fn(),
+            readFileSync: vi.fn(),
+            writeFileSync: vi.fn(),
+            mkdirSync: vi.fn(),
+        },
     }
 }
 
@@ -33,6 +45,10 @@ export function resetPaeMocks(mocks: PaeTestMocks): void {
     resetLibMocks(mocks)
     mocks.stripJsonComments.mockReset()
     mocks.url.fileURLToPath.mockReset()
+    mocks.fs.existsSync.mockReset()
+    mocks.fs.readFileSync.mockReset()
+    mocks.fs.writeFileSync.mockReset()
+    mocks.fs.mkdirSync.mockReset()
 }
 
 export function setupPaeFileSystemMocks(mocks: PaeTestMocks): void {

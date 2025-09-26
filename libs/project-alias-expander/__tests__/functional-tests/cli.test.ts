@@ -1,6 +1,37 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setupPaeTestEnvironment, resetPaeMocks } from '../__mocks__/helpers'
 import { createPaeMockBuilder } from '../__mocks__/mock-scenario-builder'
+
+// Mock the strip-json-comments module
+vi.mock('strip-json-comments', () => ({
+    default: vi.fn(),
+}))
+
+// Mock the fs module to use our custom mocks
+vi.mock('node:fs', () => ({
+    default: {
+        existsSync: vi.fn(),
+        readFileSync: vi.fn(),
+        writeFileSync: vi.fn(),
+        mkdirSync: vi.fn(),
+    },
+    existsSync: vi.fn(),
+    readFileSync: vi.fn(),
+    writeFileSync: vi.fn(),
+    mkdirSync: vi.fn(),
+}))
+
+// Mock the CLI module to prevent actual command execution
+vi.mock('../../src/cli', async () => {
+    const actual = await vi.importActual('../../src/cli')
+    return {
+        ...actual,
+        runNx: vi.fn(),
+        runMany: vi.fn(),
+        installAliases: vi.fn()
+    }
+})
+
 import { //> from '../../src/cli'
     loadAliasConfig,
     resolveProjectForAlias,
@@ -17,29 +48,57 @@ describe('CLI', () => {
     beforeEach(async () => { //>
         mocks = await setupPaeTestEnvironment()
         await resetPaeMocks(mocks)
+        
+        // Wire up the fs module mocks to our test mocks
+        const fs = await import('node:fs')
+        vi.mocked(fs.default.existsSync).mockImplementation(mocks.fs.existsSync)
+        vi.mocked(fs.default.readFileSync).mockImplementation(mocks.fs.readFileSync)
+        vi.mocked(fs.default.writeFileSync).mockImplementation(mocks.fs.writeFileSync)
+        vi.mocked(fs.default.mkdirSync).mockImplementation(mocks.fs.mkdirSync)
+        
+        // Wire up the strip-json-comments mock
+        const stripJsonComments = await import('strip-json-comments')
+        vi.mocked(stripJsonComments.default).mockImplementation(mocks.stripJsonComments)
     }) //<
 
     describe('loadAliasConfig', () => {
         it('should load and parse config successfully', async () => { //>
-            // Arrange
-            const configContent = JSON.stringify({
+            // Arrange - Use standard mocks for simple setup
+            mocks.fs.existsSync.mockReturnValue(true)
+            mocks.fs.readFileSync.mockReturnValue(JSON.stringify({
                 packages: {
                     pbc: { name: 'project-butler', suffix: 'core' },
                     pbe: { name: 'project-butler', suffix: 'ext' }
                 },
                 'package-targets': {
-                    b: 'build',
-                    t: 'test'
+                    "a": "audit",
+                    "aa": "audit:all",
+                    "ac": "audit:code",
+                    "at": "audit:test",
+                    "b": "build",
+                    "c": "clean",
+                    "cc": "clean:cache",
+                    "cd": "clean:dist",
+                    "ct": "check-types",
+                    "ctd": "check-types:deps",
+                    "l": "lint",
+                    "lf": "lint:deps",
+                    "m": "monitor",
+                    "o": "optimize",
+                    "p": "package",
+                    "pd": "package:dev",
+                    "pub": "publish",
+                    "s": "status",
+                    "t": "test",
+                    "tc": "test:coverage-tests",
+                    "td": "test:deps",
+                    "tdc": "test:deps:coverage-tests",
+                    "ti": "test:integration",
+                    "v": "validate",
+                    "vf": "validate:deps"
                 }
-            })
-
-            const builder = await createPaeMockBuilder(mocks)
-            const configuredBuilder = await builder
-                .configExists({
-                    configPath: '/config.json',
-                    configContent
-                })
-            configuredBuilder.build()
+            }))
+            mocks.stripJsonComments.mockImplementation((content) => content)
 
             // Act
             const config = loadAliasConfig()
@@ -47,32 +106,49 @@ describe('CLI', () => {
             // Assert
             expect(config.packages).toBeDefined()
             expect(config.packages.pbc).toEqual({ name: 'project-butler', suffix: 'core' })
-            expect(config['package-targets']).toEqual({ b: 'build', t: 'test' })
+            expect(config['package-targets']).toEqual({
+                "a": "audit",
+                "aa": "audit:all",
+                "ac": "audit:code",
+                "at": "audit:test",
+                "b": "build",
+                "c": "clean",
+                "cc": "clean:cache",
+                "cd": "clean:dist",
+                "ct": "check-types",
+                "ctd": "check-types:deps",
+                "l": "lint",
+                "lf": "lint:deps",
+                "m": "monitor",
+                "o": "optimize",
+                "p": "package",
+                "pd": "package:dev",
+                "pub": "publish",
+                "s": "status",
+                "t": "test",
+                "tc": "test:coverage-tests",
+                "td": "test:deps",
+                "tdc": "test:deps:coverage-tests",
+                "ti": "test:integration",
+                "v": "validate",
+                "vf": "validate:deps"
+            })
         }) //<
         it('should handle config file not found', async () => { //>
-            // Arrange
-            const builder = await createPaeMockBuilder(mocks)
-            const configuredBuilder = await builder
-                .configNotExists({
-                    configPath: '/config.json',
-                    configContent: ''
-                })
-            configuredBuilder.build()
+            // Arrange - Use standard mocks for simple setup
+            mocks.fs.existsSync.mockReturnValue(false)
 
             // Act & Assert
-            expect(() => loadAliasConfig()).toThrow()
+            expect(() => loadAliasConfig()).toThrow('Config file not found at:')
         })
 
         it('should handle invalid JSON in config', async () => {
-            // Arrange
-            const invalidJson = '{ invalid json }'
-            const builder = await createPaeMockBuilder(mocks)
-            const configuredBuilder = await builder
-                .configExists({
-                    configPath: '/config.json',
-                    configContent: invalidJson
-                })
-            configuredBuilder.build()
+            // Arrange - Use standard mocks for simple setup
+            mocks.fs.existsSync.mockReturnValue(true)
+            mocks.fs.readFileSync.mockReturnValue('{ invalid json }')
+            mocks.stripJsonComments.mockImplementation(() => {
+                throw new Error('Invalid JSON')
+            })
 
             // Act & Assert
             expect(() => loadAliasConfig()).toThrow()
@@ -250,7 +326,7 @@ describe('CLI', () => {
         }) //<
         it('should handle invalid flag format', () => { //>
             // Arrange
-            const flag = 'invalid'
+            const flag = '-invalid'
 
             // Act
             const result = parseExpandableFlag(flag)

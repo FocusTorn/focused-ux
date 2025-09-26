@@ -54,17 +54,22 @@ export async function setupPaeConfigExistsScenario(
     mocks: PaeTestMocks,
     options: PaeConfigScenarioOptions
 ): Promise<void> {
-    mocks.fileSystem.stat.mockResolvedValue({ type: 'file' as const })
-    mocks.fileSystem.readFile.mockResolvedValue(options.configContent)
-    mocks.stripJsonComments.mockReturnValue(JSON.parse(options.configContent))
+    mocks.fs.existsSync.mockReturnValue(true)
+    mocks.fs.readFileSync.mockReturnValue(options.configContent)
+    mocks.stripJsonComments.mockImplementation(() => {
+        try {
+            return JSON.parse(options.configContent)
+        } catch {
+            throw new Error('Invalid JSON')
+        }
+    })
 }
 
 export async function setupPaeConfigNotExistsScenario(
     mocks: PaeTestMocks,
     _options: PaeConfigScenarioOptions
 ): Promise<void> {
-    mocks.fileSystem.stat.mockRejectedValue(new Error('File not found'))
-    mocks.fileSystem.readFile.mockRejectedValue(new Error('File not found'))
+    mocks.fs.existsSync.mockReturnValue(false)
 }
 
 export async function setupPaeCommandSuccessScenario(

@@ -1,8 +1,6 @@
 {
     "name": "@fux/project-alias-expander",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "libs/project-alias-expander/src",
-    "projectType": "library",
+    "tags": ["tool"],
     "targets": {
      
         //= Finalize ============================================================ 
@@ -26,12 +24,12 @@
                 "assets": []
             }
         }, //<
-        "build": { //>
+        "generate-scripts": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["build:compile"],
             "outputs": [
-                "{projectRoot}/dist",
-                "{projectRoot}/dist/pae-functions.psm1"
+                "{projectRoot}/dist/pae-functions.psm1",
+                "{projectRoot}/dist/pae-aliases.sh"
             ],
             "inputs": [
                 "production",
@@ -40,6 +38,21 @@
             ],
             "options": {
                 "commands": ["node libs/project-alias-expander/dist/cli.js"], // Generate scripts
+                "parallel": false
+            }
+        }, //<
+        "build": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": ["build:compile", "generate-scripts"],
+            "outputs": [
+                "{projectRoot}/dist"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ],
+            "options": {
+                "commands": [],
                 "parallel": false
             }
         }, //<
@@ -84,8 +97,9 @@
         }
          
     },
-    
-    "tags": ["tool"]
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/project-alias-expander/src",
+    "projectType": "library"
 }
 
 
