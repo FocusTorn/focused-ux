@@ -1,22 +1,37 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setupPaeTestEnvironment, resetPaeMocks } from '../__mocks__/helpers'
 import { createPaeMockBuilder } from '../__mocks__/mock-scenario-builder'
+
 import { detectShell } from '../../src/cli'
 
 describe('PAE CLI Coverage Tests', () => {
     let mocks: ReturnType<typeof setupPaeTestEnvironment>
+    let originalEnv: NodeJS.ProcessEnv
 
     beforeEach(() => {
         mocks = setupPaeTestEnvironment()
         resetPaeMocks(mocks)
+        
+        // Store original environment
+        originalEnv = { ...process.env }
+        
+        // Clear all environment variables
+        Object.keys(process.env).forEach(key => {
+            delete process.env[key]
+        })
+    })
+
+    afterEach(() => {
+        // Restore original environment
+        Object.keys(originalEnv).forEach(key => {
+            process.env[key] = originalEnv[key]
+        })
     })
 
     describe('detectShell - Edge Cases', () => {
         it('should detect PowerShell with PSModulePath', () => {
             // Arrange
-            mocks.process.env = {
-                PSModulePath: '/powershell/modules'
-            }
+            process.env.PSModulePath = '/powershell/modules'
 
             // Act
             const result = detectShell()
@@ -27,9 +42,7 @@ describe('PAE CLI Coverage Tests', () => {
 
         it('should detect PowerShell with POWERSHELL_DISTRIBUTION_CHANNEL', () => {
             // Arrange
-            mocks.process.env = {
-                POWERSHELL_DISTRIBUTION_CHANNEL: 'PSGallery'
-            }
+            process.env.POWERSHELL_DISTRIBUTION_CHANNEL = 'PSGallery'
 
             // Act
             const result = detectShell()
@@ -40,9 +53,7 @@ describe('PAE CLI Coverage Tests', () => {
 
         it('should detect PowerShell with PSExecutionPolicyPreference', () => {
             // Arrange
-            mocks.process.env = {
-                PSExecutionPolicyPreference: 'RemoteSigned'
-            }
+            process.env.PSExecutionPolicyPreference = 'RemoteSigned'
 
             // Act
             const result = detectShell()
@@ -53,10 +64,8 @@ describe('PAE CLI Coverage Tests', () => {
 
         it('should detect PowerShell with VSCode + PSModulePath', () => {
             // Arrange
-            mocks.process.env = {
-                TERM_PROGRAM: 'vscode',
-                PSModulePath: '/powershell/modules'
-            }
+            process.env.TERM_PROGRAM = 'vscode'
+            process.env.PSModulePath = '/powershell/modules'
 
             // Act
             const result = detectShell()
@@ -67,9 +76,7 @@ describe('PAE CLI Coverage Tests', () => {
 
         it('should detect Git Bash with MSYS_ROOT', () => {
             // Arrange
-            mocks.process.env = {
-                MSYS_ROOT: '/msys64'
-            }
+            process.env.MSYS_ROOT = '/msys64'
 
             // Act
             const result = detectShell()
@@ -80,9 +87,7 @@ describe('PAE CLI Coverage Tests', () => {
 
         it('should detect Git Bash with MINGW_ROOT', () => {
             // Arrange
-            mocks.process.env = {
-                MINGW_ROOT: '/mingw64'
-            }
+            process.env.MINGW_ROOT = '/mingw64'
 
             // Act
             const result = detectShell()
@@ -93,9 +98,7 @@ describe('PAE CLI Coverage Tests', () => {
 
         it('should detect Git Bash with WSL_DISTRO_NAME', () => {
             // Arrange
-            mocks.process.env = {
-                WSL_DISTRO_NAME: 'Ubuntu'
-            }
+            process.env.WSL_DISTRO_NAME = 'Ubuntu'
 
             // Act
             const result = detectShell()
@@ -106,9 +109,7 @@ describe('PAE CLI Coverage Tests', () => {
 
         it('should detect Git Bash with WSLENV', () => {
             // Arrange
-            mocks.process.env = {
-                WSLENV: 'PATH/u'
-            }
+            process.env.WSLENV = 'PATH/u'
 
             // Act
             const result = detectShell()
@@ -119,9 +120,7 @@ describe('PAE CLI Coverage Tests', () => {
 
         it('should detect Git Bash with bash in SHELL', () => {
             // Arrange
-            mocks.process.env = {
-                SHELL: '/usr/bin/bash'
-            }
+            process.env.SHELL = '/usr/bin/bash'
 
             // Act
             const result = detectShell()
@@ -132,9 +131,7 @@ describe('PAE CLI Coverage Tests', () => {
 
         it('should detect Git Bash with git-bash in SHELL', () => {
             // Arrange
-            mocks.process.env = {
-                SHELL: '/usr/bin/git-bash'
-            }
+            process.env.SHELL = '/usr/bin/git-bash'
 
             // Act
             const result = detectShell()
@@ -145,9 +142,7 @@ describe('PAE CLI Coverage Tests', () => {
 
         it('should detect Git Bash with bash.exe in SHELL', () => {
             // Arrange
-            mocks.process.env = {
-                SHELL: '/usr/bin/bash.exe'
-            }
+            process.env.SHELL = '/usr/bin/bash.exe'
 
             // Act
             const result = detectShell()
@@ -158,9 +153,7 @@ describe('PAE CLI Coverage Tests', () => {
 
         it('should return unknown for unrecognized environment', () => {
             // Arrange
-            mocks.process.env = {
-                SHELL: '/bin/zsh'
-            }
+            process.env.SHELL = '/bin/zsh'
 
             // Act
             const result = detectShell()
@@ -170,8 +163,7 @@ describe('PAE CLI Coverage Tests', () => {
         })
 
         it('should return unknown for empty environment', () => {
-            // Arrange
-            mocks.process.env = {}
+            // Arrange - no environment variables set
 
             // Act
             const result = detectShell()

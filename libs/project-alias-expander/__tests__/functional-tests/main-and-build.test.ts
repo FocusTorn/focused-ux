@@ -190,9 +190,19 @@ describe('Main Function and Build Functions', () => {
 
     describe('refreshAliasesDirect', () => {
         it('should execute successfully', () => {
+            // Arrange - Mock execSync to prevent actual command execution
+            const childProcess = require('node:child_process')
+            const originalExecSync = childProcess.execSync
+            childProcess.execSync = vi.fn().mockImplementation(() => {
+                return Buffer.from('success')
+            })
+
             // Act & Assert - should not throw
             expect(() => refreshAliasesDirect()).not.toThrow()
-        })
+
+            // Cleanup
+            childProcess.execSync = originalExecSync
+        }, 5000)
     })
 
     describe('main function', () => {
