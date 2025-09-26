@@ -319,7 +319,7 @@ Preview commands before execution:
 ```bash
 # Show what command would be executed
 pae pbc b --pae-echo
-# Output: NX_CALL -> build @fux/project-butler-core
+# Output: nx run build @fux/project-butler-core
 ```
 
 ### Integration Test Handling

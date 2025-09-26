@@ -1,4 +1,4 @@
-{
+{ // $ npm install -g ./libs/project-alias-expander/dist
     "package-targets": { //>
         //= Prepare ============================================================= 
         "b"  : "build",
@@ -87,16 +87,16 @@
      *   pae pbc t -v                    → pae pbc t --verbose
      * 
      * Template Expansions with Defaults:
-     *   pae pbc t -sto                  → timeout 10s pae pbc t
-     *   pae pbc t -mem                  → node --max-old-space-size=4096MB pae pbc t
+     *   pae pbc t -sto                  → timeout 10s nx run test @fux/project-butler-core
+     *   pae pbc t -mem                  → nx run node --max-old-space-size=4096MB test @fux/project-butler-core
      * 
      * Custom Values:
-     *   pae pbc t -sto=5                → timeout 5s pae pbc t
-     *   pae pbc t -mem=2048             → node --max-old-space-size=2048MB pae pbc t
+     *   pae pbc t -sto=5                → timeout 5s nx run test @fux/project-butler-core
+     *   pae pbc t -mem=2048             → nx run node --max-old-space-size=2048MB test @fux/project-butler-core
      * 
      * Multiple Expansions:
-     *   pae pbc t -sto=5 -mem=2048 -f   → timeout 5s node --max-old-space-size=2048MB pae pbc t --fix
-     *   pae pbc t -sto:5 -mem=2048      → timeout 5s node --max-old-space-size=2048MB pae pbc t
+     *   pae pbc t -sto=5 -mem=2048 -f   → timeout 5s nx run node --max-old-space-size=2048MB test @fux/project-butler-core --fix
+     *   pae pbc t -sto:5 -mem=2048      → timeout 5s nx run node --max-old-space-size=2048MB test @fux/project-butler-core
      * 
      * CONFIGURATION EXAMPLES:
      * 
@@ -129,7 +129,7 @@
             "template": "--output-style={style}"
         }, //<
         "sto": { //> system timeout // timeout {duration}s [10] 
-            "position": "prefix",
+            "position": "start",
             "defaults": {"duration": "10"},
             "template": "timeout {duration}s" // [10]
         }, //<

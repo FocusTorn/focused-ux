@@ -21,7 +21,7 @@ type FeatureTarget = {
 }
 
 type ExpandableValue = string | {
-    position?: 'prefix' | 'pre-args' | 'suffix'
+    position?: 'start' | 'prefix' | 'pre-args' | 'suffix'
     defaults?: Record<string, string>
     template: string
 }
@@ -139,11 +139,13 @@ function parseExpandableFlag(flag: string): { key: string, value?: string } {
 }
 
 function expandFlags(args: string[], expandables: Record<string, ExpandableValue> = {}): {
+    start: string[],
     prefix: string[],
     preArgs: string[],
     suffix: string[],
     remainingArgs: string[]
 } {
+    const start: string[] = []
     const prefix: string[] = []
     const preArgs: string[] = []
     const suffix: string[] = []
@@ -182,6 +184,9 @@ function expandFlags(args: string[], expandables: Record<string, ExpandableValue
                     const position = expandable.position || 'suffix'
                     
                     switch (position) {
+                        case 'start':
+                            start.push(expanded)
+                            break
                         case 'prefix':
                             prefix.push(expanded)
                             break
@@ -240,7 +245,7 @@ function expandFlags(args: string[], expandables: Record<string, ExpandableValue
         remainingArgs.push(arg)
     }
     
-    return { prefix, preArgs, suffix, remainingArgs }
+    return { start, prefix, preArgs, suffix, remainingArgs }
 }
 
 function normalizeFullSemantics(isFull: boolean, target: string): string {
@@ -259,8 +264,41 @@ function normalizeFullSemantics(isFull: boolean, target: string): string {
 
 function runNx(argv: string[]): number {
     if (process.env.PAE_ECHO === '1') {
-        console.log(`NX_CALL -> ${argv.join(' ')}`)
+        // Check if the first argument is a start expansion (like timeout, node, etc.)
+        const startCommands = ['timeout', 'npm', 'npx', 'yarn', 'pnpm']
+        const hasStartCommand = startCommands.some(cmd => argv[0]?.startsWith(cmd))
+        
+        if (hasStartCommand) {
+            // Find where the nx command starts (after start commands and before the target)
+            // Look for the first argument that looks like a target (not a flag)
+            let nxStartIndex = 1
+            while (nxStartIndex < argv.length && argv[nxStartIndex].startsWith('-')) {
+                nxStartIndex++
+            }
+            
+            // Insert 'nx run' before the target
+            const beforeNx = argv.slice(0, nxStartIndex)
+            const afterNx = argv.slice(nxStartIndex)
+            console.log([...beforeNx, 'nx run', ...afterNx].join(' '))
+        } else {
+            console.log(`nx run ${argv.join(' ')}`)
+        }
         return 0
+    }
+
+    // Check if the first argument is a start expansion (like timeout, node, etc.)
+    const startCommands = ['timeout', 'npm', 'npx', 'yarn', 'pnpm']
+    const hasStartCommand = startCommands.some(cmd => argv[0]?.startsWith(cmd))
+    
+    if (hasStartCommand) {
+        // For start commands, execute them directly
+        const res = spawnSync(argv[0], argv.slice(1), {
+            stdio: 'inherit',
+            shell: process.platform === 'win32',
+            timeout: 300000, // 5 minute timeout
+            killSignal: 'SIGTERM'
+        })
+        return res.status ?? 1
     }
 
     const res = spawnSync('nx', argv, {
@@ -1084,7 +1122,7 @@ function main() {
         // Combine target flags with any additional args from the command
         const allArgs = [...targetFlags, ...processedArgs.slice(1)]
         
-        const rc = runNx([targetName, project, ...allArgs])
+        const rc = runNx([...flagExpansion.start, targetName, project, ...allArgs])
         
         // Restore echo environment
         if (paeEchoEnabled) {
@@ -1130,7 +1168,7 @@ function main() {
         process.env.PAE_ECHO = '1'
     }
 
-    const rc = runNx([normalizedTarget, project, ...enhancedArgs, ...restArgs])
+    const rc = runNx([...flagExpansion.start, normalizedTarget, project, ...enhancedArgs, ...restArgs])
 
     // Restore echo environment
     if (paeEchoEnabled) {

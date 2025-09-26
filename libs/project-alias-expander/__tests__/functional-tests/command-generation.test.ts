@@ -32,7 +32,7 @@ describe('Command Generation (Dry Run)', () => {
         // Mock runNx to prevent actual execution but simulate echo behavior
         vi.mocked(runNx).mockImplementation((args) => {
             if (process.env.PAE_ECHO === '1') {
-                console.log(`NX_CALL -> ${args.join(' ')}`)
+                console.log(`nx run ${args.join(' ')}`)
             }
             return 0
         })
@@ -209,7 +209,7 @@ describe('Command Generation (Dry Run)', () => {
 
                 // Assert
                 expect(result).toBe(0)
-                expect(consoleSpy).toHaveBeenCalledWith('NX_CALL -> @fux/project-butler-core build')
+                expect(consoleSpy).toHaveBeenCalledWith('nx run @fux/project-butler-core build')
             } finally {
                 // Cleanup
                 process.env.PAE_ECHO = originalEcho
