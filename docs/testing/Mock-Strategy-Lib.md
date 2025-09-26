@@ -323,42 +323,6 @@ If you prefer to maintain your existing setup, ensure you have:
 3. **File System Mocking**: Mock file operations and path manipulations
 4. **Process Mocking**: Mock process environment and system interactions
 
-## Mock Strategy Decision Guidelines
-
-### When to Use Mock Strategy Library Functions
-
-Use the library functions for:
-
-- **Standard Node.js module mocking** (fs, path, process, etc.)
-- **External dependency mocking** (HTTP clients, databases, etc.)
-- **Common library patterns** (file operations, data processing)
-- **Base test environment setup**
-
-### When to Use Package `__mocks__` Files
-
-Use package-specific mocks for:
-
-- **Package-specific Node.js modules** not covered by the library
-- **Custom external dependencies** unique to your package
-- **Specialized data processing** logic
-- **Package-specific utility functions**
-
-### When to Use File-Level Mocks
-
-Use file-level mocks for:
-
-- **Single test file requirements** that don't need global setup
-- **Temporary mocking** for specific test scenarios
-- **Isolated functionality testing** that doesn't affect other tests
-
-### When to Use Inline Mocks
-
-Use inline mocks for:
-
-- **Simple one-off mocks** in individual tests
-- **Test-specific data** that doesn't need reusability
-- **Quick prototyping** before moving to more structured approaches
-
 ## Testing Patterns
 
 ### Pure Function Testing
@@ -444,26 +408,6 @@ describe('Error Handling', () => {
 })
 ```
 
-## Best Practices
-
-1. **Mock External Dependencies**: Always mock external APIs, databases, and file systems
-2. **Test Pure Functions**: Focus on testing pure business logic without side effects
-3. **Mock Node.js Modules**: Mock Node.js modules to isolate library functionality
-4. **Test Error Scenarios**: Test both success and error paths
-5. **Use Deterministic Data**: Use consistent mock data for predictable tests
-6. **Isolate Library Logic**: Mock external dependencies to focus on library-specific logic
-7. **Test Edge Cases**: Test boundary conditions and edge cases
-
-## Common Anti-Patterns
-
-❌ **Don't**: Mock external dependencies inconsistently across tests
-❌ **Don't**: Skip testing error scenarios
-❌ **Don't**: Use real external APIs in tests
-❌ **Don't**: Forget to mock async operations
-❌ **Don't**: Test external dependency behavior instead of library logic
-❌ **Don't**: Use non-deterministic data in tests
-❌ **Don't**: Mock core package functionality in library tests
-
 ## Integration with Other Packages
 
 Library packages should:
@@ -472,6 +416,67 @@ Library packages should:
 - **Mock external dependencies** to ensure reliable testing
 - **Test integration points** with other packages
 - **Use dependency injection** to make functions testable
+
+## Library Package-Specific Examples
+
+### **PAE (Project Alias Expander) Library Examples**
+
+```typescript
+// libs/project-alias-expander/__tests__/__mocks__/helpers.ts
+export interface PaeTestMocks extends LibTestMocks {
+    stripJsonComments: ReturnType<typeof vi.fn>
+    url: {
+        fileURLToPath: ReturnType<typeof vi.fn>
+    }
+}
+
+// libs/project-alias-expander/__tests__/functional-tests/cli.test.ts
+describe('CLI', () => {
+    let mocks: Awaited<ReturnType<typeof setupPaeTestEnvironment>>
+
+    beforeEach(async () => {
+        mocks = await setupPaeTestEnvironment()
+        await resetPaeMocks(mocks)
+
+        // File-level mock setup used by multiple tests
+        vi.mocked(runNx).mockImplementation((args) => {
+            if (process.env.PAE_ECHO === '1') {
+                console.log(`NX_CALL -> ${args.join(' ')}`)
+            }
+            return 0
+        })
+    })
+})
+
+// Using PAE specific scenarios
+const builder = await createPaeMockBuilder(mocks)
+await builder
+    .configExists({ configPath: '/config.json', configContent: validConfig })
+    .commandSuccess({ command: 'nx', args: ['build'], exitCode: 0 })
+    .build()
+```
+
+### **Shell Output Control for Library Packages**
+
+```typescript
+// Use conditional output functions in your library code
+conditionalWriteHost('Refreshing [PWSH] PAE aliases...', 'Yellow')
+conditionalEcho('Aliases refreshed!')
+
+// PowerShell script example
+Write-Host "Refreshing [PWSH] PAE aliases..." -ForegroundColor Yellow
+Write-Host "[PWSH] PAE aliases refreshed!" -ForegroundColor Green
+
+// Bash script example
+echo "Refreshing [GitBash] PAE aliases..."
+echo "[GitBash] PAE aliases refreshed!"
+```
+
+### **Library Package-Specific Anti-Patterns**
+
+- **❌ Mock Core Package Functionality**: Don't mock core package functionality in library tests
+- **❌ Use Real External APIs in Tests**: Don't use real external APIs in tests
+- **❌ Test External Dependency Behavior**: Don't test external dependency behavior instead of library logic
 
 ## Example Library Test Structure
 
@@ -496,4 +501,3 @@ libs/my-library/__tests__/
 ```
 
 This structure ensures comprehensive testing of library functionality while maintaining clear separation between library-specific and external dependency logic.
-

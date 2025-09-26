@@ -481,94 +481,6 @@ it('should handle backup errors', () => {
 - ✅ **Better Debugging**: Consistent mock behavior across tests
 - ✅ **Easier Onboarding**: Clear patterns for new developers
 
-## 🎯 Best Practices
-
-### 1. Use the Right Component for the Job
-
-```typescript
-// ✅ Global mocks for module-level mocking
-vi.mock('node:fs/promises', () => ({
-    /* ... */
-}))
-
-// ✅ Helpers for reusable mock objects
-const mocks = setupTestEnvironment()
-
-// ✅ Scenarios for domain-specific patterns
-setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
-
-// ✅ Builder for complex compositions
-createProjectButlerMockBuilder(mocks).backup({ sourcePath, backupPath }).build()
-```
-
-### 2. Prefer Composition Over Inheritance
-
-```typescript
-// ✅ DO: Compose scenarios
-setupBackupSuccessScenario(mocks, options)
-setupPathMocks(mocks)
-
-// ❌ DON'T: Create monolithic scenarios
-setupComplexScenario(mocks, backupOptions, pathOptions, yamlOptions)
-```
-
-### 3. Use Type-Safe Interfaces
-
-```typescript
-// ✅ DO: Use typed interfaces
-export interface FileSystemScenarioOptions {
-    sourcePath: string
-    backupPath: string
-    shouldExist?: boolean
-    content?: string
-}
-
-// ❌ DON'T: Use untyped parameters
-export function setupBackupSuccessScenario(
-    mocks: any,
-    sourcePath: string,
-    backupPath: string,
-    shouldExist: boolean
-)
-```
-
-### 4. Override Specific Mocks When Needed
-
-```typescript
-// ✅ DO: Override specific behavior
-setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
-mocks.fileSystem.readFile.mockResolvedValue('custom content')
-
-// ❌ DON'T: Create new scenarios for minor variations
-```
-
-### 5. Group Related Tests
-
-```typescript
-describe('Backup Management', () => {
-    let mocks: ReturnType<typeof setupTestEnvironment>
-
-    beforeEach(() => {
-        mocks = setupTestEnvironment()
-        setupFileSystemMocks(mocks)
-        setupPathMocks(mocks)
-        resetAllMocks(mocks)
-    })
-
-    describe('createBackup', () => {
-        it('should create backup successfully', () => {
-            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
-            // Test logic
-        })
-
-        it('should handle backup conflicts', () => {
-            setupBackupConflictScenario(mocks, { sourcePath, backupPath })
-            // Test logic
-        })
-    })
-})
-```
-
 ## 🔄 Migration Guide
 
 ### **Option 1: Migrate to Mock Strategy Library (Recommended)**
@@ -586,43 +498,43 @@ pnpm add @fux/mock-strategy
 
 ```typescript
 // packages/my-feature/core/__tests__/__mocks__/helpers.ts
-import { 
-  CoreTestMocks, 
-  setupCoreTestEnvironment,
-  setupFileSystemMocks,
-  setupPathMocks,
-  resetCoreMocks
+import {
+    CoreTestMocks,
+    setupCoreTestEnvironment,
+    setupFileSystemMocks,
+    setupPathMocks,
+    resetCoreMocks,
 } from '@fux/mock-strategy/core'
 import { vi } from 'vitest'
 
 // Extend base mocks with package-specific needs
 export interface MyFeatureTestMocks extends CoreTestMocks {
-  mySpecificService: {
-    processData: ReturnType<typeof vi.fn>
-    validateInput: ReturnType<typeof vi.fn>
-  }
+    mySpecificService: {
+        processData: ReturnType<typeof vi.fn>
+        validateInput: ReturnType<typeof vi.fn>
+    }
 }
 
 export function setupMyFeatureTestEnvironment(): MyFeatureTestMocks {
-  const baseMocks = setupCoreTestEnvironment()
-  
-  return {
-    ...baseMocks,
-    mySpecificService: {
-      processData: vi.fn(),
-      validateInput: vi.fn(),
+    const baseMocks = setupCoreTestEnvironment()
+
+    return {
+        ...baseMocks,
+        mySpecificService: {
+            processData: vi.fn(),
+            validateInput: vi.fn(),
+        },
     }
-  }
 }
 
 export function setupMySpecificMocks(mocks: MyFeatureTestMocks): void {
-  mocks.mySpecificService.processData.mockResolvedValue('processed')
-  mocks.mySpecificService.validateInput.mockReturnValue(true)
+    mocks.mySpecificService.processData.mockResolvedValue('processed')
+    mocks.mySpecificService.validateInput.mockReturnValue(true)
 }
 
 export function resetMyFeatureMocks(mocks: MyFeatureTestMocks): void {
-  resetCoreMocks(mocks) // Reset base mocks
-  Object.values(mocks.mySpecificService).forEach(mock => mock.mockReset())
+    resetCoreMocks(mocks) // Reset base mocks
+    Object.values(mocks.mySpecificService).forEach((mock) => mock.mockReset())
 }
 ```
 
@@ -630,24 +542,24 @@ export function resetMyFeatureMocks(mocks: MyFeatureTestMocks): void {
 
 ```typescript
 // packages/my-feature/core/__tests__/functional-tests/MyService.test.ts
-import { 
-  setupMyFeatureTestEnvironment,
-  setupMySpecificMocks,
-  resetMyFeatureMocks
+import {
+    setupMyFeatureTestEnvironment,
+    setupMySpecificMocks,
+    resetMyFeatureMocks,
 } from '../__mocks__/helpers'
 
 describe('MyService', () => {
-  let mocks: ReturnType<typeof setupMyFeatureTestEnvironment>
+    let mocks: ReturnType<typeof setupMyFeatureTestEnvironment>
 
-  beforeEach(() => {
-    mocks = setupMyFeatureTestEnvironment()
-    setupMySpecificMocks(mocks)
-    resetMyFeatureMocks(mocks)
-  })
+    beforeEach(() => {
+        mocks = setupMyFeatureTestEnvironment()
+        setupMySpecificMocks(mocks)
+        resetMyFeatureMocks(mocks)
+    })
 
-  it('should process data successfully', () => {
-    // Test logic here
-  })
+    it('should process data successfully', () => {
+        // Test logic here
+    })
 })
 ```
 
@@ -735,96 +647,6 @@ export default mergeConfig(
 )
 ```
 
-## 📋 Mock Strategy Decision Guidelines
-
-### **When to Use Mock Strategy Library**
-
-✅ **Use `@fux/mock-strategy/core` when**:
-- You need **standard Node.js API mocks** (file system, path, etc.)
-- You want **consistent mock patterns** across packages
-- You prefer **centralized maintenance** of common mocks
-- You're building **new packages** and want to start with proven patterns
-
-### **When to Extend Library in Package `__mocks__`**
-
-✅ **Extend library in package `__mocks__` when**:
-- You need **package-specific business logic mocks**
-- You have **domain-specific scenarios** not suitable for the library
-- You want to **compose** library mocks with package-specific mocks
-- You need **complex mock compositions** specific to your package
-
-### **When to Add Mocks at File Level**
-
-✅ **Add mocks at file level when**:
-- You need **test-specific mocks** used by multiple test cases in one file
-- You have **simple mocks** that don't benefit from centralized management
-- You're **experimenting** with mock patterns
-- You have **temporary mocks** for specific test scenarios
-
-### **When to Add Inline Mocks**
-
-✅ **Add inline mocks when**:
-- You need **single-use mocks** within one test
-- You have **simple mock return values** that don't need abstraction
-- You're **debugging** specific test scenarios
-- You have **quick mock setups** for simple test cases
-
-## 🚨 Common Pitfalls & Solutions
-
-### 1. Mock Reset Issues
-
-```typescript
-// ❌ WRONG - Not resetting mocks between tests
-beforeEach(() => {
-    mocks = setupTestEnvironment()
-    // Missing resetAllMocks(mocks)
-})
-
-// ✅ CORRECT - Proper mock reset
-beforeEach(() => {
-    mocks = setupTestEnvironment()
-    setupFileSystemMocks(mocks)
-    setupPathMocks(mocks)
-    resetAllMocks(mocks) // Always reset mocks
-})
-```
-
-### 2. Scenario Overuse
-
-```typescript
-// ❌ WRONG - Using scenarios for simple cases
-setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
-// When you only need: mocks.fileSystem.readFile.mockResolvedValue('content')
-
-// ✅ CORRECT - Use scenarios for complex patterns
-setupBackupSuccessScenario(mocks, {
-    sourcePath,
-    backupPath,
-    content: 'complex content',
-})
-```
-
-### 3. Builder Pattern Misuse
-
-```typescript
-// ❌ WRONG - Not calling build()
-createProjectButlerMockBuilder(mocks).backup(options)
-
-// ✅ CORRECT - Always call build()
-createProjectButlerMockBuilder(mocks).backup(options).build()
-```
-
-## 🎉 Success Metrics
-
-After implementing the Core Package Mock Strategy:
-
-- ✅ **60% reduction** in mock setup code
-- ✅ **75% reduction** in test file complexity
-- ✅ **100% consistency** across test files
-- ✅ **Zero mock-related test failures**
-- ✅ **Faster test development** (3x speed improvement)
-- ✅ **Improved maintainability** (centralized mock control)
-
 ## 🏆 Real-World Implementations
 
 ### Project Butler Core (PBC)
@@ -834,12 +656,71 @@ After implementing the Core Package Mock Strategy:
 - **Scenarios**: Backup operations, file system interactions, YAML processing
 - **Benefits**: 60% reduction in mock setup code, improved test readability
 
+#### **Core Package-Specific Examples**
+
+```typescript
+// packages/project-butler/core/__tests__/__mocks__/helpers.ts
+export interface PbcTestMocks extends CoreTestMocks {
+    stripJsonComments: ReturnType<typeof vi.fn>
+    url: {
+        fileURLToPath: ReturnType<typeof vi.fn>
+    }
+}
+
+// packages/project-butler/core/__tests__/functional-tests/backup.test.ts
+describe('Backup Management', () => {
+    let mocks: Awaited<ReturnType<typeof setupPbcTestEnvironment>>
+
+    beforeEach(async () => {
+        mocks = await setupPbcTestEnvironment()
+        await resetPbcMocks(mocks)
+
+        // File-level mock setup used by multiple tests
+        vi.mocked(runNx).mockImplementation((args) => {
+            if (process.env.PBC_ECHO === '1') {
+                console.log(`NX_CALL -> ${args.join(' ')}`)
+            }
+            return 0
+        })
+    })
+
+    describe('createBackup', () => {
+        it('should create backup successfully', () => {
+            setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
+            // Test logic
+        })
+
+        it('should handle backup conflicts', () => {
+            setupBackupConflictScenario(mocks, { sourcePath, backupPath })
+            // Test logic
+        })
+    })
+})
+
+// Using Project Butler specific scenarios
+const builder = await createProjectButlerMockBuilder(mocks)
+await builder
+    .configExists({ configPath: '/config.json', configContent: validConfig })
+    .commandSuccess({ command: 'nx', args: ['build'], exitCode: 0 })
+    .build()
+
+// Component usage examples
+setupBackupSuccessScenario(mocks, { sourcePath, backupPath })
+createProjectButlerMockBuilder(mocks).backup({ sourcePath, backupPath }).build()
+```
+
 ### Ghost Writer Core (GWC)
 
 - **Domain**: Code generation and clipboard management
 - **Key Mocks**: Service interfaces, clipboard operations, import generation
 - **Scenarios**: Clipboard store/retrieve, import generation, console logging
 - **Benefits**: Type-safe mock interfaces, centralized scenario management
+
+#### **Core Package-Specific Anti-Patterns**
+
+- **❌ Mock Core Package Functionality**: Don't mock core package functionality in library tests
+- **❌ Over-Mocking**: Don't mock everything - only mock what you need to control
+- **❌ Mocking Implementation Details**: Don't mock private functions or internal implementation
 
 ### Dynamicons Core (DCC)
 
