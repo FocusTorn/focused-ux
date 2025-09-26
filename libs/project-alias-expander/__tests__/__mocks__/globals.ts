@@ -27,3 +27,8 @@ if (!ENABLE_CONSOLE_OUTPUT) {
     console.warn = vi.fn()
     console.error = vi.fn()
 }
+
+// Set environment variable to control PowerShell/Bash output
+if (!ENABLE_CONSOLE_OUTPUT) {
+    process.env.ENABLE_TEST_CONSOLE = 'false'
+}

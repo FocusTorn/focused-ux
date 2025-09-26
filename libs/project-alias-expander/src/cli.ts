@@ -384,7 +384,9 @@ Set-Alias -Name ${alias} -Value Invoke-${alias}`).join('\n\n')}
 
 # Refresh function to reload aliases
 function Invoke-PaeRefresh {
-    Write-Host "Refreshing [PWSH] PAE aliases..." -ForegroundColor Yellow
+    if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+        Write-Host "Refreshing [PWSH] PAE aliases..." -ForegroundColor Yellow
+    }
     
     # Find workspace root by looking for nx.json
     $workspaceRoot = $PWD
@@ -399,7 +401,9 @@ function Invoke-PaeRefresh {
     
     $modulePath = Join-Path $workspaceRoot "libs\\project-alias-expander\\dist\\pae-functions.psm1"
     Import-Module $modulePath -Force
-    Write-Host "[PWSH] PAE aliases refreshed!" -ForegroundColor Green
+    if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+        Write-Host "[PWSH] PAE aliases refreshed!" -ForegroundColor Green
+    }
 }
 
 # Alias for backward compatibility
@@ -410,7 +414,9 @@ Export-ModuleMember -Function ${aliases.map(alias => `Invoke-${alias}`).join(', 
 Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh
 
 # Display startup message when module is loaded
-Write-Host -ForegroundColor DarkGreen "  - Module loaded: [PWSH] PAE aliases (simple)"
+if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+    Write-Host -ForegroundColor DarkGreen "  - Module loaded: [PWSH] PAE aliases (simple)"
+}
 `
 	
     // Generate Git Bash aliases content - Simple approach
@@ -428,14 +434,20 @@ ${aliases.map(alias => `alias ${alias}='pae ${alias}'`).join('\n')}
 
 # Refresh function
 function pae-refresh {
-    echo "Refreshing [GitBash] PAE aliases..."
+    if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+        echo "Refreshing [GitBash] PAE aliases..."
+    fi
     unset PAE_ALIASES_LOADED
     source libs/project-alias-expander/dist/pae-aliases.sh
-    echo "[GitBash] PAE aliases refreshed!"
+    if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+        echo "[GitBash] PAE aliases refreshed!"
+    fi
 }
 
 # Display startup message
-echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
+if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+    echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
+fi
 `
 	
     // Write files to the dist directory
@@ -502,7 +514,9 @@ Set-Alias -Name ${alias} -Value Invoke-${alias}`).join('\n\n')}
 
 # Refresh function to reload aliases
 function Invoke-PaeRefresh {
-    Write-Host "Refreshing [PWSH] PAE aliases..." -ForegroundColor Yellow
+    if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+        Write-Host "Refreshing [PWSH] PAE aliases..." -ForegroundColor Yellow
+    }
     
     # Find workspace root by looking for nx.json
     $workspaceRoot = $PWD
@@ -517,7 +531,9 @@ function Invoke-PaeRefresh {
     
     $modulePath = Join-Path $workspaceRoot "libs\\project-alias-expander\\dist\\pae-functions.psm1"
     Import-Module $modulePath -Force
-    Write-Host "[PWSH] PAE aliases refreshed!" -ForegroundColor Green
+    if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+        Write-Host "[PWSH] PAE aliases refreshed!" -ForegroundColor Green
+    }
 }
 
 # Alias for backward compatibility
@@ -528,7 +544,9 @@ Export-ModuleMember -Function ${aliases.map(alias => `Invoke-${alias}`).join(', 
 Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh
 
 # Display startup message when module is loaded
-Write-Host -ForegroundColor DarkGreen "  - Module loaded: [PWSH] PAE aliases (simple)"
+if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+    Write-Host -ForegroundColor DarkGreen "  - Module loaded: [PWSH] PAE aliases (simple)"
+}
 `
 	
     // Generate Git Bash aliases content - Simple approach
@@ -546,14 +564,20 @@ ${aliases.map(alias => `alias ${alias}='pae ${alias}'`).join('\n')}
 
 # Refresh function to reload aliases
 function pae-refresh {
-    echo "Refreshing [GitBash] PAE aliases..."
+    if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+        echo "Refreshing [GitBash] PAE aliases..."
+    fi
     unset PAE_ALIASES_LOADED
     source libs/project-alias-expander/dist/pae-aliases.sh
-    echo "[GitBash] PAE aliases refreshed!"
+    if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+        echo "[GitBash] PAE aliases refreshed!"
+    fi
 }
 
 # Display startup message
-echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
+if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+    echo -e "\x1b[32m  - Aliases loaded: [GitBash] PAE aliases (simple)\x1b[0m"
+fi
 `
 	
     // Write files to the dist directory
