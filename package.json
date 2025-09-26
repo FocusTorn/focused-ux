@@ -2,13 +2,6 @@
     "name": "@fux/source",
     "version": "0.0.0",
     "bin": {},
-    "scripts": {
-        "prune-cache": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1",
-        "prune-cache:dry-run": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1 -DryRun",
-        "prune-cache:keep-5": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1 -KeepCount 5",
-        "prune-cache:list": "powershell -ExecutionPolicy Bypass -File libs/tools/prune-nx-cache/src/prune-nx-cache.ps1 -ListOnly",
-        "visualize-bundle": "nx analyze-bundle:open"
-    },
     "dependencies": {
         "@nx/devkit": "21.5.3",
         "chalk": "^5.6.2",

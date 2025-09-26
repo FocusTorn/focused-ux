@@ -24,9 +24,24 @@ html,
     background-color: #0d1117 !important;
 }
 
-/* Remove any white backgrounds from all elements */
-* {
+/* Remove any white backgrounds from specific elements only */
+.vscode-body *,
+.markdown-preview *,
+.webview * {
     background-color: transparent !important;
+}
+
+/* Restore code block backgrounds */
+.markdown-body code {
+    background-color: #21262d !important; /* Darker background for inline code */
+}
+
+.markdown-body pre {
+    background-color: #161b22 !important; /* Dark background for code blocks */
+}
+
+.markdown-body pre code {
+    background-color: transparent !important; /* Transparent background for code inside pre */
 }
 
 /* Restore the markdown body background */
@@ -167,4 +182,121 @@ html,
     word-wrap: normal;
     background-color: transparent;
     border: 0;
+  }
+
+  /* Improve spacing and formatting for better readability */
+  .markdown-body {
+    line-height: 1.6;
+    word-spacing: 0.05em;
+  }
+
+  .markdown-body p {
+    margin: 1em 0;
+    line-height: 1.6;
+  }
+
+  .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    line-height: 1.25;
+  }
+
+  .markdown-body h1 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+  }
+
+  .markdown-body h2 {
+    margin-top: 1.8em;
+    margin-bottom: 0.8em;
+  }
+
+  .markdown-body ul, .markdown-body ol {
+    margin: 1em 0;
+    padding-left: 2em;
+  }
+
+  .markdown-body li {
+    margin: 0.5em 0;
+    line-height: 1.6;
+  }
+
+  .markdown-body blockquote {
+    margin: 1.5em 0;
+    padding: 0 1em;
+    border-left: 4px solid var(--color-border-muted);
+    color: var(--color-fg-muted);
+  }
+
+  .markdown-body hr {
+    margin: 2em 0;
+    border: none;
+    border-top: 1px solid var(--color-border-muted);
+  }
+
+  .markdown-body pre {
+    margin: 1.5em 0;
+  }
+
+  .markdown-body code {
+    margin: 0 0.2em;
+  }
+
+  /* Improve table spacing */
+  .markdown-body table {
+    margin: 1.5em 0;
+  }
+
+  /* Add spacing between sections */
+  .markdown-body > *:first-child {
+    margin-top: 0;
+  }
+
+  .markdown-body > *:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Improve copy-paste formatting */
+  .markdown-body {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  /* Ensure proper line breaks are preserved when copying */
+  .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .markdown-body p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Add visual separation between major sections */
+  .markdown-body h1 + *,
+  .markdown-body h2 + * {
+    margin-top: 0.5em;
+  }
+
+  /* Ensure proper spacing for copied content */
+  .markdown-body h1::after,
+  .markdown-body h2::after {
+    content: "\A";
+    white-space: pre;
+  }
+
+  /* Better approach: Use margins instead of pseudo-elements for copy-paste */
+  .markdown-body h1,
+  .markdown-body h2 {
+    margin-bottom: 1.5em;
+  }
+
+  .markdown-body h3,
+  .markdown-body h4,
+  .markdown-body h5,
+  .markdown-body h6 {
+    margin-bottom: 1em;
   }

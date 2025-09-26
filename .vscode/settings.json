@@ -36,7 +36,18 @@
         "editor.codeActionsOnSave": {
             "source.fixAll.eslint": "explicit"
         }
-    }
-   
+    },
+    
+    // Terminal environment settings to avoid restart requirements
+    "terminal.integrated.inheritEnv": true,
+    "terminal.integrated.env.windows": {
+        "VSCODE_INJECTION": "1"
+    },
+    "terminal.integrated.shellIntegration.enabled": true,
+    "terminal.integrated.shellIntegration.decorationsEnabled": "both",
+    
+    // Disable extension terminal contributions if not needed
+    "terminal.integrated.allowChords": false,
+    "terminal.integrated.allowMnemonics": false
 
 }

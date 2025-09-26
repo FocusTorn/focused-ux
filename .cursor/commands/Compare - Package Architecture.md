@@ -22,7 +22,7 @@ Generates comprehensive architectural comparison documents for specified package
 
 ## Options
 
-- `--dimensions <count>` - Number of architectural dimensions to analyze (default: 12)
+- `--dimensions <count>` - Number of architectural dimensions to analyze (default: 20)
 - `--output <path>` - Custom output path (default: `docs/analysis/`)
 - `--no-dpc` - Skip DPC analysis (default: DPC enabled)
 - `--format <format>` - Output format: `markdown`, `json`, `html` (default: `markdown`)
@@ -41,7 +41,7 @@ Generates comprehensive architectural comparison documents for specified package
 
 Creates a comprehensive comparison document with:
 
-- Package analysis matrix across 12 architectural dimensions
+- Package analysis matrix across 20 architectural dimensions
 - Detailed compliance assessment with specific evidence
 - DPC-enhanced findings (dependency analysis, code complexity, patterns)
 - Architectural violations with file-specific evidence
@@ -57,6 +57,11 @@ Automatically performs Deep Package Comprehension analysis for each package to e
 - **Architectural Pattern Recognition**: Compliance with established patterns
 - **Performance Optimization Insights**: Caching strategies, resource management
 - **Documentation Compliance**: README, API documentation, code comments
+- **Mock Strategy Analysis**: Enhanced mock strategy implementation, global vs package-level mocks
+- **Test Coverage Assessment**: Functional vs coverage test separation, 100% coverage achievement
+- **Anti-Pattern Detection**: VSCode value imports, business logic in extensions, DI container violations
+- **Security & Validation**: Input validation, error handling, security patterns
+- **Process Management**: Process isolation, cleanup patterns, test environment management
 
 ## Generated Files
 
@@ -85,3 +90,11 @@ Automatically performs Deep Package Comprehension analysis for each package to e
 10. Code Organization
 11. Performance Patterns
 12. Documentation Compliance
+13. Mock Strategy Implementation
+14. Test Coverage Patterns
+15. Anti-Pattern Compliance
+16. Security & Validation Patterns
+17. Caching & Optimization Strategies
+18. PAE Alias Compliance
+19. Process Isolation & Cleanup
+20. Asset Processing Patterns

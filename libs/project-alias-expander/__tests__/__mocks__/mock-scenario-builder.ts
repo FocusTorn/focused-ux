@@ -49,6 +49,14 @@ export interface PaeAliasScenarioOptions {
     isFull?: boolean
 }
 
+export interface PaeCliConfigScenarioOptions {
+    packages?: Record<string, { targets: string[] }>
+    packageTargets?: Record<string, string[]>
+    notNxTargets?: string[]
+    expandables?: Record<string, string>
+    configPath?: string
+}
+
 // PAE-specific scenario functions
 export async function setupPaeConfigExistsScenario(
     mocks: PaeTestMocks,
@@ -116,6 +124,38 @@ export async function setupPaeAliasResolutionScenario(
     await setupPaeConfigExistsScenario(mocks, {
         configPath: '/config.json',
         configContent,
+    })
+}
+
+export function setupPaeCliConfigScenario(
+    mocks: PaeTestMocks,
+    options: PaeCliConfigScenarioOptions = {}
+): void {
+    const {
+        packages = { 'test-package': { targets: ['build'] } },
+        packageTargets = { 'test-package': ['build', 'test'] },
+        notNxTargets = ['help', 'version'],
+        expandables = { test: 'test-package' },
+        configPath = '/config.json'
+    } = options
+
+    const mockConfig = {
+        packages,
+        'package-targets': packageTargets,
+        'not-nx-targets': notNxTargets,
+        expandables,
+    }
+
+    const configContent = JSON.stringify(mockConfig)
+    
+    mocks.fs.existsSync.mockReturnValue(true)
+    mocks.fs.readFileSync.mockReturnValue(configContent)
+    mocks.stripJsonComments.mockImplementation(() => {
+        try {
+            return JSON.parse(configContent)
+        } catch {
+            throw new Error('Invalid JSON')
+        }
     })
 }
 
@@ -193,6 +233,11 @@ export class PaeMockBuilder {
     async unixPath(): Promise<PaeMockBuilder> {
         const libBuilder = await this.getLibBuilder()
         libBuilder.unixPath()
+        return this
+    }
+
+    cliConfig(options: PaeCliConfigScenarioOptions = {}): PaeMockBuilder {
+        setupPaeCliConfigScenario(this.mocks, options)
         return this
     }
 

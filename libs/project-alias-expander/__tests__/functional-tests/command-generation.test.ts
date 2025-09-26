@@ -67,7 +67,7 @@ describe('Command Generation (Dry Run)', () => {
             // Act - Test the expansion logic directly
             const alias = 'pbc'
             const target = 'b'
-            const flags: string[] = []
+            const _flags: string[] = []
 
             const aliasVal = config.packages[alias]
             const isFull = typeof aliasVal === 'object' && aliasVal?.full === true
@@ -155,7 +155,7 @@ describe('Command Generation (Dry Run)', () => {
             // Act - Test the expansion logic directly
             const alias = 'pb'
             const target = 'b'
-            const flags: string[] = []
+            const _flags: string[] = []
 
             const aliasVal = config.packages[alias]
             const isFull = typeof aliasVal === 'object' && aliasVal?.full === true

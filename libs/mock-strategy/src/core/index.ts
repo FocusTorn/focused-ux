@@ -31,7 +31,6 @@ export interface CoreTestMocks {
 }
 
 export function setupCoreTestEnvironment(): CoreTestMocks {
-    
     return {
         fileSystem: {
             readFile: vi.fn(),
@@ -75,6 +74,7 @@ export function setupPathMocks(mocks: CoreTestMocks): void {
     mocks.path.resolve.mockImplementation((path: string) => path)
     mocks.path.extname.mockImplementation((path: string) => {
         const lastDot = path.lastIndexOf('.')
+
         return lastDot === -1 ? '' : path.slice(lastDot)
     })
 }
@@ -187,6 +187,7 @@ export function setupUnixPathScenario(
 
 // Fluent Builder Pattern
 export class CoreMockBuilder {
+
     constructor(private mocks: CoreTestMocks) {}
 
     fileRead(options: FileSystemScenarioOptions): CoreMockBuilder {
@@ -231,6 +232,7 @@ export class CoreMockBuilder {
     build(): CoreTestMocks {
         return this.mocks
     }
+
 }
 
 export function createCoreMockBuilder(mocks: CoreTestMocks): CoreMockBuilder {

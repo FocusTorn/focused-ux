@@ -9,6 +9,15 @@
 - **Examples**: `fs`, `path`, `process`, `child_process`, common file operations
 - **Reference**: Import from `@fux/mock-strategy/lib`
 
+### 1.1. **Package-Level Global Mocks** (`packages/{package}/__tests__/__mocks__/globals.ts`)
+
+- **When**: Native Node.js built-in modules need to be mocked for the entire package
+- **What**: Node.js built-in modules that cause ESLint violations or need consistent mocking
+- **Examples**: `node:child_process`, `node:fs`, `node:path`, `node:os`
+- **MANDATORY**: All native Node.js packages that are mocked must be added to `globals.ts`
+- **Purpose**: Prevents ESLint errors from `require()` statements and provides consistent mocking across all tests in the package
+- **Reference**: Import from `../__mocks__/globals`
+
 ### 2. **Package-Level Mocks** (`packages/{package}/__tests__/__mocks__/`)
 
 - **When**: Create mocks, helpers, and scenarios that **multiple test files within the same package** will use
@@ -36,19 +45,53 @@
 ## Decision Tree for Mock Placement
 
 ```
-Is this mock/helper/scenario used by multiple packages?
-├─ YES → libs/mock-strategy/
-└─ NO → Is this mock/helper/scenario used by multiple test files in the same package?
-    ├─ YES → packages/{package}/__tests__/__mocks__/
-    └─ NO → Is this mock/helper/scenario used by multiple tests in the same file?
-        ├─ YES → Define in test file (beforeEach, shared setup)
-        └─ NO → Define within the specific it() block
+Is this a native Node.js built-in module that needs mocking?
+├─ YES → packages/{package}/__tests__/__mocks__/globals.ts (MANDATORY)
+└─ NO → Is this mock/helper/scenario used by multiple packages?
+    ├─ YES → libs/mock-strategy/
+    └─ NO → Is this mock/helper/scenario used by multiple test files in the same package?
+        ├─ YES → packages/{package}/__tests__/__mocks__/
+        └─ NO → Is this mock/helper/scenario used by multiple tests in the same file?
+            ├─ YES → Define in test file (beforeEach, shared setup)
+            └─ NO → Define within the specific it() block
 ```
 
 ## Benefits of This Hierarchy
 
 - **No duplication** across packages
 - **Proper separation** of concerns
+
+## When to Promote Package-Specific Patterns to Shared Libraries
+
+### Promotion Criteria
+
+**Promote to `@fux/mock-strategy/lib` when:**
+
+1. **Multiple Package Usage**: Pattern is used by 2+ packages
+2. **Generic Functionality**: Pattern is not specific to a single package's domain
+3. **Reusable Scenarios**: Mock scenarios that can be applied across different packages
+4. **Common Node.js Patterns**: Standard Node.js API mocking patterns
+5. **Cross-Package Dependencies**: Functionality that other packages depend on
+
+### Promotion Process
+
+1. **Identify Reusable Pattern**: Look for patterns used in multiple test files within a package
+2. **Extract to Shared Library**: Move the pattern to `libs/mock-strategy/src/lib/`
+3. **Update Package Tests**: Refactor package tests to use the shared pattern
+4. **Document Usage**: Add examples and documentation to the shared library
+5. **Update References**: Update all packages to import from the shared library
+
+### Examples of Successful Promotions
+
+- **Shell Output Control**: Moved from PAE-specific to shared library for PowerShell/Bash script control
+- **CLI Config Scenarios**: Moved from PAE-specific to shared library for CLI testing patterns
+- **Environment Variable Control**: Moved from package-specific to shared library for test environment control
+
+### Anti-Patterns to Avoid
+
+- **Premature Promotion**: Don't promote patterns used by only one package
+- **Over-Abstraction**: Don't create overly complex abstractions for simple patterns
+- **Incomplete Migration**: Don't leave package-specific implementations alongside shared ones
 - **Easy maintenance** and updates
 - **Clear ownership** of mock responsibilities
 - **Consistent patterns** across the codebase
@@ -197,6 +240,160 @@ await builder
 | Business logic testing | ❌                | ✅           |
 | API replacement        | ✅                | ❌           |
 
+## Shell Output Control for Test Environments
+
+### Overview
+
+When packages generate shell scripts (PowerShell or Bash) that include output commands like `Write-Host` or `echo`, these commands can interfere with test output and cause noise during test execution. The mock strategy library provides utilities to control shell script output during tests.
+
+### Environment Variable Control
+
+The shell output control system uses the `ENABLE_TEST_CONSOLE` environment variable to conditionally suppress shell script output during tests.
+
+**Environment Variable Behavior:**
+
+- `ENABLE_TEST_CONSOLE=false` (default in tests) → Suppress shell output
+- `ENABLE_TEST_CONSOLE=true` → Allow shell output
+
+### Mock Strategy Library Integration
+
+The shell output control functionality is available in the mock strategy library (`@fux/mock-strategy/lib`):
+
+```typescript
+import {
+    setupShellOutputControl,
+    conditionalWriteHost,
+    conditionalEcho,
+    wrapPowerShellScriptWithOutputControl,
+    wrapBashScriptWithOutputControl,
+    testShellOutputControl,
+} from '@fux/mock-strategy/lib'
+
+// Setup shell output control in test environment
+setupShellOutputControl({ enableConsoleOutput: false })
+
+// Use conditional output functions in your code
+conditionalWriteHost('Refreshing PAE aliases...', 'Yellow')
+conditionalEcho('Aliases refreshed!')
+
+// Wrap existing scripts with output control
+const powershellScript = wrapPowerShellScriptWithOutputControl(originalScript)
+const bashScript = wrapBashScriptWithOutputControl(originalScript)
+
+// Test that output control is working
+const result = testShellOutputControl('powershell', scriptContent)
+expect(result.hasConditionalOutput).toBe(true)
+```
+
+### PowerShell Script Integration
+
+For PowerShell scripts, wrap `Write-Host` commands with conditional checks:
+
+```powershell
+# Original PowerShell script
+Write-Host "Refreshing [PWSH] PAE aliases..." -ForegroundColor Yellow
+Write-Host "[PWSH] PAE aliases refreshed!" -ForegroundColor Green
+
+# Modified with output control
+if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+    Write-Host "Refreshing [PWSH] PAE aliases..." -ForegroundColor Yellow
+}
+if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+    Write-Host "[PWSH] PAE aliases refreshed!" -ForegroundColor Green
+}
+```
+
+### Bash Script Integration
+
+For Bash scripts, wrap `echo` commands with conditional checks:
+
+```bash
+# Original Bash script
+echo "Refreshing [GitBash] PAE aliases..."
+echo "[GitBash] PAE aliases refreshed!"
+
+# Modified with output control
+if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+    echo "Refreshing [GitBash] PAE aliases..."
+fi
+if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+    echo "[GitBash] PAE aliases refreshed!"
+fi
+```
+
+### Global Test Setup Integration
+
+Add shell output control to your global test setup:
+
+```typescript
+// __mocks__/globals.ts
+import { vi, beforeAll, afterAll, afterEach } from 'vitest'
+import { setupShellOutputControl } from '@fux/mock-strategy/lib'
+
+// Console output control
+const ENABLE_CONSOLE_OUTPUT = process.env.ENABLE_TEST_CONSOLE === 'true'
+if (!ENABLE_CONSOLE_OUTPUT) {
+    console.log = vi.fn()
+    console.info = vi.fn()
+    console.warn = vi.fn()
+    console.error = vi.fn()
+}
+
+// Set environment variable to control PowerShell/Bash output
+setupShellOutputControl({ enableConsoleOutput: false })
+```
+
+### Testing Shell Output Control
+
+Use the test helper to verify that shell scripts have proper output control:
+
+```typescript
+import { testShellOutputControl } from '@fux/mock-strategy/lib'
+
+describe('Shell Script Generation', () => {
+    it('should wrap PowerShell output with conditional checks', () => {
+        const scriptContent = `
+            Write-Host "Starting process..." -ForegroundColor Green
+            Write-Host "Process completed!" -ForegroundColor Yellow
+        `
+
+        const result = testShellOutputControl('powershell', scriptContent)
+
+        expect(result.hasConditionalOutput).toBe(true)
+        expect(result.outputCommands).toHaveLength(2)
+    })
+
+    it('should wrap Bash output with conditional checks', () => {
+        const scriptContent = `
+            echo "Starting process..."
+            echo "Process completed!"
+        `
+
+        const result = testShellOutputControl('bash', scriptContent)
+
+        expect(result.hasConditionalOutput).toBe(true)
+        expect(result.outputCommands).toHaveLength(2)
+    })
+})
+```
+
+### Benefits
+
+- **Clean Test Output**: Eliminates shell script noise during test execution
+- **Consistent Behavior**: Same output control across all packages
+- **Easy Integration**: Simple environment variable control
+- **Testable**: Built-in test helpers to verify output control is working
+- **Flexible**: Can be enabled/disabled per test or globally
+
+### When to Use
+
+Use shell output control when your package:
+
+- Generates PowerShell scripts with `Write-Host` commands
+- Generates Bash scripts with `echo` commands
+- Runs shell scripts during tests that produce unwanted output
+- Needs clean test output for better debugging
+
 ## Best Practices
 
 1. **Start Local**: Begin with test-level mocks, promote upward as needed
@@ -214,6 +411,7 @@ await builder
 13. **Mock External Dependencies**: Always mock external APIs, file systems, and network calls
 14. **Verify Mock Calls**: Assert that mocked functions were called with expected parameters
 15. **Reset Between Tests**: Clear mock call history and reset implementations between tests
+16. **Control Shell Output**: Use shell output control for packages that generate shell scripts
 
 ## Things to Avoid
 
@@ -344,6 +542,8 @@ it('should do something', () => {
 ```
 
 ## Troubleshooting Guide
+
+> **📖 For comprehensive troubleshooting**: See [Test Troubleshooting Guide](./Troubleshooting%20-%20Tests.md) for detailed solutions to common test failures.
 
 ### **Common Issues & Solutions**
 

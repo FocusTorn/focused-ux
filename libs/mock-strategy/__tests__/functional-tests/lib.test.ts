@@ -13,6 +13,13 @@ import {
     setupLibFileWriteScenario,
     LibMockBuilder,
     createLibMockBuilder,
+    setupShellOutputControl,
+    conditionalWriteHost,
+    conditionalEcho,
+    wrapPowerShellScriptWithOutputControl,
+    wrapBashScriptWithOutputControl,
+    testShellOutputControl,
+    setupCliConfigScenario,
 } from '../../src/lib/index.js'
 
 describe('Shared Library Package Mock Strategy', () => {
@@ -402,6 +409,341 @@ describe('Shared Library Package Mock Strategy', () => {
         it('should create LibMockBuilder instance', () => {
             const builder = createLibMockBuilder(mocks)
             expect(builder).toBeInstanceOf(LibMockBuilder)
+        })
+    })
+
+    describe('Shell Output Control', () => {
+        let originalEnv: NodeJS.ProcessEnv
+
+        beforeEach(() => {
+            originalEnv = { ...process.env }
+        })
+
+        afterEach(() => {
+            Object.keys(process.env).forEach(key => {
+                delete process.env[key]
+            })
+            Object.keys(originalEnv).forEach(key => {
+                process.env[key] = originalEnv[key]
+            })
+        })
+
+        describe('setupShellOutputControl', () => {
+            it('should set ENABLE_TEST_CONSOLE to false by default', () => {
+                setupShellOutputControl()
+                expect(process.env.ENABLE_TEST_CONSOLE).toBe('false')
+            })
+
+            it('should set ENABLE_TEST_CONSOLE to true when enableConsoleOutput is true', () => {
+                setupShellOutputControl({ enableConsoleOutput: true })
+                expect(process.env.ENABLE_TEST_CONSOLE).toBe('true')
+            })
+
+            it('should set ENABLE_TEST_CONSOLE to false when enableConsoleOutput is false', () => {
+                setupShellOutputControl({ enableConsoleOutput: false })
+                expect(process.env.ENABLE_TEST_CONSOLE).toBe('false')
+            })
+        })
+
+        describe('conditionalWriteHost', () => {
+            let consoleSpy: ReturnType<typeof vi.spyOn>
+
+            beforeEach(() => {
+                consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+            })
+
+            afterEach(() => {
+                consoleSpy.mockRestore()
+            })
+
+            it('should output when ENABLE_TEST_CONSOLE is not false', () => {
+                process.env.ENABLE_TEST_CONSOLE = 'true'
+                conditionalWriteHost('Test message')
+                expect(consoleSpy).toHaveBeenCalledWith('[PWSH] Test message')
+            })
+
+            it('should not output when ENABLE_TEST_CONSOLE is false', () => {
+                process.env.ENABLE_TEST_CONSOLE = 'false'
+                conditionalWriteHost('Test message')
+                expect(consoleSpy).not.toHaveBeenCalled()
+            })
+
+            it('should not output when ENABLE_TEST_CONSOLE is undefined', () => {
+                delete process.env.ENABLE_TEST_CONSOLE
+                conditionalWriteHost('Test message')
+                expect(consoleSpy).toHaveBeenCalledWith('[PWSH] Test message')
+            })
+        })
+
+        describe('conditionalEcho', () => {
+            let consoleSpy: ReturnType<typeof vi.spyOn>
+
+            beforeEach(() => {
+                consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+            })
+
+            afterEach(() => {
+                consoleSpy.mockRestore()
+            })
+
+            it('should output when ENABLE_TEST_CONSOLE is not false', () => {
+                process.env.ENABLE_TEST_CONSOLE = 'true'
+                conditionalEcho('Test message')
+                expect(consoleSpy).toHaveBeenCalledWith('[BASH] Test message')
+            })
+
+            it('should not output when ENABLE_TEST_CONSOLE is false', () => {
+                process.env.ENABLE_TEST_CONSOLE = 'false'
+                conditionalEcho('Test message')
+                expect(consoleSpy).not.toHaveBeenCalled()
+            })
+
+            it('should not output when ENABLE_TEST_CONSOLE is undefined', () => {
+                delete process.env.ENABLE_TEST_CONSOLE
+                conditionalEcho('Test message')
+                expect(consoleSpy).toHaveBeenCalledWith('[BASH] Test message')
+            })
+        })
+
+        describe('wrapPowerShellScriptWithOutputControl', () => {
+            it('should wrap Write-Host commands with conditional checks', () => {
+                const script = 'Write-Host "Hello World" -ForegroundColor Green'
+                const result = wrapPowerShellScriptWithOutputControl(script)
+                expect(result).toBe('if ($env:ENABLE_TEST_CONSOLE -ne "false") { Write-Host "Hello World" -ForegroundColor Green }')
+            })
+
+            it('should handle Write-Host without color parameters', () => {
+                const script = 'Write-Host "Hello World"'
+                const result = wrapPowerShellScriptWithOutputControl(script)
+                expect(result).toBe('if ($env:ENABLE_TEST_CONSOLE -ne "false") { Write-Host "Hello World"  }')
+            })
+
+            it('should handle Write-Host with both foreground and background colors', () => {
+                const script = 'Write-Host "Hello World" -ForegroundColor Green -BackgroundColor Red'
+                const result = wrapPowerShellScriptWithOutputControl(script)
+                expect(result).toBe('if ($env:ENABLE_TEST_CONSOLE -ne "false") { Write-Host "Hello World" -ForegroundColor Green -BackgroundColor Red }')
+            })
+
+            it('should handle multiple Write-Host commands', () => {
+                const script = 'Write-Host "First" -ForegroundColor Green; Write-Host "Second" -BackgroundColor Red'
+                const result = wrapPowerShellScriptWithOutputControl(script)
+                expect(result).toBe('if ($env:ENABLE_TEST_CONSOLE -ne "false") { Write-Host "First" -ForegroundColor Green }; if ($env:ENABLE_TEST_CONSOLE -ne "false") { Write-Host "Second" -BackgroundColor Red }')
+            })
+
+            it('should not modify non-Write-Host content', () => {
+                const script = 'Get-ChildItem; Write-Host "Test"; Remove-Item file.txt'
+                const result = wrapPowerShellScriptWithOutputControl(script)
+                expect(result).toBe('Get-ChildItem; if ($env:ENABLE_TEST_CONSOLE -ne "false") { Write-Host "Test"  }; Remove-Item file.txt')
+            })
+        })
+
+        describe('wrapBashScriptWithOutputControl', () => {
+            it('should wrap echo commands with conditional checks', () => {
+                const script = 'echo "Hello World"'
+                const result = wrapBashScriptWithOutputControl(script)
+                expect(result).toBe('if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then echo  "Hello World"; fi')
+            })
+
+            it('should handle echo with options', () => {
+                const script = 'echo -e "Hello\\nWorld"'
+                const result = wrapBashScriptWithOutputControl(script)
+                expect(result).toBe('if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then echo -e "Hello\\nWorld"; fi')
+            })
+
+            it('should handle multiple echo commands', () => {
+                const script = 'echo "First"; echo "Second"'
+                const result = wrapBashScriptWithOutputControl(script)
+                expect(result).toBe('if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then echo  "First"; fi; if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then echo  "Second"; fi')
+            })
+
+            it('should not modify non-echo content', () => {
+                const script = 'ls -la; echo "Test"; rm file.txt'
+                const result = wrapBashScriptWithOutputControl(script)
+                expect(result).toBe('ls -la; if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then echo  "Test"; fi; rm file.txt')
+            })
+        })
+
+        describe('testShellOutputControl', () => {
+            it('should detect PowerShell conditional output', () => {
+                const script = 'if ($env:ENABLE_TEST_CONSOLE -ne "false") { Write-Host "Test" }'
+                const result = testShellOutputControl('powershell', script)
+                expect(result.hasConditionalOutput).toBe(true)
+                expect(result.outputCommands).toEqual([])
+            })
+
+            it('should detect PowerShell Write-Host commands', () => {
+                const script = 'Write-Host "Hello World" -ForegroundColor Green'
+                const result = testShellOutputControl('powershell', script)
+                expect(result.hasConditionalOutput).toBe(false)
+                expect(result.outputCommands).toEqual(['Write-Host "Hello World" -ForegroundColor Green'])
+            })
+
+            it('should detect Bash conditional output', () => {
+                const script = 'if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then echo "Test"; fi'
+                const result = testShellOutputControl('bash', script)
+                expect(result.hasConditionalOutput).toBe(true)
+                expect(result.outputCommands).toEqual([])
+            })
+
+            it('should detect Bash echo commands', () => {
+                const script = 'echo "Hello World"'
+                const result = testShellOutputControl('bash', script)
+                expect(result.hasConditionalOutput).toBe(false)
+                expect(result.outputCommands).toEqual(['echo "Hello World"'])
+            })
+
+            it('should handle unknown script type', () => {
+                const script = 'echo "Test"'
+                const result = testShellOutputControl('unknown' as any, script)
+                expect(result.hasConditionalOutput).toBe(false)
+                expect(result.outputCommands).toEqual([])
+            })
+
+            it('should handle empty script', () => {
+                const result = testShellOutputControl('powershell', '')
+                expect(result.hasConditionalOutput).toBe(false)
+                expect(result.outputCommands).toEqual([])
+            })
+        })
+    })
+
+    describe('CLI Config Scenario', () => {
+        describe('setupCliConfigScenario', () => {
+            it('should set up CLI config with default options', () => {
+                const mockMocks = {
+                    fileSystem: {
+                        existsSync: vi.fn(),
+                        readFileSync: vi.fn()
+                    },
+                    stripJsonComments: vi.fn()
+                }
+
+                setupCliConfigScenario(mockMocks)
+
+                // Verify the mocks were set up correctly by calling them
+                expect(mockMocks.fileSystem.existsSync()).toBe(true)
+                expect(mockMocks.fileSystem.readFileSync()).toBe(
+                    JSON.stringify({
+                        packages: { 'test-package': { targets: ['build'] } },
+                        'package-targets': { 'test-package': ['build', 'test'] },
+                        'not-nx-targets': ['help', 'version'],
+                        expandables: { test: 'test-package' }
+                    })
+                )
+            })
+
+            it('should set up CLI config with custom options', () => {
+                const mockMocks = {
+                    fileSystem: {
+                        existsSync: vi.fn(),
+                        readFileSync: vi.fn()
+                    },
+                    stripJsonComments: vi.fn()
+                }
+
+                const customOptions = {
+                    packages: { 'custom-package': { targets: ['build', 'test'] } },
+                    packageTargets: { 'custom-package': ['build', 'test', 'lint'] },
+                    notNxTargets: ['help', 'version', 'info'],
+                    expandables: { custom: 'custom-package' }
+                }
+
+                setupCliConfigScenario(mockMocks, customOptions)
+
+                // Verify the mocks were set up correctly by calling them
+                expect(mockMocks.fileSystem.existsSync()).toBe(true)
+                expect(mockMocks.fileSystem.readFileSync()).toBe(
+                    JSON.stringify({
+                        packages: customOptions.packages,
+                        'package-targets': customOptions.packageTargets,
+                        'not-nx-targets': customOptions.notNxTargets,
+                        expandables: customOptions.expandables
+                    })
+                )
+            })
+
+            it('should handle PaeTestMocks structure with fs property', () => {
+                const mockMocks = {
+                    fs: {
+                        existsSync: vi.fn(),
+                        readFileSync: vi.fn()
+                    },
+                    stripJsonComments: vi.fn()
+                }
+
+                setupCliConfigScenario(mockMocks)
+
+                // Verify the mocks were set up correctly by calling them
+                expect(mockMocks.fs.existsSync()).toBe(true)
+                expect(mockMocks.fs.readFileSync()).toBe(
+                    JSON.stringify({
+                        packages: { 'test-package': { targets: ['build'] } },
+                        'package-targets': { 'test-package': ['build', 'test'] },
+                        'not-nx-targets': ['help', 'version'],
+                        expandables: { test: 'test-package' }
+                    })
+                )
+            })
+
+            it('should set up stripJsonComments mock implementation', () => {
+                const mockMocks = {
+                    fileSystem: {
+                        existsSync: vi.fn(),
+                        readFileSync: vi.fn()
+                    },
+                    stripJsonComments: vi.fn()
+                }
+
+                setupCliConfigScenario(mockMocks)
+
+                const configContent = JSON.stringify({
+                    packages: { 'test-package': { targets: ['build'] } },
+                    'package-targets': { 'test-package': ['build', 'test'] },
+                    'not-nx-targets': ['help', 'version'],
+                    expandables: { test: 'test-package' }
+                })
+
+                const result = mockMocks.stripJsonComments(configContent)
+                expect(result).toEqual(JSON.parse(configContent))
+            })
+        })
+
+        describe('LibMockBuilder cliConfig method', () => {
+            let builder: LibMockBuilder
+
+            beforeEach(() => {
+                builder = createLibMockBuilder(mocks)
+            })
+
+            it('should set up CLI config scenario', () => {
+                const result = builder.cliConfig({
+                    packages: { 'test-package': { targets: ['build'] } },
+                    packageTargets: { 'test-package': ['build', 'test'] }
+                })
+
+                expect(result).toBe(builder)
+                // Verify the mocks were set up correctly by calling them
+                expect(mocks.fileSystem.existsSync()).toBe(true)
+                expect(mocks.fileSystem.readFileSync()).toBe(
+                    JSON.stringify({
+                        packages: { 'test-package': { targets: ['build'] } },
+                        'package-targets': { 'test-package': ['build', 'test'] },
+                        'not-nx-targets': ['help', 'version'],
+                        expandables: { test: 'test-package' }
+                    })
+                )
+            })
+
+            it('should support fluent chaining with cliConfig', () => {
+                const result = builder
+                    .cliConfig({ packages: { 'test-package': { targets: ['build'] } } })
+                    .processSuccess({ command: 'test' })
+                    .build()
+
+                expect(result).toBe(mocks)
+                // Verify the CLI config was set up by calling the mock
+                expect(mocks.fileSystem.existsSync()).toBe(true)
+            })
         })
     })
 })

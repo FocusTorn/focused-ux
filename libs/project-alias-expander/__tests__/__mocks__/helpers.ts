@@ -1,12 +1,12 @@
 import { vi } from 'vitest'
-import { 
-    setupLibTestEnvironment, 
-    resetLibMocks, 
+import {
+    setupLibTestEnvironment,
+    resetLibMocks,
     setupLibFileSystemMocks,
     setupLibPathMocks,
     setupLibProcessMocks,
     setupLibChildProcessMocks,
-    LibTestMocks 
+    LibTestMocks
 } from '@fux/mock-strategy/lib'
 
 // Add package-specific mock helpers for PAE-specific functionality

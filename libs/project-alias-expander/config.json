@@ -117,24 +117,12 @@
      *   }
      */
     "expandables": {
-        "f": "--fix",
-        "s": "--skip-nx-cache",
-        "v": "--verbose",
-        "d": "--debug",
-        "c": "--coverage",
-
-        "watch": "--watch",
-        "echo": "--pae-echo",
-        "dr": "--pae-echo",
-        
-
-        "name": { //> output-style=[stream, tui]
-            "position": "suffix",
-            "defaults": {"namePattern": "stream"},
-            "template": "--testNamePattern='{namePattern}'"
-        }, //<
-        
-        "os": { //> output-style=[stream, tui]
+        "f"  : "--fix",
+        "s"  : "--skip-nx-cache",
+        "v"  : "--verbose",
+        "d"  : "--debug",
+        "c"  : "--coverage",
+        "os" : { //> output-style=[stream, tui]
             "position": "suffix",
             "defaults": {"style": "stream"},
             "template": "--output-style={style}"
@@ -148,7 +136,21 @@
             "position": "prefix",
             "defaults": {"size": "4096"},
             "template": "node --max-old-space-size={size}MB"
+        }, //<
+        
+        "watch": "--watch",
+        "echo" : "--pae-echo",
+        "name" : { //> --testNamePattern='{namePattern} []
+            "position": "suffix",
+            "defaults": {"namePattern": ""},
+            "template": "--testNamePattern='{namePattern}'"
+        }, //<
+        "bail" : { //> --bail {bailOn} [1]
+            "position": "suffix",
+            "defaults": {"bailOn": "1"},
+            "template": "--bail {bailOn}"
         } //<
+    
     },
     
     

@@ -5,11 +5,6 @@
     "bin": {
         "pae": "dist/cli.js"
     },
-    "scripts": {
-        "build": "nx build project-alias-expander",
-        "lint": "nx lint project-alias-expander",
-        "test": "nx test project-alias-expander"
-    },
     "license": "MIT",
     "keywords": [
         "cli",

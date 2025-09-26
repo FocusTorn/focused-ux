@@ -150,9 +150,9 @@ describe('ProjectButlerManager Integration', () => {
                     expectedOrder: ['name', 'version', 'scripts']
                 })
 
-                setupBackupSuccessScenario(mocks, { 
-                    sourcePath: packageJsonPath, 
-                    backupPath 
+                setupBackupSuccessScenario(mocks, {
+                    sourcePath: packageJsonPath,
+                    backupPath
                 })
 
                 // Act
@@ -203,9 +203,9 @@ describe('ProjectButlerManager Integration', () => {
                     expectedOrder: ['name', 'version', 'scripts']
                 })
 
-                setupBackupSuccessScenario(mocks, { 
-                    sourcePath: packageJsonPath, 
-                    backupPath 
+                setupBackupSuccessScenario(mocks, {
+                    sourcePath: packageJsonPath,
+                    backupPath
                 })
 
                 mocks.fileSystem.stat.mockResolvedValue({ type: 'file' })
@@ -213,8 +213,8 @@ describe('ProjectButlerManager Integration', () => {
 
                 // Act
                 const result = await projectButlerManager.completeProjectSetupWorkflow(
-                    packageJsonPath, 
-                    workspaceRoot, 
+                    packageJsonPath,
+                    workspaceRoot,
                     filePath
                 )
 
@@ -288,9 +288,9 @@ describe('ProjectButlerManager Integration', () => {
                     expectedOrder: ['name', 'version', 'scripts']
                 })
 
-                setupBackupSuccessScenario(mocks, { 
-                    sourcePath: packageJsonPath, 
-                    backupPath 
+                setupBackupSuccessScenario(mocks, {
+                    sourcePath: packageJsonPath,
+                    backupPath
                 })
 
                 mocks.fileSystem.stat.mockResolvedValue({ type: 'file' })
@@ -298,8 +298,8 @@ describe('ProjectButlerManager Integration', () => {
 
                 // Act
                 const result = await projectButlerManager.poetryEnvironmentSetup(
-                    filePath, 
-                    packageJsonPath, 
+                    filePath,
+                    packageJsonPath,
                     workspaceRoot
                 )
 

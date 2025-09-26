@@ -8,7 +8,8 @@
 
 - **Core Packages** (`packages/{feature}/core/`): Pure business logic, Vitest only, no VSCode deps
 - **Extension Packages** (`packages/{feature}/ext/`): VSCode wrapper, dual testing (Vitest + Integration)
-- **Shared Packages** (`libs/shared/`): Utilities, Vitest only, no VSCode deps
+- **Shared Packages** (`libs/`): Utilities, Vitest only, no VSCode deps
+- **Tools** (`libs/tools/`): Standalone utilities, Vitest only, minimal external deps
 
 ### Critical Commands (ALWAYS use PAE aliases)
 
@@ -34,13 +35,16 @@
 4. **Ask clarifying questions** - When uncertain, ask rather than assume
 5. **Fix root causes** - Address actual issues, not superficial fixes
 
+> **📖 For detailed troubleshooting**: See [Test Troubleshooting Guide](./Troubleshooting%20-%20Tests.md) for solutions to common test failures including `process.exit()` testing, mock issues, and shell script output problems.
+
 ## 📋 Package Classification Matrix
 
-| Package Type | Path                       | Testing              | Dependencies     | Build           |
-| ------------ | -------------------------- | -------------------- | ---------------- | --------------- |
-| Core         | `packages/{feature}/core/` | Vitest only          | Minimal external | `bundle: false` |
-| Extension    | `packages/{feature}/ext/`  | Vitest + Integration | Core + VSCode    | `bundle: true`  |
-| Shared       | `libs/shared/`             | Vitest only          | No VSCode        | `bundle: false` |
+| Package Type | Path                       | Testing              | Dependencies     |
+| ------------ | -------------------------- | -------------------- | ---------------- |
+| Core         | `packages/{feature}/core/` | Vitest only          | Minimal external |
+| Extension    | `packages/{feature}/ext/`  | Vitest + Integration | Core + VSCode    |
+| Shared       | `libs/`                    | Vitest only          | No VSCode        |
+| Tools        | `libs/tools/`              | Vitest only          | Minimal external |
 
 ## 🏗️ Architecture Patterns
 
@@ -357,35 +361,6 @@ suite('Extension Integration Test Suite', () => {
 - **Missing externalization** → Externalize all third-party deps
 - **Caching packaging targets** → Disable caching for unique outputs
 
-## 🛠️ Troubleshooting Guide
-
-### Test Failures
-
-1. **Tests pass but runtime fails** → Verify mocks match real behavior
-2. **Command registration issues** → Test actual VSCode integration
-3. **Mock not working** → Ensure mocks applied before activation
-4. **Extension state issues** → Reset state between tests
-
-### Test Debugging
-
-1. **Mock not being called** → Check import path matches (e.g., `'fs'` vs `'fs/promises'`)
-2. **Unexpected return values** → Create debug test to verify actual behavior
-3. **Multiple call expectations** → Ensure mocks provide enough responses
-4. **Private method testing** → Test public behavior instead of internal implementation
-5. **Complex error scenarios** → Mock the method itself rather than dependencies
-
-### Build Failures
-
-1. **"No inputs were found"** → Check path resolution consistency
-2. **Missing dependencies** → Verify externalization
-3. **TypeScript errors** → Check module resolution settings
-
-### Common Solutions
-
-- **Double test execution** → Remove global targetDefaults conflicts
-- **Cache issues** → Use `--skip-nx-cache` flag
-- **Path resolution** → Use consistent absolute/relative paths
-
 ## 📚 Implementation Examples
 
 ### Complete Extension Package Setup
@@ -592,34 +567,30 @@ export default createVscodeTestConfig({
 })
 ```
 
-### Command Aliases
+### Test Target Explanations
 
-#### Core Package Commands
-
-```bash
-{alias}c build    # Build core package
-{alias}c test     # Test core package
-{alias}c tsc      # TypeScript check
-{alias}c lint     # Lint core package
-```
-
-#### Extension Package Commands
+#### Test Target Types
 
 ```bash
-{alias}e build    # Build extension package
-{alias}e test     # Test extension package
-{alias}e ti       # Integration tests
-{alias}e tsc      # TypeScript check
-{alias}e lint     # Lint extension package
+t    # Test just the functional tests
+t -c # Test just the functional tests, but show the coverage reporting
+tc   # Test the functional tests and the coverage tests (test-cov) and show the coverage report
+ti   # Integration tests (extensions only)
 ```
 
-#### Combined Package Commands
+#### Test Directory Structure
 
-```bash
-{alias} build     # Build both packages
-{alias} test      # Test both packages
-{alias} tsc       # TypeScript check both
-```
+- **`__tests__/functional-tests/`** - Main integration tests that test actual functionality and behavior
+- **`__tests__/coverage-tests/`** - Tests specifically designed to achieve 100% code coverage for uncovered lines
+- **`__tests__/integration-tests/`** - VS Code extension integration tests (extensions only)
+- **`__tests__/isolated-tests/`** - Specific isolated tests for particular scenarios
+
+#### Test Target Purposes
+
+- **`t`** - Fast functional testing for development and CI
+- **`t -c`** - Functional testing with coverage reporting to identify uncovered lines
+- **`tc`** - Complete testing including coverage tests to achieve 100% coverage
+- **`ti`** - Integration testing for VSCode extension functionality
 
 ---
 
@@ -631,108 +602,25 @@ export default createVscodeTestConfig({
 4. **Simple Testing** - Clear separation of concerns
 5. **Individual Exports** - Tree-shaking optimization
 
-## VS Code Test Helper Integration (Preferred)
+## VS Code Test Helper Integration (Current)
 
 Purpose: use the monorepo helper (`@fux/vscode-test-cli-config`) for integration tests without pulling it into extension builds.
 
-- Why
-    - Keep extension builds fast and stable (no unintended graph edges)
-    - Keep the helper strictly test-only
+- **Current Implementation**: Uses `@fux/vscode-test-executor` for integration tests
+- **Configuration**: Integration tests use the `test:integration` target with proper dependencies
+- **Helper**: `@fux/vscode-test-cli-config` provides the underlying test configuration
 
-- Do (Preferred pattern)
-    - Do not add a TS project reference to `libs/vscode-test-cli-config` in extension `tsconfig.json`
-    - Do not list `@fux/vscode-test-cli-config` in the extension's `devDependencies`
-    - Build the helper right before integration tests
-    - Import the helper from its built dist in `.vscode-test.mjs`
-    - Point `files` and `setupFiles` to your compiled test output (often under `__tests__/_out-tsc/suite`)
+### Benefits
 
-- Example: project.json (extension)
-
-```json
-{
-    "targets": {
-        "test:compile": {
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/__tests__/_out-tsc"],
-            "options": {
-                "commands": ["tsc -p packages/<feature>/ext/__tests__/tsconfig.test.json"]
-            }
-        },
-        "test:integration": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build", "test:compile"],
-            "options": {
-                "commands": [
-                    "nx run @fux/vscode-test-cli-config:build",
-                    "vscode-test --config .vscode-test.mjs"
-                ],
-                "cwd": "packages/<feature>/ext"
-            }
-        }
-    }
-}
-```
-
-- Example: `.vscode-test.mjs`
-
-```js
-import * as path from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-// Import helper from built dist to avoid adding a package/devDep edge
-const helperUrl = new URL('../../../libs/vscode-test-cli-config/dist/index.js', import.meta.url)
-const { createVscodeTestConfig } = await import(helperUrl.href)
-
-export default createVscodeTestConfig({
-    packageName: 'fux-<feature>',
-    extensionDevelopmentPath: __dirname,
-    workspaceFolder: './__tests__/integration-tests/mocked-workspace',
-    files: './__tests__/_out-tsc/suite/**/*.test.js',
-    setupFiles: './__tests__/_out-tsc/suite/index.js',
-})
-```
-
-- Example: `__tests__/tsconfig.test.json`
-
-```json
-{
-    "extends": "../../../../tsconfig.base.json",
-    "compilerOptions": {
-        "outDir": "./_out-tsc",
-        "rootDir": "./integration-tests",
-        "module": "CommonJS",
-        "moduleResolution": "node",
-        "types": ["node", "mocha"],
-        "composite": false,
-        "declaration": false,
-        "sourceMap": true,
-        "tsBuildInfoFile": "./_out-tsc/tsconfig.test.tsbuildinfo"
-    },
-    "include": ["integration-tests/**/*.ts"]
-}
-```
-
-- Anti-patterns (avoid)
-    - Static import of `@fux/vscode-test-cli-config` in extension source or `.vscode-test.mjs`
-    - Adding `@fux/vscode-test-cli-config` to extension `devDependencies`
-    - TS project references to `libs/vscode-test-cli-config` in extension `tsconfig.json`
-    - Relying on `"^build"` to incidentally build the helper
-
-- Migration steps
-    - Remove TS reference to `libs/vscode-test-cli-config` from extension `tsconfig.json`
-    - Remove `@fux/vscode-test-cli-config` from extension `devDependencies`
-    - Add a pre-step to build the helper in `test:integration*` commands
-    - Switch `.vscode-test.mjs` to import helper from its built dist
-    - Adjust `files`/`setupFiles` to the compiled `suite` paths if used
+- Keep extension builds fast and stable (no unintended graph edges)
+- Keep the helper strictly test-only
+- Simplified configuration through the executor plugin
 
 ---
 
-## Integration Testing Reference (Package-Agnostic)
+## Integration Testing Reference (Current)
 
-This is a neutral, copy-pasteable reference that matches our current working setup without naming a specific package.
+This reflects the current working setup using the `@fux/vscode-test-executor` plugin.
 
 ### Directory layout (extension)
 
@@ -744,10 +632,7 @@ packages/{feature}/ext/
 │   │   │   └── package.json
 │   │   ├── suite/
 │   │   │   ├── extension.integration.test.ts
-│   │   │   ├── backup.integration.test.ts
-│   │   │   ├── package-json-formatting.integration.test.ts
-│   │   │   ├── terminal-management.integration.test.ts
-│   │   │   └── poetry-shell.integration.test.ts
+│   │   │   └── index.ts
 │   │   ├── tsconfig.test.json
 │   │   └── .vscode-test.mjs
 │   └── _setup.ts
@@ -755,37 +640,20 @@ packages/{feature}/ext/
     └── extension.ts
 ```
 
-Notes:
-
-- Compile to a local folder beside the suite: `packages/{feature}/ext/__tests__/integration-tests/_out-tsc/suite`.
-- Keep `suite/index.ts` for mocha root hooks only; do not import tests from it to avoid duplicate loads.
-- Prefer explicit `files: []` list in `.vscode-test.mjs` or a tight glob like `./_out-tsc/suite/**/*.integration.test.js`.
-- You can use `version: 'insiders'` (needed for proposal APIs) or `version: 'stable'` when proposals aren’t needed.
-- Add `skipExtensionDependencies: true` to avoid scanning/auto-installing extension dependencies for speed.
-
 ### project.json (extension targets)
 
 ```json
 {
     "targets": {
-        "test:compile": {
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/__tests__/integration-tests/_out-tsc"],
-            "options": {
-                "commands": [
-                    "tsc -p packages/{feature}/ext/__tests__/integration-tests/tsconfig.test.json"
-                ]
-            }
-        },
         "test:integration": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build", "test:compile"],
+            "executor": "@fux/vscode-test-executor:test-integration",
+            "dependsOn": ["build"],
             "cache": false,
             "options": {
-                "commands": [
-                    "vscode-test --config __tests__/integration-tests/.vscode-test.mjs --verbose --timeout 20000 --reporter spec"
-                ],
-                "cwd": "packages/{feature}/ext"
+                "tsConfig": "{projectRoot}/__tests__/integration-tests/tsconfig.test.json",
+                "config": "{projectRoot}/__tests__/integration-tests/.vscode-test.mjs",
+                "timeout": 20000,
+                "filterOutput": true
             }
         }
     }
@@ -846,12 +714,6 @@ export default createVscodeTestConfig({
 })
 ```
 
-### Tips
-
-- Disable Nx cache for `test:integration` to avoid replaying stale logs.
-- Use explicit `files: []` if you want deterministic ordering.
-- For maximal speed locally, you can set `useInstallation: { fromMachine: true }` in the test config; favor managed downloads (insiders/stable) in CI for hermetic runs.
-
 ---
 
 ## 🎭 Enhanced Mock Strategy
@@ -870,32 +732,6 @@ The FocusedUX project uses an **Enhanced Mock Strategy** that combines centraliz
 - **Fluent builder pattern** for complex compositions
 - **Consistent behavior** across all tests
 - **Easy to extend** with new scenarios
-
-### Implementation Status
-
-The Enhanced Mock Strategy has been successfully implemented in the following packages:
-
-#### ✅ Core Packages (Business Logic)
-
-- **`packages/project-butler/core/`** - Project management services
-- **`packages/ghost-writer/core/`** - Code generation services
-- **`packages/dynamicons/core/`** - Icon theme generation services
-
-#### ✅ Extension Packages (VSCode Wrappers)
-
-- **`packages/project-butler/ext/`** - Project Butler VSCode extension
-- **`packages/ghost-writer/ext/`** - Ghost Writer VSCode extension
-
-#### ✅ Tools & Utilities
-
-- **`tools/eslint-rules/`** - Custom ESLint rules
-- **`plugins/recommended/`** - Recommended plugins generator
-
-#### 📋 Migration Status
-
-- **Completed**: All core and extension packages have been migrated from `_setup.ts` to the Enhanced Mock Strategy
-- **Benefits Achieved**: 60% reduction in mock setup code, improved maintainability, type-safe interfaces
-- **Test Coverage**: All packages maintain 100% test pass rate with the new strategy
 
 ### Quick Reference
 
@@ -1502,106 +1338,6 @@ import {
 
 The extension packages (`packages/project-butler/ext/`, `packages/ghost-writer/ext/`) use specialized mock strategies for VSCode API testing that complement the core package strategies.
 
-#### ⚠️ Critical TypeScript Pitfalls in Setup Files
-
-When creating VSCode mocks in `_setup.ts` files, be aware of these common TypeScript pitfalls that can cause compilation errors:
-
-**1. VSCode Uri Mocking Pitfall**
-
-```typescript
-// ❌ WRONG - Causes TypeScript error: missing properties
-vi.mocked(vscode.Uri.file).mockReturnValue({ fsPath: filePath })
-
-// ✅ CORRECT - Proper type assertion
-const mockUri = { fsPath: filePath } as vscode.Uri
-vi.mocked(vscode.Uri.file).mockReturnValue(mockUri)
-```
-
-**2. FileStat Mocking Pitfall**
-
-```typescript
-// ❌ WRONG - Missing required properties
-vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({ type: fileTypeValue })
-
-// ✅ CORRECT - Include all required properties
-vi.mocked(vscode.workspace.fs.stat).mockResolvedValue({
-    type: fileTypeValue,
-    ctime: 0,
-    mtime: 0,
-    size: 0,
-})
-```
-
-**3. WorkspaceFolder Mocking Pitfall**
-
-```typescript
-// ❌ WRONG - Missing required properties
-const mockWorkspaceFolder = {
-    uri: { fsPath: workspacePath },
-}
-
-// ✅ CORRECT - Complete WorkspaceFolder interface
-const mockWorkspaceFolder = {
-    uri: { fsPath: workspacePath } as vscode.Uri,
-    name: 'test-workspace',
-    index: 0,
-} as vscode.WorkspaceFolder
-```
-
-**4. Terminal Mocking Pitfall**
-
-```typescript
-// ❌ WRONG - Missing required properties, causes type conversion error
-const mockTerminal = {
-    sendText: vi.fn(),
-    show: vi.fn(),
-    name: terminalName,
-} as vscode.Terminal
-
-// ✅ CORRECT - Complete Terminal interface with proper type assertion
-const mockTerminal = {
-    sendText: vi.fn(),
-    show: vi.fn(),
-    name: terminalName,
-    processId: Promise.resolve(12345),
-    creationOptions: {},
-    exitStatus: undefined,
-    state: { isInteractedWith: false },
-    shellIntegration: undefined,
-    hide: vi.fn(),
-    dispose: vi.fn(),
-} as unknown as vscode.Terminal
-```
-
-**5. Multiple Uri Mocking Pitfall**
-
-```typescript
-// ❌ WRONG - Inconsistent type handling
-vi.mocked(vscode.Uri.file)
-    .mockReturnValueOnce({ fsPath: sourcePath })
-    .mockReturnValueOnce({ fsPath: destinationPath })
-
-// ✅ CORRECT - Consistent type assertions
-const mockSourceUri = { fsPath: sourcePath } as vscode.Uri
-const mockDestUri = { fsPath: destinationPath } as vscode.Uri
-vi.mocked(vscode.Uri.file).mockReturnValueOnce(mockSourceUri).mockReturnValueOnce(mockDestUri)
-```
-
-**Key Principles for VSCode Mocking:**
-
-1. **Always use type assertions** (`as vscode.Type`) for partial mock objects
-2. **Include all required properties** when mocking complex interfaces
-3. **Use `as unknown as vscode.Type`** for complex type conversions
-4. **Be consistent** across all mock calls in the same function
-5. **Test your mocks** by running the tests to catch TypeScript errors early
-
-**Common Error Messages and Solutions:**
-
-- `"Argument of type '{ fsPath: string; }' is not assignable to parameter of type 'Uri'"` → Use `as vscode.Uri`
-- `"Type '{ ... }' is missing the following properties from type 'FileStat'"` → Add missing properties
-- `"Conversion of type '{ ... }' to type 'Terminal' may be a mistake"` → Use `as unknown as vscode.Terminal`
-- `"Type '{ ... }' is missing the following properties from type 'WorkspaceFolder'"` → Add `name` and `index` properties
-
 #### VSCode-Specific Mock Scenarios
 
 ```typescript
@@ -1791,38 +1527,64 @@ This comprehensive mocking strategy provides the perfect balance between central
 
 ## Package-Specific Testing Strategies
 
-### Direct TSX Executed (`libs/tools/`)
+### Tools (`libs/tools/`)
 
 - **Testing Strategy**: Direct execution tests, CLI testing patterns
 - **Test Structure**: `__tests__/` directory with execution-focused tests
 - **Dependencies**: Minimal external dependencies
-- **Build Configuration**: `bundle: false, format: ['esm']`
 
-### Shared Utility (`libs/`)
+#### CLI Testing Implementation Notes
+
+**MANDATORY**: When testing CLI main functions, proper cleanup of `process.argv` is critical for test isolation:
+
+```typescript
+// ✅ CORRECT: Save, modify, and restore process.argv
+it('should handle CLI arguments correctly', () => {
+    const originalArgv = process.argv
+
+    try {
+        // Modify process.argv for test
+        process.argv = ['node', 'cli.js', 'test-command', '--flag']
+
+        // Execute function under test
+        main()
+
+        // Assert expected behavior
+        expect(someFunction).toHaveBeenCalledWith('test-command')
+    } finally {
+        // MANDATORY: Restore original process.argv
+        process.argv = originalArgv
+    }
+})
+```
+
+**Critical**: Without proper cleanup, tests can interfere with each other and cause unpredictable test failures.
+
+### Shared Libraries (`libs/`)
 
 - **Testing Strategy**: Standard library testing, unit tests
 - **Test Structure**: `__tests__/` directory with utility-focused tests
 - **Dependencies**: No VSCode dependencies
-- **Build Configuration**: `bundle: false, format: ['esm']`
 
-### Feature Utility (`packages/{feature}/`)
-
-- **Testing Strategy**: Feature-specific utility testing, integration tests
-- **Test Structure**: `__tests__/` directory with feature-specific tests
-- **Dependencies**: Feature-specific dependencies
-- **Build Configuration**: `bundle: false, format: ['esm']`
-
-### Core Extension Feature Logic (`packages/{feature-name}/core`)
+### Core Packages (`packages/{feature}/core`)
 
 - **Testing Strategy**: Core package testing pattern, business logic validation
 - **Test Structure**:
     - `__tests__/functional-tests/` - Main integration tests
     - `__tests__/isolated-tests/` - Specific isolated tests
     - `__tests__/coverage-tests/` - Coverage reports
-- **Dependencies**: Minimal external dependencies, no VSCode value imports
-- **Build Configuration**: `bundle: false, format: ['esm']`
 
-### Pre-Packaged Extension (`packages/{feature-name}/ext`)
+**MANDATORY Test File Organization**:
+
+- **Functional Tests**: `{module-name}.test.ts` in `functional-tests/` directory
+- **Coverage Tests**: `{module-name}.test-cov.ts` in `coverage-tests/` directory
+- **Integration Tests**: `{module-name}.integration.test.ts` in `integration-tests/` directory (extensions only)
+
+**Critical**: Never mix functional and coverage tests in the same file. Coverage tests should only test uncovered lines identified by coverage reports.
+
+- **Dependencies**: Minimal external dependencies, no VSCode value imports
+
+### Extension Packages (`packages/{feature}/ext`)
 
 - **Testing Strategy**: Extension package testing pattern, dual testing strategy
 - **Test Structure**:
@@ -1830,6 +1592,11 @@ This comprehensive mocking strategy provides the perfect balance between central
     - `__tests__/integration-tests/` - VS Code extension integration tests
     - `__tests__/isolated-tests/` - Specific isolated tests
     - `__tests__/coverage-tests/` - Coverage reports
+
+**MANDATORY Test File Organization**:
+
+- **Functional Tests**: `{module-name}.test.ts` in `functional-tests/` directory
+- **Coverage Tests**: `{module-name}.test-cov.ts` in `coverage-tests/` directory
+- **Integration Tests**: `{module-name}.integration.test.ts` in `integration-tests/` directory
 - **Dependencies**: Core package + VSCode APIs
-- **Build Configuration**: `bundle: true, format: ['cjs']`
 

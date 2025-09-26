@@ -318,7 +318,7 @@ describe('Main Function and Build Functions', () => {
             // Act
             try {
                 main()
-            } catch (error) {
+            } catch (_error) {
                 // Expected - process.exit throws
             }
 

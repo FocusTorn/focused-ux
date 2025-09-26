@@ -319,6 +319,7 @@ export function setupToolFileProcessingScenario(
 
 // Fluent Builder Pattern
 export class ToolMockBuilder {
+
     constructor(private mocks: ToolTestMocks) {}
 
     cliSuccess(options: CliInteractionScenarioOptions = {}): ToolMockBuilder {
@@ -359,9 +360,9 @@ export class ToolMockBuilder {
     build(): ToolTestMocks {
         return this.mocks
     }
+
 }
 
 export function createToolMockBuilder(mocks: ToolTestMocks): ToolMockBuilder {
     return new ToolMockBuilder(mocks)
 }
-

@@ -5,13 +5,7 @@
        
         //= Prepare ============================================================= 
         "build": { //>
-            "extends": "build:core",
-            "options": {
-                "external": [
-                    "vscode",
-                    "js-yaml"
-                ]
-            }
+            "executor": "@nx/esbuild:esbuild"
         }, //<
         
         //= Quality ============================================================= 

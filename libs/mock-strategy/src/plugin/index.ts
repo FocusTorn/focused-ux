@@ -384,6 +384,7 @@ export function setupExecutorErrorScenario(
 
 // Fluent Builder Pattern
 export class PluginMockBuilder {
+
     constructor(private mocks: PluginTestMocks) {}
 
     generatorSuccess(options: GeneratorScenarioOptions = {}): PluginMockBuilder {
@@ -429,9 +430,9 @@ export class PluginMockBuilder {
     build(): PluginTestMocks {
         return this.mocks
     }
+
 }
 
 export function createPluginMockBuilder(mocks: PluginTestMocks): PluginMockBuilder {
     return new PluginMockBuilder(mocks)
 }
-

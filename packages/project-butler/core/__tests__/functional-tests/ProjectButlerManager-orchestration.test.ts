@@ -168,8 +168,8 @@ describe('ProjectButlerManager Complex Orchestration', () => {
 
             // Act
             const result = await projectButlerManager.completeProjectSetupWorkflow(
-                packageJsonPath, 
-                workspaceRoot, 
+                packageJsonPath,
+                workspaceRoot,
                 filePath
             )
 
@@ -226,8 +226,8 @@ describe('ProjectButlerManager Complex Orchestration', () => {
 
             // Act & Assert
             await expect(projectButlerManager.completeProjectSetupWorkflow(
-                packageJsonPath, 
-                workspaceRoot, 
+                packageJsonPath,
+                workspaceRoot,
                 filePath
             )).rejects.toThrow('Complete project setup workflow failed')
         })
@@ -298,8 +298,8 @@ describe('ProjectButlerManager Complex Orchestration', () => {
 
             // Act
             const result = await projectButlerManager.poetryEnvironmentSetup(
-                filePath, 
-                packageJsonPath, 
+                filePath,
+                packageJsonPath,
                 workspaceRoot
             )
 
@@ -343,8 +343,8 @@ describe('ProjectButlerManager Complex Orchestration', () => {
 
             // Act & Assert
             await expect(projectButlerManager.poetryEnvironmentSetup(
-                filePath, 
-                packageJsonPath, 
+                filePath,
+                packageJsonPath,
                 workspaceRoot
             )).rejects.toThrow('Poetry environment setup failed')
         })

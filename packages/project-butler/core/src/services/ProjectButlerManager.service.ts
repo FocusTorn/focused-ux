@@ -77,8 +77,8 @@ export class ProjectButlerManagerService implements IProjectButlerManagerService
      * Complex orchestration: Complete project setup workflow
      */
     async completeProjectSetupWorkflow(
-        packageJsonPath: string, 
-        workspaceRoot: string, 
+        packageJsonPath: string,
+        workspaceRoot: string,
         filePath: string
     ): Promise<{ backupPath: string; formatted: boolean; terminalCommand: string }> {
         try {
@@ -109,8 +109,8 @@ export class ProjectButlerManagerService implements IProjectButlerManagerService
      * Complex orchestration: Poetry environment setup with terminal navigation
      */
     async poetryEnvironmentSetup(
-        filePath: string, 
-        packageJsonPath?: string, 
+        filePath: string,
+        packageJsonPath?: string,
         workspaceRoot?: string
     ): Promise<{ poetryCommand: string; terminalCommand: string; backupPath?: string }> {
         try {
@@ -158,4 +158,5 @@ export class ProjectButlerManagerService implements IProjectButlerManagerService
             throw new Error(ERROR_MESSAGES.INVALID_FILE_PATH)
         }
     }
+
 }

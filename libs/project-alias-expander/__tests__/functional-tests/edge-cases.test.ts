@@ -49,7 +49,7 @@ describe('Edge Cases and Error Conditions', () => {
             // Act - Test the expansion logic directly
             const processedArgs = ['validate:deps']
             const flagArgs = processedArgs.filter(a => a.startsWith('--'))
-            const restArgs = processedArgs.slice(1).filter(a => !a.startsWith('--'))
+            const _restArgs = processedArgs.slice(1).filter(a => !a.startsWith('--'))
             
             // Auto-inject --parallel=false for validate:deps
             let enhancedArgs = [...flagArgs]
@@ -84,7 +84,7 @@ describe('Edge Cases and Error Conditions', () => {
             // Act - Test with --parallel=false already present
             const processedArgs = ['validate:deps', '--parallel=false']
             const flagArgs = processedArgs.filter(a => a.startsWith('--'))
-            const restArgs = processedArgs.slice(1).filter(a => !a.startsWith('--'))
+            const _restArgs = processedArgs.slice(1).filter(a => !a.startsWith('--'))
             
             // Auto-inject --parallel=false for validate:deps
             let enhancedArgs = [...flagArgs]
@@ -107,7 +107,7 @@ describe('Edge Cases and Error Conditions', () => {
 
             // Mock runNx to capture environment changes
             let capturedEnv: NodeJS.ProcessEnv = {}
-            vi.mocked(runNx).mockImplementation((args) => {
+            vi.mocked(runNx).mockImplementation((_args) => {
                 capturedEnv = { ...process.env }
                 return 0
             })

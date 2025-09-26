@@ -75,6 +75,7 @@ function prompt {
 }
 
 
+# VS Code Shell Integration - Enhanced for extension compatibility
 try {
     $vscodeAppPath = (Get-Process -Name "Code", "Code - Insiders" -ErrorAction SilentlyContinue | Select-Object -First 1).Path
     if ($vscodeAppPath) {
@@ -84,8 +85,16 @@ try {
             . $integrationScript
         }
     }
+    
+    # Allow extensions to contribute to environment
+    if ($env:VSCODE_INJECTION -eq "1") {
+        # Signal that this terminal is ready for extension contributions
+        $env:TERMINAL_READY = "1"
+    }
 }
-catch {} #<
+catch {
+    # Silently fail if integration can't be loaded
+} #<
 
 # pnpm install --global ./libs/project-alias-expander
 # ┌────────────────────────────────────────────────────────────────────────────┐

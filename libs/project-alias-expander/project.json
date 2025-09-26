@@ -13,15 +13,7 @@
                 "{projectRoot}/config.json"
             ],
             "options": {
-                "outputPath": "libs/project-alias-expander/dist",
-                "main": "libs/project-alias-expander/src/cli.ts",
-                "tsConfig": "libs/project-alias-expander/tsconfig.json",
-                "platform": "node",
-                "bundle": true,
-                "format": ["esm"],
-                "external": ["vscode"],
-                "thirdParty": true,
-                "assets": []
+                "main": "libs/project-alias-expander/src/cli.ts"
             }
         }, //<
         "generate-scripts": { //>

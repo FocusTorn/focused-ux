@@ -32,3 +32,17 @@ if (!ENABLE_CONSOLE_OUTPUT) {
 if (!ENABLE_CONSOLE_OUTPUT) {
     process.env.ENABLE_TEST_CONSOLE = 'false'
 }
+
+// Global child_process mock
+vi.mock('node:child_process', () => ({
+    spawnSync: vi.fn().mockReturnValue({
+        status: 0,
+        signal: null,
+        output: [''],
+        pid: 123,
+        stdout: Buffer.from(''),
+        stderr: Buffer.from(''),
+        error: undefined
+    }),
+    execSync: vi.fn().mockReturnValue(Buffer.from('success'))
+}))

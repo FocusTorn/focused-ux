@@ -5,7 +5,7 @@ import { vi } from 'vitest'
 
 export interface ExtensionTestMocks {
     vscode: {
-        commands: { 
+        commands: {
             registerCommand: ReturnType<typeof vi.fn>
             executeCommand: ReturnType<typeof vi.fn>
         }
@@ -51,7 +51,7 @@ export interface ExtensionTestMocks {
         EventEmitter: ReturnType<typeof vi.fn>
         Disposable: ReturnType<typeof vi.fn>
     }
-    context: { 
+    context: {
         subscriptions: any[]
         globalState: {
             get: ReturnType<typeof vi.fn>
@@ -65,7 +65,6 @@ export interface ExtensionTestMocks {
 }
 
 export function setupExtensionTestEnvironment(): ExtensionTestMocks {
-    
     const mockTextEditor = {
         document: {
             uri: { fsPath: '/test/file.txt' },
@@ -86,6 +85,7 @@ export function setupExtensionTestEnvironment(): ExtensionTestMocks {
         ],
         edit: vi.fn().mockImplementation((callback) => {
             const mockEditBuilder = createMockEditBuilder()
+
             callback(mockEditBuilder)
             return Promise.resolve(true)
         }),
@@ -93,7 +93,7 @@ export function setupExtensionTestEnvironment(): ExtensionTestMocks {
 
     return {
         vscode: {
-            commands: { 
+            commands: {
                 registerCommand: vi.fn(),
                 executeCommand: vi.fn(),
             },
@@ -139,7 +139,7 @@ export function setupExtensionTestEnvironment(): ExtensionTestMocks {
             EventEmitter: vi.fn(),
             Disposable: vi.fn(),
         },
-        context: { 
+        context: {
             subscriptions: [],
             globalState: {
                 get: vi.fn(),
@@ -162,7 +162,6 @@ export function createMockEditBuilder(): any {
 }
 
 export function setupVSCodeMocks(mocks: ExtensionTestMocks): void {
-    
     // Default implementations
     mocks.vscode.window.showInformationMessage.mockResolvedValue(undefined)
     mocks.vscode.window.showWarningMessage.mockResolvedValue(undefined)
@@ -179,6 +178,7 @@ export function setupVSCodeMocks(mocks: ExtensionTestMocks): void {
         has: vi.fn().mockReturnValue(true),
         inspect: vi.fn().mockReturnValue({ globalValue: true }),
     }
+
     mocks.vscode.workspace.getConfiguration.mockReturnValue(mockConfiguration as any)
 
     // Mock workspace file system
@@ -285,7 +285,6 @@ export function setupVSCodeTextEditorScenario(
     mocks: ExtensionTestMocks,
     options: VSCodeTextEditorScenarioOptions = {}
 ): void {
-    
     const {
         fileName = '/test/file.ts',
         content = 'const test = "hello world";\nconsole.log(test);',
@@ -305,6 +304,7 @@ export function setupVSCodeTextEditorScenario(
         selections,
         edit: vi.fn().mockImplementation((callback) => {
             const mockEditBuilder = createMockEditBuilder()
+
             callback(mockEditBuilder)
             return Promise.resolve(true)
         }),
@@ -328,7 +328,6 @@ export function setupVSCodeCommandRegistrationScenario(
     mocks: ExtensionTestMocks,
     options: VSCodeCommandScenarioOptions
 ): void {
-    
     const {
         commandName: _commandName,
         shouldSucceed = true,
@@ -366,6 +365,7 @@ export function setupVSCodeWindowMessageScenario(
 
 // Fluent Builder Pattern
 export class ExtensionMockBuilder {
+
     constructor(private mocks: ExtensionTestMocks) {}
 
     textEditor(options: VSCodeTextEditorScenarioOptions = {}): ExtensionMockBuilder {
@@ -394,6 +394,7 @@ export class ExtensionMockBuilder {
     build(): ExtensionTestMocks {
         return this.mocks
     }
+
 }
 
 export function createExtensionMockBuilder(mocks: ExtensionTestMocks): ExtensionMockBuilder {
