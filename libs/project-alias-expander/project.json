@@ -29,7 +29,7 @@
                 "{projectRoot}/config.json"
             ],
             "options": {
-                "commands": ["node libs/project-alias-expander/dist/cli.js"], // Generate scripts
+                "commands": ["node libs/project-alias-expander/dist/cli.js install-aliases"], // Generate scripts
                 "parallel": false
             }
         }, //<

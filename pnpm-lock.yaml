@@ -256,6 +256,9 @@ importers:
 
   libs/project-alias-expander:
     dependencies:
+      chalk:
+        specifier: ^5.6.2
+        version: 5.6.2
       strip-json-comments:
         specifier: ^5.0.3
         version: 5.0.3

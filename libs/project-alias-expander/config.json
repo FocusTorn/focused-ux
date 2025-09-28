@@ -1,5 +1,24 @@
 { // $ npm install -g ./libs/project-alias-expander/dist
-    "package-targets": { //>
+
+    "feature-nxTargets": { //> Nx targets for a feature's packages"
+        "desc": "nx targets to run for all packages related to a feature, not just a single package",
+        
+        //= Prepare ============================================================= 
+        "b": {"run-from": "ext", "run-target": "build"},
+        
+        //= Testing ============================================================= 
+        "t": {"run-from": "ext", "run-target": "test:deps --output-style=stream"},
+        "ti": {"run-from": "ext", "run-target": "test:integration"},
+        "tsc": {"run-from": "ext", "run-target": "type-check"},
+
+        //= Adherance =========================================================== 
+        "l": {"run-from": "ext", "run-target": "lint:deps --output-style=stream"},
+        "ct": {"run-from": "ext", "run-target": "check-types:deps --output-style=stream"}
+    }, //<
+    
+    "nxTargets": { //> Nx target alias assignments
+        "desc": "",
+        
         //= Prepare ============================================================= 
         "b"  : "build",
         "p"  : "package",
@@ -40,24 +59,44 @@
         "m" : "monitor"
     }, //<
     
-    "feature-targets": { //>
-        //= Prepare ============================================================= 
-        "b": {"run-from": "ext", "run-target": "build"},
+    "not-nxTargets": { //> Uses Nx project name but not targets
+        "desc": "Alias assignments that leverage Nx project.json:name, but do not use the targets",
         
-        //= Testing ============================================================= 
-        "t": {"run-from": "ext", "run-target": "test:deps --output-style=stream"},
-        "ti": {"run-from": "ext", "run-target": "test:integration"},
-        "tsc": {"run-from": "ext", "run-target": "type-check"},
-
-        //= Adherance =========================================================== 
-        "l": {"run-from": "ext", "run-target": "lint:deps --output-style=stream"},
-        "ct": {"run-from": "ext", "run-target": "check-types:deps --output-style=stream"}
-    }, //<
-    
-    "not-nx-targets": { //>
         "esv": "npx esbuild-visualizer --metadata"
+    
     }, //<
     
+    "expandable-commands": { //> Agnostic assignments, full command
+        "desc": "Agnostic alias assignments, expand alias to full command"
+        
+    }, //<
+    
+    "expandable-flags": { //> -{alias} expands to --{flag}
+        "desc": "-{alias} expands to --{flag}",
+        
+        "f"  : "--fix",
+        "s"  : "--skip-nx-cache",
+        "v"  : "--verbose",
+        "d"  : "--debug",
+        "c"  : "--coverage",
+        "watch": "--watch",
+        "echo" : "--pae-echo",
+        
+        "os" : { //>
+            // "position": "suffix", optional, when not provided defaults to suffix
+            "defaults": {"style": "stream"}, // [stream, tui]
+            "template": "--output-style={style}"
+        }, //<
+        "name" : { //> --testNamePattern='{namePattern}
+            "defaults": {"namePattern": ""},
+            "template": "--testNamePattern='{namePattern}'"
+        }, //<
+        "bail" : { //> --bail {bailOn} [1]
+            "defaults": {"bailOn": "1"},
+            "template": "--bail {bailOn}"
+        } //<
+        
+    }, //<
     
     /**
      * EXPANDABLES SYSTEM
@@ -71,9 +110,11 @@
      * - Multiple expansions can be combined: `-sto=5 -mem=2048 -f`
      * 
      * POSITIONING:
-     * - "prefix": Expands at the very start of the command
+     * - "start": Expands at the very start of the command before anything else
+     * - "prefix": Expands after the nx run but before the target
      * - "pre-args": Expands before flags but after the base command  
-     * - "suffix": Expands at the very end, after all flags
+     * - "suffix": Expands after all flags
+     * - "end": Expands at the very end, after the command is created, unique instance.
      * 
      * TEMPLATE SYSTEM:
      * - Use {variable} placeholders in templates
@@ -116,46 +157,32 @@
      *     "template": "--fix"
      *   }
      */
-    
-    "expandables": {
-        "f"  : "--fix",
-        "s"  : "--skip-nx-cache",
-        "v"  : "--verbose",
-        "d"  : "--debug",
-        "c"  : "--coverage",
-        "os" : { //> output-style=[stream, tui]
-            "position": "suffix",
-            "defaults": {"style": "stream"},
-            "template": "--output-style={style}"
-        }, //<
-        "sto": { //> system timeout // timeout {duration}s [10] 
-            "position": "start",
-            "defaults": {"duration": "10"},
-            "template": "timeout {duration}s" // [10]
-        }, //<
-        "mem": { //> memory limit for Node.js // node --max-old-space-size={size}MB [4096]
-            "position": "prefix",
-            "defaults": {"size": "4096"},
-            "template": "node --max-old-space-size={size}MB"
-        }, //<
-        
-        "watch": "--watch",
-        "echo" : "--pae-echo",
-        "name" : { //> --testNamePattern='{namePattern} []
-            "position": "suffix",
-            "defaults": {"namePattern": ""},
-            "template": "--testNamePattern='{namePattern}'"
-        }, //<
-        "bail" : { //> --bail {bailOn} [1]
-            "position": "suffix",
-            "defaults": {"bailOn": "1"},
-            "template": "--bail {bailOn}"
+    "expandable-templates": { //> -{alias} to --{flag} w/ templates 
+        "desc": "-{alias} expands to --{flag} using configurable templates ",
+       
+        "sto": { //>
+            "defaults": {"duration": 10},
+            "pwsh-template":[
+                {
+                    "position": "start",
+                    "template": "$p = Start-Process -FilePath 'pwsh' -ArgumentList '-Command', '"
+                },
+                {
+                    "position": "end",
+                    "template": "' -NoNewWindow -PassThru; if (-not $p.WaitForExit({duration}000)) { Stop-Process -Id $p.Id -Force; Write-Warning 'Process timed out and was terminated.' }"
+                }
+            ],
+            "linux-template":{ //>
+                "position": "start",
+                "template": "timeout {duration}s"
+            } //<
         } //<
+
+    }, //<
     
-    },
+    "nxPackages": { //> Alias assignments for Nx projects(packages) 
+        "desc": "Alias assignments for Nx projects(packages)",
     
-    
-    "packages": {
         "ccp" : { //>
             "name": "context-cherry-picker",
             "suffix": "ext",
@@ -242,5 +269,6 @@
         "fttc" : "@fux/ft-typescript",
         "reco": "@fux/recommended"
         
-    }
+    } //<
+
 }

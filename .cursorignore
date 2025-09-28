@@ -1,10 +1,10 @@
 # Build outputs and compiled files
-dist/
-**/dist/
-out-tsc/
-**/out-tsc/
-_out-tsc/
-**/_out-tsc/
+# dist/
+# **/dist/
+# out-tsc/
+# **/out-tsc/
+# _out-tsc/
+# **/_out-tsc/
 *.tsbuildinfo
 **/*.tsbuildinfo
 

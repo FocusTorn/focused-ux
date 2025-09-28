@@ -1,0 +1,51 @@
+---
+globs: ['**/*']
+alwaysApply: true
+---
+
+# Workspace Rules
+
+## MANDATORY Workflow:
+
+1. **Read rules** → 2. **Discover tools** → 3. **Check docs** → 4. **Build** → 5. **Execute**
+
+## PAE Aliases (MANDATORY):
+
+- Always run `pae help` first to discover available commands
+- Use appropriate alias: `pae dc b` for dynamicons build
+- Only use direct nx commands if no alias exists
+
+## Documentation First Protocol:
+
+- Check `docs/Architecture.md` for package patterns
+- Check `docs/FocusedUX-Testing-Strategy.md` for testing patterns
+- Check `./docs/Actions-Log.md` for existing implementations
+- Reference existing patterns directly
+
+## Package Classification:
+
+- **Core** (`packages/{feature}/core/`) → Pure business logic, ESM, no VSCode imports
+- **Ext** (`packages/{feature}/ext/`) → VSCode wrapper, CJS bundle
+- **Shared** (`libs/`) → In-repo utilities, ESM, no VSCode deps
+- **Direct Exec Tools** (`libs/direct-exec-tools/{name}/`) → Standalone utilities, ESM
+
+## Build System:
+
+- **MANDATORY**: ALL packages use `@nx/esbuild:esbuild`
+- Libraries → `bundle: false, format: ['esm']`
+- Applications → `bundle: true, format: ['cjs']`
+
+## VSCode Import Patterns:
+
+- ✅ Type imports: `import type { Uri } from 'vscode'`
+- ❌ Value imports: `import { Uri } from 'vscode'`
+- ❌ Direct API calls: `Uri.file(path)`
+
+## Natural Compliance Triggers:
+
+- When I see "test" → I think "run tests"
+- When I see "pae" → I think "check available aliases"
+- When I see "docs" → I think "check existing solutions first"
+- When I see "core" → I think "pure logic, no VSCode imports"
+- When I see "ext" → I think "VSCode wrapper, CJS bundle"
+

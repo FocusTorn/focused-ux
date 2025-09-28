@@ -20,11 +20,12 @@
         "dist/pae-functions.psm1"
     ],
     "dependencies": {
+        "chalk": "^5.6.2",
         "strip-json-comments": "^5.0.3"
     },
     "devDependencies": {
-        "@types/node": "^24.5.2",
-        "@fux/mock-strategy": "workspace:*"
+        "@fux/mock-strategy": "workspace:*",
+        "@types/node": "^24.5.2"
     },
     "author": "FocusedUX"
 }

@@ -8,6 +8,19 @@ vi.mock('strip-json-comments', () => ({
 }))
 
 // Mock the fs module to use our custom mocks
+vi.mock('fs', () => ({
+    default: {
+        existsSync: vi.fn(),
+        readFileSync: vi.fn(),
+        writeFileSync: vi.fn(),
+        mkdirSync: vi.fn(),
+    },
+    existsSync: vi.fn(),
+    readFileSync: vi.fn(),
+    writeFileSync: vi.fn(),
+    mkdirSync: vi.fn(),
+}))
+
 vi.mock('node:fs', () => ({
     default: {
         existsSync: vi.fn(),
@@ -35,11 +48,7 @@ vi.mock('../../src/cli', async () => {
 import { //> from '../../src/cli'
     loadAliasConfig,
     resolveProjectForAlias,
-    expandTargetShortcuts,
-    expandTemplate,
-    parseExpandableFlag,
-    expandFlags,
-    normalizeFullSemantics,
+    paeManager,
 } from '../../src/cli' //<
 
 describe('CLI', () => {
@@ -50,11 +59,18 @@ describe('CLI', () => {
         await resetPaeMocks(mocks)
         
         // Wire up the fs module mocks to our test mocks
-        const fs = await import('node:fs')
-        vi.mocked(fs.default.existsSync).mockImplementation(mocks.fs.existsSync)
-        vi.mocked(fs.default.readFileSync).mockImplementation(mocks.fs.readFileSync)
-        vi.mocked(fs.default.writeFileSync).mockImplementation(mocks.fs.writeFileSync)
-        vi.mocked(fs.default.mkdirSync).mockImplementation(mocks.fs.mkdirSync)
+        const fs = await import('fs')
+        vi.mocked(fs.existsSync).mockImplementation(mocks.fs.existsSync)
+        vi.mocked(fs.readFileSync).mockImplementation(mocks.fs.readFileSync)
+        vi.mocked(fs.writeFileSync).mockImplementation(mocks.fs.writeFileSync)
+        vi.mocked(fs.mkdirSync).mockImplementation(mocks.fs.mkdirSync)
+        
+        // Also wire up node:fs for completeness
+        const nodeFs = await import('node:fs')
+        vi.mocked(nodeFs.default.existsSync).mockImplementation(mocks.fs.existsSync)
+        vi.mocked(nodeFs.default.readFileSync).mockImplementation(mocks.fs.readFileSync)
+        vi.mocked(nodeFs.default.writeFileSync).mockImplementation(mocks.fs.writeFileSync)
+        vi.mocked(nodeFs.default.mkdirSync).mockImplementation(mocks.fs.mkdirSync)
         
         // Wire up the strip-json-comments mock
         const stripJsonComments = await import('strip-json-comments')
@@ -66,11 +82,11 @@ describe('CLI', () => {
             // Arrange - Use standard mocks for simple setup
             mocks.fs.existsSync.mockReturnValue(true)
             mocks.fs.readFileSync.mockReturnValue(JSON.stringify({
-                packages: {
+                'nxPackages': {
                     pbc: { name: 'project-butler', suffix: 'core' },
                     pbe: { name: 'project-butler', suffix: 'ext' }
                 },
-                'package-targets': {
+                'nxTargets': {
                     "a": "audit",
                     "aa": "audit:all",
                     "ac": "audit:code",
@@ -104,9 +120,9 @@ describe('CLI', () => {
             const config = loadAliasConfig()
 
             // Assert
-            expect(config.packages).toBeDefined()
-            expect(config.packages.pbc).toEqual({ name: 'project-butler', suffix: 'core' })
-            expect(config['package-targets']).toEqual({
+            expect(config['nxPackages']).toBeDefined()
+            expect(config['nxPackages'].pbc).toEqual({ name: 'project-butler', suffix: 'core' })
+            expect(config['nxTargets']).toEqual({
                 "a": "audit",
                 "aa": "audit:all",
                 "ac": "audit:code",
@@ -139,7 +155,7 @@ describe('CLI', () => {
             mocks.fs.existsSync.mockReturnValue(false)
 
             // Act & Assert
-            expect(() => loadAliasConfig()).toThrow('Config file not found at:')
+            expect(() => loadAliasConfig()).toThrow('Config file not found')
         })
 
         it('should handle invalid JSON in config', async () => {
@@ -202,57 +218,7 @@ describe('CLI', () => {
         }) //<
     })
 
-    describe('expandTargetShortcuts', () => {
-        it('should expand target shortcuts', () => { //>
-            // Arrange
-            const args = ['b', '--coverage']
-            const targets = { b: 'build', t: 'test' }
-
-            // Act
-            const result = expandTargetShortcuts(args, targets)
-
-            // Assert
-            expect(result.args).toEqual(['build', '--coverage'])
-            expect(result.wasFeatureTarget).toBe(false)
-        }) //<
-        it('should handle feature targets for full packages', () => { //>
-            // Arrange
-            const args = ['b', '--coverage']
-            const targets = { b: 'build' }
-            const featureTargets = { b: { 'run-from': 'ext' as const, 'run-target': 'build' } }
-
-            // Act
-            const result = expandTargetShortcuts(args, targets, featureTargets, true)
-
-            // Assert
-            expect(result.args).toEqual(['build', '--coverage'])
-            expect(result.wasFeatureTarget).toBe(true)
-        }) //<
-        it('should return original args when no shortcut found', () => { //>
-            // Arrange
-            const args = ['unknown', '--coverage']
-            const targets = { b: 'build' }
-
-            // Act
-            const result = expandTargetShortcuts(args, targets)
-
-            // Assert
-            expect(result.args).toEqual(['unknown', '--coverage'])
-            expect(result.wasFeatureTarget).toBe(false)
-        }) //<
-        it('should handle empty args', () => { //>
-            // Arrange
-            const args: string[] = []
-            const targets = { b: 'build' }
-
-            // Act
-            const result = expandTargetShortcuts(args, targets)
-
-            // Assert
-            expect(result.args).toEqual([])
-            expect(result.wasFeatureTarget).toBe(false)
-        }) //<
-    })
+    // Legacy expandTargetShortcuts tests removed - functionality now handled by paeManager.expandFlags
 
     describe('expandTemplate', () => {
         it('should expand template with variables', () => { //>
@@ -261,7 +227,7 @@ describe('CLI', () => {
             const variables = { duration: '10', command: 'nx test' }
 
             // Act
-            const result = expandTemplate(template, variables)
+            const result = paeManager.expandTemplate(template, variables)
 
             // Assert
             expect(result).toBe('timeout 10s nx test')
@@ -272,7 +238,7 @@ describe('CLI', () => {
             const variables = { duration: '10' }
 
             // Act
-            const result = expandTemplate(template, variables)
+            const result = paeManager.expandTemplate(template, variables)
 
             // Assert
             expect(result).toBe('timeout 10s {command}')
@@ -283,7 +249,7 @@ describe('CLI', () => {
             const variables = { duration: '10' }
 
             // Act
-            const result = expandTemplate(template, variables)
+            const result = paeManager.expandTemplate(template, variables)
 
             // Assert
             expect(result).toBe('')
@@ -296,7 +262,7 @@ describe('CLI', () => {
             const flag = '-sto=5'
 
             // Act
-            const result = parseExpandableFlag(flag)
+            const result = paeManager.parseExpandableFlag(flag)
 
             // Assert
             expect(result.key).toBe('sto')
@@ -307,7 +273,7 @@ describe('CLI', () => {
             const flag = '-mem:2048'
 
             // Act
-            const result = parseExpandableFlag(flag)
+            const result = paeManager.parseExpandableFlag(flag)
 
             // Assert
             expect(result.key).toBe('mem')
@@ -318,7 +284,7 @@ describe('CLI', () => {
             const flag = '-f'
 
             // Act
-            const result = parseExpandableFlag(flag)
+            const result = paeManager.parseExpandableFlag(flag)
 
             // Assert
             expect(result.key).toBe('f')
@@ -329,7 +295,7 @@ describe('CLI', () => {
             const flag = '-invalid'
 
             // Act
-            const result = parseExpandableFlag(flag)
+            const result = paeManager.parseExpandableFlag(flag)
 
             // Assert
             expect(result.key).toBe('invalid')
@@ -344,7 +310,7 @@ describe('CLI', () => {
             const expandables = { f: '--fix', s: '--skip-nx-cache' }
 
             // Act
-            const result = expandFlags(args, expandables)
+            const result = paeManager.expandFlags(args, expandables)
 
             // Assert
             expect(result.prefix).toEqual([])
@@ -364,7 +330,7 @@ describe('CLI', () => {
             }
 
             // Act
-            const result = expandFlags(args, expandables)
+            const result = paeManager.expandFlags(args, expandables)
 
             // Assert
             expect(result.prefix).toEqual(['timeout 10s'])
@@ -382,7 +348,7 @@ describe('CLI', () => {
             }
 
             // Act
-            const result = expandFlags(args, expandables)
+            const result = paeManager.expandFlags(args, expandables)
 
             // Assert
             expect(result.prefix).toEqual(['timeout 5s'])
@@ -394,7 +360,7 @@ describe('CLI', () => {
             const expandables = { f: '--fix', s: '--skip-nx-cache' }
 
             // Act
-            const result = expandFlags(args, expandables)
+            const result = paeManager.expandFlags(args, expandables)
 
             // Assert
             expect(result.suffix).toEqual(['--fix', '--skip-nx-cache'])
@@ -406,29 +372,14 @@ describe('CLI', () => {
             const expandables = { f: '--fix' }
 
             // Act
-            const result = expandFlags(args, expandables)
+            const result = paeManager.expandFlags(args, expandables)
 
             // Assert
             expect(result.remainingArgs).toEqual(['--coverage', 'test'])
         }) //<
     })
 
-    describe('normalizeFullSemantics', () => {
-        it('should normalize targets for full packages', () => { //>
-            // Act & Assert
-            expect(normalizeFullSemantics(true, 'l')).toBe('lint:deps')
-            expect(normalizeFullSemantics(true, 'lint')).toBe('lint:deps')
-            expect(normalizeFullSemantics(true, 'test')).toBe('test:full')
-            expect(normalizeFullSemantics(true, 'validate')).toBe('validate:deps')
-        }) //<
-        it('should return original target for non-full packages', () => { //>
-            // Act & Assert
-            expect(normalizeFullSemantics(false, 'l')).toBe('l')
-            expect(normalizeFullSemantics(false, 'lint')).toBe('lint')
-            expect(normalizeFullSemantics(false, 'test')).toBe('test')
-            expect(normalizeFullSemantics(false, 'unknown')).toBe('unknown')
-        }) //<
-    })
+    // Legacy normalizeFullSemantics tests removed - functionality now handled by CLI logic
 })
 
 

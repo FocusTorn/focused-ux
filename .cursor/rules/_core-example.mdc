@@ -1,0 +1,40 @@
+---
+globs: ['**/*']
+alwaysApply: false
+---
+
+# Core Package Rules
+
+## When creating a core package:
+
+1. **Package Structure:**
+    - Use `packages/{feature}/core/` directory
+    - Business logic only, no VSCode value imports
+    - Self-contained "guinea pig" package
+
+2. **Service Architecture:**
+    - All business logic in services, not CLI entry point
+    - Services implement interfaces for testability
+    - Dependencies aggregated through `I{Feature}Dependencies` interface
+
+3. **VSCode Integration:**
+    - Use type imports only: `import type { Uri } from 'vscode'`
+    - Define local interfaces to replace VSCode value usage
+    - No DI containers - use direct service instantiation
+
+4. **Build Configuration:**
+    - Extends `build:core` target
+    - Format: `["esm"]`, Bundle: `false`
+    - External: `["vscode"]` only
+
+5. **Testing:**
+    - Mock all external dependencies
+    - Use `@fux/mock-strategy` for mocking
+    - Test all public service methods
+
+## Anti-patterns to avoid:
+
+- ❌ Business logic in CLI entry point
+- ❌ VSCode value imports outside adapters
+- ❌ Shared dependencies in core packages
+- ❌ DI containers in core packages

@@ -1,21 +1,22 @@
 # Project Alias Expander (PAE)
 
-A powerful, cross-platform CLI tool for expanding project aliases and running Nx commands with intelligent target resolution and flag expansion.
+A powerful CLI tool for expanding project aliases and executing Nx commands with intelligent template expansion and shell-specific command generation.
 
 ## Overview
 
-PAE (Project Alias Expander) is a global CLI tool that provides seamless project management for Nx workspaces. It transforms short aliases into full Nx project names and expands target shortcuts, making project operations faster and more intuitive.
+PAE (Project Alias Expander) transforms short aliases into full Nx project names and provides advanced command expansion capabilities including shell-specific templates, timeout controls, and intelligent flag processing.
 
 ## Features
 
 - **🔤 Alias Expansion**: Convert short aliases (`pbc`) to full project names (`@fux/project-butler-core`)
 - **🎯 Target Shortcuts**: Use shorthand targets (`b`, `t`, `l`) for common operations (`build`, `test`, `lint`)
 - **🚩 Flag Expansion**: Expand short flags (`-f`, `-s`) to full flags (`--fix`, `--skip-nx-cache`)
-- **📦 Multi-Project Operations**: Run commands across all packages of a specific type (`ext`, `core`, `all`)
-- **🔧 Not-Nx Targets**: Execute workspace-level commands with project context
-- **⚡ Performance Monitoring**: Built-in performance tracking for test operations
-- **🎨 Cross-Platform**: Works on Windows, macOS, and Linux
-- **🔍 Echo Mode**: Preview commands before execution
+- **📦 Expandable Templates**: Advanced template system with shell-specific commands and variable substitution
+- **⏱️ Timeout Controls**: Built-in timeout functionality with customizable durations
+- **🔍 Echo Mode**: Preview commands before execution with `->` prefix
+- **🐛 Debug Mode**: Comprehensive debugging with `-d` or `--debug` flags
+- **🎨 Cross-Platform**: Works on Windows (PowerShell), macOS, and Linux
+- **📋 PowerShell Integration**: Automatic module generation and installation
 
 ## Installation
 
@@ -33,67 +34,42 @@ npm install -g ./libs/project-alias-expander
 
 ```bash
 # Build the package
-nx build project-alias-expander
+nx build @fux/project-alias-expander
 
 # Install globally from the built package
 npm install -g ./libs/project-alias-expander/dist
 ```
 
-## Setting Up Shorthand Execution
+## PowerShell Module Setup
 
-PAE supports two execution modes: direct shorthand execution (`pbc b`) and pae-prefixed execution (`pae pbc b`). To enable shorthand execution, you need to import the PowerShell module.
+PAE automatically generates PowerShell modules for seamless integration:
 
-### PowerShell Module Approach
+### Install Aliases
 
-PAE now uses a **self-contained PowerShell module** approach that eliminates the need for manual script generation and installation.
+```bash
+# Generate and install PowerShell module
+pae install-aliases
 
-#### Automatic Module Generation
+# Install with verbose output
+pae install-aliases --verbose
 
-The PowerShell module (`pae-functions.psm1`) is automatically generated during the build process:
-
-1. **Build-time generation**: Module is created when you run `nx build project-alias-expander`
-2. **Config-driven**: All aliases are automatically generated from `config.json`
-3. **Self-contained**: Module is included in the package distribution
-4. **Always up-to-date**: Module is regenerated whenever the build runs
-
-#### Importing the Module
-
-**Option 1: Import in current session**
-
-```powershell
-Import-Module .\libs\project-alias-expander\dist\pae-functions.psm1
+# Install with auto-refresh
+pae install-aliases --auto-refresh
 ```
 
-**Option 2: Add to PowerShell profile (recommended)**
-Add this line to your PowerShell profile (`$PROFILE`):
+### Refresh Aliases
 
-```powershell
-Import-Module libs/project-alias-expander/dist/pae-functions.psm1
+```bash
+# Refresh aliases in current session
+pae refresh
+
+# Refresh directly
+pae refresh-direct
 ```
 
-#### When the Module is Regenerated
-
-The PowerShell module is automatically regenerated in these scenarios:
-
-- **After building the package**: `nx build project-alias-expander` → Module regenerated
-- **After alias configuration changes**: When you modify `config.json` and rebuild
-- **After package updates**: When you update the PAE package
-
-**You do NOT need to manually regenerate it:**
-
-- The build process handles module generation automatically
-- Functions are immediately available after import
-- No manual script management required
+The PowerShell module will be installed to `C:\Users\{user}\Documents\WindowsPowerShell\Modules\PAE\PAE.psm1` and shows "Module loaded: PAE aliases" when imported.
 
 ## Usage
-
-### Quick-start and pitfalls
-
-- **List available aliases and targets**: `pae help`
-- **Run with PAE**: `pae <alias> <target>` (e.g., `pae dce package:dev`)
-- **Run without PAE**: `nx run <project>:<target>` (e.g., `nx run @fux/dynamicons-ext:package:dev`)
-- **PowerShell note**: Don’t pipe PAE output to `cat`. Use `pae help` directly without `| cat`.
-- **Missing alias**: If you see `Alias 'xyz' is not defined`, the alias doesn’t exist. Check the tables below or update `libs/project-alias-expander/config.json` to add it.
 
 ### Basic Syntax
 
@@ -103,10 +79,8 @@ pae <alias> <target> [flags]
 
 ### Execution Modes
 
-PAE supports two execution modes:
-
-1. **Direct Execution**: `pbc b` (requires PowerShell functions - see "Setting Up Shorthand Execution")
-2. **Pae-Prefixed Execution**: `pae pbc b` (works everywhere)
+1. **Pae-Prefixed Execution**: `pae pbc b` (works everywhere)
+2. **Direct Execution**: `pbc b` (requires PowerShell module - see PowerShell Integration)
 
 ### Examples
 
@@ -120,49 +94,70 @@ pae pbc tc
 # Lint with fix
 pae pbc l -f
 
-# Build all extension packages
-pae ext b
+# Build with timeout (10 seconds)
+pae pbc b -sto
 
-# Test all packages
-pae all t
+# Build with custom timeout (5 seconds)
+pae pbc b -sto=5
 
 # Preview command without execution
-pae pbc b --pae-echo
+pae pbc b -echo
+
+# Debug mode
+pae pbc b -d
 ```
 
 ## Configuration
 
-PAE uses a JSON configuration file located at `libs/project-alias-expander/config.json`. This file defines:
-
-- **Package Aliases**: Short names for projects
-- **Target Shortcuts**: Abbreviated target names
-- **Flag Expansions**: Short flag mappings
-- **Not-Nx Targets**: Workspace-level commands
+PAE uses `libs/project-alias-expander/config.json` for configuration. The file supports JavaScript-style comments and includes:
 
 ### Configuration Structure
 
 ```json
 {
-    "packages": {
+    "nxPackages": {
         "pbc": { "name": "project-butler", "suffix": "core" },
         "pbe": { "name": "project-butler", "suffix": "ext" },
-        "pb": { "name": "project-butler", "full": true },
-        "shared": "shared",
-        "mockly": "mockly"
+        "pb": { "name": "project-butler", "full": true }
     },
-    "targets": {
+    "nxTargets": {
         "b": "build",
         "t": "test",
         "l": "lint",
         "tc": "test --coverage"
     },
-    "expandables": {
-        "f": "fix",
-        "s": "skip-nx-cache",
-        "echo": "pae-echo"
+    "feature-nxTargets": {
+        "b": { "run-from": "ext", "run-target": "build" }
     },
-    "not-nx-targets": {
+    "not-nxTargets": {
         "esv": "npx esbuild-visualizer --metadata"
+    },
+    "expandable-flags": {
+        "f": "--fix",
+        "s": "--skip-nx-cache",
+        "v": "--verbose",
+        "d": "--debug",
+        "c": "--coverage",
+        "echo": "--pae-echo"
+    },
+    "expandable-templates": {
+        "sto": {
+            "defaults": { "duration": 10 },
+            "pwsh-template": [
+                {
+                    "position": "start",
+                    "template": "$p = Start-Process -FilePath 'pwsh' -ArgumentList '-Command', '"
+                },
+                {
+                    "position": "end",
+                    "template": "' -NoNewWindow -PassThru; if (-not $p.WaitForExit({duration}000)) { Stop-Process -Id $p.Id -Force; Write-Warning 'Process timed out and was terminated.' }"
+                }
+            ],
+            "linux-template": {
+                "position": "start",
+                "template": "timeout {duration}s"
+            }
+        }
     }
 }
 ```
@@ -189,7 +184,7 @@ PAE uses a JSON configuration file located at `libs/project-alias-expander/confi
 | `ccpe` | `@fux/context-cherry-picker-ext` | Context Cherry Picker VSCode extension |
 | `nhe`  | `@fux/note-hub-ext`              | Note Hub VSCode extension              |
 
-### All Packages
+### Full Packages
 
 | Alias | Project                          | Description                        |
 | ----- | -------------------------------- | ---------------------------------- |
@@ -201,10 +196,10 @@ PAE uses a JSON configuration file located at `libs/project-alias-expander/confi
 
 ### Library Packages
 
-| Alias    | Project       | Description                   |
-| -------- | ------------- | ----------------------------- |
-| `shared` | `@fux/shared` | Shared utilities and adapters |
-| `mockly` | `@fux/mockly` | Mocking utilities             |
+| Alias | Project                       | Description                |
+| ----- | ----------------------------- | -------------------------- |
+| `ms`  | `@fux/mock-strategy`          | Mocking strategy utilities |
+| `aka` | `@fux/project-alias-expander` | PAE itself                 |
 
 ### Tool Packages
 
@@ -212,42 +207,33 @@ PAE uses a JSON configuration file located at `libs/project-alias-expander/confi
 | ------- | ------------------------------ | -------------------------- |
 | `audit` | `@fux/structure-auditor`       | Structure auditing tool    |
 | `cmo`   | `@fux/cursor-memory-optimizer` | Cursor memory optimization |
-
-### Multi-Project Operations
-
-| Alias  | Description            |
-| ------ | ---------------------- |
-| `ext`  | All extension packages |
-| `core` | All core packages      |
-| `all`  | All packages           |
+| `vp`    | `@fux/vsix-packager`           | VSIX packaging tool        |
+| `vsct`  | `@fux/vscode-test-executor`    | VSCode test executor       |
 
 ## Target Shortcuts
-
-### Basic Targets
 
 | Shortcut | Full Target       | Description             |
 | -------- | ----------------- | ----------------------- |
 | `b`      | `build`           | Build the project       |
 | `t`      | `test`            | Run tests               |
 | `l`      | `lint`            | Lint the project        |
+| `c`      | `clean`           | Clean the project       |
+| `d`      | `dev`             | Development mode        |
+| `s`      | `serve`           | Serve the project       |
+| `e`      | `e2e`             | End-to-end tests        |
 | `tc`     | `test --coverage` | Run tests with coverage |
-
-### Full Targets
-
-| Shortcut   | Full Target     | Description                                    |
-| ---------- | --------------- | ---------------------------------------------- |
-| `l`        | `lint:deps`     | Full linting (when used with full packages)    |
-| `t`        | `test:full`     | Full testing (when used with full packages)    |
-| `validate` | `validate:deps` | Full validation (when used with full packages) |
 
 ## Flag Expansions
 
-### Common Flags
+### Basic Flags
 
 | Short Flag | Full Flag         | Description                       |
 | ---------- | ----------------- | --------------------------------- |
 | `-f`       | `--fix`           | Auto-fix linting issues           |
 | `-s`       | `--skip-nx-cache` | Skip Nx cache                     |
+| `-v`       | `--verbose`       | Verbose output                    |
+| `-d`       | `--debug`         | Debug mode                        |
+| `-c`       | `--coverage`      | Test coverage                     |
 | `-echo`    | `--pae-echo`      | Preview command without execution |
 
 ### Combined Flags
@@ -262,129 +248,154 @@ pae pbc l -fs
 pae pbc l -sf
 ```
 
-## Not-Nx Targets
+## Expandable Templates
 
-These are workspace-level commands that operate on project metadata:
+PAE supports advanced template expansion with shell-specific commands and variable substitution.
 
-| Target | Command                             | Description                   |
-| ------ | ----------------------------------- | ----------------------------- |
-| `esv`  | `npx esbuild-visualizer --metadata` | Generate bundle visualization |
+### Template Structure
 
-## PowerShell Integration
+Templates can be:
 
-For seamless local development, PAE integrates with PowerShell profiles to provide direct alias execution.
+- **Strings**: Simple string templates
+- **Objects**: Templates with position and defaults
+- **Arrays**: Multiple templates for complex commands
 
-### PowerShell Functions
+### Template Positions
 
-The following functions are automatically created in your PowerShell profile:
+- `start`: Prepended to the command
+- `prefix`: Added before the main command
+- `pre-args`: Added before command arguments
+- `suffix`: Added after the main command (default)
+- `end`: Appended to the command
 
-```powershell
-function pbc { [CmdletBinding()] param([Parameter(Position=0,ValueFromRemainingArguments=$true)][string[]]$Arguments) Invoke-PaeAlias -Alias 'pbc' -Args $Arguments }
-function pbe { [CmdletBinding()] param([Parameter(Position=0,ValueFromRemainingArguments=$true)][string[]]$Arguments) Invoke-PaeAlias -Alias 'pbe' -Args $Arguments }
-# ... and so on for all aliases
+### Variable Substitution
+
+Templates support variable substitution using `{variableName}` syntax:
+
+```json
+{
+    "defaults": { "duration": 10 },
+    "template": "timeout {duration}s"
+}
 ```
 
-### Local Execution
+### Shell-Specific Templates
 
-With PowerShell integration, you can use aliases directly:
+Templates can be shell-specific:
+
+```json
+{
+    "pwsh-template": [
+        {
+            "position": "start",
+            "template": "$p = Start-Process -FilePath 'pwsh' -ArgumentList '-Command', '"
+        },
+        {
+            "position": "end",
+            "template": "' -NoNewWindow -PassThru; if (-not $p.WaitForExit({duration}000)) { Stop-Process -Id $p.Id -Force; Write-Warning 'Process timed out and was terminated.' }"
+        }
+    ],
+    "linux-template": {
+        "position": "start",
+        "template": "timeout {duration}s"
+    }
+}
+```
+
+### Built-in Templates
+
+#### Timeout Template (`sto`)
+
+Adds timeout functionality to commands:
 
 ```bash
-# These work in PowerShell with the profile loaded
-pbc b
-ext t
-core l
+# 10 second timeout (default)
+pae pbc b -sto
+
+# Custom timeout (5 seconds)
+pae pbc b -sto=5
 ```
 
-## Advanced Features
+**PowerShell**: Wraps command in `Start-Process` with timeout control
+**Linux**: Uses `timeout` command
 
-### Performance Monitoring
+## Debug Mode
 
-PAE includes built-in performance monitoring for test operations:
+Enable comprehensive debugging with:
 
 ```bash
-# Create performance baseline
-pae pbc t --performance-baseline
+# Debug flag
+pae pbc b -d
 
-# Check performance against baseline
-pae pbc t --performance-check
+# Debug environment variable
+PAE_DEBUG=1 pae pbc b
 
-# Validate performance metrics
-pae pbc t --performance-validate
+# Debug with echo
+pae pbc b -d -echo
 ```
 
-### Echo Mode
+Debug mode shows:
+
+- Argument parsing
+- Configuration loading
+- Template expansion
+- Command construction
+- Execution details
+
+## Echo Mode
 
 Preview commands before execution:
 
 ```bash
-# Show what command would be executed
-pae pbc b --pae-echo
-# Output: nx run build @fux/project-butler-core
+# Show command with -> prefix
+pae pbc b -echo
+# Output: -> nx run @fux/project-butler-core:build
+
+# Echo with timeout
+pae pbc b -sto=5 -echo
+# Output: -> $p = Start-Process -FilePath 'pwsh' -ArgumentList '-Command', ' nx run @fux/project-butler-core:build ' -NoNewWindow -PassThru; if (-not $p.WaitForExit(5000)) { Stop-Process -Id $p.Id -Force; Write-Warning 'Process timed out and was terminated.' }
 ```
 
-### Integration Test Handling
+## Commands
 
-PAE automatically targets extension packages for integration tests:
+### Special Commands
 
-```bash
-# Automatically targets @fux/project-butler-ext
-pae pb test:integration
-```
+| Command               | Description                            |
+| --------------------- | -------------------------------------- |
+| `pae install-aliases` | Generate and install PowerShell module |
+| `pae refresh`         | Refresh aliases in current session     |
+| `pae refresh-direct`  | Refresh aliases directly               |
+| `pae help`            | Show help information                  |
 
-### Auto-Injection Features
+### Environment Variables
 
-PAE automatically injects helpful flags for certain operations:
-
-- **Stream Output**: Auto-injects `--output-style=stream` for `test:full`, `validate:deps`, and `lint:deps`
-- **Sequential Execution**: Auto-injects `--parallel=false` for `validate:deps`
-- **Vitest Config**: Auto-injects coverage config for test commands with `--coverage`
+| Variable      | Description                        |
+| ------------- | ---------------------------------- |
+| `PAE_DEBUG=1` | Enable debug logging               |
+| `PAE_ECHO=1`  | Echo commands instead of executing |
 
 ## Error Handling
 
-### Common Error Scenarios
+PAE provides comprehensive error handling with informative messages:
 
-1. **Invalid Alias**: `Alias 'invalid' is not defined.`
-2. **Missing Target**: `Please provide a command for 'pbc'.`
-3. **Config File Missing**: `Config file not found at: /path/to/config.json`
+### Common Errors
 
-### Debugging
+1. **Unknown Alias**: `Unknown alias: xyz`
+2. **Config File Missing**: `Config file not found. Tried: [paths]`
+3. **Template Conflicts**: `Variable conflict: 'duration' is defined in both top-level and template-level defaults`
+4. **Multiple End Templates**: `Only one "end" position template is allowed per expandable`
 
-Use echo mode to debug command resolution:
-
-```bash
-pae pbc b --pae-echo
-```
-
-## Development
-
-### Building
+### Debugging Tips
 
 ```bash
-# Build the package
-nx build project-alias-expander
+# Enable debug mode for troubleshooting
+pae <command> -d
 
-# Build with watch mode
-nx build project-alias-expander --watch
-```
+# Use echo mode to see generated commands
+pae <command> -echo
 
-### Testing
-
-```bash
-# Run tests
-nx test project-alias-expander
-
-# Run tests with coverage
-nx test project-alias-expander --coverage
-```
-
-### Linting
-
-```bash
-# Lint the package
-nx lint project-alias-expander
-
-# Lint with auto-fix
-nx lint project-alias-expander --fix
+# Check configuration loading
+PAE_DEBUG=1 pae help
 ```
 
 ## Architecture
@@ -394,27 +405,79 @@ nx lint project-alias-expander --fix
 ```
 libs/project-alias-expander/
 ├── src/
-│   └── cli.ts              # Main CLI entry point
-├── config.json             # Alias configuration
-├── package.json            # Package metadata
-├── project.json            # Nx project configuration
-├── tsconfig.json           # TypeScript configuration
-└── README.md               # This file
+│   ├── cli.ts                           # Main CLI entry point
+│   ├── config.ts                        # Configuration loading
+│   ├── shell.ts                         # Shell detection
+│   ├── _types/                          # Type definitions
+│   │   ├── config.types.ts
+│   │   ├── expandable.types.ts
+│   │   └── shell.types.ts
+│   ├── _interfaces/                     # Interface definitions
+│   │   ├── config.interfaces.ts
+│   │   ├── expandable.interfaces.ts
+│   │   ├── execution.interfaces.ts
+│   │   ├── alias.interfaces.ts
+│   │   ├── pae-manager.interfaces.ts
+│   │   └── shell.interfaces.ts
+│   └── services/                        # Service implementations
+│       ├── PAEManager.service.ts        # Main orchestrator
+│       ├── AliasManager.service.ts      # Alias management
+│       ├── CommandExecution.service.ts  # Command execution
+│       └── ExpandableProcessor.service.ts # Template processing
+├── __tests__/                           # Test files
+├── config.json                          # Configuration file
+├── package.json                         # Package metadata
+├── project.json                         # Nx project configuration
+└── README.md                            # This file
 ```
 
 ### Key Components
 
-1. **CLI Entry Point** (`cli.ts`): Main execution logic
-2. **Configuration Loader**: Loads and parses `config.json`
-3. **Alias Resolver**: Converts aliases to project names
-4. **Target Expander**: Expands target shortcuts
-5. **Flag Expander**: Expands flag shortcuts
-6. **Command Executor**: Runs Nx commands
+1. **PAEManagerService**: Main orchestrator that coordinates all operations
+2. **AliasManagerService**: Handles PowerShell module generation and installation
+3. **CommandExecutionService**: Executes commands with proper shell handling
+4. **ExpandableProcessorService**: Processes templates and variable substitution
+5. **Configuration System**: Loads and validates config.json with comment support
 
 ### Dependencies
 
-- **strip-json-comments**: Parse JSON with comments
+- **strip-json-comments**: Parse JSON files with JavaScript-style comments
 - **Node.js built-ins**: fs, path, process, child_process
+
+## Development
+
+### Building
+
+```bash
+# Build the package
+nx build @fux/project-alias-expander
+
+# Build with watch mode
+nx build @fux/project-alias-expander --watch
+```
+
+### Testing
+
+```bash
+# Run tests
+nx test @fux/project-alias-expander
+
+# Run tests with coverage
+nx test @fux/project-alias-expander --coverage
+
+# Run tests in watch mode
+nx test @fux/project-alias-expander --watch
+```
+
+### Linting
+
+```bash
+# Lint the package
+nx lint @fux/project-alias-expander
+
+# Lint with auto-fix
+nx lint @fux/project-alias-expander --fix
+```
 
 ## Troubleshooting
 
@@ -422,16 +485,21 @@ libs/project-alias-expander/
 
 1. **Command Not Found**: Ensure PAE is installed globally
 2. **Config File Errors**: Verify `config.json` exists and is valid JSON
-3. **Permission Errors**: Run with appropriate permissions for global installation
+3. **PowerShell Module Issues**: Run `pae install-aliases` to regenerate module
+4. **Permission Errors**: Run with appropriate permissions for global installation
+5. **Template Execution Errors**: Use debug mode (`-d`) to see detailed execution flow
 
 ### Getting Help
 
 ```bash
 # Show help
-pae --help
-
-# Show available aliases
 pae help
+
+# Debug mode
+pae <command> -d
+
+# Echo mode
+pae <command> -echo
 ```
 
 ## Contributing
@@ -440,20 +508,9 @@ pae help
 2. Create a feature branch
 3. Make your changes
 4. Add tests if applicable
-5. Submit a pull request
+5. Run tests and linting
+6. Submit a pull request
 
 ## License
 
 MIT License - see LICENSE file for details.
-
-## Changelog
-
-### v0.1.0
-
-- Initial release
-- Basic alias expansion
-- Target and flag shortcuts
-- Multi-project operations
-- PowerShell integration
-- Performance monitoring
-- Echo mode

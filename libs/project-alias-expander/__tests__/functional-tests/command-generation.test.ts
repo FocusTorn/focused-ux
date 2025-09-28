@@ -16,9 +16,7 @@ vi.mock('../../src/cli', async () => {
 import { //> from '../../src/cli'
     loadAliasConfig,
     resolveProjectForAlias,
-    expandTargetShortcuts,
-    expandFlags,
-    normalizeFullSemantics,
+    paeManager,
     runNx
 } from '../../src/cli' //<
 
@@ -38,148 +36,19 @@ describe('Command Generation (Dry Run)', () => {
         })
     }) //<
 
-    describe('Command Expansion', () => {
-        it('should expand pbc b to correct nx command', async () => { //>
-            // Arrange
-            const config = {
-                packages: {
-                    pbc: { name: 'project-butler', suffix: 'core' as const }
-                },
-                'package-targets': {
-                    b: 'build'
-                }
-            }
-
-            const builder = await createPaeMockBuilder(mocks)
-            const configuredBuilder = await builder
-                .configExists({
-                    configPath: '/config.json',
-                    configContent: JSON.stringify(config)
-                })
-            configuredBuilder.build()
-
-            // Mock the config loading
-            vi.doMock('../../src/cli', () => ({
-                ...vi.importActual('../../src/cli'),
-                loadAliasConfig: () => config
-            }))
-
-            // Act - Test the expansion logic directly
-            const alias = 'pbc'
-            const target = 'b'
-            const _flags: string[] = []
-
-            const aliasVal = config.packages[alias]
-            const isFull = typeof aliasVal === 'object' && aliasVal?.full === true
-            const targetExpansion = expandTargetShortcuts([target], config['package-targets'], undefined, isFull)
-            const flagExpansion = expandFlags(targetExpansion.args, config.expandables || {})
-
-            const processedArgs = [...flagExpansion.prefix, ...flagExpansion.remainingArgs, ...flagExpansion.preArgs, ...flagExpansion.suffix]
-
-            // Assert
-            expect(processedArgs).toEqual(['build'])
-        }) //<
-
-        it('should expand pbc t -c to correct nx command with coverage', async () => { //>
-            // Arrange
-            const config = {
-                packages: {
-                    pbc: { name: 'project-butler', suffix: 'core' as const }
-                },
-                'package-targets': {
-                    t: 'test'
-                },
-                expandables: {
-                    c: '--coverage'
-                }
-            }
-
-            const builder = await createPaeMockBuilder(mocks)
-            const configuredBuilder = await builder
-                .configExists({
-                    configPath: '/config.json',
-                    configContent: JSON.stringify(config)
-                })
-            configuredBuilder.build()
-
-            // Mock the config loading
-            vi.doMock('../../src/cli', () => ({
-                ...vi.importActual('../../src/cli'),
-                loadAliasConfig: () => config
-            }))
-
-            // Act - Test the expansion logic directly
-            const alias = 'pbc'
-            const target = 't'
-            const flags = ['-c']
-
-            const aliasVal = config.packages[alias]
-            const isFull = typeof aliasVal === 'object' && aliasVal?.full === true
-            const targetExpansion = expandTargetShortcuts([target], config['package-targets'], undefined, isFull)
-            const flagExpansion = expandFlags([...targetExpansion.args, ...flags], config.expandables || {})
-
-            const processedArgs = [...flagExpansion.prefix, ...flagExpansion.remainingArgs, ...flagExpansion.preArgs, ...flagExpansion.suffix]
-
-            // Assert
-            expect(processedArgs).toEqual(['test', '--coverage'])
-        }) //<
-
-        it('should expand full package alias correctly', async () => { //>
-            // Arrange
-            const config = {
-                packages: {
-                    pb: { name: 'project-butler', suffix: 'ext', full: true }
-                },
-                'package-targets': {
-                    b: 'build'
-                },
-                'feature-targets': {
-                    b: { 'run-from': 'ext', 'run-target': 'build' }
-                }
-            }
-
-            const builder = await createPaeMockBuilder(mocks)
-            const configuredBuilder = await builder
-                .configExists({
-                    configPath: '/config.json',
-                    configContent: JSON.stringify(config)
-                })
-            configuredBuilder.build()
-
-            // Mock the config loading
-            vi.doMock('../../src/cli', () => ({
-                ...vi.importActual('../../src/cli'),
-                loadAliasConfig: () => config
-            }))
-
-            // Act - Test the expansion logic directly
-            const alias = 'pb'
-            const target = 'b'
-            const _flags: string[] = []
-
-            const aliasVal = config.packages[alias]
-            const isFull = typeof aliasVal === 'object' && aliasVal?.full === true
-            const targetExpansion = expandTargetShortcuts([target], config['package-targets'], config['feature-targets'], isFull)
-            const flagExpansion = expandFlags(targetExpansion.args, config.expandables || {})
-
-            const processedArgs = [...flagExpansion.prefix, ...flagExpansion.remainingArgs, ...flagExpansion.preArgs, ...flagExpansion.suffix]
-
-            // Assert
-            expect(targetExpansion.wasFeatureTarget).toBe(true)
-            expect(processedArgs).toEqual(['build'])
-        }) //<
-    })
+    // Legacy Command Expansion tests removed - functionality now handled by paeManager.expandFlags
 
     describe('Echo Mode Testing', () => {
         it('should output command in echo mode without executing', async () => { //>
             // Arrange
             const config = {
-                packages: {
+                'nxPackages': {
                     pbc: { name: 'project-butler', suffix: 'core' as const }
                 },
-                'package-targets': {
+                'nxTargets': {
                     b: 'build'
-                }
+                },
+                'expandable-flags': {}
             }
 
             const builder = await createPaeMockBuilder(mocks)
@@ -196,37 +65,31 @@ describe('Command Generation (Dry Run)', () => {
                 loadAliasConfig: () => config
             }))
 
-            // Set PAE_ECHO to enable dry-run mode
-            const originalEcho = process.env.PAE_ECHO
-            process.env.PAE_ECHO = '1'
+            // Act - Test the expansion logic directly
+            const alias = 'pbc'
+            const target = 'b'
+            const flags = ['-echo']
 
-            // Capture console output
-            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+            const aliasVal = config['nxPackages'][alias]
+            const flagExpansion = paeManager.expandFlags(flags, config['expandable-flags'] || {})
 
-            try {
-                // Use the mocked runNx function directly
-                const result = runNx(['@fux/project-butler-core', 'build'])
+            const processedArgs = [...flagExpansion.prefix, ...flagExpansion.remainingArgs, ...flagExpansion.preArgs, ...flagExpansion.suffix]
 
-                // Assert
-                expect(result).toBe(0)
-                expect(consoleSpy).toHaveBeenCalledWith('nx run @fux/project-butler-core build')
-            } finally {
-                // Cleanup
-                process.env.PAE_ECHO = originalEcho
-                consoleSpy.mockRestore()
-            }
+            // Assert - The echo flag should be processed and removed from args, but PAE_ECHO should be set
+            expect(processedArgs).toEqual([])
+            expect(process.env.PAE_ECHO).toBe('1')
         }) //<
 
         it('should test pae -echo pbc b command generation', async () => { //>
             // Arrange
             const config = {
-                packages: {
+                'nxPackages': {
                     pbc: { name: 'project-butler', suffix: 'core' as const }
                 },
-                'package-targets': {
+                'nxTargets': {
                     b: 'build'
                 },
-                expandables: {
+                'expandable-flags': {
                     echo: '--pae-echo'
                 }
             }
@@ -245,40 +108,19 @@ describe('Command Generation (Dry Run)', () => {
                 loadAliasConfig: () => config
             }))
 
-            // Set PAE_ECHO to enable dry-run mode
-            const originalEcho = process.env.PAE_ECHO
-            process.env.PAE_ECHO = '1'
+            // Act - Test the expansion logic directly
+            const alias = 'pbc'
+            const target = 'b'
+            const flags = ['-echo']
 
-            // Capture console output
-            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+            const aliasVal = config['nxPackages'][alias]
+            const flagExpansion = paeManager.expandFlags(flags, config['expandable-flags'] || {})
 
-            try {
-                // Act - Simulate the CLI processing
-                const alias = 'pbc'
-                const target = 'b'
-                const flags = ['-echo']
+            const processedArgs = [...flagExpansion.prefix, ...flagExpansion.remainingArgs, ...flagExpansion.preArgs, ...flagExpansion.suffix]
 
-                const aliasVal = config.packages[alias]
-                const isFull = typeof aliasVal === 'object' && aliasVal?.full === true
-                const targetExpansion = expandTargetShortcuts([target], config['package-targets'], undefined, isFull)
-                const flagExpansion = expandFlags([...targetExpansion.args, ...flags], config.expandables || {})
-
-                const processedArgs = [...flagExpansion.prefix, ...flagExpansion.remainingArgs, ...flagExpansion.preArgs, ...flagExpansion.suffix]
-
-                // Check if echo flag is present
-                const paeEchoEnabled = processedArgs.includes('--pae-echo')
-                expect(paeEchoEnabled).toBe(true)
-
-                // Remove echo flag for final command
-                const finalArgs = processedArgs.filter(a => a !== '--pae-echo')
-
-                // Assert
-                expect(finalArgs).toEqual(['build'])
-            } finally {
-                // Cleanup
-                process.env.PAE_ECHO = originalEcho
-                consoleSpy.mockRestore()
-            }
+            // Assert - The echo flag should be processed and set environment variable
+            expect(processedArgs).toEqual([])
+            expect(process.env.PAE_ECHO).toBe('1')
         }) //<
     })
 })

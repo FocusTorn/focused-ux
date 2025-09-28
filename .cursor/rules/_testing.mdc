@@ -1,0 +1,43 @@
+---
+globs: **/*.test.ts, **/*.spec.ts, **/__tests__/**/*, **/vitest.config.*
+alwaysApply: false
+---
+
+# Testing Rules
+
+## When writing tests:
+
+1. **Test Organization:**
+    - All tests go in `__tests__/functional-tests/` (not integration-tests)
+    - Integration tests are for VSCode integration only
+    - Use `@fux/mock-strategy` for mocking
+
+2. **Mock Strategy Pattern:**
+    - Use `setupPaeTestEnvironment()` and `resetPaeMocks()`
+    - Create mocks with `createPaeMockBuilder()`
+    - Mock external dependencies appropriately
+
+3. **Test Structure:**
+    - Test files should be <500 lines
+    - Use descriptive test names
+    - Group related tests with `describe()` blocks
+
+4. **Coverage Requirements:**
+    - Test all public service methods
+    - Test configuration loading and validation
+    - Test error handling scenarios
+    - Test all execution paths
+
+5. **Common Patterns:**
+    - Mock `spawnSync` for command execution tests
+    - Mock file system operations
+    - Test both success and error cases
+
+## Anti-patterns to avoid:
+
+- ❌ VSCode mocking in shared tests
+- ❌ Test files >500 lines
+- ❌ Skipping tests for deadlines
+- ❌ Tests calling complex methods without mocking
+- ❌ Tests in wrong directory (integration-tests for CLI)
+

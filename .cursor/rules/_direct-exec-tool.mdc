@@ -1,0 +1,41 @@
+---
+globs: ['**/*']
+alwaysApply: false
+---
+
+# Direct Execution Tool Rules
+
+## When creating a direct execution tool:
+
+1. **Package Structure:**
+    - Use `libs/direct-exec-tools/{tool-name}/` directory
+    - Runs directly with `tsx` (no build step)
+    - Self-contained without shared dependencies
+
+2. **Execution Pattern:**
+    - Clear CLI entry points in `src/cli/`
+    - Core functionality in `src/lib/`
+    - Use `nx:run-commands` executor for execution
+
+3. **Build Configuration:**
+    - No declaration generation (`composite: false`, `declaration: false`)
+    - Dependencies in `devDependencies` (not `dependencies`)
+    - Format: `["esm"]`, Bundle: `false`
+
+4. **Testing:**
+    - Test CLI argument parsing and execution
+    - Test core functionality separately
+    - Integration testing for end-to-end execution
+
+5. **Usage Guidelines:**
+    - ✅ Simple scripts that run directly with tsx
+    - ✅ One-off utilities that don't need building
+    - ✅ Development scripts and automation
+    - ❌ Don't use for CLI tools that get built and distributed
+
+## Anti-patterns to avoid:
+
+- ❌ Dependencies in `dependencies` instead of `devDependencies`
+- ❌ Declaration generation for direct execution tools
+- ❌ Complex build processes for simple scripts
+- ❌ Dependencies on other workspace packages

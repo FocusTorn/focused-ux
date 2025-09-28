@@ -1,0 +1,394 @@
+---
+globs: ['**/*']
+alwaysApply: false
+---
+
+# Project Alias Expander (PAE) Rules
+
+## Package Classification
+
+- **Type**: In-Repo Functional Utility (`libs/project-alias-expander/`)
+- **Purpose**: CLI tool for expanding project aliases and executing Nx commands
+- **Architecture**: Orchestrator pattern with service-based architecture
+- **Distribution**: Global npm package with PowerShell module integration
+
+## Architectural Principles
+
+### Service-Based Architecture
+
+PAE uses orchestrator pattern with clear service separation:
+
+- **PAEManagerService**: Main orchestrator
+- **AliasManagerService**: PowerShell module generation
+- **CommandExecutionService**: Command execution
+- **ExpandableProcessorService**: Template processing
+
+**Rules:**
+
+- All core logic MUST be in services, not CLI entry point
+- CLI (`cli.ts`) MUST only orchestrate and delegate to services
+- Services MUST implement interfaces for testability
+- Dependencies MUST be aggregated through `IPAEDependencies` interface
+
+### Directory Structure
+
+```
+libs/project-alias-expander/
+├── src/
+│   ├── cli.ts                           # CLI entry point (orchestration only)
+│   ├── config.ts                        # Configuration loading
+│   ├── shell.ts                         # Shell detection
+│   ├── _types/                          # Type definitions
+│   ├── _interfaces/                     # Interface definitions
+│   └── services/                        # Service implementations
+├── __tests__/functional-tests/          # All tests go here
+├── config.json                          # Configuration file
+└── README.md                            # Documentation
+```
+
+## Configuration System
+
+### Config.json Structure
+
+```json
+{
+    "nxPackages": { "alias": "project-name" | { "name": "project", "suffix": "core|ext", "full": boolean } },
+    "nxTargets": { "shortcut": "full-target" },
+    "feature-nxTargets": { "alias": { "run-from": "ext", "run-target": "target" } },
+    "not-nxTargets": { "alias": "command" },
+    "expandable-flags": { "flag": "expansion" | { "defaults": {}, "template": "string" } },
+    "expandable-templates": { "template": { "defaults": { "variable": "value" }, "pwsh-template": "string" | {} | [] } }
+}
+```
+
+### Configuration Loading Rules
+
+- Use `strip-json-comments` for parsing JSON with comments
+- Support multiple config paths for different execution contexts
+- Throw errors instead of `process.exit()` for testability
+- Validate config structure and provide clear error messages
+
+## Expandable Templates System
+
+### Template Processing Rules
+
+1. **Variable Substitution**: Use `{variableName}` syntax
+2. **Template Positions**: `start`, `prefix`, `pre-args`, `suffix`, `end`
+3. **Shell-Specific Templates**: `pwsh-template`, `linux-template`, `cmd-template`
+4. **Array Templates**: Multiple templates processed sequentially
+5. **Variable Merging**: Template-level defaults merge with top-level defaults
+6. **Conflict Detection**: Throw error if same variable defined at both levels
+
+### Template Validation Rules
+
+- Only one `end` position template allowed per expandable
+- Validate template structure before processing
+- Provide clear error messages for template conflicts
+
+### Built-in Templates
+
+#### Timeout Template (`sto`)
+
+**PowerShell Implementation:**
+
+```json
+{
+    "position": "start",
+    "template": "$p = Start-Process -FilePath 'pwsh' -ArgumentList '-Command', '"
+},
+{
+    "position": "end",
+    "template": "' -NoNewWindow -PassThru; if (-not $p.WaitForExit({duration}000)) { Stop-Process -Id $p.Id -Force; Write-Warning 'Process timed out and was terminated.' }"
+}
+```
+
+**Linux Implementation:**
+
+```json
+{
+    "position": "start",
+    "template": "timeout {duration}s"
+}
+```
+
+## Command Execution Rules
+
+### Shell Detection
+
+- Detect shell type: `powershell`, `gitbash`, `cmd`, `linux`
+- Map to template types: `pwsh`, `linux`, `cmd`
+- Handle PowerShell commands (starting with `$`) specially
+
+### Command Execution Patterns
+
+1. **PowerShell Commands**: Execute via `powershell -Command`
+2. **Start Commands**: Execute directly with `spawnSync`
+3. **Nx Commands**: Execute via `nx` with proper argument handling
+4. **Echo Mode**: Print command with `->` prefix, return 0
+
+### Error Handling Rules
+
+- Wrap all operations in try-catch blocks
+- Provide informative error messages
+- Return appropriate exit codes
+- No silent failures allowed
+
+## Debug and Logging System
+
+### Debug Mode Rules
+
+- Debug mode activated by `-d` or `--debug` flags
+- Environment variable `PAE_DEBUG=1` also activates debug mode
+- All verbose logging MUST be in debug mode, not always-on
+- Debug messages use `[PAE DEBUG]`, `[CONFIG DEBUG]`, `[COMMAND DEBUG]` prefixes
+
+### Logging Levels
+
+1. **Debug**: Detailed execution flow (only when debug mode active)
+2. **Info**: Essential information (always shown)
+3. **Error**: Error messages (always shown)
+4. **Success**: Success messages with bold green checkmark (always shown)
+
+### Echo Mode Rules
+
+- Echo mode shows command with `->` prefix
+- Echo mode returns 0 (success) without execution
+- Echo mode processes all templates and expansions
+
+## PowerShell Integration
+
+### Module Generation Rules
+
+- Generate `pae-functions.psm1` during build process
+- Module includes all aliases from `config.json`
+- Module shows "Module loaded: PAE aliases" confirmation
+- Module installed to `C:\Users\{user}\Documents\WindowsPowerShell\Modules\PAE\PAE.psm1`
+
+### Module Content Rules
+
+- Each alias becomes `Invoke-{alias}` function
+- Include `pae-refresh` function for reloading
+- Export all functions and aliases
+- Functions call `pae <alias> @Arguments`
+
+## Testing Strategy
+
+### Test Organization Rules
+
+- All tests go in `__tests__/functional-tests/`
+- Integration tests are for VSCode integration only
+- Use `@fux/mock-strategy` for mocking
+- Mock external dependencies appropriately
+
+### Test Coverage Requirements
+
+- Test all public service methods
+- Test configuration loading and validation
+- Test template expansion and variable substitution
+- Test command execution paths
+- Test error handling scenarios
+
+## Build Configuration
+
+### Package.json Rules
+
+```json
+{
+    "name": "@fux/project-alias-expander",
+    "type": "module",
+    "bin": {
+        "pae": "./dist/cli.js"
+    },
+    "dependencies": {
+        "strip-json-comments": "^4.0.1"
+    }
+}
+```
+
+### Project.json Rules
+
+```json
+{
+    "targets": {
+        "build": {
+            "extends": "build:core",
+            "options": {
+                "external": ["strip-json-comments"]
+            }
+        },
+        "generate-scripts": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build:compile"],
+            "options": {
+                "commands": ["node libs/project-alias-expander/dist/cli.js install-aliases"]
+            }
+        }
+    }
+}
+```
+
+## Critical Anti-Patterns
+
+### Architecture Violations
+
+- ❌ Business logic in CLI entry point → Must be in services
+- ❌ Direct command execution without service delegation → Use CommandExecutionService
+- ❌ Template processing in CLI → Use ExpandableProcessorService
+- ❌ PowerShell module generation in CLI → Use AliasManagerService
+- ❌ Missing error handling → Wrap all operations in try-catch
+- ❌ Silent failures → Always provide error messages
+
+### Configuration Violations
+
+- ❌ Hardcoded configuration → Use config.json
+- ❌ Missing config validation → Validate structure and provide errors
+- ❌ Template conflicts → Detect and prevent variable conflicts
+- ❌ Invalid template positions → Validate position values
+
+### Execution Violations
+
+- ❌ Incorrect shell detection → Use proper shell detection logic
+- ❌ Wrong command format → Use `nx run <project>:<target>` format
+- ❌ Missing PowerShell command handling → Detect and execute via PowerShell
+- ❌ Echo mode execution → Echo mode must not execute commands
+
+### Testing Violations
+
+- ❌ Tests in wrong directory → All tests in functional-tests
+- ❌ Missing service mocking → Mock external dependencies
+- ❌ Integration tests for CLI → Integration tests for VSCode only
+- ❌ Missing error scenario tests → Test all error paths
+
+## Development Workflow
+
+### Pre-Development Checklist
+
+1. **Read Rules**: Understand PAE architecture and constraints
+2. **Check Documentation**: Review README.md and existing patterns
+3. **Understand Services**: Know which service handles what functionality
+4. **Plan Changes**: Determine which services need modification
+5. **Consider Testing**: Plan test coverage for changes
+
+### Development Process
+
+1. **Service-First**: Implement changes in appropriate service
+2. **Interface Compliance**: Ensure service implements correct interface
+3. **Error Handling**: Add comprehensive error handling
+4. **Debug Support**: Add debug logging where appropriate
+5. **Test Coverage**: Add tests for new functionality
+6. **Build Verification**: Ensure build succeeds
+7. **Integration Testing**: Test with real commands
+
+### Post-Development Checklist
+
+1. **Build Success**: `nx build @fux/project-alias-expander`
+2. **Test Success**: `nx test @fux/project-alias-expander`
+3. **Lint Success**: `nx lint @fux/project-alias-expander`
+4. **Manual Testing**: Test with real PAE commands
+5. **Documentation Update**: Update README.md if needed
+
+## Command Execution Patterns
+
+### PAE Command Structure
+
+```bash
+pae <alias> <target> [flags] [expandable-templates]
+```
+
+### Flag Processing Order
+
+1. **Debug Flags**: `-d`, `--debug` → Activate debug mode
+2. **Echo Flag**: `-echo` → Set PAE_ECHO=1, continue processing
+3. **Expandable Flags**: Process from `expandable-flags`
+4. **Expandable Templates**: Process from `expandable-templates`
+5. **Template Merging**: Merge template defaults with flag defaults
+6. **Command Construction**: Build final command with templates
+
+### Template Processing Order
+
+1. **Start Templates**: Prepend to command
+2. **Prefix Templates**: Add before main command
+3. **Pre-Args Templates**: Add before command arguments
+4. **Suffix Templates**: Add after main command (default)
+5. **End Templates**: Append to command (only one allowed)
+
+## Error Scenarios and Solutions
+
+### Common Error Patterns
+
+1. **Config File Not Found**
+    - **Cause**: Running from wrong directory
+    - **Solution**: Check multiple paths, provide clear error message
+
+2. **Template Variable Conflicts**
+    - **Cause**: Same variable in top-level and template-level defaults
+    - **Solution**: Detect conflict, throw descriptive error
+
+3. **Multiple End Templates**
+    - **Cause**: More than one template with `position: "end"`
+    - **Solution**: Validate and throw error
+
+4. **PowerShell Command Execution Failure**
+    - **Cause**: Incorrect PowerShell syntax or execution method
+    - **Solution**: Use proper PowerShell execution via `powershell -Command`
+
+5. **Shell Detection Issues**
+    - **Cause**: Incorrect shell type detection
+    - **Solution**: Improve shell detection logic
+
+## Quality Gates
+
+### Pre-Release Checklist
+
+- [ ] **Architecture Compliance**: Follows service-based architecture
+- [ ] **Configuration Validation**: All config scenarios tested
+- [ ] **Template Processing**: All template types work correctly
+- [ ] **Command Execution**: All execution paths tested
+- [ ] **Error Handling**: Comprehensive error coverage
+- [ ] **Debug Mode**: Debug functionality works correctly
+- [ ] **Echo Mode**: Echo mode works correctly
+- [ ] **PowerShell Integration**: Module generation and installation works
+- [ ] **Test Coverage**: All public APIs tested
+- [ ] **Documentation**: README.md is up-to-date
+- [ ] **Build Success**: Package builds without errors
+- [ ] **Lint Success**: Code passes linting
+- [ ] **Manual Testing**: Real-world usage tested
+
+## Natural Compliance Triggers
+
+### When I see "PAE" → I think "service-based architecture"
+
+### When I see "template" → I think "ExpandableProcessorService"
+
+### When I see "PowerShell" → I think "AliasManagerService"
+
+### When I see "command execution" → I think "CommandExecutionService"
+
+### When I see "config" → I think "strip-json-comments and validation"
+
+### When I see "debug" → I think "conditional logging with flags"
+
+### When I see "echo" → I think "preview with -> prefix"
+
+### When I see "error" → I think "comprehensive error handling"
+
+## Violation Prevention
+
+### Natural Stops
+
+- **MANDATORY**: Business logic in CLI → "Move to appropriate service"
+- **MANDATORY**: Missing error handling → "Add try-catch blocks"
+- **MANDATORY**: Hardcoded values → "Use config.json"
+- **MANDATORY**: Silent failures → "Add error messages"
+- **MANDATORY**: Template conflicts → "Detect and prevent conflicts"
+- **MANDATORY**: Missing debug support → "Add debug logging"
+- **MANDATORY**: Incorrect shell handling → "Use proper shell detection"
+- **MANDATORY**: Missing tests → "Add comprehensive test coverage"
+
+## Status Indicators
+
+- ✅ **Success**: All rules followed correctly
+- ⚠️ **Self-corrected**: Violation detected and corrected
+- 🚧 **Blockers**: Critical violations preventing progress
+- 🔧 **Maintenance**: Routine updates and improvements
+- 🚀 **Enhancement**: New features and capabilities

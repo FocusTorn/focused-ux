@@ -9,12 +9,12 @@ import { spawnSync } from 'node:child_process'
 vi.mock('node:fs', () => ({
     default: {
         existsSync: vi.fn().mockReturnValue(true),
-        readFileSync: vi.fn().mockReturnValue('{"packages":{"pbc":{"name":"project-butler","suffix":"core"}},"package-targets":{"v":"validate:deps","h":"help"},"not-nx-targets":{},"expandables":{"f":"fix","s":"skip-nx-cache"}}'),
+        readFileSync: vi.fn().mockReturnValue('{"nxPackages":{"pbc":{"name":"project-butler","suffix":"core"}},"nxTargets":{"v":"validate:deps","h":"help"},"not-nxTargets":{},"expandable-flags":{"f":"fix","s":"skip-nx-cache"}}'),
         writeFileSync: vi.fn(),
         mkdirSync: vi.fn(),
     },
     existsSync: vi.fn().mockReturnValue(true),
-    readFileSync: vi.fn().mockReturnValue('{"packages":{"pbc":{"name":"project-butler","suffix":"core"}},"package-targets":{"v":"validate:deps","h":"help"},"not-nx-targets":{},"expandables":{"f":"fix","s":"skip-nx-cache"}}'),
+    readFileSync: vi.fn().mockReturnValue('{"nxPackages":{"pbc":{"name":"project-butler","suffix":"core"}},"nxTargets":{"v":"validate:deps","h":"help"},"not-nxTargets":{},"expandable-flags":{"f":"fix","s":"skip-nx-cache"}}'),
     writeFileSync: vi.fn(),
     mkdirSync: vi.fn(),
 }))
@@ -157,12 +157,9 @@ describe('Main Function Execution Tests', () => {
     })
 
     describe('process.exit execution scenarios', () => {
-        it('should execute main and call process.exit when command fails', () => {
+        it('should execute main and return error code when command fails', () => {
             // Arrange
             const originalArgv = process.argv
-            const originalExit = process.exit
-            const exitSpy = vi.fn()
-            process.exit = exitSpy as any
 
             // Mock spawnSync to return failure
             vi.mocked(spawnSync).mockReturnValue({
@@ -179,16 +176,16 @@ describe('Main Function Execution Tests', () => {
                 // Set up argv for command that will fail
                 process.argv = ['node', 'cli.js', 'pbc', 'b']
 
-                // Act - This should execute the main function and hit the process.exit logic
-                main()
+                // Act - This should execute the main function and return error code
+                const result = main()
 
-                // Assert - Should exit with error code
-                expect(exitSpy).toHaveBeenCalledWith(1)
+                // Assert - Should return error code
+                expect(result).toBe(1)
 
                 // Cleanup
                 process.argv = originalArgv
             } finally {
-                process.exit = originalExit
+                process.argv = originalArgv
             }
         })
 
@@ -261,9 +258,12 @@ describe('Main Function Execution Tests', () => {
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
             try {
-                // Act - This should execute the main function and hit the help logic
-                // process.exit(0) will throw in test environment, which is expected
-                expect(() => main()).toThrow()
+                // Act - This should execute the main function and return success code
+                const result = main()
+
+                // Assert - Should return success code and show help
+                expect(result).toBe(0)
+                expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('PAE - Project Alias Expander'))
             } finally {
                 // Cleanup
                 process.argv = originalArgv
@@ -273,7 +273,7 @@ describe('Main Function Execution Tests', () => {
     })
 
     describe('error handling execution', () => {
-        it('should execute main with unknown alias and exit with error', () => {
+        it('should execute main with unknown alias and return error', () => {
             // Arrange
             const originalArgv = process.argv
             process.argv = ['node', 'cli.js', 'unknown-alias', 'b']
@@ -281,9 +281,11 @@ describe('Main Function Execution Tests', () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
             try {
-                // Act - This should execute the main function and hit the unknown alias error logic
-                // process.exit(1) will throw in test environment, which is expected
-                expect(() => main()).toThrow()
+                // Act - This should execute the main function and return error code
+                const result = main()
+
+                // Assert - Should return error code
+                expect(result).toBe(1)
             } finally {
                 // Cleanup
                 process.argv = originalArgv
@@ -291,7 +293,7 @@ describe('Main Function Execution Tests', () => {
             }
         })
 
-        it('should execute main with missing command and exit with error', () => {
+        it('should execute main with package alias and default to build target', () => {
             // Arrange
             const originalArgv = process.argv
             process.argv = ['node', 'cli.js', 'pbc']
@@ -299,9 +301,11 @@ describe('Main Function Execution Tests', () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
             try {
-                // Act - This should execute the main function and hit the missing command error logic
-                // process.exit(1) will throw in test environment, which is expected
-                expect(() => main()).toThrow()
+                // Act - This should execute the main function and return success code
+                const result = main()
+
+                // Assert - Should return success code (defaults to build target)
+                expect(result).toBe(0)
             } finally {
                 // Cleanup
                 process.argv = originalArgv

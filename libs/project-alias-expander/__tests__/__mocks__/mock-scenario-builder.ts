@@ -50,10 +50,10 @@ export interface PaeAliasScenarioOptions {
 }
 
 export interface PaeCliConfigScenarioOptions {
-    packages?: Record<string, { targets: string[] }>
-    packageTargets?: Record<string, string[]>
+    nxPackages?: Record<string, { targets: string[] }>
+    nxTargets?: Record<string, string[]>
     notNxTargets?: string[]
-    expandables?: Record<string, string>
+    expandableFlags?: Record<string, string>
     configPath?: string
 }
 
@@ -114,7 +114,7 @@ export async function setupPaeAliasResolutionScenario(
     options: PaeAliasScenarioOptions
 ): Promise<void> {
     const configContent = JSON.stringify({
-        packages: {
+        'nxPackages': {
             [options.alias]: options.isFull
                 ? { name: options.project.replace('@fux/', ''), full: true }
                 : options.project
@@ -132,18 +132,18 @@ export function setupPaeCliConfigScenario(
     options: PaeCliConfigScenarioOptions = {}
 ): void {
     const {
-        packages = { 'test-package': { targets: ['build'] } },
-        packageTargets = { 'test-package': ['build', 'test'] },
+        nxPackages = { 'test-package': { targets: ['build'] } },
+        nxTargets = { 'test-package': ['build', 'test'] },
         notNxTargets = ['help', 'version'],
-        expandables = { test: 'test-package' },
+        expandableFlags = { test: 'test-package' },
         configPath = '/config.json'
     } = options
 
     const mockConfig = {
-        packages,
-        'package-targets': packageTargets,
-        'not-nx-targets': notNxTargets,
-        expandables,
+        'nxPackages': nxPackages,
+        'nxTargets': nxTargets,
+        'not-nxTargets': notNxTargets,
+        'expandable-flags': expandableFlags,
     }
 
     const configContent = JSON.stringify(mockConfig)

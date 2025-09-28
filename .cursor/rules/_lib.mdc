@@ -1,0 +1,41 @@
+---
+globs: ['**/*']
+alwaysApply: false
+---
+
+# Shared Library Rules
+
+## When creating a shared library:
+
+1. **Package Structure:**
+    - Use `libs/{utility-name}/` directory
+    - Pure functions, clear exports, no side effects
+    - No VSCode dependencies
+
+2. **Export Strategy:**
+    - Individual exports instead of barrel exports
+    - Clear categorization with comments
+    - Tree-shakeable exports
+
+3. **Build Configuration:**
+    - Extends `build:core` target
+    - Format: `["esm"]`, Bundle: `false`
+    - Declarations: `true` with `declarationMap: true`
+
+4. **Testing:**
+    - Use `@fux/mock-strategy` for mocking
+    - Test all public APIs
+    - Mock external dependencies appropriately
+
+5. **Usage Guidelines:**
+    - ✅ Utilities used by multiple features
+    - ✅ Common abstractions and helpers
+    - ✅ CLI tools that get built and distributed
+    - ❌ Don't use for feature-specific logic
+
+## Anti-patterns to avoid:
+
+- ❌ VSCode dependencies in shared libraries
+- ❌ Side effects in utility functions
+- ❌ Feature-specific logic in shared packages
+- ❌ Missing test coverage

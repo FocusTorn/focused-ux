@@ -1,0 +1,39 @@
+---
+globs: ['**/*']
+alwaysApply: false
+---
+
+# Documentation Rules
+
+## When updating documentation:
+
+1. **Actions Log Protocol:**
+    - Use PowerShell script for actual timestamps: `[YYYY-MM-DD HH:MM:SS]`
+    - Project-level actions only for project-targeted changes
+    - Multi-package conversations: update each package's logs
+    - Documentation-only changes: not tracked in completed tasks
+
+2. **File Structure:**
+    - Package docs: `{package-name}-actions-log.md` and `{package-name}-task-tracker.md`
+    - Location: `{package-top-level}/_docs/` folder
+    - Example: `libs/tools/vsix-packager/_docs/_vsix-packager_Actions-Log.md`
+
+3. **Status Indicators:**
+    - ✅ Success - Completed, approved, working
+    - ❌ Error - Failed, rejected, broken
+    - ⚠️ Warning - Caution, attention needed
+    - 🚧 Blockers - Blocked, in progress, pending
+    - 📋 Tasks - Checklist, todo, planning
+
+4. **Documentation First Protocol:**
+    - Check `docs/Architecture.md` for package patterns
+    - Check `docs/FocusedUX-Testing-Strategy.md` for testing patterns
+    - Check `./docs/Actions-Log.md` for existing implementations
+    - Reference existing patterns directly
+
+## Anti-patterns to avoid:
+
+- ❌ Making up dates instead of using PowerShell script
+- ❌ Skipping date verification
+- ❌ Premature completion claims
+- ❌ Historical reference modification

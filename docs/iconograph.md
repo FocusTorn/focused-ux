@@ -133,8 +133,6 @@ This document provides a comprehensive reference for Unicode emoji and symbols t
 | 📆   | Tear-Off Calendar | Daily, date, reminder      |
 | 🗓️   | Spiral Calendar   | Planning, schedule, dates  |
 
-asdasd
-
 ### Health & Medical
 
 | Icon | Name             | Usage                       |

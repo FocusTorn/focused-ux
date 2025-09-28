@@ -1,0 +1,40 @@
+---
+globs: ['**/*']
+alwaysApply: false
+---
+
+# Extension Package Rules
+
+## When creating an extension package:
+
+1. **Package Structure:**
+    - Use `packages/{feature}/ext/` directory
+    - VSCode wrapper for core logic only
+    - Depends on core package for business logic
+
+2. **Adapter Pattern:**
+    - Create local adapters in `src/adapters/`
+    - VSCode value imports only in adapters
+    - Each adapter implements interface (e.g., `IWindowAdapter`)
+
+3. **Extension Entry Point:**
+    - Use `extension.ts` directly (no index.ts wrapper)
+    - Register commands in `activate()` function
+    - Pass adapters to core services
+
+4. **Build Configuration:**
+    - Extends `build:ext` target
+    - Format: `["cjs"]`, Bundle: `true`
+    - External: `["vscode", "js-yaml", etc.]`
+
+5. **VPack Integration:**
+    - Use `@fux/vpack:pack` executor
+    - Include `.vscodeignore` for VSIX packaging
+    - Dependencies: `@fux/{feature}-core: "workspace:*"`
+
+## Anti-patterns to avoid:
+
+- ❌ Business logic in extension package
+- ❌ VSCode value imports outside adapters
+- ❌ Duplicating core package functionality
+- ❌ Missing adapter pattern

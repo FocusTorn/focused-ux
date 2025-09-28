@@ -1,0 +1,46 @@
+---
+globs: ['**/*']
+alwaysApply: false
+---
+
+# Plugin Development Rules
+
+## When creating an Nx plugin:
+
+1. **Plugin Generation:**
+
+    ```bash
+    npx nx g @nx/plugin:plugin plugins/{plugin-name} \
+      --directory=plugins \
+      --importPath=@fux/{plugin-name} \
+      --linter=none \
+      --unitTestRunner=none \
+      --useProjectJson=true
+    ```
+
+2. **Generator Implementation:**
+    - Use existing Nx generators as base (e.g., `jsLibraryGenerator`)
+    - Generate custom templates in `files/` directory
+    - Use `runTasksInSerial` for post-generation tasks
+
+3. **Schema Definition:**
+    - Define schema in `schema.json`
+    - Generate TypeScript types with `schema.d.ts`
+    - Use `x-prompt` for interactive prompts
+
+4. **File Templates:**
+    - Use `__tmpl__` suffix for template files
+    - Template variables: `{name}`, `{className}`, `{description}`
+    - Generate complete package structure
+
+5. **Post-Generation Setup:**
+    - Global linting and testing will be added automatically
+    - Update workspace configuration
+    - Register plugin in `nx.json`
+
+## Anti-patterns to avoid:
+
+- ❌ Using generator UI instead of direct commands
+- ❌ Adding linting/testing in generator (use global targets)
+- ❌ Nested nx object in package.json (use standalone project.json)
+- ❌ Missing schema validation
