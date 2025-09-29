@@ -110,6 +110,7 @@ function success(message: string, ...args: any[]) {
 function showDynamicHelp(config?: AliasConfig) {
     try {
         const helpConfig = config || loadAliasConfig()
+
         if (!helpConfig) {
             throw new Error('Failed to load configuration')
         }
@@ -216,7 +217,7 @@ function showDynamicHelp(config?: AliasConfig) {
         
         console.log('Commands:')
         console.log('  install-shorthand-aliases    Generate and install PowerShell module with PAE aliases')
-        console.log('  refresh                      Refresh PAE aliases in current PowerShell session')
+        console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
         console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
         console.log('  help                         Show this help with all available aliases and flags (deprecated)')
         console.log('')
@@ -238,7 +239,7 @@ function showDynamicHelp(config?: AliasConfig) {
         console.log('')
         console.log('Commands:')
         console.log('  install-shorthand-aliases    Generate and install PowerShell module with PAE aliases')
-        console.log('  refresh                      Refresh PAE aliases in current PowerShell session')
+        console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
         console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
         console.log('  help                         Show this help with all available aliases and flags (deprecated)')
         console.log('')
@@ -273,6 +274,7 @@ async function main() {
         
         // Set up child process tracking in CommandExecution service
         const { setChildProcessTracker } = await import('./services/CommandExecution.service.js')
+
         setChildProcessTracker(trackChildProcess)
         
         debug('Main function called')
@@ -323,17 +325,9 @@ async function main() {
             case 'install-shorthand-aliases':
                 debug('Executing install-shorthand-aliases command')
                 debug('Executing install-shorthand-aliases')
-                await aliasManager.installAliases()
+                await aliasManager.processAliases()
                 // Success message is now handled by the loading message replacement
                 debug('install-shorthand-aliases completed, returning 0')
-                return 0
-
-            case 'refresh':
-                debug('Executing refresh command')
-                debug('Executing refresh')
-                aliasManager.refreshAliases()
-                success('PAE alias files regenerated successfully')
-                debug('refresh completed, returning 0')
                 return 0
 
             case 'refresh-direct':
@@ -522,8 +516,10 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
         
         // Process internal flags first (these affect PAE behavior, not the command)
         let timeoutMs: number | undefined = undefined
+
         if (config['internal-flags']) {
             const internalFlags = { ...config['internal-flags'] }
+
             if (config['expandable-templates']) {
                 Object.assign(internalFlags, config['expandable-templates'])
             }
@@ -639,8 +635,10 @@ async function handleExpandableCommand(alias: string, args: string[], config: Al
     
     // Process internal flags first (these affect PAE behavior, not the command)
     let timeoutMs: number | undefined = undefined
+
     if (config['internal-flags']) {
         const internalFlags = { ...config['internal-flags'] }
+
         if (config['expandable-templates']) {
             Object.assign(internalFlags, config['expandable-templates'])
         }
@@ -662,6 +660,7 @@ async function handleExpandableCommand(alias: string, args: string[], config: Al
     
     // Process expandable flags
     const expandableFlags = { ...config['expandable-flags'] }
+
     if (config['expandable-templates']) {
         Object.assign(expandableFlags, config['expandable-templates'])
     }
@@ -690,7 +689,9 @@ async function handleExpandableCommand(alias: string, args: string[], config: Al
         })
         
         console.log(`[DEBUG] Waiting for command to complete...`)
+
         const result = await childProcess
+
         console.log(`[DEBUG] Command completed with exit code: ${result.exitCode}`)
         return result.exitCode ?? 0
     } catch (error: any) {

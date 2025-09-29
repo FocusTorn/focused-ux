@@ -1,10 +1,19 @@
+// Management interfaces - consolidated alias and pae-manager interfaces
+import type { AliasConfig, FlagExpansion } from '../_types/index.js'
+
+// Alias management service interfaces
+export interface IAliasManagerService {
+    processAliases(): Promise<void>
+    generateLocalFiles(): void
+    installAliases(): Promise<void>
+    refreshAliasesDirect(): Promise<void>
+}
+
 // PAE Manager Service interfaces
 import type {
     IExpandableProcessorService,
-    ICommandExecutionService,
-    IAliasManagerService
+    ICommandExecutionService
 } from '../_types/index.js'
-import type { AliasConfig, FlagExpansion } from '../_types/index.js'
 
 export interface IPAEDependencies {
     expandableProcessor: IExpandableProcessorService
@@ -16,7 +25,6 @@ export interface IPAEManagerService {
     // Alias management operations
     generateLocalFiles(): void
     installAliases(): Promise<void>
-    refreshAliases(): void
     refreshAliasesDirect(): Promise<void>
     
     // Command execution operations

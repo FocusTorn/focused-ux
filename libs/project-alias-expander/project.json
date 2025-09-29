@@ -13,7 +13,21 @@
                 "{projectRoot}/config.json"
             ],
             "options": {
-                "main": "libs/project-alias-expander/src/cli.ts"
+                "main": "libs/project-alias-expander/src/cli.ts",
+                "outputPath": "libs/project-alias-expander/dist",
+                "tsConfig": "libs/project-alias-expander/tsconfig.json",
+                "declarationRootDir": "libs/project-alias-expander/src",
+                "format": ["esm"],
+                "bundle": false,
+                "platform": "node",
+                "target": "es2022",
+                "external": ["vscode"],
+                "thirdParty": false,
+                "sourcemap": true,
+                "deleteOutputPath": true,
+                "minify": true,
+                "treeShaking": true,
+                "metafile": true
             }
         }, //<
         "generate-scripts": { //>

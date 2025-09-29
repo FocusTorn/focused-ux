@@ -1,8 +1,9 @@
-import * as path from 'path'
 import * as fs from 'fs'
+import * as path from 'path'
 import { fileURLToPath } from 'node:url'
 import stripJsonComments from 'strip-json-comments'
-import type { AliasConfig, AliasValue } from './_types/index.js'
+import type { AliasConfig } from './_types/index.js'
+import { ConfigUtils } from './services/CommonUtils.service.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const PACKAGE_ROOT = path.resolve(path.dirname(__filename), '..')
@@ -12,16 +13,111 @@ const DEBUG = process.env.PAE_DEBUG === '1' || process.argv.includes('-d') || pr
 
 function debug(message: string, ...args: any[]) {
     if (DEBUG) {
-        console.error(`[CONFIG DEBUG] ${message}`, ...args)
+        console.error(`[CONFIG CACHE DEBUG] ${message}`, ...args)
     }
 }
 
-debug('Config.ts debug:')
-debug('  __filename:', __filename)
-debug('  PACKAGE_ROOT:', PACKAGE_ROOT)
-debug('  process.cwd():', process.cwd())
+interface CachedConfig {
+    config: AliasConfig
+    mtime: number
+    hash: string
+}
 
-export function loadAliasConfig(): AliasConfig {
+class ConfigurationCache {
+
+    private cache = new Map<string, CachedConfig>()
+    private watchers = new Map<string, fs.FSWatcher>()
+
+    getConfig(path: string): AliasConfig | null {
+        const cached = this.cache.get(path)
+
+        if (cached && !this.isStale(cached, path)) {
+            debug(`Cache hit for config: ${path}`)
+            return cached.config
+        }
+        debug(`Cache miss for config: ${path}`)
+        return null
+    }
+
+    setConfig(path: string, config: AliasConfig): void {
+        const stats = fs.statSync(path)
+        const hash = this.hashConfig(config)
+        
+        this.cache.set(path, {
+            config,
+            mtime: stats.mtimeMs,
+            hash
+        })
+
+        debug(`Cached config: ${path}, mtime: ${stats.mtimeMs}, hash: ${hash}`)
+
+        // Set up file watcher for invalidation
+        this.setupWatcher(path)
+    }
+
+    private isStale(cached: CachedConfig, path: string): boolean {
+        try {
+            const stats = fs.statSync(path)
+            const isStale = stats.mtimeMs > cached.mtime
+
+            if (isStale) {
+                debug(`Config is stale: ${path}, cached: ${cached.mtime}, current: ${stats.mtimeMs}`)
+            }
+            return isStale
+        } catch {
+            // File doesn't exist anymore
+            debug(`Config file no longer exists: ${path}`)
+            return true
+        }
+    }
+
+    private hashConfig(config: AliasConfig): string {
+        // Simple hash based on JSON stringification
+        return JSON.stringify(config).length.toString()
+    }
+
+    private setupWatcher(path: string): void {
+        if (this.watchers.has(path)) return
+
+        try {
+            const watcher = fs.watch(path, () => {
+                debug(`Config file changed, invalidating cache: ${path}`)
+                this.cache.delete(path)
+                this.watchers.delete(path)
+            })
+
+            this.watchers.set(path, watcher)
+            debug(`Set up file watcher for: ${path}`)
+        } catch (error) {
+            debug(`Failed to set up watcher for ${path}:`, error)
+        }
+    }
+
+    clearCache(): void {
+        debug('Clearing entire configuration cache')
+        this.cache.clear()
+        
+        // Close all watchers
+        for (const [path, watcher] of this.watchers) {
+            watcher.close()
+            debug(`Closed watcher for: ${path}`)
+        }
+        this.watchers.clear()
+    }
+
+    getCacheStats(): { size: number, paths: string[] } {
+        return {
+            size: this.cache.size,
+            paths: Array.from(this.cache.keys())
+        }
+    }
+
+}
+
+// Singleton instance
+const configCache = new ConfigurationCache()
+
+export function loadAliasConfigCached(): AliasConfig {
     // Try multiple possible locations for config.json
     const possiblePaths = [
         // If running from project root
@@ -37,8 +133,17 @@ export function loadAliasConfig(): AliasConfig {
     for (const configPath of possiblePaths) {
         debug(`Trying config path: ${configPath}`)
         debug(`  existsSync result: ${fs.existsSync(configPath)}`)
+        
         try {
             if (fs.existsSync(configPath)) {
+                // Check cache first
+                const cachedConfig = configCache.getConfig(configPath)
+
+                if (cachedConfig) {
+                    debug(`  Using cached config from: ${configPath}`)
+                    return cachedConfig
+                }
+
                 debug(`  Found config file, reading content...`)
 
                 const configContent = fs.readFileSync(configPath, 'utf-8')
@@ -52,6 +157,10 @@ export function loadAliasConfig(): AliasConfig {
                 const parsed = JSON.parse(strippedContent)
 
                 debug(`  Config parsed successfully`)
+
+                // Cache the result
+                configCache.setConfig(configPath, parsed)
+                
                 return parsed
             }
         } catch (error) {
@@ -67,25 +176,15 @@ export function loadAliasConfig(): AliasConfig {
     throw new Error(`Config file not found. Tried: ${possiblePaths.join(', ')}`)
 }
 
-export function resolveProjectForAlias(aliasValue: string | { name: string, suffix?: 'core' | 'ext', full?: boolean }): { project: string, isFull: boolean } {
-    if (typeof aliasValue === 'string') {
-        const project = aliasValue.startsWith('@fux/') ? aliasValue : `@fux/${aliasValue}`
-
-        return { project, isFull: false }
-    }
-    
-    const { name, suffix, full } = aliasValue
-
-    if (full) {
-        // When full is true, we still need to consider the suffix
-        const projectName = suffix ? `${name}-${suffix}` : name
-        const project = projectName.startsWith('@fux/') ? projectName : `@fux/${projectName}`
-
-        return { project, isFull: true }
-    }
-    
-    const projectName = suffix ? `${name}-${suffix}` : name
-    const project = projectName.startsWith('@fux/') ? projectName : `@fux/${projectName}`
-
-    return { project, isFull: false }
+// Legacy function for backward compatibility
+export function loadAliasConfig(): AliasConfig {
+    return loadAliasConfigCached()
 }
+
+export function resolveProjectForAlias(aliasValue: string | { name: string, suffix?: 'core' | 'ext', full?: boolean }): { project: string, isFull: boolean } {
+    return ConfigUtils.resolveProjectForAlias(aliasValue)
+}
+
+// Export cache utilities for testing and monitoring
+export { configCache, ConfigurationCache }
+export type { CachedConfig }

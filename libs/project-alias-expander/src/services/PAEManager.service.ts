@@ -22,10 +22,6 @@ export class PAEManagerService implements IPAEManagerService {
         return this.dependencies.aliasManager.installAliases()
     }
 
-    refreshAliases(): void {
-        return this.dependencies.aliasManager.refreshAliases()
-    }
-
     async refreshAliasesDirect(): Promise<void> {
         return this.dependencies.aliasManager.refreshAliasesDirect()
     }

@@ -140,6 +140,7 @@ export function setupPaeCliConfigScenario(
 
 // Enhanced PAE Mock Builder Pattern
 export class PaeMockBuilder {
+
     constructor(private mocks: PaeTestMocks) {}
 
     configExists(options: PaeConfigScenarioOptions): PaeMockBuilder {
@@ -214,6 +215,7 @@ export class PaeMockBuilder {
     build(): PaeTestMocks {
         return this.mocks
     }
+
 }
 
 export function createPaeMockBuilder(mocks?: PaeTestMocks): PaeMockBuilder {

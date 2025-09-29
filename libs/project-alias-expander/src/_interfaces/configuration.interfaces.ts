@@ -1,6 +1,17 @@
-// Expandable processing service interfaces
+// Configuration interfaces - consolidated config and expandable interfaces
+import type { AliasConfig, AliasValue } from '../_types/index.js'
 import type { ExpandableValue, FlagExpansion, TemplateProcessingResult } from '../_types/index.js'
 
+// Configuration interfaces
+export interface IConfigLoader {
+    loadAliasConfig(): AliasConfig
+}
+
+export interface IProjectResolver {
+    resolveProjectForAlias(aliasValue: AliasValue): { project: string, isFull: boolean }
+}
+
+// Expandable processing service interfaces
 export interface IExpandableProcessorService {
     expandTemplate(template: string, variables: Record<string, string>): string
     detectShellType(): 'pwsh' | 'linux' | 'cmd'
@@ -10,3 +21,5 @@ export interface IExpandableProcessorService {
     expandFlags(args: string[], expandables: Record<string, ExpandableValue>): FlagExpansion
     constructWrappedCommand(baseCommand: string[], startTemplates: string[], endTemplates: string[]): string[]
 }
+
+

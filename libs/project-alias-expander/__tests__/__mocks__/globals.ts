@@ -249,8 +249,8 @@ vi.mock('../../src/shell.js', () => ({
         if (process.env.PSModulePath || process.env.POWERSHELL_DISTRIBUTION_CHANNEL || process.env.PSExecutionPolicyPreference) {
             return 'powershell'
         }
-        if (process.env.MSYS_ROOT || process.env.MINGW_ROOT || process.env.WSL_DISTRO_NAME || process.env.WSLENV || 
-            (process.env.SHELL && (process.env.SHELL.includes('bash') || process.env.SHELL.includes('git-bash')))) {
+        if (process.env.MSYS_ROOT || process.env.MINGW_ROOT || process.env.WSL_DISTRO_NAME || process.env.WSLENV
+            || (process.env.SHELL && (process.env.SHELL.includes('bash') || process.env.SHELL.includes('git-bash')))) {
             return 'gitbash'
         }
         return 'unknown'

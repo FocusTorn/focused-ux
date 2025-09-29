@@ -52,7 +52,6 @@ import { //> from '../../src/cli'
 } from '../../src/cli' //<
 
 describe('CLI', () => {
-
     beforeEach(() => {
         vi.clearAllMocks()
     }) //<

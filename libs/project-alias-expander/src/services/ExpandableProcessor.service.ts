@@ -7,36 +7,21 @@ import type {
     ShellDetectionResult,
     IExpandableProcessorService
 } from '../_types/index.js'
-import { detectShell } from '../shell.js'
+import { detectShellTypeCached } from '../shell.js'
+import { TemplateUtils } from './CommonUtils.service.js'
 
 export class ExpandableProcessorService implements IExpandableProcessorService {
 
     expandTemplate(template: string, variables: Record<string, string>): string {
-        return template.replace(/\{(\w+)\}/g, (match, varName) => {
-            return variables[varName] || match
-        })
+        return TemplateUtils.expandTemplate(template, variables)
     }
 
     applyMutation(value: any, mutation: string): any {
-        try {
-            // Create a safe evaluation context with the value
-            const context = { value }
-            // Replace variable references in the mutation with the actual value
-            const mutatedExpression = mutation.replace(/\b\w+\b/g, (varName) => {
-                if (varName === 'value') return 'value'
-                return `context.${varName}`
-            })
-            
-            // Evaluate the mutation expression
-            return eval(`(function(context) { return ${mutatedExpression}; })(context)`)
-        } catch (error) {
-            console.warn(`Mutation failed for value "${value}" with expression "${mutation}":`, error)
-            return value // Return original value if mutation fails
-        }
+        return TemplateUtils.applyMutation(value, mutation)
     }
 
     detectShellType(): ShellType {
-        const shell = detectShell()
+        const shell = detectShellTypeCached()
 
         if (shell === 'powershell') {
             return 'pwsh'
@@ -55,18 +40,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
         
         for (const templateObj of templates) {
             // Merge template-level defaults with top-level variables
-            const templateVariables = { ...variables }
-
-            if (templateObj.defaults) {
-                // Check for conflicts between top-level and template-level defaults
-                for (const key of Object.keys(templateObj.defaults)) {
-                    if (key in templateVariables) {
-                        throw new Error(`Variable conflict: '${key}' is defined in both top-level and template-level defaults`)
-                    }
-                }
-                // Merge template defaults into variables
-                Object.assign(templateVariables, templateObj.defaults)
-            }
+            const templateVariables = TemplateUtils.mergeTemplateVariables(variables, templateObj.defaults)
             
             const expanded = this.expandTemplate(templateObj.template, templateVariables)
             
@@ -101,18 +75,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
                 return this.processTemplateArray(shellTemplate, variables)
             } else if (typeof shellTemplate === 'object' && shellTemplate !== null) {
                 // Handle single object template
-                const templateVariables = { ...variables }
-
-                if (shellTemplate.defaults) {
-                    // Check for conflicts between top-level and template-level defaults
-                    for (const key of Object.keys(shellTemplate.defaults)) {
-                        if (key in templateVariables) {
-                            throw new Error(`Variable conflict: '${key}' is defined in both top-level and template-level defaults`)
-                        }
-                    }
-                    // Merge template defaults into variables
-                    Object.assign(templateVariables, shellTemplate.defaults)
-                }
+                const templateVariables = TemplateUtils.mergeTemplateVariables(variables, shellTemplate.defaults as Record<string, string> | undefined)
                 
                 const expanded = this.expandTemplate(shellTemplate.template, templateVariables)
 
@@ -198,6 +161,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
                             const firstKey = defaultKeys.length > 0 ? defaultKeys[0] : key
                             const originalValue = variables[firstKey]
                             const mutatedValue = this.applyMutation(originalValue, expandable.mutation)
+
                             variables[firstKey] = mutatedValue.toString()
                         }
                     }
