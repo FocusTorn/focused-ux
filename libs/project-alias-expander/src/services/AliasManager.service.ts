@@ -10,7 +10,7 @@ export class AliasManagerService implements IAliasManagerService {
 
     async processAliases(): Promise<void> {
         // Main orchestrator function for alias processing
-        const spinner = ora('Regenerating PAE aliases...').start()
+        console.log('🔄 Regenerating PAE aliases...')
         
         try {
             // Step 1: Generate the local files
@@ -19,9 +19,9 @@ export class AliasManagerService implements IAliasManagerService {
             // Step 2: Install the aliases
             await this.installAliases()
             
-            spinner.succeed('PAE aliases regenerated successfully')
+            console.log('✅ PAE aliases regenerated successfully')
         } catch (error) {
-            spinner.fail('Failed to process PAE aliases')
+            console.log('❌ Failed to process PAE aliases')
             throw error
         }
     }
@@ -213,12 +213,14 @@ pae-refresh() {
             console.log('   pae refresh')
         }
         
-        // For install-shorthand-aliases, regenerate files and provide reload instructions
-        // This matches the behavior of 'pae refresh' command
-        
-        console.log('\n🔄 To reload aliases in current session:')
+        // Try to execute PowerShell command in the current session
+        // The issue is that execa creates a child process, not executing in current session
+        // For now, provide clear instructions for manual loading
+        console.log('\n🔄 To load aliases in current PowerShell session:')
         console.log('   pae-refresh')
         console.log('   # Or: Import-Module PAE -Force')
+        console.log('')
+        console.log('💡 Note: Aliases are installed but need to be loaded in your current session.')
     }
 
     async autoRefreshAliases(): Promise<void> {

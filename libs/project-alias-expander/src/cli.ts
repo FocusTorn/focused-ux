@@ -217,7 +217,7 @@ function showDynamicHelp(config?: AliasConfig) {
         
         console.log('Commands:')
         console.log('  install-shorthand-aliases    Generate and install PowerShell module with PAE aliases')
-        console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
+        console.log('  refresh                      Refresh PAE aliases in current PowerShell session')
         console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
         console.log('  help                         Show this help with all available aliases and flags (deprecated)')
         console.log('')
@@ -239,7 +239,7 @@ function showDynamicHelp(config?: AliasConfig) {
         console.log('')
         console.log('Commands:')
         console.log('  install-shorthand-aliases    Generate and install PowerShell module with PAE aliases')
-        console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
+        console.log('  refresh                      Refresh PAE aliases in current PowerShell session')
         console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
         console.log('  help                         Show this help with all available aliases and flags (deprecated)')
         console.log('')
@@ -328,6 +328,20 @@ async function main() {
                 await aliasManager.processAliases()
                 // Success message is now handled by the loading message replacement
                 debug('install-shorthand-aliases completed, returning 0')
+                return 0
+
+            case 'refresh':
+                debug('Executing refresh command')
+                debug('Executing refresh')
+                // Provide clear instructions for manual refresh
+                console.log('\n🔄 To refresh PAE aliases in your current PowerShell session:')
+                console.log('   Import-Module PAE -Force')
+                console.log('   # Or use: pae-refresh')
+                console.log('')
+                console.log('💡 Note: PAE commands cannot directly modify your current PowerShell session.')
+                console.log('   This is a PowerShell security limitation.')
+                success('PAE refresh instructions displayed')
+                debug('refresh completed, returning 0')
                 return 0
 
             case 'refresh-direct':
