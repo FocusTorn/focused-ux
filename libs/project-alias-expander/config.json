@@ -1,4 +1,10 @@
-{ // $ npm install -g ./libs/project-alias-expander/dist
+{
+    // $ npm install -g ./libs/project-alias-expander/dist
+    
+    // install-shorthand-aliases    Generate and install PowerShell module with PAE aliases
+    // refresh                      Refresh PAE aliases in current PowerShell session
+    // refresh-direct               Refresh aliases directly (bypasses session reload)
+
 
     "feature-nxTargets": { //> [Nx Target] Feature's related packages"
         "desc": "[Nx Target] packages related to a feature",
@@ -65,17 +71,21 @@
     // {in-dir}
     // 
     
-    "not-nxTargets": { //> [Nx Name] Uses Nx project name but not targets
+    // Expands Nx project name but not targets
+    "not-nxTargets": { //> 
         "desc": "[Nx Name] Alias assignments Nx project name, but not the targets",
         
         "esv": "npx esbuild-visualizer --metadata"
     
     }, //<
     
-    "expandable-commands": { //> [General] Agnostic alias assignments
+    // Agnostic alias assignments, directly replaces alias with command as written
+    "expandable-commands": { //> 
         "desc": "[General] Agnostic alias assignments, expand alias to full command",
         
-        "ish": "pae install-shorthand-aliases"
+        "ish": "pae install-shorthand-aliases",
+        "build": "nx build @fux/project-alias-expander -s"
+        
         
     }, //<
     
@@ -107,6 +117,8 @@
     
     // Accepts templates and expanded(-alias to --flag) > processed before command is generated
     "internal-flags": { //>
+        "h"  : "--help",
+        
         "v"  : "--pae-verbose",
         "d"  : "--pae-debug",
         "echo" : "--pae-echo",

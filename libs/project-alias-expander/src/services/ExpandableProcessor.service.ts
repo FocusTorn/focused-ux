@@ -17,6 +17,24 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
         })
     }
 
+    applyMutation(value: any, mutation: string): any {
+        try {
+            // Create a safe evaluation context with the value
+            const context = { value }
+            // Replace variable references in the mutation with the actual value
+            const mutatedExpression = mutation.replace(/\b\w+\b/g, (varName) => {
+                if (varName === 'value') return 'value'
+                return `context.${varName}`
+            })
+            
+            // Evaluate the mutation expression
+            return eval(`(function(context) { return ${mutatedExpression}; })(context)`)
+        } catch (error) {
+            console.warn(`Mutation failed for value "${value}" with expression "${mutation}":`, error)
+            return value // Return original value if mutation fails
+        }
+    }
+
     detectShellType(): ShellType {
         const shell = detectShell()
 
@@ -142,7 +160,6 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
         const suffix: string[] = []
         const end: string[] = []
         const remainingArgs: string[] = []
-        let timeoutMs: number | undefined = undefined
 
         for (const arg of args) {
             if (arg.startsWith('--')) {
@@ -175,14 +192,14 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
                         } else {
                             variables[key] = value
                         }
-                    }
-                    
-                    // Check if this is a special timeout expandable
-                    if (typeof expandable === 'object' && expandable.special === 'timeout') {
-                        // Extract timeout duration from variables or defaults
-                        const duration = variables.duration || expandable.defaults?.duration || '10'
-                        timeoutMs = parseInt(duration) * 1000 // Convert seconds to milliseconds
-                        continue // Don't add to any arrays, just set timeout
+                        
+                        // Apply mutation if it exists and we have a custom value
+                        if (typeof expandable === 'object' && expandable.mutation) {
+                            const firstKey = defaultKeys.length > 0 ? defaultKeys[0] : key
+                            const originalValue = variables[firstKey]
+                            const mutatedValue = this.applyMutation(originalValue, expandable.mutation)
+                            variables[firstKey] = mutatedValue.toString()
+                        }
                     }
                     
                     if (typeof expandable === 'string') {
@@ -298,7 +315,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
             remainingArgs.push(arg)
         }
         
-        return { start, prefix, preArgs, suffix, end, remainingArgs, timeoutMs }
+        return { start, prefix, preArgs, suffix, end, remainingArgs }
     }
 
     constructWrappedCommand(baseCommand: string[], startTemplates: string[], endTemplates: string[]): string[] {

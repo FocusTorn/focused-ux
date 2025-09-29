@@ -1,10 +1,28 @@
 # FocusedUX Architecture
 
+## **REFERENCE FILES**
+
+### **Documentation References**
+
+- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
+- **SOP_DOCS**: `docs/_SOP.md`
+- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
+- **ACTIONS_LOG**: `docs/Actions-Log.md`
+
+### **Command References**
+
+- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
+- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
+- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
+- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
+
+---
+
 ## Package Classification
 
 The FocusedUX monorepo follows a **standardized package classification system** that determines architectural patterns, build configurations, and testing strategies.
 
-**📋 Reference**: See [Package Archetypes](./Package-Archetypes.md) for the complete single source of truth on package classification, including detailed architectural patterns, examples, and implementation guidelines.
+**📋 Reference**: See **PACKAGE_ARCHETYPES** for the complete single source of truth on package classification, including detailed architectural patterns, examples, and implementation guidelines.
 
 ### **Quick Reference**
 
@@ -62,7 +80,7 @@ Is the package intended to be a VS Code extension?
 - **Pattern**: Use type imports only
 - **Implementation**: `import type { Uri } from 'vscode'`
 - **Rationale**: Core packages remain pure business logic without VSCode dependencies
-- **Testing**: See [Testing Strategy](../testing/_Testing-Strategy.md) for comprehensive testing patterns
+- **Testing**: See **TESTING_STRATEGY** for comprehensive testing patterns
 - **Local Interface Pattern**: Define local interfaces (e.g., `IUri`, `IUriFactory`) to replace VSCode value usage
 
 **Important Distinction**:
@@ -92,7 +110,7 @@ Is the package intended to be a VS Code extension?
     ```
 
 - **Rationale**: Extension packages handle VSCode integration through local adapters
-- **Testing**: See [Testing Strategy](../testing/_Testing-Strategy.md) for comprehensive testing patterns
+- **Testing**: See **TESTING_STRATEGY** for comprehensive testing patterns
 
 ### **No Shared Package Usage**
 

@@ -1,5 +1,33 @@
 # Mock Strategy for Tool Packages
 
+## **REFERENCE FILES**
+
+### **Documentation References**
+
+- **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
+- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
+- **SOP_DOCS**: `docs/_SOP.md`
+- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
+- **ACTIONS_LOG**: `docs/Actions-Log.md`
+
+### **Testing Documentation References**
+
+- **MOCK_STRATEGY_CORE**: `docs/testing/Mock-Strategy-Core.md`
+- **MOCK_STRATEGY_EXT**: `docs/testing/Mock-Strategy-Ext.md`
+- **MOCK_STRATEGY_LIB**: `docs/testing/Mock-Strategy-Lib.md`
+- **MOCK_STRATEGY_PLUGIN**: `docs/testing/Mock-Strategy-Plugin.md`
+- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General__v2.md`
+- **TROUBLESHOOTING_TESTS**: `docs/testing/Troubleshooting - Tests.md`
+
+### **Command References**
+
+- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
+- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
+- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
+- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
+
+---
+
 ## 🎯 Overview
 
 The FocusedUX project uses a **Tool Package Mock Strategy** that focuses on CLI tool functionality, interactive interfaces, and command-line operations. This approach reduces code duplication by 60% while maintaining test clarity and maintainability for CLI tool development.
@@ -259,12 +287,14 @@ export function createMockFileStream(): any {
     }
 }
 
-export function createMockChildProcessResult(options: {
-    status?: number
-    stdout?: string
-    stderr?: string
-    error?: Error
-} = {}): any {
+export function createMockChildProcessResult(
+    options: {
+        status?: number
+        stdout?: string
+        stderr?: string
+        error?: Error
+    } = {}
+): any {
     const { status = 0, stdout = '', stderr = '', error } = options
     return {
         status,
@@ -343,10 +373,7 @@ export interface CliScenarioOptions {
     exitCode?: number
 }
 
-export function setupCliSuccessScenario(
-    mocks: ToolTestMocks,
-    options: CliScenarioOptions
-): void {
+export function setupCliSuccessScenario(mocks: ToolTestMocks, options: CliScenarioOptions): void {
     const { input, output = '', exitCode = 0 } = options
     if (input) {
         const inputs = Array.isArray(input) ? input : [input]
@@ -372,10 +399,7 @@ export function setupCliSuccessScenario(
     })
 }
 
-export function setupCliErrorScenario(
-    mocks: ToolTestMocks,
-    options: CliScenarioOptions
-): void {
+export function setupCliErrorScenario(mocks: ToolTestMocks, options: CliScenarioOptions): void {
     const { input, error = 'CLI error', exitCode = 1 } = options
     if (input) {
         const inputs = Array.isArray(input) ? input : [input]
@@ -730,12 +754,7 @@ export interface CliScenarioOptions {
 }
 
 // ❌ DON'T: Use untyped parameters
-export function setupCliSuccessScenario(
-    mocks: any,
-    input: string,
-    output: string,
-    exitCode: number
-)
+export function setupCliSuccessScenario(mocks: any, input: string, output: string, exitCode: number)
 ```
 
 ### 4. Override Specific Mocks When Needed
@@ -803,43 +822,43 @@ pnpm add @fux/mock-strategy
 
 ```typescript
 // libs/tools/my-tool/__tests__/__mocks__/helpers.ts
-import { 
-  ToolTestMocks, 
-  setupToolTestEnvironment,
-  setupFileSystemMocks,
-  setupPathMocks,
-  resetToolMocks
+import {
+    ToolTestMocks,
+    setupToolTestEnvironment,
+    setupFileSystemMocks,
+    setupPathMocks,
+    resetToolMocks,
 } from '@fux/mock-strategy/tool'
 import { vi } from 'vitest'
 
 // Extend base mocks with tool-specific needs
 export interface MyToolTestMocks extends ToolTestMocks {
-  myToolService: {
-    processCommand: ReturnType<typeof vi.fn>
-    validateInput: ReturnType<typeof vi.fn>
-  }
+    myToolService: {
+        processCommand: ReturnType<typeof vi.fn>
+        validateInput: ReturnType<typeof vi.fn>
+    }
 }
 
 export function setupMyToolTestEnvironment(): MyToolTestMocks {
-  const baseMocks = setupToolTestEnvironment()
-  
-  return {
-    ...baseMocks,
-    myToolService: {
-      processCommand: vi.fn(),
-      validateInput: vi.fn(),
+    const baseMocks = setupToolTestEnvironment()
+
+    return {
+        ...baseMocks,
+        myToolService: {
+            processCommand: vi.fn(),
+            validateInput: vi.fn(),
+        },
     }
-  }
 }
 
 export function setupMyToolMocks(mocks: MyToolTestMocks): void {
-  mocks.myToolService.processCommand.mockResolvedValue('processed')
-  mocks.myToolService.validateInput.mockReturnValue(true)
+    mocks.myToolService.processCommand.mockResolvedValue('processed')
+    mocks.myToolService.validateInput.mockReturnValue(true)
 }
 
 export function resetMyToolMocks(mocks: MyToolTestMocks): void {
-  resetToolMocks(mocks) // Reset base mocks
-  Object.values(mocks.myToolService).forEach(mock => mock.mockReset())
+    resetToolMocks(mocks) // Reset base mocks
+    Object.values(mocks.myToolService).forEach((mock) => mock.mockReset())
 }
 ```
 
@@ -847,24 +866,24 @@ export function resetMyToolMocks(mocks: MyToolTestMocks): void {
 
 ```typescript
 // libs/tools/my-tool/__tests__/functional-tests/MyTool.test.ts
-import { 
-  setupMyToolTestEnvironment,
-  setupMyToolMocks,
-  resetMyToolMocks
+import {
+    setupMyToolTestEnvironment,
+    setupMyToolMocks,
+    resetMyToolMocks,
 } from '../__mocks__/helpers'
 
 describe('MyTool', () => {
-  let mocks: ReturnType<typeof setupMyToolTestEnvironment>
+    let mocks: ReturnType<typeof setupMyToolTestEnvironment>
 
-  beforeEach(() => {
-    mocks = setupMyToolTestEnvironment()
-    setupMyToolMocks(mocks)
-    resetMyToolMocks(mocks)
-  })
+    beforeEach(() => {
+        mocks = setupMyToolTestEnvironment()
+        setupMyToolMocks(mocks)
+        resetMyToolMocks(mocks)
+    })
 
-  it('should process commands successfully', () => {
-    // Test logic here
-  })
+    it('should process commands successfully', () => {
+        // Test logic here
+    })
 })
 ```
 
@@ -966,6 +985,7 @@ export default mergeConfig(
 ### **When to Use Mock Strategy Library**
 
 ✅ **Use `@fux/mock-strategy/tool` when**:
+
 - You need **standard CLI tool mocks** (readline, streams, process, etc.)
 - You want **consistent mock patterns** across tool packages
 - You prefer **centralized maintenance** of common CLI mocks
@@ -974,6 +994,7 @@ export default mergeConfig(
 ### **When to Extend Library in Package `__mocks__`**
 
 ✅ **Extend library in package `__mocks__` when**:
+
 - You need **tool-specific business logic mocks**
 - You have **domain-specific CLI scenarios** not suitable for the library
 - You want to **compose** library mocks with tool-specific mocks
@@ -982,6 +1003,7 @@ export default mergeConfig(
 ### **When to Add Mocks at File Level**
 
 ✅ **Add mocks at file level when**:
+
 - You need **test-specific CLI mocks** used by multiple test cases in one file
 - You have **simple CLI mocks** that don't benefit from centralized management
 - You're **experimenting** with CLI mock patterns
@@ -990,6 +1012,7 @@ export default mergeConfig(
 ### **When to Add Inline Mocks**
 
 ✅ **Add inline mocks when**:
+
 - You need **single-use CLI mocks** within one test
 - You have **simple mock return values** that don't need abstraction
 - You're **debugging** specific CLI test scenarios
@@ -1098,4 +1121,3 @@ The Tool Package Mock Strategy is designed to be extensible:
 ---
 
 This Tool Package Mock Strategy provides the perfect balance between centralized control and individual test flexibility, making your test suite more maintainable, readable, and efficient for CLI tool development.
-

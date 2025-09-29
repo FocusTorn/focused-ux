@@ -1,5 +1,23 @@
 # SOP v2: FocusedUX Core/Extension Architecture
 
+## **REFERENCE FILES**
+
+### **Documentation References**
+
+- **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
+- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
+- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
+- **ACTIONS_LOG**: `docs/Actions-Log.md`
+
+### **Command References**
+
+- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
+- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
+- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
+- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
+
+---
+
 ## **Overview**
 
 This document outlines the **confirmed final architecture** for the FocusedUX monorepo, based on the working implementations in Ghost Writer and Project Butler packages. This architecture provides a clean separation between business logic (core) and VSCode integration (extension) while maintaining simplicity and testability.
@@ -72,7 +90,7 @@ nx_workspace
 - [ ] **All package dependencies** and relationships identified
 - [ ] **Package types** (core/ext/shared/tool) and roles understood
 - [ ] **Build configurations** and variations mapped
-- [ ] **Testing strategies** across packages analyzed (see [Testing Strategy](../testing/_Testing-Strategy.md))
+- [ ] **Testing strategies** across packages analyzed (see **TESTING_STRATEGY**)
 - [ ] **Target package context** within overall system established
 
 ## **Confirmed Architecture Pattern**

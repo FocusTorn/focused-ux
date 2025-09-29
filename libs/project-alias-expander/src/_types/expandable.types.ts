@@ -3,6 +3,7 @@ export type ExpandableValue = string | {
     position?: 'start' | 'prefix' | 'pre-args' | 'suffix' | 'end'
     defaults?: Record<string, string>
     template?: string
+    mutation?: string
     'pwsh-template'?: string | TemplateObject | TemplateObject[]
     'linux-template'?: string | TemplateObject | TemplateObject[]
     'cmd-template'?: string | TemplateObject | TemplateObject[]
@@ -23,7 +24,6 @@ export interface FlagExpansion {
     suffix: string[]
     end: string[]
     remainingArgs: string[]
-    timeoutMs?: number
 }
 
 export interface TemplateProcessingResult {

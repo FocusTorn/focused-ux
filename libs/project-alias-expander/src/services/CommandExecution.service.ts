@@ -70,7 +70,7 @@ export class CommandExecutionService implements ICommandExecutionService {
             debug('CommandExecution: About to execute nx with argv:', argv)
 
             const childProcess = execa('nx', argv.slice(1), {
-                timeout: timeoutMs || 300000, // Use provided timeout or default 5 minutes
+                timeout: 300000, // 5 minute timeout
                 killSignal: 'SIGTERM',
                 stdio: 'inherit'
             })

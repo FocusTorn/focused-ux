@@ -1,5 +1,33 @@
 # Mock Strategy for Core Packages
 
+## **REFERENCE FILES**
+
+### **Documentation References**
+
+- **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
+- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
+- **SOP_DOCS**: `docs/_SOP.md`
+- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
+- **ACTIONS_LOG**: `docs/Actions-Log.md`
+
+### **Testing Documentation References**
+
+- **MOCK_STRATEGY_EXT**: `docs/testing/Mock-Strategy-Ext.md`
+- **MOCK_STRATEGY_LIB**: `docs/testing/Mock-Strategy-Lib.md`
+- **MOCK_STRATEGY_TOOL**: `docs/testing/Mock-Strategy-Tool.md`
+- **MOCK_STRATEGY_PLUGIN**: `docs/testing/Mock-Strategy-Plugin.md`
+- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General__v2.md`
+- **TROUBLESHOOTING_TESTS**: `docs/testing/Troubleshooting - Tests.md`
+
+### **Command References**
+
+- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
+- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
+- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
+- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
+
+---
+
 ## 🎯 Overview
 
 The FocusedUX project uses a **Core Package Mock Strategy** that focuses on Node.js APIs and business logic without VSCode dependencies. This approach reduces code duplication by 60% while maintaining test clarity and maintainability for core business logic.
@@ -759,4 +787,3 @@ The Core Package Mock Strategy is designed to be extensible:
 ---
 
 This Core Package Mock Strategy provides the perfect balance between centralized control and individual test flexibility, making your test suite more maintainable, readable, and efficient for core business logic.
-

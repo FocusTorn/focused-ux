@@ -1,10 +1,28 @@
 # FocusedUX Package Archetypes
 
+## **REFERENCE FILES**
+
+### **Documentation References**
+
+- **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
+- **SOP_DOCS**: `docs/_SOP.md`
+- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
+- **ACTIONS_LOG**: `docs/Actions-Log.md`
+
+### **Command References**
+
+- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
+- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
+- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
+- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
+
+---
+
 ## Overview
 
 This document serves as the **single source of truth** for package classification in the FocusedUX monorepo. All packages must be classified according to this system, which determines architectural patterns, build configurations, and development workflows.
 
-**📋 Testing Reference**: See [Testing Strategy](../testing/_Testing-Strategy.md) for comprehensive testing strategies and patterns.
+**📋 Testing Reference**: See **TESTING_STRATEGY** for comprehensive testing strategies and patterns.
 
 ## Package Classification System
 
@@ -48,7 +66,7 @@ All packages use minimal `project.json` configurations that extend global target
 **Purpose**: Standalone utilities with direct execution capabilities
 **Architecture**: Direct execution, minimal dependencies, CLI-focused
 **Build Configuration**: Extends `build:core` target with package-specific external dependencies
-**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
+**Testing Strategy**: See **TESTING_STRATEGY** for package-specific testing patterns
 
 **Examples**:
 
@@ -82,7 +100,7 @@ libs/tools/{tool-name}/
 **Purpose**: Shared utilities across multiple packages
 **Architecture**: Pure functions, clear exports, no side effects
 **Build Configuration**: Extends `build:core` target with package-specific external dependencies
-**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
+**Testing Strategy**: See **TESTING_STRATEGY** for package-specific testing patterns
 
 **Examples**:
 
@@ -118,7 +136,7 @@ libs/{utility-name}/
 **Purpose**: Feature-specific utilities and processing logic
 **Architecture**: Feature-specific processing, specialized functionality
 **Build Configuration**: Extends `build:core` target with package-specific external dependencies
-**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
+**Testing Strategy**: See **TESTING_STRATEGY** for package-specific testing patterns
 
 **Examples**:
 
@@ -155,7 +173,7 @@ packages/{feature}/{utility-name}/
 **Purpose**: Pure business logic, self-contained feature implementation
 **Architecture**: Type imports only, no VSCode value imports, minimal external dependencies
 **Build Configuration**: Extends `build:core` target with package-specific external dependencies
-**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
+**Testing Strategy**: See **TESTING_STRATEGY** for package-specific testing patterns
 
 **Examples**:
 
@@ -193,7 +211,7 @@ packages/{feature-name}/core/
 **Purpose**: VSCode extension wrapper for core logic
 **Architecture**: Local adapters, CommonJS bundle, VSCode integration
 **Build Configuration**: Extends `build:ext` target with package-specific external dependencies
-**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
+**Testing Strategy**: See **TESTING_STRATEGY** for package-specific testing patterns
 
 **Examples**:
 
@@ -238,7 +256,7 @@ packages/{feature-name}/ext/
 **Purpose**: Will replace current generator packages with Nx-aligned generators
 **Status**: Currently in development
 **Architecture**: TBD when implemented
-**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
+**Testing Strategy**: See **TESTING_STRATEGY** for package-specific testing patterns
 
 **Planned Examples**:
 
@@ -252,7 +270,7 @@ packages/{feature-name}/ext/
 **Purpose**: Single orchestrator extension that manages multiple features
 **Status**: Planned for future development
 **Architecture**: TBD when implemented
-**Testing Strategy**: See [Testing Strategy](../testing/_Testing-Strategy.md) for package-specific testing patterns
+**Testing Strategy**: See **TESTING_STRATEGY** for package-specific testing patterns
 
 **Characteristics** (Planned):
 

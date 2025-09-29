@@ -107,9 +107,12 @@ function success(message: string, ...args: any[]) {
     console.log(`${green}${bold}${checkmark}${reset}${green} ${message}${reset}`, ...args)
 }
 
-function showDynamicHelp() {
+function showDynamicHelp(config?: AliasConfig) {
     try {
-        const config = loadAliasConfig()
+        const helpConfig = config || loadAliasConfig()
+        if (!helpConfig) {
+            throw new Error('Failed to load configuration')
+        }
         
         console.log('')
         console.log('PAE - Project Alias Expander')
@@ -118,13 +121,13 @@ function showDynamicHelp() {
         console.log('')
         
         // Show available aliases
-        if (config.nxPackages && Object.keys(config.nxPackages).length > 0) {
-            const desc = config.nxPackages.desc || 'Project aliases'
+        if (helpConfig.nxPackages && Object.keys(helpConfig.nxPackages).length > 0) {
+            const desc = helpConfig.nxPackages.desc || 'Project aliases'
             const dimmed = '\x1b[2m'
             const reset = '\x1b[0m'
 
             console.log(`Available Aliases: ${dimmed}${desc}${reset}`)
-            Object.entries(config.nxPackages).forEach(([alias, project]) => {
+            Object.entries(helpConfig.nxPackages).forEach(([alias, project]) => {
                 if (alias !== 'desc') {
                     const projectName = typeof project === 'string' ? project : project.name
 
@@ -135,13 +138,13 @@ function showDynamicHelp() {
         }
         
         // Show available targets
-        if (config.nxTargets && Object.keys(config.nxTargets).length > 0) {
-            const desc = config.nxTargets.desc || 'Target shortcuts'
+        if (helpConfig.nxTargets && Object.keys(helpConfig.nxTargets).length > 0) {
+            const desc = helpConfig.nxTargets.desc || 'Target shortcuts'
             const dimmed = '\x1b[2m'
             const reset = '\x1b[0m'
 
             console.log(`Available Targets: ${dimmed}${desc}${reset}`)
-            Object.entries(config.nxTargets).forEach(([shortcut, target]) => {
+            Object.entries(helpConfig.nxTargets).forEach(([shortcut, target]) => {
                 if (shortcut !== 'desc') {
                     console.log(`  ${shortcut.padEnd(8)} → ${target}`)
                 }
@@ -150,13 +153,13 @@ function showDynamicHelp() {
         }
         
         // Show feature targets
-        if (config['feature-nxTargets'] && Object.keys(config['feature-nxTargets']).length > 0) {
-            const desc = config['feature-nxTargets'].desc || 'Feature-specific targets'
+        if (helpConfig['feature-nxTargets'] && Object.keys(helpConfig['feature-nxTargets']).length > 0) {
+            const desc = helpConfig['feature-nxTargets'].desc || 'Feature-specific targets'
             const dimmed = '\x1b[2m'
             const reset = '\x1b[0m'
 
             console.log(`Feature Targets: ${dimmed}${desc}${reset}`)
-            Object.entries(config['feature-nxTargets']).forEach(([alias, config]) => {
+            Object.entries(helpConfig['feature-nxTargets']).forEach(([alias, config]) => {
                 if (alias !== 'desc') {
                     console.log(`  ${alias.padEnd(8)} → ${config['run-target']} (from ${config['run-from']})`)
                 }
@@ -165,13 +168,13 @@ function showDynamicHelp() {
         }
         
         // Show expandable flags
-        if (config['expandable-flags'] && Object.keys(config['expandable-flags']).length > 0) {
-            const desc = config['expandable-flags'].desc || 'Flag expansions'
+        if (helpConfig['expandable-flags'] && Object.keys(helpConfig['expandable-flags']).length > 0) {
+            const desc = helpConfig['expandable-flags'].desc || 'Flag expansions'
             const dimmed = '\x1b[2m'
             const reset = '\x1b[0m'
 
             console.log(`Expandable Flags: ${dimmed}${desc}${reset}`)
-            Object.entries(config['expandable-flags']).forEach(([flag, expansion]) => {
+            Object.entries(helpConfig['expandable-flags']).forEach(([flag, expansion]) => {
                 if (flag !== 'desc') {
                     const expansionStr = typeof expansion === 'string' ? expansion : expansion.template || 'template'
 
@@ -182,13 +185,13 @@ function showDynamicHelp() {
         }
         
         // Show expandable templates
-        if (config['expandable-templates'] && Object.keys(config['expandable-templates']).length > 0) {
-            const desc = config['expandable-templates'].desc || 'Template expansions'
+        if (helpConfig['expandable-templates'] && Object.keys(helpConfig['expandable-templates']).length > 0) {
+            const desc = helpConfig['expandable-templates'].desc || 'Template expansions'
             const dimmed = '\x1b[2m'
             const reset = '\x1b[0m'
 
             console.log(`Expandable Templates: ${dimmed}${desc}${reset}`)
-            Object.entries(config['expandable-templates']).forEach(([template, config]) => {
+            Object.entries(helpConfig['expandable-templates']).forEach(([template, config]) => {
                 if (template !== 'desc') {
                     console.log(`  -${template.padEnd(8)} → ${config['pwsh-template'] ? 'PowerShell template' : 'Template'}`)
                 }
@@ -197,13 +200,13 @@ function showDynamicHelp() {
         }
         
         // Show expandable commands
-        if (config['expandable-commands'] && Object.keys(config['expandable-commands']).length > 0) {
-            const desc = config['expandable-commands'].desc || 'Command expansions'
+        if (helpConfig['expandable-commands'] && Object.keys(helpConfig['expandable-commands']).length > 0) {
+            const desc = helpConfig['expandable-commands'].desc || 'Command expansions'
             const dimmed = '\x1b[2m'
             const reset = '\x1b[0m'
 
             console.log(`Expandable Commands: ${dimmed}${desc}${reset}`)
-            Object.entries(config['expandable-commands']).forEach(([alias, command]) => {
+            Object.entries(helpConfig['expandable-commands']).forEach(([alias, command]) => {
                 if (alias !== 'desc') {
                     console.log(`  ${alias.padEnd(8)} → ${command}`)
                 }
@@ -215,9 +218,10 @@ function showDynamicHelp() {
         console.log('  install-shorthand-aliases    Generate and install PowerShell module with PAE aliases')
         console.log('  refresh                      Refresh PAE aliases in current PowerShell session')
         console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
-        console.log('  help                         Show this help with all available aliases and flags')
+        console.log('  help                         Show this help with all available aliases and flags (deprecated)')
         console.log('')
         console.log('Flags:')
+        console.log('  -h, --help         Show this help message')
         console.log('  -d, --debug        Enable debug logging')
         console.log('  -echo              Echo commands instead of executing')
         console.log('')
@@ -225,7 +229,7 @@ function showDynamicHelp() {
         console.log('  PAE_DEBUG=1        Enable debug logging')
         console.log('  PAE_ECHO=1         Echo commands instead of executing')
         console.log('')
-    } catch (_error) {
+    } catch (error) {
         // Fallback to static help if config loading fails
         console.log('')
         console.log('PAE - Project Alias Expander')
@@ -236,9 +240,10 @@ function showDynamicHelp() {
         console.log('  install-shorthand-aliases    Generate and install PowerShell module with PAE aliases')
         console.log('  refresh                      Refresh PAE aliases in current PowerShell session')
         console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
-        console.log('  help                         Show this help with all available aliases and flags')
+        console.log('  help                         Show this help with all available aliases and flags (deprecated)')
         console.log('')
         console.log('Flags:')
+        console.log('  -h, --help         Show this help message')
         console.log('  -d, --debug        Enable debug logging')
         console.log('  -echo              Echo commands instead of executing')
         console.log('')
@@ -246,7 +251,17 @@ function showDynamicHelp() {
         console.log('  PAE_DEBUG=1        Enable debug logging')
         console.log('  PAE_ECHO=1         Echo commands instead of executing')
         console.log('')
-        console.log('Note: Unable to load configuration for dynamic help')
+        console.log('⚠️  FALLBACK HELP MODE')
+        console.log('   Configuration loading failed - showing static help only.')
+        console.log('   This usually means:')
+        console.log('   • You\'re not in the project root directory')
+        console.log('   • The config.json file is missing or corrupted')
+        console.log('   • There\'s a syntax error in libs/project-alias-expander/config.json')
+        console.log('')
+        console.log('   Current working directory:', process.cwd())
+        console.log('   Expected config location: libs/project-alias-expander/config.json')
+        console.log('')
+        console.log('   To debug this issue, run: pae <command> -d')
         console.log('')
     }
 }
@@ -268,12 +283,17 @@ async function main() {
 
         debug('Arguments parsed:', args)
         
-        // Check for debug flags and remove them from args
+        // Check for debug flags and help flags, remove them from args
         const debugFlags = ['-d', '--debug']
+        const helpFlags = ['--help', '-h']
         const filteredArgs = args.filter(arg => {
             if (debugFlags.includes(arg)) {
                 DEBUG = true
                 return false
+            }
+            if (helpFlags.includes(arg)) {
+                showDynamicHelp()
+                process.exit(0) // Exit immediately after showing help
             }
             return true
         })
@@ -325,17 +345,48 @@ async function main() {
                 return 0
                 
             case 'help':
-                debug('Executing help command')
+                debug('Executing deprecated help command')
+                console.error('')
+                console.error('⚠️  DEPRECATION WARNING: "pae help" is deprecated.')
+                console.error('   Use "pae --help" or "pae -h" instead.')
+                console.error('')
                 showDynamicHelp()
                 debug('help completed, returning 0')
                 return 0
         }
 
+        // Load configuration once
+        debug('Loading configuration...')
+        debug('Loading configuration')
+
+        let config: AliasConfig
+
+        try {
+            debug('Calling loadAliasConfig()...')
+            config = loadAliasConfig()
+            debug('Configuration loaded successfully')
+            debug('Configuration loaded successfully', {
+                packages: Object.keys(config['nxPackages'] || {}),
+                targets: Object.keys(config['nxTargets'] || {}),
+                features: Object.keys(config['feature-nxTargets'] || {})
+            })
+        } catch (configError) {
+            debug('Configuration loading failed:', configError)
+            error('Failed to load configuration:', configError)
+            console.error('')
+            console.error('Make sure you are running from the project root directory.')
+            console.error('The config.json file should be located at: libs/project-alias-expander/config.json')
+            console.error('')
+            console.error('Current working directory:', process.cwd())
+            console.error('')
+            console.error('To debug this issue, run: pae <command> -d')
+            debug('Returning error code 1 due to config failure')
+            return 1
+        }
+
         // Check for expandable commands
         debug('Checking for expandable commands...')
         try {
-            const config = loadAliasConfig()
-
             if (config['expandable-commands'] && config['expandable-commands'][command]) {
                 const fullCommand = config['expandable-commands'][command]
 
@@ -371,35 +422,6 @@ async function main() {
             }
         } catch (error) {
             debug('Error checking expandable commands:', error)
-        }
-
-        // Load configuration
-        debug('Not a special command, loading configuration...')
-        debug('Loading configuration')
-
-        let config: AliasConfig
-
-        try {
-            debug('Calling loadAliasConfig()...')
-            config = loadAliasConfig()
-            debug('Configuration loaded successfully')
-            debug('Configuration loaded successfully', {
-                packages: Object.keys(config['nxPackages'] || {}),
-                targets: Object.keys(config['nxTargets'] || {}),
-                features: Object.keys(config['feature-nxTargets'] || {})
-            })
-        } catch (configError) {
-            debug('Configuration loading failed:', configError)
-            error('Failed to load configuration:', configError)
-            console.error('')
-            console.error('Make sure you are running from the project root directory.')
-            console.error('The config.json file should be located at: libs/project-alias-expander/config.json')
-            console.error('')
-            console.error('Current working directory:', process.cwd())
-            console.error('')
-            console.error('To debug this issue, run: pae <command> -d')
-            debug('Returning error code 1 due to config failure')
-            return 1
         }
         
         // Handle alias resolution and command execution
@@ -446,6 +468,12 @@ async function handleAliasCommand(args: string[], config: AliasConfig): Promise<
             return await handleNotNxTarget(alias, remainingArgs, config)
         }
         
+        // Check if it's an expandable command
+        if (config['expandable-commands']?.[alias]) {
+            debug('Found expandable command', { alias, config: config['expandable-commands'][alias] })
+            return await handleExpandableCommand(alias, remainingArgs, config)
+        }
+        
         // Unknown alias
         error(`Unknown alias: ${alias}`)
         console.error('')
@@ -456,6 +484,9 @@ async function handleAliasCommand(args: string[], config: AliasConfig): Promise<
         }
         if (config['not-nxTargets']) {
             console.error('  Not-NX:', Object.keys(config['not-nxTargets']).join(', '))
+        }
+        if (config['expandable-commands']) {
+            console.error('  Commands:', Object.keys(config['expandable-commands']).join(', '))
         }
         console.error('')
         console.error('Use "pae help" for more information.')
@@ -475,6 +506,13 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
         
         debug('Resolved project', { alias, project })
         
+        // Special handling for help command with package aliases
+        if (args.length > 0 && args[0] === 'help') {
+            debug('Help command detected for package alias, showing PAE help')
+            showDynamicHelp()
+            return 0
+        }
+        
         // Merge expandable-templates into expandable-flags for processing
         const expandableFlags = { ...config['expandable-flags'] }
 
@@ -482,12 +520,41 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
             Object.assign(expandableFlags, config['expandable-templates'])
         }
         
+        // Process internal flags first (these affect PAE behavior, not the command)
+        let timeoutMs: number | undefined = undefined
+        if (config['internal-flags']) {
+            const internalFlags = { ...config['internal-flags'] }
+            if (config['expandable-templates']) {
+                Object.assign(internalFlags, config['expandable-templates'])
+            }
+            
+            // Check for help flags before processing other internal flags
+            for (const arg of args) {
+                if (arg === '-h' || arg === '--help') {
+                    debug('Help flag detected in package alias, showing PAE help')
+                    showDynamicHelp()
+                    return 0
+                }
+            }
+            
+            // Process internal flags
+            const { remainingArgs: internalRemainingArgs } = expandableProcessor.expandFlags(args, internalFlags)
+            
+            // Check for PAE-specific flags in the processed args
+            for (const arg of internalRemainingArgs) {
+                if (arg.startsWith('--pae-execa-timeout=')) {
+                    timeoutMs = parseInt(arg.split('=')[1])
+                    debug('Detected PAE timeout flag', { timeoutMs })
+                }
+            }
+        }
+        
         debug('Processing expandable flags', { expandableFlags })
         
         // Process expandable flags
-        const { start, prefix, preArgs, suffix, end, remainingArgs, timeoutMs } = expandableProcessor.expandFlags(args, expandableFlags)
+        const { start, prefix, preArgs, suffix, end, remainingArgs } = expandableProcessor.expandFlags(args, expandableFlags)
         
-        debug('Expanded flags', { start, prefix, preArgs, suffix, end, remainingArgs, timeoutMs })
+        debug('Expanded flags', { start, prefix, preArgs, suffix, end, remainingArgs })
         
         // Determine target
         let target = 'build' // default
@@ -545,7 +612,7 @@ async function handleFeatureAlias(alias: string, args: string[], config: AliasCo
     }
     
     // Process expandable flags
-    const { start, prefix, preArgs, suffix, end, remainingArgs, timeoutMs } = expandableProcessor.expandFlags(args, expandableFlags)
+    const { start, prefix, preArgs, suffix, end, remainingArgs } = expandableProcessor.expandFlags(args, expandableFlags)
     
     // Build command
     const baseCommand = ['nx', 'run', `${project}:${featureTarget['run-target']}`, ...prefix, ...preArgs, ...suffix, ...remainingArgs]
@@ -554,7 +621,7 @@ async function handleFeatureAlias(alias: string, args: string[], config: AliasCo
     const finalCommand = expandableProcessor.constructWrappedCommand(baseCommand, start, end)
     
     // Execute command
-    return await commandExecution.runNx(finalCommand, timeoutMs)
+    return await commandExecution.runNx(finalCommand)
 }
 
 async function handleNotNxTarget(alias: string, args: string[], config: AliasConfig): Promise<number> {
@@ -563,6 +630,74 @@ async function handleNotNxTarget(alias: string, args: string[], config: AliasCon
     
     // Execute non-nx command
     return await commandExecution.runCommand(allArgs[0], allArgs.slice(1))
+}
+
+async function handleExpandableCommand(alias: string, args: string[], config: AliasConfig): Promise<number> {
+    const command = config['expandable-commands']![alias]
+    
+    debug('Processing expandable command', { alias, command, args })
+    
+    // Process internal flags first (these affect PAE behavior, not the command)
+    let timeoutMs: number | undefined = undefined
+    if (config['internal-flags']) {
+        const internalFlags = { ...config['internal-flags'] }
+        if (config['expandable-templates']) {
+            Object.assign(internalFlags, config['expandable-templates'])
+        }
+        
+        // Process internal flags
+        const { remainingArgs: internalRemainingArgs } = expandableProcessor.expandFlags(args, internalFlags)
+        
+        // Check for PAE-specific flags in the processed args
+        for (const arg of internalRemainingArgs) {
+            if (arg.startsWith('--pae-execa-timeout=')) {
+                timeoutMs = parseInt(arg.split('=')[1])
+                debug('Detected PAE timeout flag', { timeoutMs })
+            }
+        }
+        
+        // Update args to use the processed internal flags
+        args = internalRemainingArgs
+    }
+    
+    // Process expandable flags
+    const expandableFlags = { ...config['expandable-flags'] }
+    if (config['expandable-templates']) {
+        Object.assign(expandableFlags, config['expandable-templates'])
+    }
+    
+    const { start, prefix, preArgs, suffix, end, remainingArgs } = expandableProcessor.expandFlags(args, expandableFlags)
+    
+    // Build the final command with processed flags
+    const processedArgs = [...prefix, ...preArgs, ...suffix, ...remainingArgs]
+    const fullCommand = [command, ...processedArgs].join(' ')
+    
+    debug('Final expandable command to execute', { fullCommand, timeoutMs })
+    
+    // Add explicit console logging to debug the issue
+    console.log(`[DEBUG] About to execute expandable command: ${fullCommand}`)
+    
+    try {
+        // Import execa directly to avoid any recursive CLI calls
+        const { execa } = await import('execa')
+        
+        console.log(`[DEBUG] Calling execa with: cmd /c ${fullCommand}`)
+        
+        const childProcess = execa('cmd', ['/c', fullCommand], {
+            timeout: timeoutMs || 300000, // Use provided timeout or default 5 minutes
+            killSignal: 'SIGTERM',
+            stdio: 'inherit'
+        })
+        
+        console.log(`[DEBUG] Waiting for command to complete...`)
+        const result = await childProcess
+        console.log(`[DEBUG] Command completed with exit code: ${result.exitCode}`)
+        return result.exitCode ?? 0
+    } catch (error: any) {
+        debug('Expandable command execution error:', error)
+        console.log(`[DEBUG] Command failed with error:`, error)
+        return error.exitCode || 1
+    }
 }
 
 function resolveProjectForAlias(aliasValue: any): { project: string, full?: boolean } {
