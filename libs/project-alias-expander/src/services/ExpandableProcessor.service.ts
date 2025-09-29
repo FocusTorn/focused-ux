@@ -1,8 +1,8 @@
-import type { 
-    ExpandableValue, 
-    TemplateObject, 
-    ShellType, 
-    FlagExpansion, 
+import type {
+    ExpandableValue,
+    TemplateObject,
+    ShellType,
+    FlagExpansion,
     TemplateProcessingResult,
     ShellDetectionResult,
     IExpandableProcessorService
@@ -10,6 +10,7 @@ import type {
 import { detectShell } from '../shell.js'
 
 export class ExpandableProcessorService implements IExpandableProcessorService {
+
     expandTemplate(template: string, variables: Record<string, string>): string {
         return template.replace(/\{(\w+)\}/g, (match, varName) => {
             return variables[varName] || match
@@ -18,6 +19,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
 
     detectShellType(): ShellType {
         const shell = detectShell()
+
         if (shell === 'powershell') {
             return 'pwsh'
         } else if (shell === 'gitbash') {
@@ -36,6 +38,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
         for (const templateObj of templates) {
             // Merge template-level defaults with top-level variables
             const templateVariables = { ...variables }
+
             if (templateObj.defaults) {
                 // Check for conflicts between top-level and template-level defaults
                 for (const key of Object.keys(templateObj.defaults)) {
@@ -81,6 +84,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
             } else if (typeof shellTemplate === 'object' && shellTemplate !== null) {
                 // Handle single object template
                 const templateVariables = { ...variables }
+
                 if (shellTemplate.defaults) {
                     // Check for conflicts between top-level and template-level defaults
                     for (const key of Object.keys(shellTemplate.defaults)) {
@@ -93,6 +97,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
                 }
                 
                 const expanded = this.expandTemplate(shellTemplate.template, templateVariables)
+
                 if (shellTemplate.position === 'end') {
                     return { start: [], end: [expanded] }
                 } else {
@@ -101,6 +106,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
             } else if (typeof shellTemplate === 'string') {
                 // Handle string template
                 const expanded = this.expandTemplate(shellTemplate, variables)
+
                 return { start: [expanded], end: [] }
             }
         }
@@ -122,6 +128,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
 
     parseExpandableFlag(arg: string): { key: string, value: string | undefined } {
         const match = arg.match(/^-([^=:]+)[=:](.+)$/)
+
         if (match) {
             return { key: match[1], value: match[2] }
         }
@@ -135,6 +142,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
         const suffix: string[] = []
         const end: string[] = []
         const remainingArgs: string[] = []
+        let timeoutMs: number | undefined = undefined
 
         for (const arg of args) {
             if (arg.startsWith('--')) {
@@ -156,15 +164,25 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
                     const expandable = expandables[key]
                     const baseVariables = typeof expandable === 'object' ? expandable.defaults || {} : {}
                     const variables = { ...baseVariables }
+
                     if (value !== undefined) {
                         // If there's a custom value, use it to override the first default variable
                         // or use the flag key if no defaults exist
                         const defaultKeys = Object.keys(baseVariables)
+
                         if (defaultKeys.length > 0) {
                             variables[defaultKeys[0]] = value
                         } else {
                             variables[key] = value
                         }
+                    }
+                    
+                    // Check if this is a special timeout expandable
+                    if (typeof expandable === 'object' && expandable.special === 'timeout') {
+                        // Extract timeout duration from variables or defaults
+                        const duration = variables.duration || expandable.defaults?.duration || '10'
+                        timeoutMs = parseInt(duration) * 1000 // Convert seconds to milliseconds
+                        continue // Don't add to any arrays, just set timeout
                     }
                     
                     if (typeof expandable === 'string') {
@@ -280,7 +298,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
             remainingArgs.push(arg)
         }
         
-        return { start, prefix, preArgs, suffix, end, remainingArgs }
+        return { start, prefix, preArgs, suffix, end, remainingArgs, timeoutMs }
     }
 
     constructWrappedCommand(baseCommand: string[], startTemplates: string[], endTemplates: string[]): string[] {
@@ -295,6 +313,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
         // No wrapping needed, just append end templates
         return [...baseCommand, ...endTemplates]
     }
+
 }
 
 // Export a singleton instance for convenience

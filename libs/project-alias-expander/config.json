@@ -1,7 +1,7 @@
 { // $ npm install -g ./libs/project-alias-expander/dist
 
-    "feature-nxTargets": { //> Nx targets for a feature's packages"
-        "desc": "nx targets to run for all packages related to a feature, not just a single package",
+    "feature-nxTargets": { //> [Nx Target] Feature's related packages"
+        "desc": "[Nx Target] packages related to a feature",
         
         //= Prepare ============================================================= 
         "b": {"run-from": "ext", "run-target": "build"},
@@ -16,8 +16,8 @@
         "ct": {"run-from": "ext", "run-target": "check-types:deps --output-style=stream"}
     }, //<
     
-    "nxTargets": { //> Nx target alias assignments
-        "desc": "",
+    "nxTargets": { //> [Nx Target] Alias assignments
+        "desc": "[Nx Target] Alias assignments",
         
         //= Prepare ============================================================= 
         "b"  : "build",
@@ -59,44 +59,70 @@
         "m" : "monitor"
     }, //<
     
-    "not-nxTargets": { //> Uses Nx project name but not targets
-        "desc": "Alias assignments that leverage Nx project.json:name, but do not use the targets",
+    
+    // This should use 
+    // {Nx-Project}
+    // {in-dir}
+    // 
+    
+    "not-nxTargets": { //> [Nx Name] Uses Nx project name but not targets
+        "desc": "[Nx Name] Alias assignments Nx project name, but not the targets",
         
         "esv": "npx esbuild-visualizer --metadata"
     
     }, //<
     
-    "expandable-commands": { //> Agnostic assignments, full command
-        "desc": "Agnostic alias assignments, expand alias to full command"
+    "expandable-commands": { //> [General] Agnostic alias assignments
+        "desc": "[General] Agnostic alias assignments, expand alias to full command",
+        
+        "ish": "pae install-shorthand-aliases"
         
     }, //<
     
-    "expandable-flags": { //> -{alias} expands to --{flag}
-        "desc": "-{alias} expands to --{flag}",
-        
-        "f"  : "--fix",
+    // Accepts templates and expanded(-alias to --flag) > passed with the command
+    "expandable-flags": { //>
+        "desc": "[General] -alias expands to --flag",
+
+        //- Nx Flags ---------------------------------------- 
         "s"  : "--skip-nx-cache",
-        "v"  : "--verbose",
-        "d"  : "--debug",
-        "c"  : "--coverage",
-        "watch": "--watch",
-        "echo" : "--pae-echo",
-        
-        "os" : { //>
-            // "position": "suffix", optional, when not provided defaults to suffix
-            "defaults": {"style": "stream"}, // [stream, tui]
+        "os" : { //> --output-style=[stream, tui]  ||  default: stream
+            "defaults": {"style": "stream"},
             "template": "--output-style={style}"
         }, //<
-        "name" : { //> --testNamePattern='{namePattern}
+        
+        //- General Flags ----------------------------------- 
+        "f"  : "--fix",
+        "c"  : "--coverage",
+        "watch": "--watch",
+        "name" : { //> --testNamePattern=''
             "defaults": {"namePattern": ""},
             "template": "--testNamePattern='{namePattern}'"
         }, //<
-        "bail" : { //> --bail {bailOn} [1]
+        "bail" : { //> --bail ##  ||  default: 1
             "defaults": {"bailOn": "1"},
             "template": "--bail {bailOn}"
         } //<
         
+    },
+    
+    // Accepts templates and expanded(-alias to --flag) > processed before command is generated
+    "internal-flags": { //>
+        "v"  : "--pae-verbose",
+        "d"  : "--pae-debug",
+        "echo" : "--pae-echo",
+
+        //- Templates --------------------------------------- 
+        "to": {
+            // Can be in seconds or milliseconds
+            "defaults": { "time": 10 },
+
+            // Ensures {time} is always in MS format
+            "mutation": "time >= 100 ? time : parseInt(time.toString() + '000')",
+
+            "template": "--pae-execa-timeout={time}"
+        }
     }, //<
+    
     
     /**
      * EXPANDABLES SYSTEM
@@ -157,31 +183,31 @@
      *     "template": "--fix"
      *   }
      */
-    "expandable-templates": { //> -{alias} to --{flag} w/ templates 
-        "desc": "-{alias} expands to --{flag} using configurable templates ",
+    "expandable-templates": { //> [General] -alias expands to --flag w/ templates
+        "desc": "[General] -alias expands to --flag w/ templates"
        
-        "sto": { //>
-            "defaults": {"duration": 10},
-            "pwsh-template":[
-                {
-                    "position": "start",
-                    "template": "$p = Start-Process -FilePath 'pwsh' -ArgumentList '-Command', '"
-                },
-                {
-                    "position": "end",
-                    "template": "' -NoNewWindow -PassThru; if (-not $p.WaitForExit({duration}000)) { Stop-Process -Id $p.Id -Force; Write-Warning 'Process timed out and was terminated.' }"
-                }
-            ],
-            "linux-template":{ //>
-                "position": "start",
-                "template": "timeout {duration}s"
-            } //<
-        } //<
+        // "Demo": { //>
+        //     "defaults": {"duration": 10},
+        //     "pwsh-template":[
+        //         {
+        //             "position": "start",
+        //             "template": "$p = Start-Process -FilePath 'pwsh' -ArgumentList '-Command', '"
+        //         },
+        //         {
+        //             "position": "end",
+        //             "template": "' -NoNewWindow -PassThru; if (-not $p.WaitForExit({duration}000)) { Stop-Process -Id $p.Id -Force; Write-Warning 'Process timed out and was terminated.' }"
+        //         }
+        //     ],
+        //     "linux-template":{ //>
+        //         "position": "start",
+        //         "template": "timeout {duration}s"
+        //     } //<
+        // } //<
 
     }, //<
     
-    "nxPackages": { //> Alias assignments for Nx projects(packages) 
-        "desc": "Alias assignments for Nx projects(packages)",
+    "nxPackages": { //> [Nx Project] Alias assignments for Nx projects(packages)
+        "desc": "[Nx Project] Alias assignments for Nx projects(packages)",
     
         "ccp" : { //>
             "name": "context-cherry-picker",
@@ -272,3 +298,22 @@
     } //<
 
 }
+
+
+// "sto": { //>
+//     "defaults": {"duration": 10},
+//     "pwsh-template":[
+//         {
+//             "position": "start",
+//             "template": "$p = Start-Process -FilePath 'pwsh' -ArgumentList '-Command', '"
+//         },
+//         {
+//             "position": "end",
+//             "template": "' -NoNewWindow -PassThru; if (-not $p.WaitForExit({duration}000)) { Stop-Process -Id $p.Id -Force; Write-Warning 'Process timed out and was terminated.' }"
+//         }
+//     ],
+//     "linux-template":{ //>
+//         "position": "start",
+//         "template": "timeout {duration}s"
+//     } //<
+// } //<

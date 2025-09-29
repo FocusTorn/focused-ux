@@ -109,7 +109,14 @@ Write-Host -ForegroundColor DarkGreen "FocusedUX project profile loaded."
 $paeModulePath = ".\libs\project-alias-expander\dist\pae-functions.psm1"
 
 if (Test-Path $paeModulePath) {
-    Import-Module $paeModulePath
+    # Check if module is already loaded to prevent multiple instances
+    if (-not (Get-Module PAE -ErrorAction SilentlyContinue)) {
+        Import-Module $paeModulePath -Force
+    } else {
+        # Module already loaded, just refresh it
+        Remove-Module PAE -Force -ErrorAction SilentlyContinue
+        Import-Module $paeModulePath -Force
+    }
 }
 else {
     Write-Host -ForegroundColor Yellow "PAE module not found at: $paeModulePath"

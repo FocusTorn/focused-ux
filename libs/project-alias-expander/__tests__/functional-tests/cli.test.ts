@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { setupPaeTestEnvironment, resetPaeMocks } from '../__mocks__/helpers'
 import { createPaeMockBuilder } from '../__mocks__/mock-scenario-builder'
+import { loadAliasConfig, resolveProjectForAlias } from '../../src/config.js'
 
 // Mock the strip-json-comments module
 vi.mock('strip-json-comments', () => ({
@@ -52,29 +52,9 @@ import { //> from '../../src/cli'
 } from '../../src/cli' //<
 
 describe('CLI', () => {
-    let mocks: Awaited<ReturnType<typeof setupPaeTestEnvironment>>
 
-    beforeEach(async () => { //>
-        mocks = await setupPaeTestEnvironment()
-        await resetPaeMocks(mocks)
-        
-        // Wire up the fs module mocks to our test mocks
-        const fs = await import('fs')
-        vi.mocked(fs.existsSync).mockImplementation(mocks.fs.existsSync)
-        vi.mocked(fs.readFileSync).mockImplementation(mocks.fs.readFileSync)
-        vi.mocked(fs.writeFileSync).mockImplementation(mocks.fs.writeFileSync)
-        vi.mocked(fs.mkdirSync).mockImplementation(mocks.fs.mkdirSync)
-        
-        // Also wire up node:fs for completeness
-        const nodeFs = await import('node:fs')
-        vi.mocked(nodeFs.default.existsSync).mockImplementation(mocks.fs.existsSync)
-        vi.mocked(nodeFs.default.readFileSync).mockImplementation(mocks.fs.readFileSync)
-        vi.mocked(nodeFs.default.writeFileSync).mockImplementation(mocks.fs.writeFileSync)
-        vi.mocked(nodeFs.default.mkdirSync).mockImplementation(mocks.fs.mkdirSync)
-        
-        // Wire up the strip-json-comments mock
-        const stripJsonComments = await import('strip-json-comments')
-        vi.mocked(stripJsonComments.default).mockImplementation(mocks.stripJsonComments)
+    beforeEach(() => {
+        vi.clearAllMocks()
     }) //<
 
     describe('loadAliasConfig', () => {

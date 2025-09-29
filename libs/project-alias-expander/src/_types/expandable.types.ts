@@ -23,6 +23,7 @@ export interface FlagExpansion {
     suffix: string[]
     end: string[]
     remainingArgs: string[]
+    timeoutMs?: number
 }
 
 export interface TemplateProcessingResult {

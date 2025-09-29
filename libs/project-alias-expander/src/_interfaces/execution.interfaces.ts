@@ -2,7 +2,7 @@
 import type { AliasConfig } from '../_types/index.js'
 
 export interface ICommandExecutionService {
-    runNx(argv: string[]): number
-    runCommand(command: string, args: string[]): number
-    runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: AliasConfig): number
+    runNx(argv: string[]): Promise<number>
+    runCommand(command: string, args: string[]): Promise<number>
+    runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: AliasConfig): Promise<number>
 }

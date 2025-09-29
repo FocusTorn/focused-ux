@@ -18,7 +18,7 @@ export class PAEManagerService implements IPAEManagerService {
         return this.dependencies.aliasManager.generateLocalFiles()
     }
 
-    installAliases(): void {
+    async installAliases(): Promise<void> {
         return this.dependencies.aliasManager.installAliases()
     }
 
@@ -26,20 +26,20 @@ export class PAEManagerService implements IPAEManagerService {
         return this.dependencies.aliasManager.refreshAliases()
     }
 
-    refreshAliasesDirect(): void {
+    async refreshAliasesDirect(): Promise<void> {
         return this.dependencies.aliasManager.refreshAliasesDirect()
     }
 
     // Command execution operations - delegated to CommandExecutionService
-    runNx(argv: string[]): number {
+    async runNx(argv: string[]): Promise<number> {
         return this.dependencies.commandExecution.runNx(argv)
     }
 
-    runCommand(command: string, args: string[]): number {
+    async runCommand(command: string, args: string[]): Promise<number> {
         return this.dependencies.commandExecution.runCommand(command, args)
     }
 
-    runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: any): number {
+    async runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: any): Promise<number> {
         return this.dependencies.commandExecution.runMany(runType, targets, flags, config)
     }
 

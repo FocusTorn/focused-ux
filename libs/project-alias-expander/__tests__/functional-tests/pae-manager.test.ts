@@ -77,43 +77,43 @@ describe('PAEManagerService', () => {
     })
 
     describe('Command Execution Operations', () => {
-        it('should delegate runNx to CommandExecutionService', () => {
+        it('should delegate runNx to CommandExecutionService', async () => {
             // Arrange
             const argv = ['nx', 'run', 'test']
-            mockCommandExecution.runNx.mockReturnValue(0)
+            mockCommandExecution.runNx.mockResolvedValue(0)
 
             // Act
-            const result = service.runNx(argv)
+            const result = await service.runNx(argv)
 
             // Assert
             expect(mockCommandExecution.runNx).toHaveBeenCalledWith(argv)
             expect(result).toBe(0)
         })
 
-        it('should delegate runCommand to CommandExecutionService', () => {
+        it('should delegate runCommand to CommandExecutionService', async () => {
             // Arrange
             const command = 'npm'
             const args = ['run', 'test']
-            mockCommandExecution.runCommand.mockReturnValue(0)
+            mockCommandExecution.runCommand.mockResolvedValue(0)
 
             // Act
-            const result = service.runCommand(command, args)
+            const result = await service.runCommand(command, args)
 
             // Assert
             expect(mockCommandExecution.runCommand).toHaveBeenCalledWith(command, args)
             expect(result).toBe(0)
         })
 
-        it('should delegate runMany to CommandExecutionService', () => {
+        it('should delegate runMany to CommandExecutionService', async () => {
             // Arrange
             const runType = 'core' as const
             const targets = ['build', 'test']
             const flags = ['--verbose']
             const config = { 'nxPackages': {} }
-            mockCommandExecution.runMany.mockReturnValue(0)
+            mockCommandExecution.runMany.mockResolvedValue(0)
 
             // Act
-            const result = service.runMany(runType, targets, flags, config)
+            const result = await service.runMany(runType, targets, flags, config)
 
             // Assert
             expect(mockCommandExecution.runMany).toHaveBeenCalledWith(runType, targets, flags, config)

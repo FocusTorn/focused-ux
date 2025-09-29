@@ -1,29 +1,4 @@
 import { vi } from 'vitest'
-
-// Conditional import for testing only
-let mockStrategy: any = null
-
-async function getMockStrategy() {
-    if (!mockStrategy) {
-        try {
-            mockStrategy = await import('../../../mock-strategy/dist/index.js')
-        } catch (_error) {
-            console.log('\x1b[31m❌ Import failed. mock-strategy/dist/index.js\x1b[0m')
-        }
-        // } catch {
-        //     // Fallback to a mock implementation for testing
-        //     mockStrategy = {
-        //         setupProcessSuccessScenario: vi.fn(),
-        //         setupProcessErrorScenario: vi.fn(),
-        //         setupLibFileReadScenario: vi.fn(),
-        //         setupLibFileWriteScenario: vi.fn(),
-        //         createLibMockBuilder: vi.fn()
-        //     }
-        // }
-    }
-    return mockStrategy
-}
-
 import { PaeTestMocks, setupPaeTestEnvironment } from './helpers'
 
 // PAE-specific scenario interfaces
@@ -58,10 +33,10 @@ export interface PaeCliConfigScenarioOptions {
 }
 
 // PAE-specific scenario functions
-export async function setupPaeConfigExistsScenario(
+export function setupPaeConfigExistsScenario(
     mocks: PaeTestMocks,
     options: PaeConfigScenarioOptions
-): Promise<void> {
+): void {
     mocks.fs.existsSync.mockReturnValue(true)
     mocks.fs.readFileSync.mockReturnValue(options.configContent)
     mocks.stripJsonComments.mockImplementation(() => {
@@ -73,46 +48,51 @@ export async function setupPaeConfigExistsScenario(
     })
 }
 
-export async function setupPaeConfigNotExistsScenario(
+export function setupPaeConfigNotExistsScenario(
     mocks: PaeTestMocks,
     _options: PaeConfigScenarioOptions
-): Promise<void> {
+): void {
     mocks.fs.existsSync.mockReturnValue(false)
 }
 
-export async function setupPaeCommandSuccessScenario(
+export function setupPaeCommandSuccessScenario(
     mocks: PaeTestMocks,
     options: PaeCommandScenarioOptions
-): Promise<void> {
-    const strategy = await getMockStrategy()
-    strategy.setupProcessSuccessScenario(mocks, {
-        command: options.command,
-        args: options.args || [],
-        exitCode: options.exitCode || 0,
-        stdout: options.stdout || 'success',
-        stderr: options.stderr || '',
+): void {
+    mocks.childProcess.spawnSync.mockReturnValue({
+        status: options.exitCode || 0,
+        signal: null,
+        output: [''],
+        pid: 123,
+        stdout: Buffer.from(options.stdout || 'success'),
+        stderr: Buffer.from(options.stderr || ''),
+        error: undefined
+    })
+    mocks.childProcess.execSync.mockReturnValue(Buffer.from(options.stdout || 'success'))
+}
+
+export function setupPaeCommandFailureScenario(
+    mocks: PaeTestMocks,
+    options: PaeCommandScenarioOptions
+): void {
+    mocks.childProcess.spawnSync.mockReturnValue({
+        status: options.exitCode || 1,
+        signal: null,
+        output: [''],
+        pid: 123,
+        stdout: Buffer.from(options.stdout || ''),
+        stderr: Buffer.from(options.stderr || 'error'),
+        error: new Error(options.error || 'Command failed')
+    })
+    mocks.childProcess.execSync.mockImplementation(() => {
+        throw new Error(options.error || 'Command failed')
     })
 }
 
-export async function setupPaeCommandFailureScenario(
-    mocks: PaeTestMocks,
-    options: PaeCommandScenarioOptions
-): Promise<void> {
-    const strategy = await getMockStrategy()
-    strategy.setupProcessErrorScenario(mocks, {
-        command: options.command,
-        args: options.args || [],
-        exitCode: options.exitCode || 1,
-        stdout: options.stdout || '',
-        stderr: options.stderr || 'error',
-        error: options.error || 'Command failed',
-    })
-}
-
-export async function setupPaeAliasResolutionScenario(
+export function setupPaeAliasResolutionScenario(
     mocks: PaeTestMocks,
     options: PaeAliasScenarioOptions
-): Promise<void> {
+): void {
     const configContent = JSON.stringify({
         'nxPackages': {
             [options.alias]: options.isFull
@@ -121,7 +101,7 @@ export async function setupPaeAliasResolutionScenario(
         }
     })
     
-    await setupPaeConfigExistsScenario(mocks, {
+    setupPaeConfigExistsScenario(mocks, {
         configPath: '/config.json',
         configContent,
     })
@@ -136,7 +116,6 @@ export function setupPaeCliConfigScenario(
         nxTargets = { 'test-package': ['build', 'test'] },
         notNxTargets = ['help', 'version'],
         expandableFlags = { test: 'test-package' },
-        configPath = '/config.json'
     } = options
 
     const mockConfig = {
@@ -161,78 +140,30 @@ export function setupPaeCliConfigScenario(
 
 // Enhanced PAE Mock Builder Pattern
 export class PaeMockBuilder {
-
-    private libBuilder: any = null
-
     constructor(private mocks: PaeTestMocks) {}
 
-    private async getLibBuilder() {
-        if (!this.libBuilder) {
-            const strategy = await getMockStrategy()
-            this.libBuilder = strategy.createLibMockBuilder(this.mocks)
-        }
-        return this.libBuilder
-    }
-
-    async configExists(options: PaeConfigScenarioOptions): Promise<PaeMockBuilder> {
-        await setupPaeConfigExistsScenario(this.mocks, options)
+    configExists(options: PaeConfigScenarioOptions): PaeMockBuilder {
+        setupPaeConfigExistsScenario(this.mocks, options)
         return this
     }
 
-    async configNotExists(options: PaeConfigScenarioOptions): Promise<PaeMockBuilder> {
-        await setupPaeConfigNotExistsScenario(this.mocks, options)
+    configNotExists(options: PaeConfigScenarioOptions): PaeMockBuilder {
+        setupPaeConfigNotExistsScenario(this.mocks, options)
         return this
     }
 
-    async commandSuccess(options: PaeCommandScenarioOptions): Promise<PaeMockBuilder> {
-        await setupPaeCommandSuccessScenario(this.mocks, options)
+    commandSuccess(options: PaeCommandScenarioOptions): PaeMockBuilder {
+        setupPaeCommandSuccessScenario(this.mocks, options)
         return this
     }
 
-    async commandFailure(options: PaeCommandScenarioOptions): Promise<PaeMockBuilder> {
-        await setupPaeCommandFailureScenario(this.mocks, options)
+    commandFailure(options: PaeCommandScenarioOptions): PaeMockBuilder {
+        setupPaeCommandFailureScenario(this.mocks, options)
         return this
     }
 
-    async aliasResolution(options: PaeAliasScenarioOptions): Promise<PaeMockBuilder> {
-        await setupPaeAliasResolutionScenario(this.mocks, options)
-        return this
-    }
-
-    // Delegate to lib builder for common scenarios
-    async processSuccess(options: any): Promise<PaeMockBuilder> {
-        const libBuilder = await this.getLibBuilder()
-        libBuilder.processSuccess(options)
-        return this
-    }
-
-    async processError(options: any): Promise<PaeMockBuilder> {
-        const libBuilder = await this.getLibBuilder()
-        libBuilder.processError(options)
-        return this
-    }
-
-    async fileRead(options: any): Promise<PaeMockBuilder> {
-        const libBuilder = await this.getLibBuilder()
-        libBuilder.fileRead(options)
-        return this
-    }
-
-    async fileWrite(options: any): Promise<PaeMockBuilder> {
-        const libBuilder = await this.getLibBuilder()
-        libBuilder.fileWrite(options)
-        return this
-    }
-
-    async windowsPath(): Promise<PaeMockBuilder> {
-        const libBuilder = await this.getLibBuilder()
-        libBuilder.windowsPath()
-        return this
-    }
-
-    async unixPath(): Promise<PaeMockBuilder> {
-        const libBuilder = await this.getLibBuilder()
-        libBuilder.unixPath()
+    aliasResolution(options: PaeAliasScenarioOptions): PaeMockBuilder {
+        setupPaeAliasResolutionScenario(this.mocks, options)
         return this
     }
 
@@ -241,14 +172,52 @@ export class PaeMockBuilder {
         return this
     }
 
+    // File system scenarios
+    fileExists(path: string, exists: boolean = true): PaeMockBuilder {
+        this.mocks.fs.existsSync.mockImplementation((p: string) => p === path ? exists : false)
+        return this
+    }
+
+    fileContent(path: string, content: string): PaeMockBuilder {
+        this.mocks.fs.readFileSync.mockImplementation((p: string) => p === path ? content : '{}')
+        return this
+    }
+
+    // Path scenarios
+    pathJoin(...paths: string[]): PaeMockBuilder {
+        this.mocks.path.join.mockImplementation((...args: string[]) => args.join('/'))
+        return this
+    }
+
+    pathResolve(...paths: string[]): PaeMockBuilder {
+        this.mocks.path.resolve.mockImplementation((...args: string[]) => '/' + args.join('/'))
+        return this
+    }
+
+    // Process scenarios
+    processArgv(argv: string[]): PaeMockBuilder {
+        this.mocks.process.argv = argv
+        return this
+    }
+
+    processEnv(env: Record<string, string>): PaeMockBuilder {
+        this.mocks.process.env = env
+        return this
+    }
+
+    // Shell scenarios
+    shellType(type: 'pwsh' | 'linux' | 'cmd'): PaeMockBuilder {
+        this.mocks.os.platform.mockReturnValue(type === 'linux' ? 'linux' : 'win32')
+        return this
+    }
+
     build(): PaeTestMocks {
         return this.mocks
     }
-
 }
 
-export async function createPaeMockBuilder(mocks?: PaeTestMocks): Promise<PaeMockBuilder> {
-    const testMocks = mocks || await setupPaeTestEnvironment()
+export function createPaeMockBuilder(mocks?: PaeTestMocks): PaeMockBuilder {
+    const testMocks = mocks || setupPaeTestEnvironment()
     return new PaeMockBuilder(testMocks)
 }
 

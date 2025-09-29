@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ExpandableProcessorService } from '../../src/services/ExpandableProcessor.service.js'
-import type { 
-    ExpandableValue, 
-    TemplateObject, 
-    ShellType, 
-    FlagExpansion, 
+import type {
+    ExpandableValue,
+    TemplateObject,
+    ShellType,
+    FlagExpansion,
     TemplateProcessingResult,
     ShellDetectionResult
 } from '../../src/_types/index.js'
@@ -178,8 +178,8 @@ describe('ExpandableProcessorService', () => {
         it('should handle template-level defaults', () => {
             // Arrange
             const templates: TemplateObject[] = [
-                { 
-                    position: 'start', 
+                {
+                    position: 'start',
                     template: 'timeout {duration}s {command}',
                     defaults: { command: 'default' }
                 }
@@ -196,8 +196,8 @@ describe('ExpandableProcessorService', () => {
         it('should throw error for conflicting defaults', () => {
             // Arrange
             const templates: TemplateObject[] = [
-                { 
-                    position: 'start', 
+                {
+                    position: 'start',
                     template: 'timeout {duration}s',
                     defaults: { duration: '5' }
                 }

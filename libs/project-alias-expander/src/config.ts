@@ -40,11 +40,17 @@ export function loadAliasConfig(): AliasConfig {
         try {
             if (fs.existsSync(configPath)) {
                 debug(`  Found config file, reading content...`)
+
                 const configContent = fs.readFileSync(configPath, 'utf-8')
+
                 debug(`  Config content length: ${configContent.length}`)
+
                 const strippedContent = stripJsonComments(configContent)
+
                 debug(`  Stripped content length: ${strippedContent.length}`)
+
                 const parsed = JSON.parse(strippedContent)
+
                 debug(`  Config parsed successfully`)
                 return parsed
             }
@@ -56,6 +62,7 @@ export function loadAliasConfig(): AliasConfig {
     
     // If none of the paths worked, throw error with the first attempted path
     const firstPath = possiblePaths[0]
+
     console.error(`Failed to load config from any of these locations:`, possiblePaths)
     throw new Error(`Config file not found. Tried: ${possiblePaths.join(', ')}`)
 }
@@ -63,18 +70,22 @@ export function loadAliasConfig(): AliasConfig {
 export function resolveProjectForAlias(aliasValue: string | { name: string, suffix?: 'core' | 'ext', full?: boolean }): { project: string, isFull: boolean } {
     if (typeof aliasValue === 'string') {
         const project = aliasValue.startsWith('@fux/') ? aliasValue : `@fux/${aliasValue}`
+
         return { project, isFull: false }
     }
     
     const { name, suffix, full } = aliasValue
+
     if (full) {
         // When full is true, we still need to consider the suffix
         const projectName = suffix ? `${name}-${suffix}` : name
         const project = projectName.startsWith('@fux/') ? projectName : `@fux/${projectName}`
+
         return { project, isFull: true }
     }
     
     const projectName = suffix ? `${name}-${suffix}` : name
     const project = projectName.startsWith('@fux/') ? projectName : `@fux/${projectName}`
+
     return { project, isFull: false }
 }

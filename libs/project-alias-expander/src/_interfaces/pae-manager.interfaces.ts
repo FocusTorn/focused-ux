@@ -1,8 +1,8 @@
 // PAE Manager Service interfaces
-import type { 
-    IExpandableProcessorService, 
-    ICommandExecutionService, 
-    IAliasManagerService 
+import type {
+    IExpandableProcessorService,
+    ICommandExecutionService,
+    IAliasManagerService
 } from '../_types/index.js'
 import type { AliasConfig, FlagExpansion } from '../_types/index.js'
 
@@ -15,14 +15,14 @@ export interface IPAEDependencies {
 export interface IPAEManagerService {
     // Alias management operations
     generateLocalFiles(): void
-    installAliases(): void
+    installAliases(): Promise<void>
     refreshAliases(): void
-    refreshAliasesDirect(): void
+    refreshAliasesDirect(): Promise<void>
     
     // Command execution operations
-    runNx(argv: string[]): number
-    runCommand(command: string, args: string[]): number
-    runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: AliasConfig): number
+    runNx(argv: string[]): Promise<number>
+    runCommand(command: string, args: string[]): Promise<number>
+    runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: AliasConfig): Promise<number>
     
     // Expandable processing operations
     expandTemplate(template: string, variables: Record<string, string>): string

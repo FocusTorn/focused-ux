@@ -2,57 +2,48 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { AliasManagerService } from '../../src/services/AliasManager.service.js'
 import type { AliasConfig } from '../../src/_types/index.js'
 
-// Mock fs
-vi.mock('fs', () => ({
-    default: {
-        existsSync: vi.fn(),
-        readFileSync: vi.fn(),
-        writeFileSync: vi.fn(),
-        mkdirSync: vi.fn(),
-        copyFileSync: vi.fn(),
-        rmSync: vi.fn()
-    },
-    existsSync: vi.fn(),
-    readFileSync: vi.fn(),
-    writeFileSync: vi.fn(),
-    mkdirSync: vi.fn(),
-    copyFileSync: vi.fn(),
-    rmSync: vi.fn()
-}))
-
-// Mock child_process
-vi.mock('child_process', () => ({
-    execSync: vi.fn()
-}))
-
-// Mock config loading
-vi.mock('../../src/config.js', () => ({
-    loadAliasConfig: vi.fn()
-}))
-
-// Mock shell detection
-vi.mock('../../src/shell.js', () => ({
-    detectShell: vi.fn()
-}))
-
+// Import the actual modules - they will be mocked by the global mocks
 import * as fs from 'fs'
+import * as path from 'path'
 import { execSync } from 'child_process'
 import { loadAliasConfig } from '../../src/config.js'
 import { detectShell } from '../../src/shell.js'
 
 describe('AliasManagerService', () => {
     let service: AliasManagerService
-    let mockFs: typeof fs
-    let mockExecSync: ReturnType<typeof vi.mocked>
-    let mockLoadAliasConfig: ReturnType<typeof vi.mocked>
-    let mockDetectShell: ReturnType<typeof vi.mocked>
 
     beforeEach(() => {
+        // Create service instance
         service = new AliasManagerService()
-        mockFs = vi.mocked(fs)
-        mockExecSync = vi.mocked(execSync)
-        mockLoadAliasConfig = vi.mocked(loadAliasConfig)
-        mockDetectShell = vi.mocked(detectShell)
+        
+        // Setup default mock behaviors
+        vi.mocked(fs.existsSync).mockReturnValue(true)
+        vi.mocked(fs.readFileSync).mockReturnValue('{"aliases": {}}')
+        vi.mocked(fs.writeFileSync).mockImplementation(() => {})
+        vi.mocked(fs.mkdirSync).mockImplementation(() => {})
+        vi.mocked(fs.copyFileSync).mockImplementation(() => {})
+        vi.mocked(fs.rmSync).mockImplementation(() => {})
+        
+        vi.mocked(execSync).mockReturnValue(Buffer.from('success'))
+        
+        vi.mocked(loadAliasConfig).mockReturnValue({
+            aliases: {},
+            nxPackages: {},
+            nxTargets: {},
+            notNxTargets: [],
+            expandableFlags: {}
+        })
+        
+        vi.mocked(detectShell).mockReturnValue('powershell')
+        
+        // Setup path mocks
+        vi.mocked(path.join).mockImplementation((...args) => args.join('/'))
+        
+        // Mock process.cwd by overriding it
+        Object.defineProperty(process, 'cwd', {
+            value: vi.fn().mockReturnValue('/test/workspace'),
+            writable: true
+        })
         
         // Reset environment
         delete process.env.PAE_INSTALLING
@@ -69,24 +60,24 @@ describe('AliasManagerService', () => {
                 }
             }
             
-            mockLoadAliasConfig.mockReturnValue(config)
-            mockDetectShell.mockReturnValue('powershell')
-            mockFs.existsSync.mockReturnValue(false)
-            mockFs.mkdirSync.mockImplementation(() => {})
-            mockFs.writeFileSync.mockImplementation(() => {})
+            vi.mocked(loadAliasConfig).mockReturnValue(config)
+            vi.mocked(detectShell).mockReturnValue('powershell')
+            vi.mocked(fs).existsSync.mockReturnValue(false)
+            vi.mocked(fs).mkdirSync.mockImplementation(() => {})
+            vi.mocked(fs).writeFileSync.mockImplementation(() => {})
 
             // Act
             service.generateLocalFiles()
 
             // Assert
-            expect(mockFs.mkdirSync).toHaveBeenCalledWith(
+            expect(vi.mocked(fs).mkdirSync).toHaveBeenCalledWith(
                 expect.stringContaining('libs/project-alias-expander/dist'),
                 { recursive: true }
             )
-            expect(mockFs.writeFileSync).toHaveBeenCalledTimes(2)
+            expect(vi.mocked(fs).writeFileSync).toHaveBeenCalledTimes(2)
             
             // Check PowerShell module content
-            const psCall = mockFs.writeFileSync.mock.calls.find(call => 
+            const psCall = vi.mocked(fs).writeFileSync.mock.calls.find(call =>
                 call[0].toString().includes('pae-functions.psm1')
             )
             expect(psCall).toBeDefined()
@@ -97,7 +88,7 @@ describe('AliasManagerService', () => {
             expect(psContent).toContain('Set-Alias -Name pbe -Value Invoke-pbe')
             
             // Check Bash script content
-            const bashCall = mockFs.writeFileSync.mock.calls.find(call => 
+            const bashCall = vi.mocked(fs).writeFileSync.mock.calls.find(call =>
                 call[0].toString().includes('pae-aliases.sh')
             )
             expect(bashCall).toBeDefined()
@@ -117,11 +108,11 @@ describe('AliasManagerService', () => {
                 }
             }
             
-            mockLoadAliasConfig.mockReturnValue(config)
-            mockDetectShell.mockReturnValue('powershell')
-            mockFs.existsSync.mockReturnValue(false)
-            mockFs.mkdirSync.mockImplementation(() => {})
-            mockFs.writeFileSync.mockImplementation(() => {})
+            vi.mocked(loadAliasConfig).mockReturnValue(config)
+            vi.mocked(detectShell).mockReturnValue('powershell')
+            vi.mocked(fs).existsSync.mockReturnValue(false)
+            vi.mocked(fs).mkdirSync.mockImplementation(() => {})
+            vi.mocked(fs).writeFileSync.mockImplementation(() => {})
 
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
@@ -140,7 +131,7 @@ describe('AliasManagerService', () => {
 
         it('should handle config loading error gracefully', () => {
             // Arrange
-            mockLoadAliasConfig.mockImplementation(() => {
+            vi.mocked(loadAliasConfig).mockImplementation(() => {
                 throw new Error('Config not found')
             })
 
@@ -173,12 +164,12 @@ describe('AliasManagerService', () => {
                 }
             }
             
-            mockLoadAliasConfig.mockReturnValue(config)
-            mockDetectShell.mockReturnValue('powershell')
-            mockFs.existsSync.mockReturnValue(false)
-            mockFs.mkdirSync.mockImplementation(() => {})
-            mockFs.writeFileSync.mockImplementation(() => {})
-            mockFs.copyFileSync.mockImplementation(() => {})
+            vi.mocked(loadAliasConfig).mockReturnValue(config)
+            vi.mocked(detectShell).mockReturnValue('powershell')
+            vi.mocked(fs).existsSync.mockReturnValue(false)
+            vi.mocked(fs).mkdirSync.mockImplementation(() => {})
+            vi.mocked(fs).writeFileSync.mockImplementation(() => {})
+            vi.mocked(fs).copyFileSync.mockImplementation(() => {})
 
             const originalArgv = process.argv
             process.argv = ['node', 'cli.js', '--verbose']
@@ -188,8 +179,8 @@ describe('AliasManagerService', () => {
             service.installAliases()
 
             // Assert
-            expect(mockFs.writeFileSync).toHaveBeenCalledTimes(2)
-            expect(mockFs.copyFileSync).toHaveBeenCalledWith(
+            expect(vi.mocked(fs).writeFileSync).toHaveBeenCalledTimes(2)
+            expect(vi.mocked(fs).copyFileSync).toHaveBeenCalledWith(
                 expect.stringContaining('pae-functions.psm1'),
                 expect.stringContaining('PAE.psm1')
             )
@@ -207,12 +198,12 @@ describe('AliasManagerService', () => {
                 }
             }
             
-            mockLoadAliasConfig.mockReturnValue(config)
-            mockDetectShell.mockReturnValue('powershell')
-            mockFs.existsSync.mockReturnValue(false)
-            mockFs.mkdirSync.mockImplementation(() => {})
-            mockFs.writeFileSync.mockImplementation(() => {})
-            mockFs.copyFileSync.mockImplementation(() => {
+            vi.mocked(loadAliasConfig).mockReturnValue(config)
+            vi.mocked(detectShell).mockReturnValue('powershell')
+            vi.mocked(fs).existsSync.mockReturnValue(false)
+            vi.mocked(fs).mkdirSync.mockImplementation(() => {})
+            vi.mocked(fs).writeFileSync.mockImplementation(() => {})
+            vi.mocked(fs).copyFileSync.mockImplementation(() => {
                 throw new Error('Permission denied')
             })
 
@@ -241,13 +232,13 @@ describe('AliasManagerService', () => {
                 }
             }
             
-            mockLoadAliasConfig.mockReturnValue(config)
-            mockDetectShell.mockReturnValue('powershell')
-            mockFs.existsSync.mockReturnValue(false)
-            mockFs.mkdirSync.mockImplementation(() => {})
-            mockFs.writeFileSync.mockImplementation(() => {})
-            mockFs.copyFileSync.mockImplementation(() => {})
-            mockExecSync.mockImplementation(() => Buffer.from(''))
+            vi.mocked(loadAliasConfig).mockReturnValue(config)
+            vi.mocked(detectShell).mockReturnValue('powershell')
+            vi.mocked(fs).existsSync.mockReturnValue(false)
+            vi.mocked(fs).mkdirSync.mockImplementation(() => {})
+            vi.mocked(fs).writeFileSync.mockImplementation(() => {})
+            vi.mocked(fs).copyFileSync.mockImplementation(() => {})
+            vi.mocked(execSync).mockImplementation(() => Buffer.from(''))
 
             const originalArgv = process.argv
             process.argv = ['node', 'cli.js', '--auto-refresh', '--verbose']
@@ -257,7 +248,7 @@ describe('AliasManagerService', () => {
             service.installAliases()
 
             // Assert
-            expect(mockExecSync).toHaveBeenCalledWith(
+            expect(vi.mocked(execSync)).toHaveBeenCalledWith(
                 expect.stringContaining('powershell -Command'),
                 expect.objectContaining({
                     stdio: 'inherit',
@@ -279,12 +270,12 @@ describe('AliasManagerService', () => {
                 }
             }
             
-            mockLoadAliasConfig.mockReturnValue(config)
-            mockDetectShell.mockReturnValue('gitbash')
-            mockFs.existsSync.mockReturnValue(false)
-            mockFs.mkdirSync.mockImplementation(() => {})
-            mockFs.writeFileSync.mockImplementation(() => {})
-            mockExecSync.mockImplementation(() => Buffer.from(''))
+            vi.mocked(loadAliasConfig).mockReturnValue(config)
+            vi.mocked(detectShell).mockReturnValue('gitbash')
+            vi.mocked(fs).existsSync.mockReturnValue(false)
+            vi.mocked(fs).mkdirSync.mockImplementation(() => {})
+            vi.mocked(fs).writeFileSync.mockImplementation(() => {})
+            vi.mocked(execSync).mockImplementation(() => Buffer.from(''))
 
             const originalArgv = process.argv
             process.argv = ['node', 'cli.js', '--auto-refresh', '--verbose']
@@ -294,7 +285,7 @@ describe('AliasManagerService', () => {
             service.installAliases()
 
             // Assert
-            expect(mockExecSync).toHaveBeenCalledWith(
+            expect(vi.mocked(execSync)).toHaveBeenCalledWith(
                 expect.stringContaining('bash -c'),
                 expect.objectContaining({
                     stdio: 'inherit',
@@ -316,13 +307,13 @@ describe('AliasManagerService', () => {
                 }
             }
             
-            mockLoadAliasConfig.mockReturnValue(config)
-            mockDetectShell.mockReturnValue('powershell')
-            mockFs.existsSync.mockReturnValue(false)
-            mockFs.mkdirSync.mockImplementation(() => {})
-            mockFs.writeFileSync.mockImplementation(() => {})
-            mockFs.copyFileSync.mockImplementation(() => {})
-            mockExecSync.mockImplementation(() => {
+            vi.mocked(loadAliasConfig).mockReturnValue(config)
+            vi.mocked(detectShell).mockReturnValue('powershell')
+            vi.mocked(fs).existsSync.mockReturnValue(false)
+            vi.mocked(fs).mkdirSync.mockImplementation(() => {})
+            vi.mocked(fs).writeFileSync.mockImplementation(() => {})
+            vi.mocked(fs).copyFileSync.mockImplementation(() => {})
+            vi.mocked(execSync).mockImplementation(() => {
                 throw new Error('Command failed')
             })
 
@@ -345,13 +336,13 @@ describe('AliasManagerService', () => {
 
         it('should handle config loading error', () => {
             // Arrange
-            mockLoadAliasConfig.mockImplementation(() => {
+            vi.mocked(loadAliasConfig).mockImplementation(() => {
                 throw new Error('Config not found')
             })
-            mockDetectShell.mockReturnValue('powershell')
-            mockFs.existsSync.mockReturnValue(false)
-            mockFs.mkdirSync.mockImplementation(() => {})
-            mockFs.writeFileSync.mockImplementation(() => {})
+            vi.mocked(detectShell).mockReturnValue('powershell')
+            vi.mocked(fs).existsSync.mockReturnValue(false)
+            vi.mocked(fs).mkdirSync.mockImplementation(() => {})
+            vi.mocked(fs).writeFileSync.mockImplementation(() => {})
 
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
@@ -377,12 +368,12 @@ describe('AliasManagerService', () => {
                 }
             }
             
-            mockLoadAliasConfig.mockReturnValue(config)
-            mockDetectShell.mockReturnValue('powershell')
-            mockFs.existsSync.mockReturnValue(false)
-            mockFs.mkdirSync.mockImplementation(() => {})
-            mockFs.writeFileSync.mockImplementation(() => {})
-            mockFs.copyFileSync.mockImplementation(() => {})
+            vi.mocked(loadAliasConfig).mockReturnValue(config)
+            vi.mocked(detectShell).mockReturnValue('powershell')
+            vi.mocked(fs).existsSync.mockReturnValue(false)
+            vi.mocked(fs).mkdirSync.mockImplementation(() => {})
+            vi.mocked(fs).writeFileSync.mockImplementation(() => {})
+            vi.mocked(fs).copyFileSync.mockImplementation(() => {})
 
             const originalArgv = process.argv
             process.argv = ['node', 'cli.js', '--verbose']
@@ -412,11 +403,11 @@ describe('AliasManagerService', () => {
                 }
             }
             
-            mockLoadAliasConfig.mockReturnValue(config)
-            mockDetectShell.mockReturnValue('gitbash')
-            mockFs.existsSync.mockReturnValue(false)
-            mockFs.mkdirSync.mockImplementation(() => {})
-            mockFs.writeFileSync.mockImplementation(() => {})
+            vi.mocked(loadAliasConfig).mockReturnValue(config)
+            vi.mocked(detectShell).mockReturnValue('gitbash')
+            vi.mocked(fs).existsSync.mockReturnValue(false)
+            vi.mocked(fs).mkdirSync.mockImplementation(() => {})
+            vi.mocked(fs).writeFileSync.mockImplementation(() => {})
 
             const originalArgv = process.argv
             process.argv = ['node', 'cli.js', '--verbose']
@@ -446,11 +437,11 @@ describe('AliasManagerService', () => {
                 }
             }
             
-            mockLoadAliasConfig.mockReturnValue(config)
-            mockDetectShell.mockReturnValue('unknown')
-            mockFs.existsSync.mockReturnValue(false)
-            mockFs.mkdirSync.mockImplementation(() => {})
-            mockFs.writeFileSync.mockImplementation(() => {})
+            vi.mocked(loadAliasConfig).mockReturnValue(config)
+            vi.mocked(detectShell).mockReturnValue('unknown')
+            vi.mocked(fs).existsSync.mockReturnValue(false)
+            vi.mocked(fs).mkdirSync.mockImplementation(() => {})
+            vi.mocked(fs).writeFileSync.mockImplementation(() => {})
 
             const originalArgv = process.argv
             process.argv = ['node', 'cli.js', '--verbose']
@@ -473,8 +464,8 @@ describe('AliasManagerService', () => {
     describe('refreshAliasesDirect', () => {
         it('should execute PowerShell refresh directly', () => {
             // Arrange
-            mockDetectShell.mockReturnValue('powershell')
-            mockExecSync.mockImplementation(() => Buffer.from(''))
+            vi.mocked(detectShell).mockReturnValue('powershell')
+            vi.mocked(execSync).mockImplementation(() => Buffer.from(''))
 
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
@@ -482,7 +473,7 @@ describe('AliasManagerService', () => {
             service.refreshAliasesDirect()
 
             // Assert
-            expect(mockExecSync).toHaveBeenCalledWith(
+            expect(vi.mocked(execSync)).toHaveBeenCalledWith(
                 expect.stringContaining('powershell -Command'),
                 expect.objectContaining({
                     stdio: 'inherit',
@@ -497,8 +488,8 @@ describe('AliasManagerService', () => {
 
         it('should execute Git Bash refresh directly', () => {
             // Arrange
-            mockDetectShell.mockReturnValue('gitbash')
-            mockExecSync.mockImplementation(() => Buffer.from(''))
+            vi.mocked(detectShell).mockReturnValue('gitbash')
+            vi.mocked(execSync).mockImplementation(() => Buffer.from(''))
 
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
@@ -506,7 +497,7 @@ describe('AliasManagerService', () => {
             service.refreshAliasesDirect()
 
             // Assert
-            expect(mockExecSync).toHaveBeenCalledWith(
+            expect(vi.mocked(execSync)).toHaveBeenCalledWith(
                 'pae-refresh',
                 expect.objectContaining({
                     stdio: 'inherit',
@@ -521,7 +512,7 @@ describe('AliasManagerService', () => {
 
         it('should handle unknown shell', () => {
             // Arrange
-            mockDetectShell.mockReturnValue('unknown')
+            vi.mocked(detectShell).mockReturnValue('unknown')
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
             // Act
@@ -538,8 +529,8 @@ describe('AliasManagerService', () => {
 
         it('should handle refresh failure', () => {
             // Arrange
-            mockDetectShell.mockReturnValue('powershell')
-            mockExecSync.mockImplementation(() => {
+            vi.mocked(detectShell).mockReturnValue('powershell')
+            vi.mocked(execSync).mockImplementation(() => {
                 throw new Error('Command failed')
             })
 

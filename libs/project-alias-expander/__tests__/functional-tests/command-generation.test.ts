@@ -67,10 +67,10 @@ describe('Command Generation (Dry Run)', () => {
 
             // Act - Test the expansion logic directly
             const alias = 'pbc'
-            const target = 'b'
+            const _target = 'b'
             const flags = ['-echo']
 
-            const aliasVal = config['nxPackages'][alias]
+            const _aliasVal = config['nxPackages'][alias]
             const flagExpansion = paeManager.expandFlags(flags, config['expandable-flags'] || {})
 
             const processedArgs = [...flagExpansion.prefix, ...flagExpansion.remainingArgs, ...flagExpansion.preArgs, ...flagExpansion.suffix]
@@ -110,10 +110,10 @@ describe('Command Generation (Dry Run)', () => {
 
             // Act - Test the expansion logic directly
             const alias = 'pbc'
-            const target = 'b'
+            const _target = 'b'
             const flags = ['-echo']
 
-            const aliasVal = config['nxPackages'][alias]
+            const _aliasVal = config['nxPackages'][alias]
             const flagExpansion = paeManager.expandFlags(flags, config['expandable-flags'] || {})
 
             const processedArgs = [...flagExpansion.prefix, ...flagExpansion.remainingArgs, ...flagExpansion.preArgs, ...flagExpansion.suffix]

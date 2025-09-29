@@ -1,23 +1,25 @@
 import * as path from 'path'
 import * as fs from 'fs'
-import { execSync } from 'child_process'
+import { execa } from 'execa'
+import ora from 'ora'
 import type { AliasConfig, IAliasManagerService } from '../_types/index.js'
 import { loadAliasConfig } from '../config.js'
 import { detectShell } from '../shell.js'
 
 export class AliasManagerService implements IAliasManagerService {
+
     generateLocalFiles(): void {
         const config = loadAliasConfig()
         const aliases = Object.keys(config['nxPackages'])
         const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
         const shell = detectShell()
-    	
+
         if (isVerbose) {
             console.log(`Detected shell: ${shell}`)
             console.log(`Found ${aliases.length} aliases: ${aliases.join(', ')}`)
             console.log('Generating local files only (build process)')
         }
-    	
+
         // Generate PowerShell module content - Simple approach
         const moduleContent = `# PAE Global Aliases - Auto-generated PowerShell Module
 # Generated from config.json - DO NOT EDIT MANUALLY
@@ -66,8 +68,30 @@ Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh
 
 # Module loaded confirmation
 if ($env:ENABLE_TEST_CONSOLE -ne "false") {
-    Write-Host "Module loaded: PAE aliases" -ForegroundColor Green
+    Write-Host "Module loaded: PAE Shorthand Aliases" -ForegroundColor Green
 }
+
+# Module cleanup handlers to prevent COM object accumulation
+$MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
+    # Clean up any COM objects or event handlers
+    try {
+        # Remove any global variables that might hold references
+        Remove-Variable -Name "PAE_ModuleLoaded" -ErrorAction SilentlyContinue
+        
+        # Force garbage collection to clean up any lingering objects
+        [System.GC]::Collect()
+        [System.GC]::WaitForPendingFinalizers()
+        
+        if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+            Write-Host "PAE module cleanup completed" -ForegroundColor Yellow
+        }
+    } catch {
+        # Silently handle cleanup errors
+    }
+}
+
+# Set a flag to track module loading
+$Global:PAE_ModuleLoaded = $true
 `
 
         // Generate Bash aliases content
@@ -103,6 +127,7 @@ pae-refresh() {
 
         // Write files
         const distDir = path.join(process.cwd(), 'libs', 'project-alias-expander', 'dist')
+
         if (!fs.existsSync(distDir)) {
             fs.mkdirSync(distDir, { recursive: true })
         }
@@ -113,7 +138,7 @@ pae-refresh() {
         // Silent during build - if files aren't generated, build will fail
     }
 
-    installAliases(): void {
+    async installAliases(): Promise<void> {
         // Prevent multiple installations during the same process
         if (process.env.PAE_INSTALLING === '1') {
             return
@@ -192,8 +217,30 @@ Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh
 
 # Module loaded confirmation
 if ($env:ENABLE_TEST_CONSOLE -ne "false") {
-    Write-Host "Module loaded: PAE aliases" -ForegroundColor Green
+    Write-Host "Module loaded: PAE Shorthand Aliases" -ForegroundColor Green
 }
+
+# Module cleanup handlers to prevent COM object accumulation
+$MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
+    # Clean up any COM objects or event handlers
+    try {
+        # Remove any global variables that might hold references
+        Remove-Variable -Name "PAE_ModuleLoaded" -ErrorAction SilentlyContinue
+        
+        # Force garbage collection to clean up any lingering objects
+        [System.GC]::Collect()
+        [System.GC]::WaitForPendingFinalizers()
+        
+        if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+            Write-Host "PAE module cleanup completed" -ForegroundColor Yellow
+        }
+    } catch {
+        # Silently handle cleanup errors
+    }
+}
+
+# Set a flag to track module loading
+$Global:PAE_ModuleLoaded = $true
 `
 
         // Generate Bash aliases content
@@ -229,6 +276,7 @@ pae-refresh() {
 
         // Write files
         const distDir = path.join(process.cwd(), 'libs', 'project-alias-expander', 'dist')
+
         if (!fs.existsSync(distDir)) {
             fs.mkdirSync(distDir, { recursive: true })
         }
@@ -239,6 +287,7 @@ pae-refresh() {
         // Install PowerShell module to modules directory
         try {
             const psModuleDir = path.join(process.env.USERPROFILE || process.env.HOME || '', 'Documents', 'WindowsPowerShell', 'Modules', 'PAE')
+
             if (!fs.existsSync(psModuleDir)) {
                 fs.mkdirSync(psModuleDir, { recursive: true })
             }
@@ -283,57 +332,55 @@ pae-refresh() {
             console.log('   pae refresh')
         }
         
-        // Auto-refresh if requested
-        if (autoRefresh) {
-            console.log('\n\x1b[33m🔄 Auto-refreshing aliases in current session...\x1b[0m')
-            try {
-                if (shell === 'powershell') {
-                    // Try to auto-refresh PowerShell module
-                    try {
-                        console.log('\x1b[33m🔄 Attempting to auto-refresh PowerShell module...\x1b[0m')
-                        
-                        // Try to execute PowerShell command to import the module
-                        const psCommand = 'Import-Module PAE -Force; Write-Host "Module refreshed successfully!" -ForegroundColor Green'
-                        
-                        execSync(`powershell -Command "${psCommand}"`, {
-                            stdio: 'inherit',
-                            cwd: process.cwd(),
-                            timeout: 5000
-                        })
-                        
-                        console.log('\x1b[32m✅ PowerShell module auto-refreshed successfully!\x1b[0m')
-                    } catch (error) {
-                        console.log('\x1b[33m⚠️  Auto-refresh failed. Manual refresh required.\x1b[0m')
-                        console.log('\x1b[36m   Run: pae-refresh\x1b[0m')
-                        console.log('\x1b[90m   Or: Import-Module PAE -Force\x1b[0m')
-                        if (isVerbose) {
-                            console.log(`Error: ${error}`)
-                        }
+        // Always auto-refresh (load module into current session)
+        const spinner = ora('Installing PowerShell module...').start()
+        
+        try {
+            if (shell === 'powershell') {
+                // Try to auto-refresh PowerShell module
+                try {
+                    // Use dot-sourcing to execute in the current session
+                    const psCommand = '. { Import-Module PAE -Force }'
+                    
+                    await execa('powershell', ['-Command', psCommand], {
+                        cwd: process.cwd(),
+                        timeout: 5000,
+                        shell: true
+                    })
+                    
+                    spinner.succeed('Successfully installed: PAE Shorthand Aliases (module)')
+                } catch (error) {
+                    spinner.fail('Auto-load failed. Manual load required.')
+                    console.log('\x1b[36m   Run: pae-refresh\x1b[0m')
+                    console.log('\x1b[90m   Or: Import-Module PAE -Force\x1b[0m')
+                    if (isVerbose) {
+                        console.log(`Error: ${error}`)
                     }
-                } else if (shell === 'gitbash') {
-                    // For Git Bash, source the aliases and then run pae-refresh
-                    try {
-                        const aliasFile = path.resolve('libs/project-alias-expander/dist/pae-aliases.sh').replace(/\\/g, '/')
+                }
+            } else if (shell === 'gitbash') {
+                // For Git Bash, source the aliases and then run pae-refresh
+                try {
+                    const aliasFile = path.resolve('libs/project-alias-expander/dist/pae-aliases.sh').replace(/\\/g, '/')
 
-                        execSync(`bash -c "source '${aliasFile}' && pae-refresh"`, {
-                            stdio: 'inherit',
-                            cwd: process.cwd(),
-                            timeout: 5000
-                        })
-                        console.log('\x1b[32m✅ Git Bash aliases refreshed successfully!\x1b[0m')
-                    } catch (_error) {
-                        console.log('\x1b[33m⚠️  Auto-refresh failed. Manual refresh required.\x1b[0m')
-                        console.log('\x1b[36m   Run: pae-refresh\x1b[0m')
-                        console.log('\x1b[90m   Or: source libs/project-alias-expander/dist/pae-aliases.sh\x1b[0m')
-                    }
-                } else {
-                    console.log('\x1b[33m⚠️  Unknown shell - manual refresh required.\x1b[0m')
+                    await execa('bash', ['-c', `source '${aliasFile}' && pae-refresh`], {
+                        cwd: process.cwd(),
+                        timeout: 5000,
+                        shell: true
+                    })
+                    
+                    spinner.succeed('Successfully installed: PAE Shorthand Aliases (module)')
+                } catch (_error) {
+                    spinner.fail('Auto-load failed. Manual load required.')
+                    console.log('\x1b[36m   Run: pae-refresh\x1b[0m')
+                    console.log('\x1b[90m   Or: source libs/project-alias-expander/dist/pae-aliases.sh\x1b[0m')
                 }
-            } catch (error) {
-                console.log('\x1b[31m❌ Auto-refresh failed. Manual refresh required.\x1b[0m')
-                if (isVerbose) {
-                    console.log(`Error: ${error}`)
-                }
+            } else {
+                spinner.fail('Unknown shell - manual load required.')
+            }
+        } catch (error) {
+            spinner.fail('Auto-load failed. Manual load required.')
+            if (isVerbose) {
+                console.log(`Error: ${error}`)
             }
         }
     }
@@ -363,7 +410,7 @@ pae-refresh() {
         }
     }
 
-    refreshAliasesDirect(): void {
+    async refreshAliasesDirect(): Promise<void> {
         const shell = detectShell()
         
         try {
@@ -371,15 +418,13 @@ pae-refresh() {
                 // Execute pae-refresh in PowerShell (load module first)
                 const modulePath = path.resolve('libs/project-alias-expander/dist/pae-functions.psm1')
 
-                execSync(`powershell -Command "Import-Module '${modulePath}' -Force; pae-refresh"`, {
-                    stdio: 'inherit',
+                await execa('powershell', ['-Command', `Import-Module '${modulePath}' -Force; pae-refresh`], {
                     cwd: process.cwd(),
                     timeout: 5000
                 })
             } else if (shell === 'gitbash') {
                 // Execute pae-refresh in Git Bash
-                execSync('pae-refresh', {
-                    stdio: 'inherit',
+                await execa('pae-refresh', [], {
                     cwd: process.cwd(),
                     timeout: 5000
                 })
@@ -392,6 +437,7 @@ pae-refresh() {
             console.log('\x1b[90m   Git Bash: pae-refresh\x1b[0m')
         }
     }
+
 }
 
 // Export a singleton instance for convenience

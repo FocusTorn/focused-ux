@@ -1,37 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { setupPaeTestEnvironment, resetPaeMocks } from '../__mocks__/helpers'
-
-// Mock the child_process module
-vi.mock('node:child_process', () => ({
-    spawnSync: vi.fn(),
-    execSync: vi.fn(),
-}))
-
-// Mock the CLI module to prevent actual command execution
-vi.mock('../../src/cli', async () => {
-    const actual = await vi.importActual('../../src/cli')
-    return {
-        ...actual,
-        runNx: vi.fn(),
-        runMany: vi.fn(),
-        installAliases: vi.fn()
-    }
-})
-
-// Import the internal functions we need to test
-import { detectShell, runCommand } from '../../src/cli'
+import { detectShell } from '../../src/shell.js'
 
 describe('Internal Functions', () => {
-    let mocks: Awaited<ReturnType<typeof setupPaeTestEnvironment>>
-
-    beforeEach(async () => {
-        mocks = await setupPaeTestEnvironment()
-        await resetPaeMocks(mocks)
-        
-        // Wire up the child_process module mocks
-        const childProcess = await import('node:child_process')
-        vi.mocked(childProcess.spawnSync).mockImplementation(mocks.childProcess.spawnSync)
-        vi.mocked(childProcess.execSync).mockImplementation(mocks.childProcess.execSync)
+    beforeEach(() => {
+        // Clear all mocks before each test
+        vi.clearAllMocks()
     })
 
     describe('detectShell', () => {

@@ -1,6 +1,13 @@
-import { spawnSync } from 'child_process'
+import { execa } from 'execa'
 import type { AliasConfig, AliasValue, ICommandExecutionService } from '../_types/index.js'
 import { resolveProjectForAlias } from '../config.js'
+
+// Track child processes for cleanup (will be set by CLI)
+let trackChildProcess: ((childProcess: any) => void) | null = null
+
+export function setChildProcessTracker(tracker: (childProcess: any) => void) {
+    trackChildProcess = tracker
+}
 
 // Debug mode - check environment variable or debug flag
 const DEBUG = process.env.PAE_DEBUG === '1' || process.argv.includes('-d') || process.argv.includes('--debug')
@@ -12,62 +19,97 @@ function debug(message: string, ...args: any[]) {
 }
 
 export class CommandExecutionService implements ICommandExecutionService {
-    runNx(argv: string[]): number {
+
+    async runNx(argv: string[], timeoutMs?: number): Promise<number> {
         if (process.env.PAE_ECHO === '1') {
             // Print the command with -> prefix for echo mode
             console.log(`-> ${argv.join(' ')}`)
             return 0
         }
 
-        // Check if the first argument is a PowerShell command (starts with $)
-        if (argv[0]?.startsWith('$')) {
-            // Execute PowerShell command
-            const res = spawnSync('powershell', ['-Command', argv.join(' ')], {
-                stdio: 'inherit',
-                shell: false,
-                timeout: 300000, // 5 minute timeout
-                killSignal: 'SIGTERM'
+        try {
+            // Check if the first argument is a PowerShell command (starts with $)
+            if (argv[0]?.startsWith('$')) {
+                // Execute PowerShell command
+                const childProcess = execa('powershell', ['-Command', argv.join(' ')], {
+                    timeout: timeoutMs || 300000, // Use provided timeout or default 5 minutes
+                    killSignal: 'SIGTERM',
+                    stdio: 'inherit'
+                })
+                
+                // Track the child process for cleanup
+                if (trackChildProcess) {
+                    trackChildProcess(childProcess)
+                }
+
+                const result = await childProcess
+                return result.exitCode ?? 0
+            }
+
+            // Check if the first argument is a start expansion (like timeout, node, etc.)
+            const startCommands = ['timeout', 'npm', 'npx', 'yarn', 'pnpm']
+            const hasStartCommand = startCommands.some(cmd => argv[0]?.startsWith(cmd))
+            
+            if (hasStartCommand) {
+                // For start commands, execute them directly
+                const childProcess = execa(argv[0], argv.slice(1), {
+                    timeout: timeoutMs || 300000, // Use provided timeout or default 5 minutes
+                    killSignal: 'SIGTERM',
+                    stdio: 'inherit'
+                })
+                
+                // Track the child process for cleanup
+                if (trackChildProcess) {
+                    trackChildProcess(childProcess)
+                }
+
+                const result = await childProcess
+                return result.exitCode ?? 0
+            }
+
+            debug('CommandExecution: About to execute nx with argv:', argv)
+
+            const childProcess = execa('nx', argv.slice(1), {
+                timeout: timeoutMs || 300000, // Use provided timeout or default 5 minutes
+                killSignal: 'SIGTERM',
+                stdio: 'inherit'
             })
-            return res.status ?? 1
+            
+            // Track the child process for cleanup
+            if (trackChildProcess) {
+                trackChildProcess(childProcess)
+            }
+
+            const result = await childProcess
+            return result.exitCode ?? 0
+        } catch (error: any) {
+            debug('CommandExecution error:', error)
+            return error.exitCode || 1
         }
-
-        // Check if the first argument is a start expansion (like timeout, node, etc.)
-        const startCommands = ['timeout', 'npm', 'npx', 'yarn', 'pnpm']
-        const hasStartCommand = startCommands.some(cmd => argv[0]?.startsWith(cmd))
-        
-        if (hasStartCommand) {
-            // For start commands, execute them directly
-            const res = spawnSync(argv[0], argv.slice(1), {
-                stdio: 'inherit',
-                shell: process.platform === 'win32',
-                timeout: 300000, // 5 minute timeout
-                killSignal: 'SIGTERM'
-            })
-            return res.status ?? 1
-        }
-
-        debug('CommandExecution: About to execute nx with argv:', argv)
-        const res = spawnSync('nx', argv.slice(1), {
-            stdio: 'inherit',
-            shell: process.platform === 'win32',
-            timeout: 300000, // 5 minute timeout
-            killSignal: 'SIGTERM'
-        })
-
-        return res.status ?? 1
     }
 
-    runCommand(command: string, args: string[]): number {
-        const res = spawnSync(command, args, {
-            stdio: 'inherit',
-            shell: process.platform === 'win32',
-            timeout: 300000, // 5 minute timeout
-            killSignal: 'SIGTERM'
-        })
-        return res.status ?? 1
+    async runCommand(command: string, args: string[]): Promise<number> {
+        try {
+            const childProcess = execa(command, args, {
+                timeout: 300000, // 5 minute timeout
+                killSignal: 'SIGTERM',
+                stdio: 'inherit'
+            })
+            
+            // Track the child process for cleanup
+            if (trackChildProcess) {
+                trackChildProcess(childProcess)
+            }
+
+            const result = await childProcess
+            return result.exitCode ?? 0
+        } catch (error: any) {
+            debug('CommandExecution error:', error)
+            return error.exitCode || 1
+        }
     }
 
-    runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: AliasConfig): number {
+    async runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: AliasConfig): Promise<number> {
         const projects: string[] = []
         const suffix = runType === 'all' ? null : `-${runType}`
 
@@ -91,10 +133,12 @@ export class CommandExecutionService implements ICommandExecutionService {
         projects.forEach(p => console.log(`  ${p}`))
 
         let exitCode = 0
+
         for (const project of projects) {
             for (const target of targets) {
                 const args = [target, project, ...flags]
-                const code = this.runNx(args)
+                const code = await this.runNx(args)
+
                 if (code !== 0) {
                     exitCode = code
                 }
@@ -103,6 +147,7 @@ export class CommandExecutionService implements ICommandExecutionService {
 
         return exitCode
     }
+
 }
 
 // Export a singleton instance for convenience

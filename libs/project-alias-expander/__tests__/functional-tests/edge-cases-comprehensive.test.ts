@@ -37,18 +37,21 @@ vi.mock('strip-json-comments', () => ({
     default: vi.fn()
 }))
 
-import { detectShell } from '../../src/shell.js'
+
 import * as fs from 'fs'
 import { spawnSync, execSync } from 'child_process'
 import stripJsonComments from 'strip-json-comments'
 
 describe('Edge Cases and Boundary Conditions', () => {
+    /* eslint-disable unused-imports/no-unused-vars */
     let mockDetectShell: ReturnType<typeof vi.mocked>
     let mockFs: typeof fs
     let mockSpawnSync: ReturnType<typeof vi.mocked>
     let mockExecSync: ReturnType<typeof vi.mocked>
     let mockStripJsonComments: ReturnType<typeof vi.mocked>
+    /* eslint-enable unused-imports/no-unused-vars */
 
+    
     beforeEach(() => {
         mockDetectShell = vi.mocked(detectShell)
         mockFs = vi.mocked(fs)
@@ -401,7 +404,7 @@ describe('Edge Cases and Boundary Conditions', () => {
 
         it('should handle config with empty packages', () => {
             // Arrange
-            const config = { 'nxPackages': {} }
+            const _config = { 'nxPackages': {} }
             mockFs.existsSync.mockReturnValue(false)
             mockFs.mkdirSync.mockImplementation(() => {})
             mockFs.writeFileSync.mockImplementation(() => {})
@@ -415,7 +418,7 @@ describe('Edge Cases and Boundary Conditions', () => {
 
         it('should handle config with very large package lists', () => {
             // Arrange
-            const config = {
+            const _config = {
                 'nxPackages': Object.fromEntries(
                     Array(1000).fill(0).map((_, i) => [
                         `package${i}`,
@@ -436,7 +439,7 @@ describe('Edge Cases and Boundary Conditions', () => {
 
         it('should handle package names with special characters', () => {
             // Arrange
-            const config = {
+            const _config = {
                 'nxPackages': {
                     'package-with-dashes': { name: 'package-with-dashes', suffix: 'core' as const },
                     'package_with_underscores': { name: 'package_with_underscores', suffix: 'core' as const },
@@ -457,7 +460,7 @@ describe('Edge Cases and Boundary Conditions', () => {
 
         it('should handle package names with unicode characters', () => {
             // Arrange
-            const config = {
+            const _config = {
                 'nxPackages': {
                     '测试包': { name: '测试包', suffix: 'core' as const },
                     'パッケージ': { name: 'パッケージ', suffix: 'core' as const },
@@ -477,7 +480,7 @@ describe('Edge Cases and Boundary Conditions', () => {
 
         it('should handle file system errors gracefully', () => {
             // Arrange
-            const config = { 'nxPackages': { 'pbc': { name: 'project-butler', suffix: 'core' as const } } }
+            const _config = { 'nxPackages': { 'pbc': { name: 'project-butler', suffix: 'core' as const } } }
             mockFs.existsSync.mockReturnValue(false)
             mockFs.mkdirSync.mockImplementation(() => {
                 throw new Error('Permission denied')
@@ -490,7 +493,7 @@ describe('Edge Cases and Boundary Conditions', () => {
         it('should handle very long package names', () => {
             // Arrange
             const longName = 'a'.repeat(1000)
-            const config = {
+            const _config = {
                 'nxPackages': {
                     [longName]: { name: longName, suffix: 'core' as const }
                 }
