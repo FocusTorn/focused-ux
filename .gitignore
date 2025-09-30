@@ -84,4 +84,13 @@ vitest.config.*.timestamp*
 # git rm -r --cached -- ':(glob)**/_reports/coverage/**'
 
 
+
+# $ git rm --cached .cursor/ADHOC/Summary.md
+.cursor/ADHOC/Summary.md
+
+.cursor/ADHOC/fluency-output-staging.md
+.cursor/ADHOC/_Extracted-Lessons.md
+
+
+
 test-output
