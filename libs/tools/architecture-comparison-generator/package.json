@@ -23,7 +23,7 @@
     "author": "FocusedUX Team",
     "license": "MIT",
     "dependencies": {
-        "@types/node": "^24.5.2"
+        "@types/node": "^24.6.0"
     },
     "devDependencies": {
         "typescript": "^5.9.2",

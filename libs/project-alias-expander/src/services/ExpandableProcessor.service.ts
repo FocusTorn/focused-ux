@@ -133,12 +133,6 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
             if (arg.startsWith('-') && arg.length > 1) {
                 const { key, value } = this.parseExpandableFlag(arg)
                 
-                // Handle special flags
-                if (key === 'echo') {
-                    process.env.PAE_ECHO = '1'
-                    continue
-                }
-                
                 // Internal flags are handled dynamically - no hardcoded checks needed
                 
                 // Check if this is an expandable

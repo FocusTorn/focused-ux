@@ -47,7 +47,22 @@ ${aliases.map(alias =>
     `function Invoke-${alias} { 
     [CmdletBinding()] 
     param([Parameter(Position = 0, ValueFromRemainingArguments = $true)][string[]]$Arguments) 
-    pae ${alias} @Arguments
+    
+    # Capture short-in command for echo variants
+    if ($env:PAE_ECHO -eq "1" -or $env:PAE_ECHO_X -eq "1") {
+        $env:PAE_SHORT_IN = "${alias} $($Arguments -join ' ')"
+    }
+    
+    # Build the command to send to PAE
+    $paeCommand = "pae ${alias} $($Arguments -join ' ')"
+    
+    # Capture short-out command for echo variants
+    if ($env:PAE_ECHO -eq "1" -or $env:PAE_ECHO_X -eq "1") {
+        $env:PAE_SHORT_OUT = $paeCommand
+    }
+    
+    # Execute the PAE command
+    Invoke-Expression $paeCommand
 }
 
 # Alias for backward compatibility
@@ -247,7 +262,6 @@ pae-refresh() {
                 })
                 
                 console.log('✅ PAE aliases loaded successfully!')
-                
             } catch (error) {
                 console.log('\n⚠️  Could not auto-load aliases into current session.')
                 console.log('📋 To load aliases manually, run:')
@@ -255,6 +269,7 @@ pae-refresh() {
                 console.log('   # Or use: pae-refresh')
                 
                 const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
+
                 if (isVerbose) {
                     console.log(`\nDebug info: ${error}`)
                 }
@@ -277,7 +292,6 @@ pae-refresh() {
                 })
                 
                 console.log('✅ PAE aliases loaded successfully!')
-                
             } catch (_error) {
                 console.log('\n⚠️  Could not auto-load aliases into current session.')
                 console.log('📋 To load aliases manually, run:')

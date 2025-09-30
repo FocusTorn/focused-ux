@@ -296,6 +296,11 @@ async function main() {
 
         debug('Arguments parsed:', args)
         
+        // Capture global-in command for echo variants
+        if (process.env.PAE_ECHO === '1' || process.env.PAE_ECHO_X === '1') {
+            process.env.PAE_GLOBAL_IN = `pae ${args.join(' ')}`
+        }
+        
         // Check for help flags, remove them from args
         const helpFlags = ['--help', '-h']
         const filteredArgs = args.filter(arg => {
@@ -306,7 +311,28 @@ async function main() {
             return true
         })
         
-        // Debug flags will be handled dynamically by internal flags processing
+        // Check for debug flags but don't remove them - let them be processed by internal flags
+        const debugFlags = ['-db', '--debug', '--pae-debug']
+
+        for (const arg of filteredArgs) {
+            if (debugFlags.includes(arg)) {
+                DEBUG = true
+                break
+            }
+        }
+        
+        // Check for cache clearing flag
+        const cacheFlags = ['--clear-cache', '--clear-caches']
+
+        for (const arg of filteredArgs) {
+            if (cacheFlags.includes(arg)) {
+                const { clearAllCaches } = await import('./config.js')
+
+                clearAllCaches()
+                debug('All caches cleared')
+                break
+            }
+        }
         
         // Also check environment variable
         if (process.env.PAE_DEBUG === '1') {
@@ -541,10 +567,78 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
         // Process internal flags first (these affect PAE behavior, not the command)
         let timeoutMs: number | undefined = undefined
 
+        // Process env-setting-flags FIRST - these set environment variables before any expansion or execution
+        debug('About to check env-setting-flags', { hasEnvSettingFlags: !!config['env-setting-flags'], envSettingFlagsKeys: config['env-setting-flags'] ? Object.keys(config['env-setting-flags']) : [] })
+        
+        if (config['env-setting-flags']) {
+            debug('Processing env-setting flags', { envSettingFlags: config['env-setting-flags'] })
+
+            const envSettingFlags = { ...config['env-setting-flags'] }
+            
+            // Process env-setting flags first to set environment variables
+            debug('About to process env-setting flags', { args, envSettingFlags })
+
+            const { start: envStart, prefix: envPrefix, preArgs: envPreArgs, suffix: envSuffix, end: envEnd, remainingArgs: envRemainingArgs } = expandableProcessor.expandFlags(args, envSettingFlags)
+
+            debug('Env-setting flags processed', { envStart, envPrefix, envPreArgs, envSuffix, envEnd, envRemainingArgs })
+            
+            // Check for PAE-specific env-setting flags and set environment variables
+            const allEnvProcessedArgs = [...envStart, ...envPrefix, ...envPreArgs, ...envSuffix, ...envEnd, ...envRemainingArgs]
+            
+            // Filter out echo flags from the processed args for clean command capture
+            const cleanArgs = allEnvProcessedArgs.filter(arg =>
+                !arg.startsWith('--pae-echo')
+                && !arg.startsWith('-sto=')
+                && !arg.startsWith('-stoX='))
+
+            for (const arg of allEnvProcessedArgs) {
+                if (arg === '--pae-debug') {
+                    DEBUG = true
+                    process.env.PAE_DEBUG = '1'
+                    debug('Debug mode enabled via --pae-debug flag')
+                } else if (arg === '--pae-verbose') {
+                    process.env.PAE_VERBOSE = '1'
+                    debug('Verbose mode enabled via --pae-verbose flag')
+                } else if (arg.startsWith('--pae-echo=')) {
+                    const variant = arg.split('=')[1]?.replace(/['"]/g, '') || ''
+
+                    process.env.PAE_ECHO = '1'
+                    if (variant) {
+                        process.env.PAE_ECHO_VARIANT = variant
+                        debug(`Echo mode enabled via --pae-echo flag with variant: ${variant}`)
+                    } else {
+                        debug('Echo mode enabled via --pae-echo flag (no variant - will show all)')
+                    }
+                } else if (arg === '--pae-echo') {
+                    process.env.PAE_ECHO = '1'
+                    // No variant set - will show all 6 variants
+                    debug('Echo mode enabled via --pae-echo flag')
+                } else if (arg.startsWith('--pae-echoX=')) {
+                    const variant = arg.split('=')[1]?.replace(/['"]/g, '')
+
+                    process.env.PAE_ECHO_X = '1'
+                    if (variant) {
+                        process.env.PAE_ECHO_VARIANT = variant
+                        debug(`EchoX mode enabled via --pae-echoX flag with variant: ${variant}`)
+                    } else {
+                        debug('EchoX mode enabled via --pae-echoX flag (no variant - will show all)')
+                    }
+                } else if (arg === '--pae-echoX') {
+                    process.env.PAE_ECHO_X = '1'
+                    // No variant set - will show all 6 variants
+                    debug('EchoX mode enabled via --pae-echoX flag')
+                }
+            }
+            
+            // Update args to use the processed env-setting flags
+            args = envRemainingArgs
+        }
+
         debug('About to check internal-flags', { hasInternalFlags: !!config['internal-flags'], internalFlagsKeys: config['internal-flags'] ? Object.keys(config['internal-flags']) : [] })
         
         if (config['internal-flags']) {
             debug('Processing internal flags', { internalFlags: config['internal-flags'] })
+
             const internalFlags = { ...config['internal-flags'] }
 
             if (config['expandable-templates']) {
@@ -562,20 +656,18 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
             
             // Process internal flags
             debug('About to process internal flags', { args, internalFlags })
-            const { remainingArgs: internalRemainingArgs } = expandableProcessor.expandFlags(args, internalFlags)
-            debug('Internal flags processed', { internalRemainingArgs })
+
+            const { start, prefix, preArgs, suffix, end, remainingArgs: internalRemainingArgs } = expandableProcessor.expandFlags(args, internalFlags)
+
+            debug('Internal flags processed', { start, prefix, preArgs, suffix, end, internalRemainingArgs })
             
-            // Check for PAE-specific flags in the processed args
-            for (const arg of internalRemainingArgs) {
+            // Check for PAE-specific flags in the processed args and expanded flags
+            const allProcessedArgs = [...start, ...prefix, ...preArgs, ...suffix, ...end, ...internalRemainingArgs]
+
+            for (const arg of allProcessedArgs) {
                 if (arg.startsWith('--pae-execa-timeout=')) {
                     timeoutMs = parseInt(arg.split('=')[1])
                     debug('Detected PAE timeout flag', { timeoutMs })
-                } else if (arg === '--pae-debug') {
-                    DEBUG = true
-                    debug('Debug mode enabled via --pae-debug flag')
-                } else if (arg === '--pae-verbose') {
-                    // Verbose mode could be handled here if needed
-                    debug('Verbose mode enabled via --pae-verbose flag')
                 }
             }
             
@@ -674,6 +766,67 @@ async function handleExpandableCommand(alias: string, args: string[], config: Al
     // Process internal flags first (these affect PAE behavior, not the command)
     let timeoutMs: number | undefined = undefined
 
+    // Process env-setting-flags FIRST - these set environment variables before any expansion or execution
+    debug('About to check env-setting-flags', { hasEnvSettingFlags: !!config['env-setting-flags'], envSettingFlagsKeys: config['env-setting-flags'] ? Object.keys(config['env-setting-flags']) : [] })
+    
+    if (config['env-setting-flags']) {
+        debug('Processing env-setting flags', { envSettingFlags: config['env-setting-flags'] })
+
+        const envSettingFlags = { ...config['env-setting-flags'] }
+        
+        // Process env-setting flags first to set environment variables
+        debug('About to process env-setting flags', { args, envSettingFlags })
+
+        const { start: envStart, prefix: envPrefix, preArgs: envPreArgs, suffix: envSuffix, end: envEnd, remainingArgs: envRemainingArgs } = expandableProcessor.expandFlags(args, envSettingFlags)
+
+        debug('Env-setting flags processed', { envStart, envPrefix, envPreArgs, envSuffix, envEnd, envRemainingArgs })
+        
+        // Check for PAE-specific env-setting flags and set environment variables
+        const allEnvProcessedArgs = [...envStart, ...envPrefix, ...envPreArgs, ...envSuffix, ...envEnd, ...envRemainingArgs]
+
+        for (const arg of allEnvProcessedArgs) {
+            if (arg === '--pae-debug') {
+                DEBUG = true
+                process.env.PAE_DEBUG = '1'
+                debug('Debug mode enabled via --pae-debug flag')
+            } else if (arg === '--pae-verbose') {
+                process.env.PAE_VERBOSE = '1'
+                debug('Verbose mode enabled via --pae-verbose flag')
+            } else if (arg.startsWith('--pae-echo=')) {
+                const variant = arg.split('=')[1]?.replace(/['"]/g, '')
+
+                process.env.PAE_ECHO = '1'
+                if (variant) {
+                    process.env.PAE_ECHO_VARIANT = variant
+                    debug(`Echo mode enabled via --pae-echo flag with variant: ${variant}`)
+                } else {
+                    debug('Echo mode enabled via --pae-echo flag (no variant - will show all)')
+                }
+            } else if (arg === '--pae-echo') {
+                process.env.PAE_ECHO = '1'
+                // No variant set - will show all 6 variants
+                debug('Echo mode enabled via --pae-echo flag')
+            } else if (arg.startsWith('--pae-echoX=')) {
+                const variant = arg.split('=')[1]?.replace(/['"]/g, '')
+
+                process.env.PAE_ECHO_X = '1'
+                if (variant) {
+                    process.env.PAE_ECHO_VARIANT = variant
+                    debug(`EchoX mode enabled via --pae-echoX flag with variant: ${variant}`)
+                } else {
+                    debug('EchoX mode enabled via --pae-echoX flag (no variant - will show all)')
+                }
+            } else if (arg === '--pae-echoX') {
+                process.env.PAE_ECHO_X = '1'
+                // No variant set - will show all 6 variants
+                debug('EchoX mode enabled via --pae-echoX flag')
+            }
+        }
+        
+        // Update args to use the processed env-setting flags
+        args = envRemainingArgs
+    }
+
     if (config['internal-flags']) {
         const internalFlags = { ...config['internal-flags'] }
 
@@ -689,12 +842,6 @@ async function handleExpandableCommand(alias: string, args: string[], config: Al
             if (arg.startsWith('--pae-execa-timeout=')) {
                 timeoutMs = parseInt(arg.split('=')[1])
                 debug('Detected PAE timeout flag', { timeoutMs })
-            } else if (arg === '--pae-debug') {
-                DEBUG = true
-                debug('Debug mode enabled via --pae-debug flag')
-            } else if (arg === '--pae-verbose') {
-                // Verbose mode could be handled here if needed
-                debug('Verbose mode enabled via --pae-verbose flag')
             }
         }
         

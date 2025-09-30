@@ -188,3 +188,14 @@ export function resolveProjectForAlias(aliasValue: string | { name: string, suff
 // Export cache utilities for testing and monitoring
 export { configCache, ConfigurationCache }
 export type { CachedConfig }
+
+// Function to clear all caches when source code changes
+export function clearAllCaches(): void {
+    debug('Clearing all PAE caches due to source code changes')
+    configCache.clearCache()
+    
+    // Also clear shell detection cache
+    import('./shell.js').then(({ clearShellDetectionCache }) => {
+        clearShellDetectionCache()
+    })
+}

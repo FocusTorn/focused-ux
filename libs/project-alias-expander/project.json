@@ -10,7 +10,7 @@
             "inputs": [
                 "production",
                 "^production",
-                "{projectRoot}/config.json"
+                "{projectRoot}/src/**/*"
             ],
             "options": {
                 "main": "libs/project-alias-expander/src/cli.ts",
@@ -40,7 +40,8 @@
             "inputs": [
                 "production",
                 "^production",
-                "{projectRoot}/config.json"
+                "{projectRoot}/config.json",
+                "{projectRoot}/dist/**/*"
             ],
             "options": {
                 "commands": ["node libs/project-alias-expander/dist/cli.js install-shorthand-aliases"], // Generate scripts
@@ -99,6 +100,16 @@
                 "configFile": "{projectRoot}/vitest.coverage.config.ts",
                 "reportsDirectory": "__tests__/_reports/coverage",
                 "passWithNoTests": true
+            }
+        },
+        "test:file": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "options": {
+                "configFile": "{projectRoot}/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
+                "passWithNoTests": true,
+                "testPathPattern": "{args.testFile}"
             }
         }
          

@@ -1,12 +1,12 @@
 { "name": "@focused-ux/eslint-rule-folding-brackets", "version": "1.0.0", "type": "module", "description": "ESLint rule for enforcing folding bracket formatting", "main": "index.js",     "scripts": {
         "test": "vitest run",
         "test:watch": "vitest"
-    }, "dependencies": { "@typescript-eslint/rule-tester": "^8.44.0",
-        "@typescript-eslint/parser": "^8.44.0",
+    }, "dependencies": { "@typescript-eslint/rule-tester": "^8.45.0",
+        "@typescript-eslint/parser": "^8.45.0",
         "eslint": "^9.36.0"
     },     "devDependencies": { 
-        "tsx": "^4.20.5",
+        "tsx": "^4.20.6",
         "typescript": "^5.9.2",
         "vitest": "^3.2.4",
-        "@typescript-eslint/parser": "^8.44.0"
+        "@typescript-eslint/parser": "^8.45.0"
     } }

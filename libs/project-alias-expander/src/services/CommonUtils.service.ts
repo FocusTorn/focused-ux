@@ -68,10 +68,67 @@ export class ProcessUtils {
     }
 
     static async executeNxCommand(argv: string[], timeoutMs?: number): Promise<number> {
-        if (process.env.PAE_ECHO === '1') {
-            // Print the command with -> prefix for echo mode
-            console.log(`-> ${argv.join(' ')}`)
-            return 0
+        // Handle echo modes - output as they occur
+        if (process.env.PAE_ECHO === '1' || process.env.PAE_ECHO_X === '1') {
+            const echoVariant = process.env.PAE_ECHO_VARIANT
+            const command = argv.join(' ')
+            
+            // Output echo variants as they occur
+            if (!echoVariant) {
+                // Show all variants
+                if (process.env.PAE_SHORT_IN) {
+                    console.log(`[short-in] -> ${process.env.PAE_SHORT_IN}`)
+                }
+                if (process.env.PAE_SHORT_OUT) {
+                    console.log(`[short-out] -> ${process.env.PAE_SHORT_OUT}`)
+                }
+                if (process.env.PAE_GLOBAL_IN) {
+                    console.log(`[global-in] -> ${process.env.PAE_GLOBAL_IN}`)
+                }
+                console.log(`[global-out] -> ${command}`)
+            } else {
+                // Handle specific echo variants
+                switch (echoVariant) {
+                    case 'short-in':
+                        if (process.env.PAE_SHORT_IN) {
+                            console.log(`[short-in] -> ${process.env.PAE_SHORT_IN}`)
+                        }
+                        break
+                    case 'short-out':
+                        if (process.env.PAE_SHORT_OUT) {
+                            console.log(`[short-out] -> ${process.env.PAE_SHORT_OUT}`)
+                        }
+                        break
+                    case 'global-in':
+                        if (process.env.PAE_GLOBAL_IN) {
+                            console.log(`[global-in] -> ${process.env.PAE_GLOBAL_IN}`)
+                        }
+                        break
+                    case 'global-out':
+                        console.log(`[global-out] -> ${command}`)
+                        break
+                    default:
+                        // Unknown variant, show all
+                        if (process.env.PAE_SHORT_IN) {
+                            console.log(`[short-in] -> ${process.env.PAE_SHORT_IN}`)
+                        }
+                        if (process.env.PAE_SHORT_OUT) {
+                            console.log(`[short-out] -> ${process.env.PAE_SHORT_OUT}`)
+                        }
+                        if (process.env.PAE_GLOBAL_IN) {
+                            console.log(`[global-in] -> ${process.env.PAE_GLOBAL_IN}`)
+                        }
+                        console.log(`[global-out] -> ${command}`)
+                        break
+                }
+            }
+            
+            // If PAE_ECHO_X is set, continue execution; otherwise exit
+            if (process.env.PAE_ECHO_X === '1') {
+                // Continue with normal execution
+            } else {
+                return 0
+            }
         }
 
         try {
@@ -108,6 +165,11 @@ export class TemplateUtils {
 
     static applyMutation(value: any, mutation: string): any {
         try {
+            // Handle PowerShell-style -replace operations
+            if (mutation.includes('-replace')) {
+                return this.applyPowerShellReplacements(value, mutation)
+            }
+            
             // Create a safe evaluation context with the value
             const context = { value }
             
@@ -120,6 +182,40 @@ export class TemplateUtils {
             console.warn(`Mutation failed for value "${value}" with expression "${mutation}":`, error)
             return value // Return original value if mutation fails
         }
+    }
+
+    static applyPowerShellReplacements(value: any, mutation: string): any {
+        let result = String(value)
+        
+        console.log(`[DEBUG] applyPowerShellReplacements: value="${value}", mutation="${mutation}"`)
+        
+        // Parse PowerShell-style -replace operations
+        // Format: "value -replace 'pattern', 'replacement' -replace 'pattern2', 'replacement2'"
+        const replaceRegex = /-replace\s+'([^']+)',\s*'([^']*)'/g
+        let match
+        
+        while ((match = replaceRegex.exec(mutation)) !== null) {
+            const pattern = match[1]
+            const replacement = match[2]
+            
+            console.log(`[DEBUG] Processing replacement: pattern="${pattern}", replacement="${replacement}"`)
+            
+            // Convert PowerShell regex to JavaScript regex
+            // PowerShell uses ^ and $ for start/end, JavaScript uses ^ and $
+            const jsPattern = pattern.replace(/\^/g, '^').replace(/\$/g, '$')
+            
+            try {
+                const regex = new RegExp(jsPattern)
+                const beforeReplace = result
+                result = result.replace(regex, replacement)
+                console.log(`[DEBUG] Replacement result: "${beforeReplace}" -> "${result}"`)
+            } catch (regexError) {
+                console.warn(`Invalid regex pattern "${pattern}":`, regexError)
+            }
+        }
+        
+        console.log(`[DEBUG] Final result: "${result}"`)
+        return result
     }
 
     static mergeTemplateVariables(baseVariables: Record<string, string>, templateDefaults?: Record<string, string>): Record<string, string> {

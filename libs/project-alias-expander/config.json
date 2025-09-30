@@ -54,6 +54,9 @@
         "tdc": "test:deps:coverage-tests",
         "ti" : "test:integration",
         
+        "tf" : "test:file",
+        
+        
         //= Cleaning ============================================================ 
         "c" : "clean",
         "cc": "clean:cache",
@@ -118,13 +121,9 @@
     // Accepts templates and expanded(-alias to --flag) > processed before command is generated
     "internal-flags": { //>
         "h"  : "--help",
-        
-        "v"  : "--pae-verbose",
-        "db"  : "--pae-debug",
-        "echo" : "--pae-echo",
 
         //- Templates --------------------------------------- 
-        "sto": {
+        "sto": { //>
             // Can be in seconds or milliseconds
             "defaults": { "time": 10 },
 
@@ -132,7 +131,58 @@
             "mutation": "value >= 100 ? value : parseInt(value.toString() + '000')",
 
             "template": "--pae-execa-timeout={time}"
-        }
+        } //<
+    
+    }, //<
+    
+    
+    // Accepts templates and expanded(-alias to --flag) > processed before command is generated
+    "env-setting-flags": { //>
+    
+        "v"  : "--pae-verbose",
+        "db"  : "--pae-debug",
+        
+        // "echo": "--pae-echo",
+        // "echoX": "--pae-echoX",
+        
+        // --pae-echo ------------------------------------->> 
+        
+        "echo": { //>
+            // $env:PAE_ECHO = [1,0]    
+            // $env:PAE_ECHO_VARIANT = "short-in"
+            // $env:PAE_ECHO_VARIANT = "short-out"
+            // $env:PAE_ECHO_VARIANT = "global-in"
+            // $env:PAE_ECHO_VARIANT = "global-out"
+        
+            // Can be in seconds or milliseconds
+            "defaults": { "echoVariant": "" },
+
+            // converts the si,so,gi,go to the full variant
+            "mutation": "{echoVariant} -replace '^si$', 'short-in' -replace '^so$', 'short-out' -replace '^gi$', 'global-in' -replace '^go$', 'global-out'",
+            
+            "template": "--pae-echo={echoVariant}"
+            
+        }, //<
+        "echoX": { //>
+            // $env:PAE_ECHO_X = [1,0]    
+            // $env:PAE_ECHO_VARIANT = "short-in"
+            // $env:PAE_ECHO_VARIANT = "short-out"
+            // $env:PAE_ECHO_VARIANT = "global-in"
+            // $env:PAE_ECHO_VARIANT = "global-out"
+        
+            // Can be in seconds or milliseconds
+            "defaults": { "echoVariant": "" },
+
+            // converts the si,so,gi,go to the full variant
+            "mutation": "{echoVariant} -replace '^si$', 'short-in' -replace '^so$', 'short-out' -replace '^gi$', 'global-in' -replace '^go$', 'global-out'",
+            
+            "template": "--pae-echoX={echoVariant}"
+            
+        } //<
+        
+        
+        //--------------------------------------------------------------------<<
+    
     }, //<
     
     
