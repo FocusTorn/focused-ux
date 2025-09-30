@@ -8,5 +8,7 @@ export interface AliasConfig {
     'not-nxTargets'?: Record<string, string>
     'expandable-flags'?: Record<string, import('./expandable.types.js').ExpandableValue>
     'expandable-templates'?: Record<string, import('./expandable.types.js').ExpandableValue>
+    'internal-flags'?: Record<string, import('./expandable.types.js').ExpandableValue>
+    'expandable-commands'?: Record<string, string>
     'nxPackages': Record<string, AliasValue>
 }

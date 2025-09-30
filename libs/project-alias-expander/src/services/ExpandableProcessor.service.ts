@@ -139,6 +139,8 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
                     continue
                 }
                 
+                // Internal flags are handled dynamically - no hardcoded checks needed
+                
                 // Check if this is an expandable
                 if (expandables[key]) {
                     const expandable = expandables[key]

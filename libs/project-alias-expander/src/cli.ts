@@ -277,6 +277,17 @@ async function main() {
 
         setChildProcessTracker(trackChildProcess)
         
+        // Set up ProcessPool shutdown on exit
+        const { commandExecution } = await import('./services/CommandExecution.service.js')
+        
+        process.on('exit', async () => {
+            try {
+                await commandExecution.shutdownProcessPool()
+            } catch (error) {
+                debug('Error shutting down ProcessPool:', error)
+            }
+        })
+        
         debug('Main function called')
         debug('Starting PAE CLI execution')
         debug('Starting PAE CLI', { argv: process.argv, cwd: process.cwd() })
@@ -285,20 +296,17 @@ async function main() {
 
         debug('Arguments parsed:', args)
         
-        // Check for debug flags and help flags, remove them from args
-        const debugFlags = ['-d', '--debug']
+        // Check for help flags, remove them from args
         const helpFlags = ['--help', '-h']
         const filteredArgs = args.filter(arg => {
-            if (debugFlags.includes(arg)) {
-                DEBUG = true
-                return false
-            }
             if (helpFlags.includes(arg)) {
                 showDynamicHelp()
                 process.exit(0) // Exit immediately after showing help
             }
             return true
         })
+        
+        // Debug flags will be handled dynamically by internal flags processing
         
         // Also check environment variable
         if (process.env.PAE_DEBUG === '1') {
@@ -376,7 +384,9 @@ async function main() {
             debug('Configuration loaded successfully', {
                 packages: Object.keys(config['nxPackages'] || {}),
                 targets: Object.keys(config['nxTargets'] || {}),
-                features: Object.keys(config['feature-nxTargets'] || {})
+                features: Object.keys(config['feature-nxTargets'] || {}),
+                internalFlags: Object.keys(config['internal-flags'] || {}),
+                expandableFlags: Object.keys(config['expandable-flags'] || {})
             })
         } catch (configError) {
             debug('Configuration loading failed:', configError)
@@ -531,7 +541,10 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
         // Process internal flags first (these affect PAE behavior, not the command)
         let timeoutMs: number | undefined = undefined
 
+        debug('About to check internal-flags', { hasInternalFlags: !!config['internal-flags'], internalFlagsKeys: config['internal-flags'] ? Object.keys(config['internal-flags']) : [] })
+        
         if (config['internal-flags']) {
+            debug('Processing internal flags', { internalFlags: config['internal-flags'] })
             const internalFlags = { ...config['internal-flags'] }
 
             if (config['expandable-templates']) {
@@ -548,15 +561,26 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
             }
             
             // Process internal flags
+            debug('About to process internal flags', { args, internalFlags })
             const { remainingArgs: internalRemainingArgs } = expandableProcessor.expandFlags(args, internalFlags)
+            debug('Internal flags processed', { internalRemainingArgs })
             
             // Check for PAE-specific flags in the processed args
             for (const arg of internalRemainingArgs) {
                 if (arg.startsWith('--pae-execa-timeout=')) {
                     timeoutMs = parseInt(arg.split('=')[1])
                     debug('Detected PAE timeout flag', { timeoutMs })
+                } else if (arg === '--pae-debug') {
+                    DEBUG = true
+                    debug('Debug mode enabled via --pae-debug flag')
+                } else if (arg === '--pae-verbose') {
+                    // Verbose mode could be handled here if needed
+                    debug('Verbose mode enabled via --pae-verbose flag')
                 }
             }
+            
+            // Update args to use the processed internal flags
+            args = internalRemainingArgs
         }
         
         debug('Processing expandable flags', { expandableFlags })
@@ -665,6 +689,12 @@ async function handleExpandableCommand(alias: string, args: string[], config: Al
             if (arg.startsWith('--pae-execa-timeout=')) {
                 timeoutMs = parseInt(arg.split('=')[1])
                 debug('Detected PAE timeout flag', { timeoutMs })
+            } else if (arg === '--pae-debug') {
+                DEBUG = true
+                debug('Debug mode enabled via --pae-debug flag')
+            } else if (arg === '--pae-verbose') {
+                // Verbose mode could be handled here if needed
+                debug('Verbose mode enabled via --pae-verbose flag')
             }
         }
         
@@ -691,23 +721,18 @@ async function handleExpandableCommand(alias: string, args: string[], config: Al
     console.log(`[DEBUG] About to execute expandable command: ${fullCommand}`)
     
     try {
-        // Import execa directly to avoid any recursive CLI calls
-        const { execa } = await import('execa')
+        // Use ProcessPool for better resource management
+        const { commandExecution } = await import('./services/CommandExecution.service.js')
         
-        console.log(`[DEBUG] Calling execa with: cmd /c ${fullCommand}`)
+        console.log(`[DEBUG] About to execute expandable command: ${fullCommand}`)
         
-        const childProcess = execa('cmd', ['/c', fullCommand], {
-            timeout: timeoutMs || 300000, // Use provided timeout or default 5 minutes
-            killSignal: 'SIGTERM',
+        const result = await commandExecution.executeWithPool('cmd', ['/c', fullCommand], {
+            timeout: timeoutMs || 300000,
             stdio: 'inherit'
         })
         
-        console.log(`[DEBUG] Waiting for command to complete...`)
-
-        const result = await childProcess
-
         console.log(`[DEBUG] Command completed with exit code: ${result.exitCode}`)
-        return result.exitCode ?? 0
+        return result.exitCode
     } catch (error: any) {
         debug('Expandable command execution error:', error)
         console.log(`[DEBUG] Command failed with error:`, error)

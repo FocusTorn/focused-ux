@@ -17,6 +17,8 @@ PAE (Project Alias Expander) transforms short aliases into full Nx project names
 - **🐛 Debug Mode**: Comprehensive debugging with `-d` or `--debug` flags
 - **🎨 Cross-Platform**: Works on Windows (PowerShell), macOS, and Linux
 - **📋 PowerShell Integration**: Automatic module generation and installation
+- **⚡ Advanced Process Management**: ProcessPool with concurrency control, resource management, and automatic cleanup
+- **📊 Process Metrics**: Built-in monitoring and metrics for process execution performance
 
 ## Installation
 
@@ -398,6 +400,104 @@ pae <command> -echo
 PAE_DEBUG=1 pae help
 ```
 
+## Advanced Process Management
+
+PAE includes a sophisticated ProcessPool system for optimal resource management and performance:
+
+### ProcessPool Features
+
+- **Concurrency Control**: Configurable limits on concurrent process execution (default: 5)
+- **Resource Management**: Automatic cleanup and memory management
+- **Process Metrics**: Real-time monitoring of execution statistics
+- **Graceful Shutdown**: Proper cleanup on process termination
+- **Timeout Handling**: Automatic process termination on timeout
+- **Parallel Execution**: Efficient parallel processing for multiple commands
+- **Process Leak Prevention**: Comprehensive tracking and cleanup
+
+### Process Metrics
+
+The ProcessPool provides detailed metrics for monitoring:
+
+```typescript
+interface ProcessMetrics {
+    totalExecutions: number // Total commands executed
+    activeProcesses: number // Currently running processes
+    completedProcesses: number // Successfully completed processes
+    failedProcesses: number // Failed processes
+    averageExecutionTime: number // Average execution time in ms
+    maxConcurrentReached: boolean // Whether concurrency limit was hit
+}
+```
+
+### Parallel Execution
+
+For operations involving multiple projects, PAE automatically uses parallel execution:
+
+```bash
+# This will run builds in parallel for all ext projects
+pae ext b
+
+# Sequential execution for multiple targets
+pae ext b t  # Runs build then test sequentially
+```
+
+### Configuration
+
+ProcessPool can be configured with custom settings:
+
+```typescript
+const pool = new ProcessPool({
+    maxConcurrent: 10, // Maximum concurrent processes
+    defaultTimeout: 300000, // Default timeout (5 minutes)
+    killSignal: 'SIGTERM', // Signal for process termination
+    enableMetrics: true, // Enable performance metrics
+})
+```
+
+### Performance Benefits
+
+The ProcessPool implementation provides significant performance improvements:
+
+- **Parallel Processing**: Multiple projects can run simultaneously (up to concurrency limit)
+- **Resource Efficiency**: Better memory management and automatic cleanup
+- **Process Leak Prevention**: Comprehensive tracking prevents orphaned processes
+- **Graceful Shutdown**: Proper cleanup on termination signals
+- **Timeout Management**: Automatic process termination prevents hanging
+
+### Usage Examples
+
+```typescript
+import { ProcessPool } from '@fux/project-alias-expander'
+
+// Create a custom ProcessPool
+const pool = new ProcessPool({
+    maxConcurrent: 8,
+    defaultTimeout: 600000, // 10 minutes
+    enableMetrics: true,
+})
+
+// Execute a single command
+const result = await pool.execute('nx', ['build', 'my-project'], {
+    stdio: 'inherit',
+    timeout: 300000,
+})
+
+// Execute multiple commands in parallel
+const results = await pool.executeMany([
+    { command: 'nx', args: ['build', 'project1'], options: { stdio: 'inherit' } },
+    { command: 'nx', args: ['build', 'project2'], options: { stdio: 'inherit' } },
+    { command: 'nx', args: ['build', 'project3'], options: { stdio: 'inherit' } },
+])
+
+// Get performance metrics
+const metrics = pool.getMetrics()
+console.log(`Total executions: ${metrics.totalExecutions}`)
+console.log(`Average execution time: ${metrics.averageExecutionTime}ms`)
+
+// Graceful shutdown
+await pool.shutdown()
+```
+
 ## Architecture
 
 ### File Structure
@@ -423,7 +523,9 @@ libs/project-alias-expander/
 │       ├── PAEManager.service.ts        # Main orchestrator
 │       ├── AliasManager.service.ts      # Alias management
 │       ├── CommandExecution.service.ts  # Command execution
-│       └── ExpandableProcessor.service.ts # Template processing
+│       ├── ExpandableProcessor.service.ts # Template processing
+│       ├── ProcessPool.service.ts       # Advanced process management
+│       └── CommonUtils.service.ts       # Shared utilities
 ├── __tests__/                           # Test files
 ├── config.json                          # Configuration file
 ├── package.json                         # Package metadata
@@ -435,13 +537,15 @@ libs/project-alias-expander/
 
 1. **PAEManagerService**: Main orchestrator that coordinates all operations
 2. **AliasManagerService**: Handles PowerShell module generation and installation
-3. **CommandExecutionService**: Executes commands with proper shell handling
+3. **CommandExecutionService**: Executes commands with proper shell handling and ProcessPool integration
 4. **ExpandableProcessorService**: Processes templates and variable substitution
-5. **Configuration System**: Loads and validates config.json with comment support
+5. **ProcessPool**: Advanced process management with concurrency control and resource management
+6. **Configuration System**: Loads and validates config.json with comment support
 
 ### Dependencies
 
 - **strip-json-comments**: Parse JSON files with JavaScript-style comments
+- **execa**: Process execution with better control and cross-platform support
 - **Node.js built-ins**: fs, path, process, child_process
 
 ## Development
@@ -488,6 +592,8 @@ nx lint @fux/project-alias-expander --fix
 3. **PowerShell Module Issues**: Run `pae install-aliases` to regenerate module
 4. **Permission Errors**: Run with appropriate permissions for global installation
 5. **Template Execution Errors**: Use debug mode (`-d`) to see detailed execution flow
+6. **Process Pool Issues**: Check for process leaks or timeout issues with debug mode
+7. **Concurrency Problems**: Adjust ProcessPool settings if experiencing resource constraints
 
 ### Getting Help
 
@@ -500,6 +606,12 @@ pae <command> -d
 
 # Echo mode
 pae <command> -echo
+
+# Check configuration loading
+PAE_DEBUG=1 pae help
+
+# Monitor process pool metrics
+PAE_DEBUG=1 pae <command> -d
 ```
 
 ## Contributing
@@ -514,3 +626,4 @@ pae <command> -echo
 ## License
 
 MIT License - see LICENSE file for details.
+

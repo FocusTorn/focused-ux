@@ -110,11 +110,9 @@ export class TemplateUtils {
         try {
             // Create a safe evaluation context with the value
             const context = { value }
-            // Replace variable references in the mutation with the actual value
-            const mutatedExpression = mutation.replace(/\b\w+\b/g, (varName) => {
-                if (varName === 'value') return 'value'
-                return `context.${varName}`
-            })
+            
+            // Only replace 'value' with context.value, leave other identifiers as-is
+            const mutatedExpression = mutation.replace(/\bvalue\b/g, 'context.value')
             
             // Evaluate the mutation expression
             return eval(`(function(context) { return ${mutatedExpression}; })(context)`)

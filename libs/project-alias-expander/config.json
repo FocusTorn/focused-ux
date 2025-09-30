@@ -113,23 +113,23 @@
             "template": "--bail {bailOn}"
         } //<
         
-    },
+    }, //<
     
     // Accepts templates and expanded(-alias to --flag) > processed before command is generated
     "internal-flags": { //>
         "h"  : "--help",
         
         "v"  : "--pae-verbose",
-        "d"  : "--pae-debug",
+        "db"  : "--pae-debug",
         "echo" : "--pae-echo",
 
         //- Templates --------------------------------------- 
-        "to": {
+        "sto": {
             // Can be in seconds or milliseconds
             "defaults": { "time": 10 },
 
             // Ensures {time} is always in MS format
-            "mutation": "time >= 100 ? time : parseInt(time.toString() + '000')",
+            "mutation": "value >= 100 ? value : parseInt(value.toString() + '000')",
 
             "template": "--pae-execa-timeout={time}"
         }
