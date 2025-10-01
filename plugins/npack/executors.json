@@ -1,0 +1,9 @@
+{
+    "executors": {
+        "pack": {
+            "implementation": "./dist/executors/pack/pack",
+            "schema": "./dist/executors/pack/schema.json",
+            "description": "Creates npm-compatible tarballs (.tgz) for local installation"
+        }
+    }
+}

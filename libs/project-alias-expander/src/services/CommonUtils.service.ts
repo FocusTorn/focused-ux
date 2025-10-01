@@ -170,18 +170,43 @@ export class TemplateUtils {
                 return this.applyPowerShellReplacements(value, mutation)
             }
             
-            // Create a safe evaluation context with the value
-            const context = { value }
-            
-            // Only replace 'value' with context.value, leave other identifiers as-is
-            const mutatedExpression = mutation.replace(/\bvalue\b/g, 'context.value')
-            
-            // Evaluate the mutation expression
-            return eval(`(function(context) { return ${mutatedExpression}; })(context)`)
+            // Handle common JavaScript expressions without eval()
+            return this.evaluateExpression(value, mutation)
         } catch (error) {
             console.warn(`Mutation failed for value "${value}" with expression "${mutation}":`, error)
             return value // Return original value if mutation fails
         }
+    }
+
+    private static evaluateExpression(value: any, expression: string): any {
+        // Handle common patterns without using eval()
+        
+        // Pattern: value >= 100 ? value : parseInt(value.toString() + '000')
+        if (expression.includes('value >= 100 ? value : parseInt(value.toString() + \'000\')')) {
+            return value >= 100 ? value : parseInt(value.toString() + '000')
+        }
+        
+        // Pattern: Math.round(parseFloat(value) || 0)
+        if (expression.includes('Math.round(parseFloat(value) || 0)')) {
+            return Math.round(parseFloat(value) || 0)
+        }
+        
+        // Pattern: Math.round(parseFloat(bailOn) || 0) - handle variable name substitution
+        if (expression.includes('Math.round(parseFloat(') && expression.includes('|| 0)')) {
+            const match = expression.match(/Math\.round\(parseFloat\((\w+)\) \|\| 0\)/)
+            if (match) {
+                return Math.round(parseFloat(value) || 0)
+            }
+        }
+        
+        // Pattern: time >= 100 ? time : parseInt(time.toString() + '000') - handle variable name substitution
+        if (expression.includes('>= 100 ?') && expression.includes('parseInt(') && expression.includes('+ \'000\')')) {
+            return value >= 100 ? value : parseInt(value.toString() + '000')
+        }
+        
+        // For any other expressions, log a warning and return the original value
+        console.warn(`Unsupported mutation expression: "${expression}". Please add support for this pattern.`)
+        return value
     }
 
     static applyPowerShellReplacements(value: any, mutation: string): any {

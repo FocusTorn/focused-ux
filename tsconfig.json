@@ -6,31 +6,66 @@
     "files": [],
     "include": [],
     "references": [
-        { "path": "./packages/context-cherry-picker/core" },
-        { "path": "./packages/context-cherry-picker/ext" },
+        {
+            "path": "./packages/context-cherry-picker/core"
+        },
+        {
+            "path": "./packages/context-cherry-picker/ext"
+        },
+        {
+            "path": "./packages/dynamicons/core"
+        },
+        {
+            "path": "./packages/dynamicons/assets"
+        },
+        {
+            "path": "./packages/dynamicons/ext"
+        },
+        {
+            "path": "./packages/ghost-writer/core"
+        },
+        {
+            "path": "./packages/ghost-writer/ext"
+        },
+        {
+            "path": "./packages/note-hub/core"
+        },
+        {
+            "path": "./packages/note-hub/ext"
+        },
+        {
+            "path": "./packages/project-butler/core"
+        },
+        {
+            "path": "./packages/project-butler/ext"
+        },
+        {
+            "path": "./libs/vscode-test-cli-config"
+        },
+        {
+            "path": "./libs/project-alias-expander"
+        },
+        {
+            "path": "./libs/mock-strategy"
+        },
+        {
+            "path": "./libs/tools/structure-auditor"
+        },
+        {
+            "path": "./plugins/recommended"
+        },
 
-        { "path": "./packages/dynamicons/core" },
-        { "path": "./packages/dynamicons/assets" },
-        { "path": "./packages/dynamicons/ext" },
-
-        { "path": "./packages/ghost-writer/core" },
-        { "path": "./packages/ghost-writer/ext" },
-
-        { "path": "./packages/note-hub/core" },
-        { "path": "./packages/note-hub/ext" },
-
-        { "path": "./packages/project-butler/core" },
-        { "path": "./packages/project-butler/ext" },
-
-        { "path": "./libs/vscode-test-cli-config" },
-        { "path": "./libs/project-alias-expander" },
-        { "path": "./libs/mock-strategy" },
-        { "path": "./libs/tools/structure-auditor" },
-        
-        { "path": "./plugins/recommended" },
-        { "path": "./plugins/vpack" },
-        { "path": "./plugins/vscode-test-executor" },
-        { "path": "./plugins/ft-typescript"}
-
+        {
+            "path": "./plugins/vscode-test-executor"
+        },
+        {
+            "path": "./plugins/ft-typescript"
+        },
+        {
+            "path": "./plugins/npack"
+        },
+        {
+            "path": "./plugins/vpack"
+        }
     ]
 }

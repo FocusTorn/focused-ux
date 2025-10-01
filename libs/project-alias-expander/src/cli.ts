@@ -1,24 +1,25 @@
 #!/usr/bin/env node
 
 import { commandExecution, expandableProcessor, aliasManager } from './services/index.js'
-import { loadAliasConfig, resolveProjectForAlias as resolveProjectForAliasFromConfig } from './config.js'
+import aliasConfig, { resolveProjectForAlias as resolveProjectForAliasFromConfig, loadAliasConfig, clearAllCaches } from './config.js'
 import { detectShell } from './shell.js'
 import type { AliasConfig } from './_types/index.js'
+import type { ChildProcess } from 'child_process'
 
 // Debug mode - activated by -d or --debug flags
 let DEBUG = false
 
 // Process cleanup tracking
 let isExiting = false
-let activeProcesses: Set<any> = new Set()
+let activeProcesses: Set<ChildProcess> = new Set()
 
-function debug(message: string, ...args: any[]) {
+function debug(message: string, ...args: unknown[]) {
     if (DEBUG) {
         console.error(`[PAE DEBUG] ${message}`, ...args)
     }
 }
 
-function error(message: string, ...args: any[]) {
+function error(message: string, ...args: unknown[]) {
     console.error(`[PAE ERROR] ${message}`, ...args)
 }
 
@@ -81,7 +82,7 @@ function gracefulShutdown(exitCode: number) {
 }
 
 // Track child processes for cleanup
-function trackChildProcess(childProcess: any) {
+function trackChildProcess(childProcess: ChildProcess) {
     activeProcesses.add(childProcess)
     
     childProcess.on('exit', () => {
@@ -97,7 +98,7 @@ function trackChildProcess(childProcess: any) {
 //     console.log(`[PAE INFO] ${message}`, ...args)
 // }
 
-function success(message: string, ...args: any[]) {
+function success(message: string, ...args: unknown[]) {
     // Use the same green color as Nx success messages, with bold checkmark
     const green = '\x1b[32m'
     const bold = '\x1b[1m'
@@ -109,7 +110,7 @@ function success(message: string, ...args: any[]) {
 
 function showDynamicHelp(config?: AliasConfig) {
     try {
-        const helpConfig = config || loadAliasConfig()
+        const helpConfig = config || aliasConfig
 
         if (!helpConfig) {
             throw new Error('Failed to load configuration')
@@ -238,7 +239,7 @@ function showDynamicHelp(config?: AliasConfig) {
         console.log('  PAE_DEBUG=1        Enable debug logging')
         console.log('  PAE_ECHO=1         Echo commands instead of executing')
         console.log('')
-    } catch (error) {
+    } catch (_error) {
         // Fallback to static help if config loading fails
         console.log('')
         console.log('PAE - Project Alias Expander')
@@ -430,6 +431,7 @@ async function main() {
                     
                     // Step 5: Load module into active shell
                     const shell = (await import('./shell.js')).detectShell()
+
                     if (shell === 'powershell') {
                         spinner.text = 'Loading module into active shell: [pwsh]'
                     } else if (shell === 'gitbash') {
@@ -650,7 +652,7 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
             const allEnvProcessedArgs = [...envStart, ...envPrefix, ...envPreArgs, ...envSuffix, ...envEnd, ...envRemainingArgs]
             
             // Filter out echo flags from the processed args for clean command capture
-            const cleanArgs = allEnvProcessedArgs.filter(arg =>
+            const _cleanArgs = allEnvProcessedArgs.filter(arg =>
                 !arg.startsWith('--pae-echo')
                 && !arg.startsWith('-sto=')
                 && !arg.startsWith('-stoX='))
@@ -910,7 +912,7 @@ async function handleExpandableCommand(alias: string, args: string[], config: Al
         Object.assign(expandableFlags, config['expandable-templates'])
     }
     
-    const { start, prefix, preArgs, suffix, end, remainingArgs } = expandableProcessor.expandFlags(args, expandableFlags)
+    const { start: _start, prefix, preArgs, suffix, end: _end, remainingArgs } = expandableProcessor.expandFlags(args, expandableFlags)
     
     // Build the final command with processed flags
     const processedArgs = [...prefix, ...preArgs, ...suffix, ...remainingArgs]
@@ -934,14 +936,14 @@ async function handleExpandableCommand(alias: string, args: string[], config: Al
         
         console.log(`[DEBUG] Command completed with exit code: ${result.exitCode}`)
         return result.exitCode
-    } catch (error: any) {
+    } catch (error: unknown) {
         debug('Expandable command execution error:', error)
         console.log(`[DEBUG] Command failed with error:`, error)
-        return error.exitCode || 1
+        return (error as { exitCode?: number }).exitCode || 1
     }
 }
 
-function resolveProjectForAlias(aliasValue: any): { project: string, full?: boolean } {
+function resolveProjectForAlias(aliasValue: string | { name: string, suffix?: 'core' | 'ext', full?: boolean }): { project: string, full?: boolean } {
     const result = resolveProjectForAliasFromConfig(aliasValue)
 
     return { project: result.project, full: result.isFull }

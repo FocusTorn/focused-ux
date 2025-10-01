@@ -1,8 +1,6 @@
 {
     "targetDefaults": {
-        
-        //= Executors =========================================================== 
-        "@nx/esbuild:esbuild": { //>
+        "@nx/esbuild:esbuild": {
             "cache": true,
             "inputs": ["production", "^production"],
             "options": {
@@ -10,10 +8,8 @@
                 "outputPath": "{projectRoot}/dist",
                 "tsConfig": "{workspaceRoot}/{projectRoot}/tsconfig.json",
                 "declarationRootDir": "{workspaceRoot}/{projectRoot}/src",
-                
                 "format": ["esm"],
                 "bundle": false,
-                
                 "platform": "node",
                 "target": "es2022",
                 "external": ["vscode"],
@@ -21,28 +17,26 @@
                 "sourcemap": true,
                 "deleteOutputPath": true
             }
-        }, //<
-        "@nx/js:tsc": { //>
+        },
+        "@nx/js:tsc": {
             "cache": true,
             "dependsOn": ["^build"],
             "inputs": ["production", "^production"]
-        }, //<
-         
-        //= Finalize ============================================================ 
-        "build": { //>
+        },
+        "build": {
             "dependsOn": ["^build"],
             "outputs": ["{options.outputPath}"],
             "inputs": ["production", "^production"],
             "cache": true,
             "syncGenerators": ["@nx/js:typescript-sync"]
-        }, //<
-        "build:lib": { //>
+        },
+        "build:lib": {
             "executor": "@nx/esbuild:esbuild"
-        }, //<
-        "build:core": { //>
+        },
+        "build:core": {
             "executor": "@nx/esbuild:esbuild"
-        }, //<
-        "build:ext": { //>
+        },
+        "build:ext": {
             "executor": "@nx/esbuild:esbuild",
             "options": {
                 "main": "{workspaceRoot}/{projectRoot}/src/extension.ts",
@@ -50,9 +44,8 @@
                 "bundle": true,
                 "metafile": true
             }
-        }, //<
-        
-        "package": { //>
+        },
+        "package": {
             "executor": "@fux/vpack:pack",
             "outputs": ["{options.outputPath}"],
             "options": {
@@ -65,31 +58,24 @@
                 "extractContents": true,
                 "dev": false
             }
-        }, //<
-        "package:dev": { //>
+        },
+        "package:dev": {
             "executor": "@fux/vpack:pack",
             "outputs": ["{options.outputPath}"],
             "options": {
                 "targetPath": "{projectRoot}",
                 "dev": true,
-                
                 "keepDeploy": false,
                 "extractContents": false,
-                
                 "deployPath": "{projectRoot}/.vpack/deploy",
                 "freshDeploy": true,
-                
                 "contentsPath": "{projectRoot}/.vpack/contents"
-                
             }
-        }, //<
-        
-        "publish": { //>
+        },
+        "publish": {
             "dependsOn": ["build"]
-        }, //<
-        
-        //= Quality ============================================================= 
-        "check-types": { //>
+        },
+        "check-types": {
             "executor": "@fux/ft-typescript:typecheck",
             "inputs": ["default", "^default"],
             "dependsOn": ["build"],
@@ -97,8 +83,8 @@
             "options": {
                 "files": ["{projectRoot}/**/*.ts"]
             }
-        }, //<
-        "check-types:loose": { //>
+        },
+        "check-types:loose": {
             "executor": "@fux/ft-typescript:typecheck",
             "inputs": ["default", "^default"],
             "cache": true,
@@ -106,8 +92,8 @@
                 "files": ["{projectRoot}/**/*.ts"],
                 "strict": false
             }
-        }, //<
-        "check-types:deps": { //>
+        },
+        "check-types:deps": {
             "executor": "nx:run-commands",
             "cache": true,
             "dependsOn": [
@@ -122,9 +108,8 @@
                 "command": "tsc --noEmit --project {projectRoot}/tsconfig.json",
                 "cwd": "{workspaceRoot}"
             }
-        }, //<
-        
-        "lint": { //>
+        },
+        "lint": {
             "executor": "@nx/eslint:lint",
             "cache": true,
             "dependsOn": ["build", "^build"],
@@ -145,8 +130,8 @@
                 "cache": true,
                 "cacheLocation": "{projectRoot}/.nx/eslintcache"
             }
-        }, //<
-        "lint:deps": { //>
+        },
+        "lint:deps": {
             "executor": "@nx/eslint:lint",
             "dependsOn": [
                 {
@@ -155,9 +140,8 @@
                     "params": "forward"
                 }
             ]
-        }, //<
-        
-        "audit": { //>
+        },
+        "audit": {
             "executor": "@fux/recommended:audit-structure",
             "dependsOn": ["build", "^build"],
             "inputs": ["default", "^default"],
@@ -168,8 +152,8 @@
                 "warnOnly": false,
                 "verbose": false
             }
-        }, //<
-        "audit:code": { //>
+        },
+        "audit:code": {
             "executor": "@fux/recommended:audit-structure:code",
             "dependsOn": ["build", "^build"],
             "inputs": ["default", "^default"],
@@ -179,8 +163,8 @@
                 "warnOnly": false,
                 "verbose": false
             }
-        }, //<
-        "audit:test": { //>
+        },
+        "audit:test": {
             "executor": "@fux/recommended:audit-structure:test",
             "dependsOn": ["build", "^build"],
             "inputs": ["default", "^default"],
@@ -190,9 +174,8 @@
                 "warnOnly": false,
                 "verbose": false
             }
-        }, //<
-        
-        "validate": { //>
+        },
+        "validate": {
             "executor": "nx:run-commands",
             "dependsOn": [],
             "inputs": ["default", "^default"],
@@ -202,8 +185,8 @@
                 "commands": ["nx run {projectName}:lint --fix", "nx run {projectName}:audit"],
                 "parallel": false
             }
-        }, //<
-        "validate:deps": { //>
+        },
+        "validate:deps": {
             "executor": "nx:run-commands",
             "dependsOn": [
                 {
@@ -219,48 +202,46 @@
                 "commands": ["nx run {projectName}:validate"],
                 "parallel": false
             }
-        }, //<
-        
-        //= Cleaning ============================================================ 
-        "clean": { //>
+        },
+        "clean": {
             "executor": "nx:run-commands",
             "options": {
                 "command": "rimraf {projectRoot}/dist {projectRoot}/coverage {projectRoot}/.nx",
                 "cwd": "{workspaceRoot}"
             }
-        }, //<
-        "clean:dist": { //>
+        },
+        "clean:dist": {
             "executor": "nx:run-commands",
             "options": {
                 "command": "rimraf {projectRoot}/dist",
                 "cwd": "{workspaceRoot}"
             }
-        }, //<
-        "clean:cache": { //>
+        },
+        "clean:cache": {
             "executor": "nx:run-commands",
             "options": {
                 "command": "rimraf {projectRoot}/.nx",
                 "cwd": "{workspaceRoot}"
             }
-        }, //<
-        "clean:vscode-test": { //>
+        },
+        "clean:vscode-test": {
             "executor": "nx:run-commands",
             "cache": false,
             "options": {
                 "command": "node -e \"require('./libs/vscode-test-cli-config/dist/index.js').cleanupVscodeTestArtifacts(process.cwd(), process.env.NX_PROJECT_NAME || 'unknown')\"",
                 "cwd": "{workspaceRoot}"
             }
-        }, //<
-        "clean:all:vscode-test": { //>
+        },
+        "clean:all:vscode-test": {
             "executor": "nx:run-commands",
             "cache": false,
             "options": {
                 "command": "node -e \"require('./libs/vscode-test-cli-config/dist/index.js').cleanupAllVscodeTestArtifacts(process.cwd())\"",
                 "cwd": "{workspaceRoot}"
             }
-        }, //<
+        },
         
-        //= Single Package Testing ============================================== 
+        
         "test": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
@@ -281,8 +262,6 @@
                 "passWithNoTests": true
             }
         }, //<
-        
-        //= Dependency Chain Testing ============================================ 
         "test:deps": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
@@ -314,8 +293,6 @@
                 "passWithNoTests": true
             }
         }, //<
-        
-        //= Integration Testing ================================================= 
         "test:integration": { //>
             "executor": "@fux/vscode-test-executor:test-integration",
             "dependsOn": ["build"],
@@ -328,7 +305,25 @@
             }
         } //<
     },
-    "namedInputs": {
+    "plugins": [
+        {
+            "plugin": "@nx/vite/plugin",
+            "options": {
+                "buildTargetName": "build",
+                "testTargetName": "vite:test",
+                // "testTargetName": "test",
+                "serveTargetName": "serve",
+                "devTargetName": "dev",
+                "previewTargetName": "preview",
+                "serveStaticTargetName": "serve-static",
+                "typecheckTargetName": "typecheck",
+                "buildDepsTargetName": "build-deps",
+                "watchDepsTargetName": "watch-deps"
+            }
+        }
+    ],
+    
+    "namedInputs": { //>
         "default": [
             "{projectRoot}/**/*",
             "sharedGlobals",
@@ -366,34 +361,13 @@
             "{projectRoot}/**/*.mdx"
         ],
         "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
-    },
+    }, //<
     "packageManager": "pnpm",
     "nxCloudId": "685c28f2a5df05525dfa937b",
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
     "defaultBase": "master",
     "defaultRunner": "nx/tasks-runners/default",
-    "plugins": [
-        {
-            "plugin": "@nx/vite/plugin",
-            "options": {
-                "buildTargetName": "build",
-                "testTargetName": "vite:test",
-                "serveTargetName": "serve",
-                "devTargetName": "dev",
-                "previewTargetName": "preview",
-                "serveStaticTargetName": "serve-static",
-                "typecheckTargetName": "tcheck",
-                "buildDepsTargetName": "build-deps",
-                "watchDepsTargetName": "watch-deps"
-            }
-        },
-        {
-            "plugin": "@nx/jest/plugin",
-            "options": {
-                "targetName": "test"
-            }
-        }
-    ],
+    
     "tui": {
         "enabled": false
     }

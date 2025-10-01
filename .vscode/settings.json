@@ -1,5 +1,5 @@
 {
-    
+
    
     "prettier.configPath": "prettier.config.cjs",
     "prettier.experimentalTernaries": true,

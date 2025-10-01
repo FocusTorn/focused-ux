@@ -4,65 +4,117 @@
     "targets": {
      
         //= Finalize ============================================================ 
-        "build:compile": { //>
+        // "build:compile": { //>
+        //     "executor": "@nx/esbuild:esbuild",
+        //     "outputs": ["{options.outputPath}"],
+        //     "inputs": [
+        //         "production",
+        //         "^production",
+        //         "{projectRoot}/src/**/*"
+        //     ],
+        //     "options": {
+        //         "main": "libs/project-alias-expander/src/cli.ts",
+        //         "outputPath": "libs/project-alias-expander/dist",
+        //         "tsConfig": "libs/project-alias-expander/tsconfig.json",
+        //         "declarationRootDir": "libs/project-alias-expander/src",
+        //         "format": ["esm"],
+        //         "bundle": false,
+        //         "platform": "node",
+        //         "target": "es2022",
+        //         "external": ["vscode"],
+        //         "thirdParty": false,
+        //         "sourcemap": true,
+        //         "deleteOutputPath": true,
+        //         "minify": true,
+        //         "treeShaking": true,
+        //         "metafile": true
+        //     }
+        // }, //<
+        // "generate-scripts": { //>
+        //     "executor": "nx:run-commands",
+        //     "dependsOn": ["build:compile"],
+        //     "outputs": [
+        //         "{projectRoot}/dist/pae-functions.psm1",
+        //         "{projectRoot}/dist/pae-aliases.sh"
+        //     ],
+        //     "inputs": [
+        //         "production",
+        //         "^production",
+        //         "{projectRoot}/config.json",
+        //         "{projectRoot}/dist/**/*"
+        //     ],
+        //     "options": {
+        //         "commands": ["node libs/project-alias-expander/dist/cli.js install-shorthand-aliases"], // Generate scripts
+        //         "parallel": false
+        //     }
+        // }, //<
+        // "build": { //>
+        //     "executor": "nx:run-commands",
+        //     "dependsOn": ["build:compile", "generate-scripts"],
+        //     "outputs": [
+        //         "{projectRoot}/dist"
+        //     ],
+        //     "inputs": [
+        //         "production",
+        //         "^production"
+        //     ],
+        //     "options": {
+        //         "commands": [],
+        //         "parallel": false
+        //     }
+        // }, //<
+        
+        
+        "build:bundle": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "inputs": [
                 "production",
                 "^production",
-                "{projectRoot}/src/**/*"
+                "{projectRoot}/src/**/*",
+                "{projectRoot}/config.json"
             ],
             "options": {
                 "main": "libs/project-alias-expander/src/cli.ts",
                 "outputPath": "libs/project-alias-expander/dist",
+                "outputFileName": "cli.js",
                 "tsConfig": "libs/project-alias-expander/tsconfig.json",
                 "declarationRootDir": "libs/project-alias-expander/src",
                 "format": ["esm"],
-                "bundle": false,
+                "bundle": true,
                 "platform": "node",
                 "target": "es2022",
                 "external": ["vscode"],
                 "thirdParty": false,
-                "sourcemap": true,
+                "sourcemap": false,
                 "deleteOutputPath": true,
+                "declaration": false,
                 "minify": true,
                 "treeShaking": true,
                 "metafile": true
             }
         }, //<
-        "generate-scripts": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": ["build:compile"],
+        
+        "build:package": { //>
+            "executor": "@fux/npack:pack",
+            "dependsOn": ["build"],
             "outputs": [
-                "{projectRoot}/dist/pae-functions.psm1",
-                "{projectRoot}/dist/pae-aliases.sh"
+                "{projectRoot}/*.tgz"
             ],
             "inputs": [
                 "production",
                 "^production",
-                "{projectRoot}/config.json",
+                "{projectRoot}/package.json",
+                "{projectRoot}/README.md",
                 "{projectRoot}/dist/**/*"
             ],
             "options": {
-                "commands": ["node libs/project-alias-expander/dist/cli.js install-shorthand-aliases"], // Generate scripts
-                "parallel": false
+                "keepTemp": false,
+                "freshTemp": true,
+                "installGlobal": true
             }
         }, //<
-        "build": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": ["build:compile", "generate-scripts"],
-            "outputs": [
-                "{projectRoot}/dist"
-            ],
-            "inputs": [
-                "production",
-                "^production"
-            ],
-            "options": {
-                "commands": [],
-                "parallel": false
-            }
-        }, //<
+        
         
         //= Quality ============================================================= 
         "check-types": { "extends": "check-types" },

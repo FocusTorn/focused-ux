@@ -20,14 +20,13 @@ export default defineConfig({
             '**/__tests__/integration-tests/**',
         ],
         
-        // pool: 'threads',
-        // poolOptions: {
-        // 	threads: {
-        // 		singleThread: false,
-        // 		maxThreads: 4,
-        // 		minThreads: 1,
-        // 	},
-        // },
+        // Use forks pool to avoid ES module race conditions
+        pool: 'forks',
+        poolOptions: {
+            forks: {
+                singleFork: true
+            }
+        },
         
         // Add timeout and memory limits
         testTimeout: 2000,

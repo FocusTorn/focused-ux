@@ -1,6 +1,7 @@
 {
     "name": "@fux/project-butler-ext",
     "tags": [ "ext" ],
+    "implicitDependencies": ["@fux/project-butler-core"],
     "targets": {
 
         //= Finalize ============================================================ 

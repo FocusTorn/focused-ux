@@ -31,15 +31,17 @@
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
         
-        //= Single Package Testing ============================================== 
+        // = Single Package Testing ============================================== 
+        
         "test": { "extends": "test" },
+        
         "test:coverage-tests": { "extends": "test:coverage-tests" },
         
-        //= Dependency Chain Testing ============================================ 
+        // = Dependency Chain Testing ============================================ 
         "test:deps": { "extends": "test:deps" },
         "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" },
         
-        //= Integration Testing ================================================= 
+        // = Integration Testing ================================================= 
         "test:integration": { "extends": "test:integration" }
         
     },

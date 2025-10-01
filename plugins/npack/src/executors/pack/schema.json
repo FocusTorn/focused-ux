@@ -1,0 +1,53 @@
+{
+    "$schema": "https://json-schema.org/schema",
+    "version": 2,
+    "title": "Npack executor",
+    "description": "Creates npm-compatible tarballs (.tgz) for local installation, mimicking npm pack behavior but much faster.",
+    "type": "object",
+    "properties": {
+        "targetPath": {
+            "type": "string",
+            "description": "Workspace-relative or absolute path to the package root."
+        },
+        "targetName": {
+            "type": "string",
+            "description": "Nx project name of the package if targetPath is not provided."
+        },
+        "outputPath": {
+            "type": "string",
+            "description": "Directory for output tarball (defaults to package root)."
+        },
+        "keepTemp": {
+            "type": "boolean",
+            "description": "Keep temporary staging directory after packaging (defaults to false)."
+        },
+        "tempPath": {
+            "type": "string",
+            "description": "Base directory for temporary staging (defaults to package root/.npack)."
+        },
+        "freshTemp": {
+            "type": "boolean",
+            "description": "Clean previous temp directories for this package (defaults to true)."
+        },
+        "includeFiles": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Additional files/directories to include beyond package.json 'files' field."
+        },
+        "excludeFiles": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Files/directories to exclude from the tarball."
+        },
+        "dev": {
+            "type": "boolean",
+            "description": "Build a dev tarball (adds -dev suffix and version with NX_TASK_HASH)."
+        },
+        "installGlobal": {
+            "type": "boolean",
+            "description": "Install the tarball globally with pnpm after creation (defaults to true).",
+            "default": true
+        }
+    },
+    "additionalProperties": false
+}

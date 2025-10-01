@@ -1,5 +1,5 @@
 {
-    "name": "@fux/vpack",
+    "name": "@fux/npack",
     "tags": [ "executor" ],
     "targets": {
         
@@ -42,35 +42,6 @@
         "test:coverage-tests": { "extends": "test:coverage-tests" }
     },
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "plugins/vpack/src",
+    "sourceRoot": "plugins/npack/src",
     "projectType": "library"
 }
-
-
-// "build": { //>
-// "executor": "@nx/esbuild:esbuild",
-// "outputs": [
-//     "{options.outputPath}"
-// ],
-// "options": {
-    
-//     "main": "{projectRoot}/src/index.ts",
-//     "tsConfig": "{projectRoot}/tsconfig.json",
-
-//     "bundle": false
-    
-//     // "assets": [ //>
-//     //     {
-//     //         "input": "{projectRoot}/src",
-//     //         "glob": "**/!(*.ts)",
-//     //         "output": "."
-//     //     },
-//     //     {
-//     //         "input": "{projectRoot}/src",
-//     //         "glob": "**/*.d.ts",
-//     //         "output": "."
-//     //     }
-//     // ] //<
-// }
-
-// }, //<

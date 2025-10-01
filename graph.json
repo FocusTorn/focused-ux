@@ -31,6 +31,7 @@
             "description": "Generates comprehensive architectural comparison documents for specified package groups using Deep Package Comprehension (DPC) analysis",
             "js": {
               "packageName": "@fux/architecture-comparison-generator",
+              "packageVersion": "0.1.0",
               "packageMain": "./dist/index.js",
               "isInPackageManagerWorkspaces": false
             }
@@ -146,6 +147,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/context-cherry-picker-core",
+              "packageVersion": "0.1.0",
               "packageExports": {
                 ".": {
                   "types": "./dist/index.d.ts",
@@ -158,11 +160,7 @@
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "packages/context-cherry-picker/core",
-                "command": "vitest"
-              },
+            "test": {
               "cache": true,
               "inputs": [
                 "default",
@@ -195,10 +193,15 @@
                 }
               },
               "executor": "nx:run-commands",
+              "extends": "test",
+              "options": {
+                "cwd": "packages/context-cherry-picker/core",
+                "command": "vitest"
+              },
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -228,7 +231,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -460,24 +463,6 @@
               "parallelism": true,
               "executor": "nx:run-commands"
             },
-            "test": {
-              "extends": "test",
-              "configurations": {},
-              "options": {
-                "configFile": "packages/context-cherry-picker/core/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "build",
-                "^build"
-              ]
-            },
             "test:coverage-tests": {
               "extends": "test:coverage-tests",
               "configurations": {},
@@ -566,32 +551,14 @@
             "description": "A standalone VS Code extension for advanced context selection and formatting, designed to streamline the process of gathering and organizing project context for AI interactions and documentation.",
             "js": {
               "packageName": "fux-context-cherry-picker",
+              "packageVersion": "0.1.0",
               "packageMain": "./dist/extension.cjs",
               "isInPackageManagerWorkspaces": true
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "packages/context-cherry-picker/ext",
-                "command": "vitest"
-              },
-              "cache": true,
-              "inputs": [
-                "default",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
-                },
-                {
-                  "env": "CI"
-                }
-              ],
-              "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
-              ],
+            "test": {
+              "executor": "nx:run-script",
               "metadata": {
                 "technologies": [
                   "vite"
@@ -605,13 +572,18 @@
                       "coverage": true
                     }
                   }
-                }
+                },
+                "scriptContent": "nx vite:test",
+                "runCommand": "pnpm run test"
               },
-              "executor": "nx:run-commands",
+              "extends": "test",
+              "options": {
+                "script": "test"
+              },
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -641,7 +613,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -667,19 +639,6 @@
               "executor": "nx:run-commands",
               "options": {
                 "command": "pnpm exec nx watch --projects @fux/context-cherry-picker-ext --includeDependentProjects -- pnpm exec nx build-deps @fux/context-cherry-picker-ext"
-              },
-              "configurations": {},
-              "parallelism": true
-            },
-            "test": {
-              "executor": "nx:run-script",
-              "metadata": {
-                "scriptContent": "nx vite:test",
-                "runCommand": "pnpm run test"
-              },
-              "extends": "test",
-              "options": {
-                "script": "test"
               },
               "configurations": {},
               "parallelism": true
@@ -1075,6 +1034,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/project-butler-core",
+              "packageVersion": "0.1.0",
               "packageExports": {
                 ".": {
                   "types": "./dist/index.d.ts",
@@ -1087,7 +1047,7 @@
             }
           },
           "targets": {
-            "vite:test": {
+            "test": {
               "options": {
                 "cwd": "packages/project-butler/core",
                 "command": "vitest"
@@ -1127,7 +1087,7 @@
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -1157,7 +1117,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -1386,99 +1346,6 @@
               },
               "parallelism": true,
               "executor": "nx:run-commands"
-            },
-            "test": {
-              "extends": "test",
-              "configurations": {},
-              "options": {
-                "configFile": "packages/project-butler/core/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "build",
-                "^build"
-              ]
-            },
-            "test:coverage-tests": {
-              "extends": "test:coverage-tests",
-              "configurations": {},
-              "options": {
-                "configFile": "packages/project-butler/core/vitest.coverage.config.ts",
-                "reportsDirectory": "__tests__/_reports/coverage",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "build",
-                "^build"
-              ]
-            },
-            "test:deps": {
-              "extends": "test:deps",
-              "configurations": {},
-              "options": {
-                "configFile": "packages/project-butler/core/vitest.config.ts",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                {
-                  "dependencies": true,
-                  "target": "test",
-                  "params": "forward"
-                }
-              ]
-            },
-            "test:deps:coverage-tests": {
-              "extends": "test:deps:coverage-tests",
-              "configurations": {},
-              "options": {
-                "configFile": "packages/project-butler/core/vitest.coverage.config.ts",
-                "reportsDirectory": "__tests__/_reports/coverage",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                {
-                  "dependencies": true,
-                  "target": "test:coverage-tests",
-                  "params": "forward"
-                }
-              ]
-            },
-            "test:integration": {
-              "extends": "test:integration",
-              "configurations": {},
-              "options": {
-                "tsConfig": "packages/project-butler/core/__tests__/integration-tests/tsconfig.test.json",
-                "config": "packages/project-butler/core/__tests__/integration-tests/.vscode-test.mjs",
-                "timeout": 20000,
-                "filterOutput": true
-              },
-              "parallelism": true,
-              "executor": "@fux/vscode-test-executor:test-integration",
-              "dependsOn": [
-                "build"
-              ],
-              "cache": false
             }
           },
           "name": "@fux/project-butler-core",
@@ -1506,6 +1373,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/structure-auditor",
+              "packageVersion": "0.0.1",
               "isInPackageManagerWorkspaces": false
             }
           },
@@ -1566,6 +1434,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/vscode-test-executor",
+              "packageVersion": "0.0.1",
               "packageExports": {
                 "./package.json": "./package.json",
                 ".": {
@@ -1632,133 +1501,26 @@
         "type": "lib",
         "data": {
           "root": "libs/project-alias-expander",
+          "name": "@fux/project-alias-expander",
+          "tags": [
+            "npm:public",
+            "npm:cli",
+            "npm:nx",
+            "npm:alias",
+            "npm:project-management",
+            "tool"
+          ],
           "metadata": {
-            "targetGroups": {
-              "NPM Scripts": [
-                "lint"
-              ]
-            },
+            "targetGroups": {},
             "description": "Global CLI tool for expanding project aliases and running Nx commands",
             "js": {
               "packageName": "@fux/project-alias-expander",
+              "packageVersion": "0.0.1",
               "packageMain": "dist/index.js",
               "isInPackageManagerWorkspaces": true
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "libs/project-alias-expander",
-                "command": "vitest"
-              },
-              "cache": true,
-              "inputs": [
-                "default",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
-                },
-                {
-                  "env": "CI"
-                }
-              ],
-              "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
-              ],
-              "metadata": {
-                "technologies": [
-                  "vite"
-                ],
-                "description": "Run Vite tests",
-                "help": {
-                  "command": "pnpm exec vitest --help",
-                  "example": {
-                    "options": {
-                      "bail": 1,
-                      "coverage": true
-                    }
-                  }
-                }
-              },
-              "executor": "nx:run-commands",
-              "configurations": {},
-              "parallelism": true
-            },
-            "tcheck": {
-              "cache": true,
-              "inputs": [
-                "production",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
-                }
-              ],
-              "options": {
-                "cwd": "libs/project-alias-expander",
-                "command": "tsc --build --emitDeclarationOnly"
-              },
-              "metadata": {
-                "description": "Runs type-checking for the project.",
-                "technologies": [
-                  "typescript"
-                ],
-                "help": {
-                  "command": "pnpm exec tsc --build --help",
-                  "example": {
-                    "args": [
-                      "--force"
-                    ]
-                  }
-                }
-              },
-              "dependsOn": [
-                "^tcheck"
-              ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
-              "executor": "nx:run-commands",
-              "configurations": {},
-              "parallelism": true
-            },
-            "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
-              "configurations": {},
-              "options": {},
-              "parallelism": true,
-              "executor": "nx:noop"
-            },
-            "watch-deps": {
-              "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
-              "executor": "nx:run-commands",
-              "options": {
-                "command": "pnpm exec nx watch --projects @fux/project-alias-expander --includeDependentProjects -- pnpm exec nx build-deps @fux/project-alias-expander"
-              },
-              "configurations": {},
-              "parallelism": true
-            },
-            "lint": {
-              "executor": "nx:run-script",
-              "metadata": {
-                "scriptContent": "nx lint project-alias-expander",
-                "runCommand": "pnpm run lint"
-              },
-              "extends": "lint",
-              "options": {
-                "script": "lint"
-              },
-              "configurations": {},
-              "parallelism": true
-            },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
               "dependsOn": [
@@ -1768,7 +1530,7 @@
               "configurations": {},
               "parallelism": true
             },
-            "build:compile": {
+            "build:bundle": {
               "executor": "@nx/esbuild:esbuild",
               "outputs": [
                 "{options.outputPath}"
@@ -1776,57 +1538,58 @@
               "inputs": [
                 "production",
                 "^production",
+                "{projectRoot}/src/**/*",
                 "{projectRoot}/config.json"
               ],
               "options": {
-                "outputPath": "libs/project-alias-expander/dist",
                 "main": "libs/project-alias-expander/src/cli.ts",
+                "outputPath": "libs/project-alias-expander/dist",
+                "outputFileName": "cli.js",
                 "tsConfig": "libs/project-alias-expander/tsconfig.json",
-                "platform": "node",
-                "bundle": true,
+                "declarationRootDir": "libs/project-alias-expander/src",
                 "format": [
                   "esm"
                 ],
+                "bundle": true,
+                "platform": "node",
+                "target": "es2022",
                 "external": [
                   "vscode"
                 ],
-                "thirdParty": true,
-                "assets": [],
-                "declarationRootDir": "libs/project-alias-expander/src",
-                "target": "es2022",
-                "sourcemap": true,
-                "deleteOutputPath": true
+                "thirdParty": false,
+                "sourcemap": false,
+                "deleteOutputPath": true,
+                "declaration": false,
+                "minify": true,
+                "treeShaking": true,
+                "metafile": true
               },
               "configurations": {},
               "parallelism": true,
               "cache": true
             },
-            "build": {
-              "executor": "nx:run-commands",
+            "build:package": {
+              "executor": "@fux/npack:pack",
               "dependsOn": [
-                "build:compile"
+                "build"
               ],
               "outputs": [
-                "{projectRoot}/dist",
-                "{projectRoot}/dist/pae-functions.psm1"
+                "{projectRoot}/*.tgz"
               ],
               "inputs": [
                 "production",
                 "^production",
-                "{projectRoot}/config.json"
+                "{projectRoot}/package.json",
+                "{projectRoot}/README.md",
+                "{projectRoot}/dist/**/*"
               ],
               "options": {
-                "commands": [
-                  "node libs/project-alias-expander/dist/cli.js install-aliases"
-                ],
-                "parallel": false
+                "keepTemp": false,
+                "freshTemp": true,
+                "installGlobal": true
               },
               "configurations": {},
-              "parallelism": true,
-              "cache": true,
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ]
+              "parallelism": true
             },
             "check-types": {
               "extends": "check-types",
@@ -1867,6 +1630,34 @@
               "inputs": [
                 "default",
                 "^default"
+              ]
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "parallel": true,
+                "maxParallel": 4,
+                "lintFilePatterns": [
+                  "libs/project-alias-expander/**/*.ts",
+                  "libs/project-alias-expander/**/*.tsx",
+                  "libs/project-alias-expander/**/*.js",
+                  "libs/project-alias-expander/**/*.jsx",
+                  "libs/project-alias-expander/**/*.json",
+                  "libs/project-alias-expander/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false,
+                "cache": true,
+                "cacheLocation": "libs/project-alias-expander/.nx/eslintcache"
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "cache": true,
+              "dependsOn": [
+                "build",
+                "^build"
               ]
             },
             "lint:deps": {
@@ -2007,17 +1798,22 @@
                 "build",
                 "^build"
               ]
+            },
+            "test:file": {
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "options": {
+                "configFile": "libs/project-alias-expander/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
+                "passWithNoTests": true,
+                "testPathPattern": "{args.testFile}"
+              },
+              "configurations": {},
+              "parallelism": true
             }
           },
-          "name": "@fux/project-alias-expander",
-          "tags": [
-            "npm:public",
-            "npm:cli",
-            "npm:nx",
-            "npm:alias",
-            "npm:project-management",
-            "tool"
-          ],
           "$schema": "../../node_modules/nx/schemas/project-schema.json",
           "sourceRoot": "libs/project-alias-expander/src",
           "projectType": "library",
@@ -2034,12 +1830,13 @@
             "description": "A VSCode extension for project management utilities including package.json formatting, terminal management, backup creation, and Poetry shell integration.",
             "js": {
               "packageName": "fux-project-butler",
+              "packageVersion": "0.1.0",
               "packageMain": "./dist/extension.cjs",
               "isInPackageManagerWorkspaces": true
             }
           },
           "targets": {
-            "vite:test": {
+            "test": {
               "options": {
                 "cwd": "packages/project-butler/ext",
                 "command": "vitest"
@@ -2079,7 +1876,7 @@
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -2109,7 +1906,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -2393,99 +2190,6 @@
               },
               "parallelism": true,
               "executor": "nx:run-commands"
-            },
-            "test": {
-              "extends": "test",
-              "configurations": {},
-              "options": {
-                "configFile": "packages/project-butler/ext/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "build",
-                "^build"
-              ]
-            },
-            "test:coverage-tests": {
-              "extends": "test:coverage-tests",
-              "configurations": {},
-              "options": {
-                "configFile": "packages/project-butler/ext/vitest.coverage.config.ts",
-                "reportsDirectory": "__tests__/_reports/coverage",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "build",
-                "^build"
-              ]
-            },
-            "test:deps": {
-              "extends": "test:deps",
-              "configurations": {},
-              "options": {
-                "configFile": "packages/project-butler/ext/vitest.config.ts",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                {
-                  "dependencies": true,
-                  "target": "test",
-                  "params": "forward"
-                }
-              ]
-            },
-            "test:deps:coverage-tests": {
-              "extends": "test:deps:coverage-tests",
-              "configurations": {},
-              "options": {
-                "configFile": "packages/project-butler/ext/vitest.coverage.config.ts",
-                "reportsDirectory": "__tests__/_reports/coverage",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                {
-                  "dependencies": true,
-                  "target": "test:coverage-tests",
-                  "params": "forward"
-                }
-              ]
-            },
-            "test:integration": {
-              "extends": "test:integration",
-              "configurations": {},
-              "options": {
-                "tsConfig": "packages/project-butler/ext/__tests__/integration-tests/tsconfig.test.json",
-                "config": "packages/project-butler/ext/__tests__/integration-tests/.vscode-test.mjs",
-                "timeout": 20000,
-                "filterOutput": true
-              },
-              "parallelism": true,
-              "executor": "@fux/vscode-test-executor:test-integration",
-              "dependsOn": [
-                "build"
-              ],
-              "cache": false
             }
           },
           "name": "@fux/project-butler-ext",
@@ -2496,7 +2200,9 @@
           "$schema": "../../../node_modules/nx/schemas/project-schema.json",
           "sourceRoot": "packages/project-butler/ext/src",
           "projectType": "application",
-          "implicitDependencies": []
+          "implicitDependencies": [
+            "@fux/project-butler-core"
+          ]
         }
       },
       "@fux/vscode-test-cli-config": {
@@ -2515,6 +2221,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/vscode-test-cli-config",
+              "packageVersion": "0.1.0",
               "packageExports": {
                 ".": {
                   "types": "./dist/index.d.ts",
@@ -2613,6 +2320,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/dynamicons-assets",
+              "packageVersion": "0.0.0",
               "packageExports": {
                 "./themes/*": "./dist/assets/themes/*",
                 "./icons/*": "./dist/assets/icons/*",
@@ -2625,47 +2333,24 @@
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "packages/dynamicons/assets",
-                "command": "vitest"
-              },
-              "cache": true,
-              "inputs": [
-                "default",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
-                },
-                {
-                  "env": "CI"
-                }
-              ],
+            "test": {
+              "executor": "@nx/vite:test",
               "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
+                "{options.reportsDirectory}"
               ],
-              "metadata": {
-                "technologies": [
-                  "vite"
-                ],
-                "description": "Run Vite tests",
-                "help": {
-                  "command": "pnpm exec vitest --help",
-                  "example": {
-                    "options": {
-                      "bail": 1,
-                      "coverage": true
-                    }
-                  }
-                }
+              "dependsOn": [
+                "build",
+                "^build"
+              ],
+              "options": {
+                "configFile": "packages/dynamicons/assets/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
+                "passWithNoTests": true
               },
-              "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -2695,7 +2380,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -2957,23 +2642,6 @@
               "parallelism": true,
               "executor": "nx:run-commands"
             },
-            "test": {
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "build",
-                "^build"
-              ],
-              "configurations": {},
-              "options": {
-                "configFile": "packages/dynamicons/assets/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-              },
-              "parallelism": true
-            },
             "test:full": {
               "executor": "@nx/vite:test",
               "outputs": [
@@ -3012,6 +2680,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/ghost-writer-core",
+              "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
                   "types": "./dist/index.d.ts",
@@ -3024,11 +2693,7 @@
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "packages/ghost-writer/core",
-                "command": "vitest"
-              },
+            "test": {
               "cache": true,
               "inputs": [
                 "default",
@@ -3061,10 +2726,15 @@
                 }
               },
               "executor": "nx:run-commands",
+              "extends": "test",
+              "options": {
+                "cwd": "packages/ghost-writer/core",
+                "command": "vitest"
+              },
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -3094,7 +2764,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -3330,24 +3000,6 @@
               "parallelism": true,
               "executor": "nx:run-commands"
             },
-            "test": {
-              "extends": "test",
-              "configurations": {},
-              "options": {
-                "configFile": "packages/ghost-writer/core/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "build",
-                "^build"
-              ]
-            },
             "test:coverage-tests": {
               "extends": "test:coverage-tests",
               "configurations": {},
@@ -3429,16 +3081,13 @@
             "description": "Dynamically generate frequently used code.",
             "js": {
               "packageName": "fux-ghost-writer",
+              "packageVersion": "0.1.0",
               "packageMain": "./dist/extension.cjs",
               "isInPackageManagerWorkspaces": true
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "packages/ghost-writer/ext",
-                "command": "vitest"
-              },
+            "test": {
               "cache": true,
               "inputs": [
                 "default",
@@ -3471,10 +3120,15 @@
                 }
               },
               "executor": "nx:run-commands",
+              "extends": "test",
+              "options": {
+                "cwd": "packages/ghost-writer/ext",
+                "command": "vitest"
+              },
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -3504,7 +3158,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -3741,24 +3395,6 @@
               "parallelism": true,
               "executor": "nx:run-commands"
             },
-            "test": {
-              "extends": "test",
-              "configurations": {},
-              "options": {
-                "configFile": "packages/ghost-writer/ext/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "build",
-                "^build"
-              ]
-            },
             "test:coverage-tests": {
               "extends": "test:coverage-tests",
               "configurations": {},
@@ -3865,6 +3501,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/dynamicons-core",
+              "packageVersion": "0.1.0",
               "packageExports": {
                 "./package.json": "./package.json",
                 ".": {
@@ -3878,47 +3515,24 @@
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "packages/dynamicons/core",
-                "command": "vitest"
-              },
-              "cache": true,
-              "inputs": [
-                "default",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
-                },
-                {
-                  "env": "CI"
-                }
-              ],
+            "test": {
+              "executor": "@nx/vite:test",
               "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
+                "{options.reportsDirectory}"
               ],
-              "metadata": {
-                "technologies": [
-                  "vite"
-                ],
-                "description": "Run Vite tests",
-                "help": {
-                  "command": "pnpm exec vitest --help",
-                  "example": {
-                    "options": {
-                      "bail": 1,
-                      "coverage": true
-                    }
-                  }
-                }
+              "dependsOn": [
+                "build",
+                "^build"
+              ],
+              "options": {
+                "configFile": "packages/dynamicons/core/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
+                "passWithNoTests": true
               },
-              "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -3948,7 +3562,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -4170,23 +3784,6 @@
               "parallelism": true,
               "executor": "nx:run-commands"
             },
-            "test": {
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "build",
-                "^build"
-              ],
-              "configurations": {},
-              "options": {
-                "configFile": "packages/dynamicons/core/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-              },
-              "parallelism": true
-            },
             "test:full": {
               "executor": "@nx/vite:test",
               "outputs": [
@@ -4226,52 +3823,29 @@
             "description": "A dynamic and customizable icon theme for a focused user experience.",
             "js": {
               "packageName": "fux-dynamicons",
+              "packageVersion": "0.2.0",
               "packageMain": "./dist/extension.cjs",
               "isInPackageManagerWorkspaces": true
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "packages/dynamicons/ext",
-                "command": "vitest"
-              },
-              "cache": true,
-              "inputs": [
-                "default",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
-                },
-                {
-                  "env": "CI"
-                }
-              ],
+            "test": {
+              "executor": "@nx/vite:test",
               "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
+                "{options.reportsDirectory}"
               ],
-              "metadata": {
-                "technologies": [
-                  "vite"
-                ],
-                "description": "Run Vite tests",
-                "help": {
-                  "command": "pnpm exec vitest --help",
-                  "example": {
-                    "options": {
-                      "bail": 1,
-                      "coverage": true
-                    }
-                  }
-                }
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "configFile": "packages/dynamicons/ext/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
+                "passWithNoTests": true
               },
-              "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -4301,7 +3875,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -4589,22 +4163,6 @@
               "parallelism": true,
               "executor": "nx:run-commands"
             },
-            "test": {
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "^build"
-              ],
-              "options": {
-                "configFile": "packages/dynamicons/ext/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-              },
-              "configurations": {},
-              "parallelism": true
-            },
             "test:full": {
               "executor": "@nx/vite:test",
               "outputs": [
@@ -4692,6 +4250,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/note-hub-core",
+              "packageVersion": "0.1.0",
               "packageExports": {
                 ".": {
                   "types": "./dist/index.d.ts",
@@ -4704,47 +4263,23 @@
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "packages/note-hub/core",
-                "command": "vitest"
-              },
-              "cache": true,
-              "inputs": [
-                "default",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
-                },
-                {
-                  "env": "CI"
-                }
-              ],
+            "test": {
+              "executor": "@nx/vite:test",
               "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
+                "{options.reportsDirectory}"
               ],
-              "metadata": {
-                "technologies": [
-                  "vite"
-                ],
-                "description": "Run Vite tests",
-                "help": {
-                  "command": "pnpm exec vitest --help",
-                  "example": {
-                    "options": {
-                      "bail": 1,
-                      "coverage": true
-                    }
-                  }
-                }
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "configFile": "packages/note-hub/core/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
+                "passWithNoTests": true
               },
-              "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -4774,7 +4309,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -4994,22 +4529,6 @@
               "parallelism": true,
               "executor": "nx:run-commands"
             },
-            "test": {
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "^build"
-              ],
-              "configurations": {},
-              "options": {
-                "configFile": "packages/note-hub/core/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-              },
-              "parallelism": true
-            },
             "test:full": {
               "executor": "@nx/vite:test",
               "outputs": [
@@ -5043,10 +4562,15 @@
         "type": "lib",
         "data": {
           "root": "plugins/ft-typescript",
+          "name": "@fux/ft-typescript",
+          "tags": [
+            "npm:private"
+          ],
           "metadata": {
             "targetGroups": {},
             "js": {
               "packageName": "@fux/ft-typescript",
+              "packageVersion": "0.0.1",
               "packageExports": {
                 "./package.json": "./package.json",
                 ".": {
@@ -5060,106 +4584,6 @@
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "plugins/ft-typescript",
-                "command": "vitest"
-              },
-              "cache": true,
-              "inputs": [
-                "default",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
-                },
-                {
-                  "env": "CI"
-                }
-              ],
-              "outputs": [
-                "{projectRoot}\\test-output\\vitest\\coverage"
-              ],
-              "metadata": {
-                "technologies": [
-                  "vite"
-                ],
-                "description": "Run Vite tests",
-                "help": {
-                  "command": "pnpm exec vitest --help",
-                  "example": {
-                    "options": {
-                      "bail": 1,
-                      "coverage": true
-                    }
-                  }
-                }
-              },
-              "executor": "nx:run-commands",
-              "configurations": {},
-              "parallelism": true
-            },
-            "tcheck": {
-              "cache": true,
-              "inputs": [
-                "production",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
-                }
-              ],
-              "options": {
-                "cwd": "plugins/ft-typescript",
-                "command": "tsc --build --emitDeclarationOnly"
-              },
-              "metadata": {
-                "description": "Runs type-checking for the project.",
-                "technologies": [
-                  "typescript"
-                ],
-                "help": {
-                  "command": "pnpm exec tsc --build --help",
-                  "example": {
-                    "args": [
-                      "--force"
-                    ]
-                  }
-                }
-              },
-              "dependsOn": [
-                "^tcheck"
-              ],
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
-              "executor": "nx:run-commands",
-              "configurations": {},
-              "parallelism": true
-            },
-            "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
-              "configurations": {},
-              "options": {},
-              "parallelism": true,
-              "executor": "nx:noop"
-            },
-            "watch-deps": {
-              "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
-              "executor": "nx:run-commands",
-              "options": {
-                "command": "pnpm exec nx watch --projects @fux/ft-typescript --includeDependentProjects -- pnpm exec nx build-deps @fux/ft-typescript"
-              },
-              "configurations": {},
-              "parallelism": true
-            },
             "build": {
               "executor": "@nx/esbuild:esbuild",
               "outputs": [
@@ -5204,10 +4628,6 @@
               ]
             }
           },
-          "name": "@fux/ft-typescript",
-          "tags": [
-            "npm:private"
-          ],
           "$schema": "../../node_modules/nx/schemas/project-schema.json",
           "sourceRoot": "plugins/ft-typescript/src",
           "projectType": "library",
@@ -5224,52 +4644,29 @@
             "description": "Notes Hub VSCode extension",
             "js": {
               "packageName": "fux-note-hub",
+              "packageVersion": "0.1.0",
               "packageMain": "./dist/extension.cjs",
               "isInPackageManagerWorkspaces": true
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "packages/note-hub/ext",
-                "command": "vitest"
-              },
-              "cache": true,
-              "inputs": [
-                "default",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
-                },
-                {
-                  "env": "CI"
-                }
-              ],
+            "test": {
+              "executor": "@nx/vite:test",
               "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
+                "{options.reportsDirectory}"
               ],
-              "metadata": {
-                "technologies": [
-                  "vite"
-                ],
-                "description": "Run Vite tests",
-                "help": {
-                  "command": "pnpm exec vitest --help",
-                  "example": {
-                    "options": {
-                      "bail": 1,
-                      "coverage": true
-                    }
-                  }
-                }
+              "dependsOn": [
+                "^build"
+              ],
+              "options": {
+                "configFile": "packages/note-hub/ext/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
+                "passWithNoTests": true
               },
-              "executor": "nx:run-commands",
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -5299,7 +4696,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -5576,22 +4973,6 @@
               "parallelism": true,
               "executor": "nx:run-commands"
             },
-            "test": {
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "^build"
-              ],
-              "configurations": {},
-              "options": {
-                "configFile": "packages/note-hub/ext/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-              },
-              "parallelism": true
-            },
             "test:full": {
               "executor": "@nx/vite:test",
               "outputs": [
@@ -5636,6 +5017,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/recommended",
+              "packageVersion": "0.0.1",
               "packageExports": {
                 "./package.json": "./package.json",
                 ".": {
@@ -5875,77 +5257,21 @@
         "type": "lib",
         "data": {
           "root": "tools/eslint-rules",
+          "name": "@focused-ux/eslint-rules",
+          "tags": [
+            "npm:public"
+          ],
           "metadata": {
             "targetGroups": {},
             "description": "Custom ESLint rules for FocusedUX project",
             "js": {
               "packageName": "@focused-ux/eslint-rules",
+              "packageVersion": "1.0.0",
               "packageMain": "index.js",
               "isInPackageManagerWorkspaces": false
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "tools/eslint-rules",
-                "command": "vitest"
-              },
-              "cache": true,
-              "inputs": [
-                "default",
-                "^production",
-                {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
-                },
-                {
-                  "env": "CI"
-                }
-              ],
-              "outputs": [
-                "{workspaceRoot}/coverage/{projectRoot}"
-              ],
-              "metadata": {
-                "technologies": [
-                  "vite"
-                ],
-                "description": "Run Vite tests",
-                "help": {
-                  "command": "pnpm exec vitest --help",
-                  "example": {
-                    "options": {
-                      "bail": 1,
-                      "coverage": true
-                    }
-                  }
-                }
-              },
-              "executor": "nx:run-commands",
-              "configurations": {},
-              "parallelism": true
-            },
-            "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
-              "configurations": {},
-              "options": {},
-              "parallelism": true,
-              "executor": "nx:noop"
-            },
-            "watch-deps": {
-              "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
-              "executor": "nx:run-commands",
-              "options": {
-                "command": "pnpm exec nx watch --projects @focused-ux/eslint-rules --includeDependentProjects -- pnpm exec nx build-deps @focused-ux/eslint-rules"
-              },
-              "configurations": {},
-              "parallelism": true
-            },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
               "dependsOn": [
@@ -6031,10 +5357,6 @@
               "parallelism": true
             }
           },
-          "name": "@focused-ux/eslint-rules",
-          "tags": [
-            "npm:public"
-          ],
           "projectType": "library",
           "implicitDependencies": []
         }
@@ -6048,6 +5370,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/mock-strategy",
+              "packageVersion": "0.0.1",
               "packageExports": {
                 ".": {
                   "import": "./dist/index.js",
@@ -6060,6 +5383,10 @@
                 "./ext": {
                   "import": "./dist/ext/index.js",
                   "types": "./dist/ext/index.d.ts"
+                },
+                "./lib": {
+                  "import": "./dist/lib/index.js",
+                  "types": "./dist/lib/index.d.ts"
                 }
               },
               "packageMain": "./dist/index.js",
@@ -6067,11 +5394,7 @@
             }
           },
           "targets": {
-            "vite:test": {
-              "options": {
-                "cwd": "libs/mock-strategy",
-                "command": "vitest"
-              },
+            "test": {
               "cache": true,
               "inputs": [
                 "default",
@@ -6104,10 +5427,15 @@
                 }
               },
               "executor": "nx:run-commands",
+              "extends": "test",
+              "options": {
+                "cwd": "libs/mock-strategy",
+                "command": "vitest"
+              },
               "configurations": {},
               "parallelism": true
             },
-            "tcheck": {
+            "typecheck": {
               "cache": true,
               "inputs": [
                 "production",
@@ -6137,7 +5465,7 @@
                 }
               },
               "dependsOn": [
-                "^tcheck"
+                "^typecheck"
               ],
               "syncGenerators": [
                 "@nx/js:typescript-sync"
@@ -6177,30 +5505,32 @@
               "parallelism": true
             },
             "build": {
-              "extends": "build:core",
-              "options": {
-                "external": [
-                  "vscode",
-                  "js-yaml"
-                ]
-              },
+              "executor": "@nx/esbuild:esbuild",
               "configurations": {},
+              "options": {
+                "main": "libs/mock-strategy/src/index.ts",
+                "outputPath": "libs/mock-strategy/dist",
+                "tsConfig": "libs/mock-strategy/tsconfig.json",
+                "declarationRootDir": "libs/mock-strategy/src",
+                "format": [
+                  "esm"
+                ],
+                "bundle": false,
+                "platform": "node",
+                "target": "es2022",
+                "external": [
+                  "vscode"
+                ],
+                "thirdParty": false,
+                "sourcemap": true,
+                "deleteOutputPath": true
+              },
               "parallelism": true,
-              "dependsOn": [
-                "^build"
-              ],
-              "outputs": [
-                "{options.outputPath}"
-              ],
+              "cache": true,
               "inputs": [
                 "production",
                 "^production"
-              ],
-              "cache": true,
-              "syncGenerators": [
-                "@nx/js:typescript-sync"
-              ],
-              "executor": "nx:noop"
+              ]
             },
             "check-types": {
               "extends": "check-types",
@@ -6376,24 +5706,6 @@
               "parallelism": true,
               "executor": "nx:run-commands"
             },
-            "test": {
-              "extends": "test",
-              "configurations": {},
-              "options": {
-                "configFile": "libs/mock-strategy/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/functional",
-                "passWithNoTests": true
-              },
-              "parallelism": true,
-              "executor": "@nx/vite:test",
-              "outputs": [
-                "{options.reportsDirectory}"
-              ],
-              "dependsOn": [
-                "build",
-                "^build"
-              ]
-            },
             "test:coverage-tests": {
               "extends": "test:coverage-tests",
               "configurations": {},
@@ -6482,12 +5794,12 @@
           "implicitDependencies": []
         }
       },
-      "@fux/vpack": {
-        "name": "@fux/vpack",
+      "@fux/npack": {
+        "name": "@fux/npack",
         "type": "lib",
         "data": {
-          "root": "plugins/vpack",
-          "name": "@fux/vpack",
+          "root": "plugins/npack",
+          "name": "@fux/npack",
           "tags": [
             "npm:private",
             "executor"
@@ -6495,7 +5807,8 @@
           "metadata": {
             "targetGroups": {},
             "js": {
-              "packageName": "@fux/vpack",
+              "packageName": "@fux/npack",
+              "packageVersion": "0.0.1",
               "packageExports": {
                 "./package.json": "./package.json",
                 ".": {
@@ -6511,8 +5824,268 @@
           "targets": {
             "build": {
               "executor": "@nx/esbuild:esbuild",
+              "options": {
+                "assets": [
+                  {
+                    "input": "plugins/npack/src/executors/pack",
+                    "glob": "schema.*",
+                    "output": "executors/pack"
+                  },
+                  {
+                    "input": "plugins/npack",
+                    "glob": "executors.json",
+                    "output": "."
+                  }
+                ],
+                "main": "plugins/npack/src/index.ts",
+                "outputPath": "plugins/npack/dist",
+                "tsConfig": "plugins/npack/tsconfig.json",
+                "declarationRootDir": "plugins/npack/src",
+                "format": [
+                  "esm"
+                ],
+                "bundle": false,
+                "platform": "node",
+                "target": "es2022",
+                "external": [
+                  "vscode"
+                ],
+                "thirdParty": false,
+                "sourcemap": true,
+                "deleteOutputPath": true
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production"
+              ]
+            },
+            "check-types": {
+              "extends": "check-types",
               "configurations": {},
               "options": {
+                "files": [
+                  "plugins/npack/**/*.ts"
+                ]
+              },
+              "parallelism": true,
+              "executor": "@fux/ft-typescript:typecheck",
+              "inputs": [
+                "default",
+                "^default"
+              ],
+              "dependsOn": [
+                "build"
+              ],
+              "cache": true
+            },
+            "lint": {
+              "extends": "lint",
+              "configurations": {},
+              "options": {
+                "parallel": true,
+                "maxParallel": 4,
+                "lintFilePatterns": [
+                  "plugins/npack/**/*.ts",
+                  "plugins/npack/**/*.tsx",
+                  "plugins/npack/**/*.js",
+                  "plugins/npack/**/*.jsx",
+                  "plugins/npack/**/*.json",
+                  "plugins/npack/**/*.jsonc"
+                ],
+                "eslintConfig": "eslint.config.js",
+                "format": "stylish",
+                "quiet": false,
+                "cache": true,
+                "cacheLocation": "plugins/npack/.nx/eslintcache"
+              },
+              "parallelism": true,
+              "executor": "@nx/eslint:lint",
+              "cache": true,
+              "dependsOn": [
+                "build",
+                "^build"
+              ]
+            },
+            "audit": {
+              "extends": "audit",
+              "configurations": {},
+              "options": {
+                "mode": "all",
+                "warnOnly": false,
+                "verbose": false
+              },
+              "parallelism": true,
+              "executor": "@fux/recommended:audit-structure",
+              "dependsOn": [
+                "build",
+                "^build"
+              ],
+              "inputs": [
+                "default",
+                "^default"
+              ],
+              "outputs": [],
+              "cache": true
+            },
+            "audit:code": {
+              "extends": "audit:code",
+              "configurations": {},
+              "options": {
+                "warnOnly": false,
+                "verbose": false
+              },
+              "parallelism": true,
+              "executor": "@fux/recommended:audit-structure:code",
+              "dependsOn": [
+                "build",
+                "^build"
+              ],
+              "inputs": [
+                "default",
+                "^default"
+              ],
+              "outputs": [],
+              "cache": true
+            },
+            "audit:test": {
+              "extends": "audit:test",
+              "configurations": {},
+              "options": {
+                "warnOnly": false,
+                "verbose": false
+              },
+              "parallelism": true,
+              "executor": "@fux/recommended:audit-structure:test",
+              "dependsOn": [
+                "build",
+                "^build"
+              ],
+              "inputs": [
+                "default",
+                "^default"
+              ],
+              "outputs": [],
+              "cache": true
+            },
+            "clean": {
+              "extends": "clean",
+              "configurations": {},
+              "options": {
+                "command": "rimraf plugins/npack/dist plugins/npack/coverage plugins/npack/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:dist": {
+              "extends": "clean:dist",
+              "configurations": {},
+              "options": {
+                "command": "rimraf plugins/npack/dist",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "clean:cache": {
+              "extends": "clean:cache",
+              "configurations": {},
+              "options": {
+                "command": "rimraf plugins/npack/.nx",
+                "cwd": ""
+              },
+              "parallelism": true,
+              "executor": "nx:run-commands"
+            },
+            "test": {
+              "extends": "test",
+              "configurations": {},
+              "options": {
+                "configFile": "plugins/npack/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
+                "passWithNoTests": true
+              },
+              "parallelism": true,
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "build",
+                "^build"
+              ]
+            },
+            "test:coverage-tests": {
+              "extends": "test:coverage-tests",
+              "configurations": {},
+              "options": {
+                "configFile": "plugins/npack/vitest.coverage.config.ts",
+                "reportsDirectory": "__tests__/_reports/coverage",
+                "passWithNoTests": true
+              },
+              "parallelism": true,
+              "executor": "@nx/vite:test",
+              "outputs": [
+                "{options.reportsDirectory}"
+              ],
+              "dependsOn": [
+                "build",
+                "^build"
+              ]
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "plugins/npack/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "@fux/vpack": {
+        "name": "@fux/vpack",
+        "type": "lib",
+        "data": {
+          "root": "plugins/vpack",
+          "name": "@fux/vpack",
+          "tags": [
+            "npm:private",
+            "executor"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@fux/vpack",
+              "packageVersion": "0.0.1",
+              "packageExports": {
+                "./package.json": "./package.json",
+                ".": {
+                  "types": "./dist/index.d.ts",
+                  "import": "./dist/index.js",
+                  "default": "./dist/index.js"
+                }
+              },
+              "packageMain": "./dist/index.js",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "targets": {
+            "build": {
+              "executor": "@nx/esbuild:esbuild",
+              "options": {
+                "assets": [
+                  {
+                    "input": "plugins/vpack/src/executors/pack",
+                    "glob": "schema.*",
+                    "output": "executors/pack"
+                  },
+                  {
+                    "input": "plugins/vpack",
+                    "glob": "executors.json",
+                    "output": "."
+                  }
+                ],
                 "main": "plugins/vpack/src/index.ts",
                 "outputPath": "plugins/vpack/dist",
                 "tsConfig": "plugins/vpack/tsconfig.json",
@@ -6530,6 +6103,7 @@
                 "sourcemap": true,
                 "deleteOutputPath": true
               },
+              "configurations": {},
               "parallelism": true,
               "cache": true,
               "inputs": [
@@ -6733,6 +6307,7 @@
             "targetGroups": {},
             "js": {
               "packageName": "@fux/source",
+              "packageVersion": "0.0.0",
               "isInPackageManagerWorkspaces": true
             }
           },
@@ -6764,10 +6339,15 @@
         {
           "source": "@fux/project-alias-expander",
           "target": "@fux/mock-strategy",
-          "type": "dynamic"
+          "type": "static"
         }
       ],
       "@fux/project-butler-ext": [
+        {
+          "source": "@fux/project-butler-ext",
+          "target": "@fux/project-butler-core",
+          "type": "implicit"
+        },
         {
           "source": "@fux/project-butler-ext",
           "target": "@fux/project-butler-core",
@@ -6809,6 +6389,7 @@
       "@fux/recommended": [],
       "@focused-ux/eslint-rules": [],
       "@fux/mock-strategy": [],
+      "@fux/npack": [],
       "@fux/vpack": [],
       "@fux/source": [
         {
