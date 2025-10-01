@@ -13,7 +13,7 @@ export class AliasManagerService implements IAliasManagerService {
         console.log('🔄 Regenerating PAE aliases...')
         
         try {
-            // Step 1: Generate the local files
+            // Step 1: Generate the lpae-refreshocal files
             this.generateLocalFiles()
             
             // Step 2: Install the aliases
@@ -70,10 +70,6 @@ Set-Alias -Name ${alias} -Value Invoke-${alias}`).join('\n\n')}
 
 # Refresh function to reload aliases
 function Invoke-PaeRefresh {
-    if ($env:ENABLE_TEST_CONSOLE -ne "false") {
-        Write-Host "Refreshing [PWSH] PAE aliases..." -ForegroundColor Yellow
-    }
-    
     # Find workspace root by looking for nx.json
     $workspaceRoot = $PWD
     while ($workspaceRoot -and -not (Test-Path (Join-Path $workspaceRoot "nx.json"))) {
@@ -85,11 +81,12 @@ function Invoke-PaeRefresh {
         return 1
     }
     
+    # Call pae refresh-scripts to regenerate and install with ora spinner
+    & pae refresh-scripts
+    
+    # Reload the module
     $modulePath = Join-Path $workspaceRoot "libs\\project-alias-expander\\dist\\pae-functions.psm1"
     Import-Module $modulePath -Force
-    if ($env:ENABLE_TEST_CONSOLE -ne "false") {
-        Write-Host "[PWSH] PAE aliases refreshed!" -ForegroundColor Green
-    }
 }
 
 # Alias for backward compatibility
@@ -101,7 +98,8 @@ Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh
 
 # Module loaded confirmation
 if ($env:ENABLE_TEST_CONSOLE -ne "false") {
-    Write-Host "Module loaded: PAE Shorthand Aliases" -ForegroundColor Green
+    Write-Host "\`e[1m\`e[32m✔\`e[0m \`e[32mModule loaded: [pwsh] PAE Shorthand Aliases\`e[0m"
+    Write-Host ""
 }
 
 # Module cleanup handlers to prevent COM object accumulation
@@ -115,9 +113,7 @@ $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
         [System.GC]::Collect()
         [System.GC]::WaitForPendingFinalizers()
         
-        if ($env:ENABLE_TEST_CONSOLE -ne "false") {
-            Write-Host "PAE module cleanup completed" -ForegroundColor Yellow
-        }
+        # Cleanup completed silently
     } catch {
         # Silently handle cleanup errors
     }
@@ -231,11 +227,6 @@ pae-refresh() {
         // Try to execute PowerShell command in the current session
         // The issue is that execa creates a child process, not executing in current session
         // For now, provide clear instructions for manual loading
-        console.log('\n🔄 To load aliases in current PowerShell session:')
-        console.log('   pae-refresh')
-        console.log('   # Or: Import-Module PAE -Force')
-        console.log('')
-        console.log('💡 Note: Aliases are installed but need to be loaded in your current session.')
     }
 
     async autoRefreshAliases(): Promise<void> {

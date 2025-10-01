@@ -154,6 +154,8 @@
             // $env:PAE_ECHO_VARIANT = "global-in"
             // $env:PAE_ECHO_VARIANT = "global-out"
         
+            // $env:PAE_ECHO_VARIANT = "global-out"; $env:PAE_ECHO = 1; $env:PAE_ECHO = 1;  aka b ; $env:PAE_ECHO = $null; $env:PAE_ECHO_VARIANT = $null
+            
             // Can be in seconds or milliseconds
             "defaults": { "echoVariant": "" },
 

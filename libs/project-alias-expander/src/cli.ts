@@ -219,6 +219,7 @@ function showDynamicHelp(config?: AliasConfig) {
         console.log('  install-shorthand-aliases    Generate and install PowerShell module with PAE aliases')
         console.log('  refresh                      Refresh PAE aliases in current PowerShell session')
         console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
+        console.log('  refresh-scripts              Regenerate and install PAE scripts')
         console.log('  help                         Show this help with all available aliases and flags (deprecated)')
         console.log('')
         console.log('Flags:')
@@ -241,6 +242,7 @@ function showDynamicHelp(config?: AliasConfig) {
         console.log('  install-shorthand-aliases    Generate and install PowerShell module with PAE aliases')
         console.log('  refresh                      Refresh PAE aliases in current PowerShell session')
         console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
+        console.log('  refresh-scripts              Regenerate and install PAE scripts')
         console.log('  help                         Show this help with all available aliases and flags (deprecated)')
         console.log('')
         console.log('Flags:')
@@ -384,6 +386,61 @@ async function main() {
                 await aliasManager.refreshAliasesDirect()
                 success('PAE Aliases refreshed directly')
                 debug('refresh-direct completed, returning 0')
+                return 0
+
+            case 'refresh-scripts':
+                debug('Executing refresh-scripts command')
+                debug('Executing refresh-scripts')
+                
+                // Import ora for spinner
+                const ora = (await import('ora')).default
+                
+                const spinner = ora({
+                    text: 'Generating pwsh module...',
+                    spinner: 'dots'
+                }).start()
+                
+                try {
+                    // Step 1: Generate PowerShell module
+                    spinner.text = 'Generating pwsh module...'
+                    await aliasManager.generateLocalFiles()
+                    await new Promise(resolve => setTimeout(resolve, 200))
+                    
+                    // Step 2: Install PowerShell module
+                    spinner.text = 'Installing pwsh module...'
+                    await aliasManager.installAliases()
+                    await new Promise(resolve => setTimeout(resolve, 200))
+                    
+                    // Step 3: Generate GitBash module
+                    spinner.text = 'Generating GitBash module...'
+                    // GitBash generation is handled in generateLocalFiles()
+                    await new Promise(resolve => setTimeout(resolve, 200))
+                    
+                    // Step 4: Install GitBash module
+                    spinner.text = 'Installing GitBash module...'
+                    // GitBash installation is handled in installAliases()
+                    await new Promise(resolve => setTimeout(resolve, 200))
+                    
+                    // Step 5: Load module into active shell
+                    const shell = (await import('./shell.js')).detectShell()
+                    if (shell === 'powershell') {
+                        spinner.text = 'Loading module into active shell: [pwsh]'
+                    } else if (shell === 'gitbash') {
+                        spinner.text = 'Loading module into active shell: [GitBash]'
+                    } else {
+                        spinner.text = 'Loading module into active shell: [unknown]'
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 300))
+                    
+                    // Stop spinner and show success
+                    spinner.stop()
+                    success('PAE scripts regenerated and installed')
+                } catch (error) {
+                    spinner.stop()
+                    throw error
+                }
+                
+                debug('refresh-scripts completed, returning 0')
                 return 0
                 
             case 'help':
