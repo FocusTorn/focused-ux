@@ -92,6 +92,18 @@
         
     }, //<
     
+    // PAE built-in commands with descriptions
+    "commands": { //> 
+        "desc": "[PAE Commands] Built-in PAE commands",
+        
+        "install-shorthand-aliases": "Generate and install PowerShell module with PAE aliases",
+        "refresh": "Refresh PAE aliases in current PowerShell session",
+        "refresh-direct": "Refresh aliases directly (bypasses session reload)",
+        "refresh-scripts": "Regenerate and install PAE scripts",
+        "help": "Show this help with all available aliases and flags (deprecated)"
+        
+    }, //<
+    
     // Accepts templates and expanded(-alias to --flag) > passed with the command
     "expandable-flags": { //>
         "desc": "[General] -alias expands to --flag",

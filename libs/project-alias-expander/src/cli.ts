@@ -215,13 +215,20 @@ function showDynamicHelp(config?: AliasConfig) {
             console.log('')
         }
         
-        console.log('Commands:')
-        console.log('  install-shorthand-aliases    Generate and install PowerShell module with PAE aliases')
-        console.log('  refresh                      Refresh PAE aliases in current PowerShell session')
-        console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
-        console.log('  refresh-scripts              Regenerate and install PAE scripts')
-        console.log('  help                         Show this help with all available aliases and flags (deprecated)')
-        console.log('')
+        // Show commands
+        if (helpConfig.commands && Object.keys(helpConfig.commands).length > 0) {
+            const desc = helpConfig.commands.desc || 'PAE commands'
+            const dimmed = '\x1b[2m'
+            const reset = '\x1b[0m'
+
+            console.log(`Commands: ${dimmed}${desc}${reset}`)
+            Object.entries(helpConfig.commands).forEach(([command, description]) => {
+                if (command !== 'desc') {
+                    console.log(`  ${command.padEnd(25)} ${description}`)
+                }
+            })
+            console.log('')
+        }
         console.log('Flags:')
         console.log('  -h, --help         Show this help message')
         console.log('  -d, --debug        Enable debug logging')
@@ -739,26 +746,16 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
         
         debug('Expanded flags', { start, prefix, preArgs, suffix, end, remainingArgs })
         
-        // Determine target
-        let target = 'build' // default
+        // Determine target - use 'b' as default (expands to 'build')
+        let target = 'b' // default
 
         if (remainingArgs.length > 0 && !remainingArgs[0].startsWith('-')) {
             target = remainingArgs[0]
             remainingArgs.shift()
         }
         
-        // Expand target shortcuts
-        const targetExpansions: Record<string, string> = {
-            'b': 'build',
-            't': 'test',
-            'l': 'lint',
-            'c': 'clean',
-            'd': 'dev',
-            's': 'serve',
-            'e': 'e2e'
-        }
-        
-        const expandedTarget = targetExpansions[target] || target
+        // Expand target shortcuts using config.nxTargets
+        const expandedTarget = config['nxTargets']?.[target] || target
 
         debug('Target expansion', { original: target, expanded: expandedTarget })
         
