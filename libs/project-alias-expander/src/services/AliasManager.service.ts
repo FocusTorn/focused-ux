@@ -26,6 +26,172 @@ export class AliasManagerService implements IAliasManagerService {
         }
     }
 
+    generateDirectToNativeModules(): void {
+        const config = loadAliasConfigCached()
+        const aliases = Object.keys(config['nxPackages'])
+        const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
+        const shell = detectShellTypeCached()
+
+        if (isVerbose) {
+            console.log(`Detected shell: ${shell}`)
+            console.log(`Found ${aliases.length} aliases: ${aliases.join(', ')}`)
+            console.log('Generating scripts directly to native modules directories')
+        }
+
+        // Generate PowerShell module content - Simple approach
+        const moduleContent = `# PAE Global Aliases - Auto-generated PowerShell Module
+# Generated from config.json - DO NOT EDIT MANUALLY
+# Simple approach: each alias just calls 'pae <alias> <args>'
+
+${aliases.map(alias =>
+    `function Invoke-${alias} { 
+    [CmdletBinding()] 
+    param([Parameter(Position = 0, ValueFromRemainingArguments = $true)][string[]]$Arguments) 
+    
+    # Capture short-in command for echo variants
+    if ($env:PAE_ECHO -eq "1" -or $env:PAE_ECHO_X -eq "1") {
+        $env:PAE_SHORT_IN = "${alias} $($Arguments -join ' ')"
+    }
+    
+    # Build the command to send to PAE
+    $paeCommand = "pae ${alias} $($Arguments -join ' ')"
+    
+    # Capture short-out command for echo variants
+    if ($env:PAE_ECHO -eq "1" -or $env:PAE_ECHO_X -eq "1") {
+        $env:PAE_SHORT_OUT = $paeCommand
+    }
+    
+    # Execute the PAE command
+    Invoke-Expression $paeCommand
+}
+
+# Alias for backward compatibility
+Set-Alias -Name ${alias} -Value Invoke-${alias}`).join('\n\n')}
+
+# Refresh function to reload aliases
+function Invoke-PaeRefresh {
+    # Find workspace root by looking for nx.json
+    $workspaceRoot = $PWD
+    while ($workspaceRoot -and -not (Test-Path (Join-Path $workspaceRoot "nx.json"))) {
+        $workspaceRoot = Split-Path $workspaceRoot -Parent
+    }
+    
+    if (-not $workspaceRoot) {
+        Write-Error "Could not find workspace root (nx.json not found)"
+        return 1
+    }
+    
+    # Call pae install to regenerate and install with ora spinner
+    & pae install
+    
+    # Reload the module
+    $modulePath = Join-Path $workspaceRoot "libs\\project-alias-expander\\dist\\pae-functions.psm1"
+    Import-Module $modulePath -Force
+}
+
+# Alias for backward compatibility
+Set-Alias -Name pae-refresh -Value Invoke-PaeRefresh
+
+# Export all functions and aliases
+Export-ModuleMember -Function ${aliases.map(a => `Invoke-${a}`).join(', ')}, Invoke-PaeRefresh
+Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh
+
+# Module loaded confirmation
+if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+    Write-Host "\`e[1m\`e[32m✔\`e[0m \`e[32mModule loaded: [pwsh] PAE Shorthand Aliases\`e[0m"
+    Write-Host ""
+}
+
+# Module cleanup handlers to prevent COM object accumulation
+$MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
+    # Clean up any COM objects or event handlers
+    try {
+        # Remove any global variables that might hold references
+        Remove-Variable -Name "PAE_ModuleLoaded" -ErrorAction SilentlyContinue
+        
+        # Force garbage collection to clean up any lingering objects
+        [System.GC]::Collect()
+        [System.GC]::WaitForPendingFinalizers()
+        
+        # Cleanup completed silently
+    } catch {
+        # Silently handle cleanup errors
+    }
+}
+
+# Set a flag to track module loading
+$Global:PAE_ModuleLoaded = $true
+`
+
+        // Generate Bash aliases content
+        const bashContent = `# PAE Global Aliases - Auto-generated Bash Script
+# Generated from config.json - DO NOT EDIT MANUALLY
+# Simple approach: each alias just calls 'pae <alias> <args>'
+
+${aliases.map(alias => `alias ${alias}='pae ${alias}'`).join('\n')}
+
+# Refresh function to reload aliases
+pae-refresh() {
+    if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+        echo "Refreshing [BASH] PAE aliases..."
+    fi
+    
+    # Find workspace root by looking for nx.json
+    WORKSPACE_ROOT="$PWD"
+    while [ -n "$WORKSPACE_ROOT" ] && [ ! -f "$WORKSPACE_ROOT/nx.json" ]; do
+        WORKSPACE_ROOT="$(dirname "$WORKSPACE_ROOT")"
+    done
+    
+    if [ -z "$WORKSPACE_ROOT" ]; then
+        echo "Error: Could not find workspace root (nx.json not found)" >&2
+        return 1
+    fi
+    
+    source "$WORKSPACE_ROOT/libs/project-alias-expander/dist/pae-aliases.sh"
+    if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+        echo "[BASH] PAE aliases refreshed!"
+    fi
+}
+`
+
+        // Install PowerShell module directly to modules directory
+        try {
+            const psModuleDir = path.join(process.env.USERPROFILE || process.env.HOME || '', 'Documents', 'WindowsPowerShell', 'Modules', 'PAE')
+
+            if (!fs.existsSync(psModuleDir)) {
+                fs.mkdirSync(psModuleDir, { recursive: true })
+            }
+            
+            // Write the module file directly to the PowerShell modules directory
+            fs.writeFileSync(path.join(psModuleDir, 'PAE.psm1'), moduleContent)
+            
+            if (isVerbose) {
+                console.log(`\x1b[32m✅ PowerShell module generated directly to: ${psModuleDir}\x1b[0m`)
+            }
+        } catch (error) {
+            if (isVerbose) {
+                console.log(`\x1b[33m⚠️  Failed to generate PowerShell module: ${error}\x1b[0m`)
+            }
+        }
+        
+        // Install GitBash script directly to home directory
+        try {
+            const homeDir = process.env.HOME || process.env.USERPROFILE || ''
+            const bashScriptPath = path.join(homeDir, '.pae-aliases.sh')
+            
+            // Write the bash script directly to the home directory
+            fs.writeFileSync(bashScriptPath, bashContent)
+            
+            if (isVerbose) {
+                console.log(`\x1b[32m✅ Bash script generated directly to: ${bashScriptPath}\x1b[0m`)
+            }
+        } catch (error) {
+            if (isVerbose) {
+                console.log(`\x1b[33m⚠️  Failed to generate Bash script: ${error}\x1b[0m`)
+            }
+        }
+    }
+
     generateLocalFiles(): void {
         const config = loadAliasConfigCached()
         const aliases = Object.keys(config['nxPackages'])
@@ -81,8 +247,8 @@ function Invoke-PaeRefresh {
         return 1
     }
     
-    # Call pae refresh-scripts to regenerate and install with ora spinner
-    & pae refresh-scripts
+    # Call pae install to regenerate and install with ora spinner
+    & pae install
     
     # Reload the module
     $modulePath = Join-Path $workspaceRoot "libs\\project-alias-expander\\dist\\pae-functions.psm1"
