@@ -4,66 +4,6 @@
     "targets": {
      
         //= Finalize ============================================================ 
-        // "build:compile": { //>
-        //     "executor": "@nx/esbuild:esbuild",
-        //     "outputs": ["{options.outputPath}"],
-        //     "inputs": [
-        //         "production",
-        //         "^production",
-        //         "{projectRoot}/src/**/*"
-        //     ],
-        //     "options": {
-        //         "main": "libs/project-alias-expander/src/cli.ts",
-        //         "outputPath": "libs/project-alias-expander/dist",
-        //         "tsConfig": "libs/project-alias-expander/tsconfig.json",
-        //         "declarationRootDir": "libs/project-alias-expander/src",
-        //         "format": ["esm"],
-        //         "bundle": false,
-        //         "platform": "node",
-        //         "target": "es2022",
-        //         "external": ["vscode"],
-        //         "thirdParty": false,
-        //         "sourcemap": true,
-        //         "deleteOutputPath": true,
-        //         "minify": true,
-        //         "treeShaking": true,
-        //         "metafile": true
-        //     }
-        // }, //<
-        // "generate-scripts": { //>
-        //     "executor": "nx:run-commands",
-        //     "dependsOn": ["build:compile"],
-        //     "outputs": [
-        //         "{projectRoot}/dist/pae-functions.psm1",
-        //         "{projectRoot}/dist/pae-aliases.sh"
-        //     ],
-        //     "inputs": [
-        //         "production",
-        //         "^production",
-        //         "{projectRoot}/config.json",
-        //         "{projectRoot}/dist/**/*"
-        //     ],
-        //     "options": {
-        //         "commands": ["node libs/project-alias-expander/dist/cli.js install-shorthand-aliases"], // Generate scripts
-        //         "parallel": false
-        //     }
-        // }, //<
-        // "build": { //>
-        //     "executor": "nx:run-commands",
-        //     "dependsOn": ["build:compile", "generate-scripts"],
-        //     "outputs": [
-        //         "{projectRoot}/dist"
-        //     ],
-        //     "inputs": [
-        //         "production",
-        //         "^production"
-        //     ],
-        //     "options": {
-        //         "commands": [],
-        //         "parallel": false
-        //     }
-        // }, //<
-        
         
         "build:bundle": { //>
             "executor": "@nx/esbuild:esbuild",
@@ -97,7 +37,7 @@
         
         "build:package": { //>
             "executor": "@fux/npack:pack",
-            "dependsOn": ["build"],
+            "dependsOn": ["build:bundle"],
             "outputs": [
                 "{projectRoot}/*.tgz"
             ],
@@ -114,7 +54,23 @@
                 "installGlobal": true
             }
         }, //<
-        
+
+        "build": { //>
+            "executor": "nx:run-commands",
+            "dependsOn": ["build:bundle", "build:package"],
+            "outputs": [
+                "{projectRoot}/dist"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ],
+            "options": {
+                "commands": [],
+                "parallel": false
+            }
+        }, //<
+
         
         //= Quality ============================================================= 
         "check-types": { "extends": "check-types" },
@@ -195,3 +151,63 @@
 //         "passWithNoTests": true
 //     }
 // } //<
+
+// "build:compile": { //>
+//     "executor": "@nx/esbuild:esbuild",
+//     "outputs": ["{options.outputPath}"],
+//     "inputs": [
+//         "production",
+//         "^production",
+//         "{projectRoot}/src/**/*"
+//     ],
+//     "options": {
+//         "main": "libs/project-alias-expander/src/cli.ts",
+//         "outputPath": "libs/project-alias-expander/dist",
+//         "tsConfig": "libs/project-alias-expander/tsconfig.json",
+//         "declarationRootDir": "libs/project-alias-expander/src",
+//         "format": ["esm"],
+//         "bundle": false,
+//         "platform": "node",
+//         "target": "es2022",
+//         "external": ["vscode"],
+//         "thirdParty": false,
+//         "sourcemap": true,
+//         "deleteOutputPath": true,
+//         "minify": true,
+//         "treeShaking": true,
+//         "metafile": true
+//     }
+// }, //<
+// "generate-scripts": { //>
+//     "executor": "nx:run-commands",
+//     "dependsOn": ["build:compile"],
+//     "outputs": [
+//         "{projectRoot}/dist/pae-functions.psm1",
+//         "{projectRoot}/dist/pae-aliases.sh"
+//     ],
+//     "inputs": [
+//         "production",
+//         "^production",
+//         "{projectRoot}/config.json",
+//         "{projectRoot}/dist/**/*"
+//     ],
+//     "options": {
+//         "commands": ["node libs/project-alias-expander/dist/cli.js install-shorthand-aliases"], // Generate scripts
+//         "parallel": false
+//     }
+// }, //<
+// "build": { //>
+//     "executor": "nx:run-commands",
+//     "dependsOn": ["build:compile", "generate-scripts"],
+//     "outputs": [
+//         "{projectRoot}/dist"
+//     ],
+//     "inputs": [
+//         "production",
+//         "^production"
+//     ],
+//     "options": {
+//         "commands": [],
+//         "parallel": false
+//     }
+// }, //<

@@ -193,8 +193,8 @@ export const config: AliasConfig = {
      *       } //<
      *   } //<
      */
-    "expandable-templates": {
-    },
+    "expandable-templates": { //>
+    }, //<
     
     // Feature and project alias assignments 
     "nxPackages": { //>

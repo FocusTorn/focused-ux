@@ -304,24 +304,25 @@
                 "filterOutput": true
             }
         } //<
+    
     },
-    "plugins": [
-        {
-            "plugin": "@nx/vite/plugin",
-            "options": {
-                "buildTargetName": "build",
-                "testTargetName": "vite:test",
-                // "testTargetName": "test",
-                "serveTargetName": "serve",
-                "devTargetName": "dev",
-                "previewTargetName": "preview",
-                "serveStaticTargetName": "serve-static",
-                "typecheckTargetName": "typecheck",
-                "buildDepsTargetName": "build-deps",
-                "watchDepsTargetName": "watch-deps"
-            }
-        }
-    ],
+    "plugins": [ //>
+        // {
+        //     "plugin": "@nx/vite/plugin",
+        //     "options": {
+        //         "buildTargetName": "build",
+        //         "testTargetName": "vite:test",
+        //         // "testTargetName": "test",
+        //         "serveTargetName": "serve",
+        //         "devTargetName": "dev",
+        //         "previewTargetName": "preview",
+        //         "serveStaticTargetName": "serve-static",
+        //         "typecheckTargetName": "typecheck",
+        //         "buildDepsTargetName": "build-deps",
+        //         "watchDepsTargetName": "watch-deps"
+        //     }
+        // }
+    ], //<
     
     "namedInputs": { //>
         "default": [

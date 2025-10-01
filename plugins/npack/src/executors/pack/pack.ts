@@ -176,38 +176,26 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         const tarballPath = join(finalOutputDir, tarballFilename)
         
         try {
-            // Use PowerShell's Compress-Archive for Windows compatibility
+            // Create proper tar.gz file using npm pack
             const packageDir = join(tempDir, 'package')
 
-            execSync(`powershell -Command "Compress-Archive -Path '${packageDir}\\*' -DestinationPath '${tarballPath.replace('.tgz', '.zip')}' -Force"`, {
+            // Use npm pack to create proper tar.gz file
+            execSync(`npm pack "${packageDir}" --pack-destination "${finalOutputDir}"`, {
                 encoding: 'utf-8',
                 timeout: 60000,
-                stdio: 'pipe'
+                stdio: 'pipe',
+                cwd: tempDir
             })
             
-            // Convert zip to tgz using tar if available, otherwise keep as zip
-            const zipPath = tarballPath.replace('.tgz', '.zip')
-
-            if (existsSync(zipPath)) {
-                try {
-                    // Try to convert zip to tgz using tar
-                    execSync(`tar -czf "${tarballPath}" -C "${tempDir}" package/`, {
-                        encoding: 'utf-8',
-                        timeout: 60000,
-                        stdio: 'pipe'
-                    })
-                    
-                    // Remove zip file if tgz was created successfully
-                    if (existsSync(tarballPath)) {
-                        unlinkSync(zipPath)
-                    }
-                } catch {
-                    // If tar fails, rename zip to tgz (npm can handle both)
-                    if (existsSync(zipPath)) {
-                        cpSync(zipPath, tarballPath)
-                        unlinkSync(zipPath)
-                    }
-                }
+            // npm pack creates a file with the package name and version
+            // We need to rename it to our desired filename
+            const npmPackFilename = `${originalPackageJson.name.replace('@fux/', 'fux-')}-${originalPackageJson.version}.tgz`
+            const npmPackPath = join(finalOutputDir, npmPackFilename)
+            
+            if (existsSync(npmPackPath) && npmPackPath !== tarballPath) {
+                // Move the npm pack file to our desired location
+                cpSync(npmPackPath, tarballPath)
+                unlinkSync(npmPackPath)
             }
             
             if (!existsSync(tarballPath)) {
@@ -224,10 +212,12 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
                     stdio: 'inherit'
                 })
             } catch {
-                // If tar -tzf fails, try to list zip contents
-                execSync(`powershell -Command "Expand-Archive -Path '${tarballPath}' -DestinationPath '${tempDir}\\extract' -Force; Get-ChildItem -Path '${tempDir}\\extract' -Recurse | Select-Object FullName"`, {
+                // Fallback to npm pack inspection
+                logger.info('Using npm pack inspection:')
+                execSync(`npm pack --dry-run "${packageDir}"`, {
                     encoding: 'utf-8',
-                    stdio: 'inherit'
+                    stdio: 'inherit',
+                    cwd: tempDir
                 })
             }
         } catch (error) {
