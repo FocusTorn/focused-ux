@@ -268,6 +268,61 @@ The framework transforms AI agents from basic code analyzers into optimization s
 - **Validation Results**: Results of optimization validation and effectiveness
 - **Continuous Improvement**: Recommendations for ongoing optimization and monitoring
 
+## Output Generation Protocol
+
+### Mandatory Output Requirements
+
+**CRITICAL**: The AI agent must follow these output requirements exactly:
+
+1. **Automatic File Generation**: Generate optimization output file in the same directory as the provided fluency output file
+2. **File Naming Convention**: Use `optimization-output-{package-name}.md` format
+3. **Directory Detection**: Automatically detect the directory of the provided fluency output file
+4. **Silent Generation**: Generate the file without showing the full content during creation
+5. **Summary Only**: Show only the priority matrix as a txt formatted code block after file creation
+
+### Output Generation Process
+
+**Step 1: Directory Detection**
+
+- Extract the directory path from the provided fluency output file path
+- Use this directory for the optimization output file
+
+**Step 2: File Generation**
+
+- Generate the complete optimization analysis document
+- Save to the detected directory with proper naming convention
+- Do not display the full content during generation
+
+**Step 3: Summary Display**
+
+- After successful file generation, display only the priority matrix
+- Format as a txt code block for easy copying
+- Include no other content in the response
+
+### File Structure Requirements
+
+The generated optimization output file must include:
+
+- **Executive Summary**: High-level optimization overview
+- **Detailed Analysis**: Comprehensive analysis of current state
+- **Implementation Recommendations**: Prioritized optimization recommendations
+- **Validation Framework**: Success criteria and monitoring approach
+- **Implementation Timeline**: Structured implementation plan
+- **Risk Assessment**: Risk analysis and mitigation strategies
+- **Success Criteria**: Measurable targets and validation metrics
+
+### Response Format
+
+After file generation, the AI agent must respond with ONLY:
+
+```
+PRIORITY MATRIX - {PACKAGE NAME} OPTIMIZATION
+
+[Priority matrix content in txt format]
+```
+
+No additional commentary, explanations, or content should be included in the response.
+
 ## AI Agent Optimization Guidelines
 
 ### Analysis Approach
