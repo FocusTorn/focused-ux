@@ -38,7 +38,7 @@ export class AliasManagerService implements IAliasManagerService {
             console.log('Generating scripts directly to native modules directories')
         }
 
-        // Generate PowerShell module content - Simple approach
+        // Generate PowerShell module content
         const moduleContent = `# PAE Global Aliases - Auto-generated PowerShell Module
 # Generated from config.json - DO NOT EDIT MANUALLY
 # Simple approach: each alias just calls 'pae <alias> <args>'
@@ -69,7 +69,7 @@ ${aliases.map(alias =>
 Set-Alias -Name ${alias} -Value Invoke-${alias}`).join('\n\n')}
 
 # Refresh function to reload aliases
-function Invoke-PaeRefresh {
+function Invoke-PaeRefreshMethod {
     # Find workspace root by looking for nx.json
     $workspaceRoot = $PWD
     while ($workspaceRoot -and -not (Test-Path (Join-Path $workspaceRoot "nx.json"))) {
@@ -90,11 +90,11 @@ function Invoke-PaeRefresh {
 }
 
 # Alias for backward compatibility
-Set-Alias -Name pae-refresh -Value Invoke-PaeRefresh
+Set-Alias -Name pae-refresh-method -Value Invoke-PaeRefreshMethod
 
 # Export all functions and aliases
-Export-ModuleMember -Function ${aliases.map(a => `Invoke-${a}`).join(', ')}, Invoke-PaeRefresh
-Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh
+Export-ModuleMember -Function ${aliases.map(a => `Invoke-${a}`).join(', ')}, Invoke-PaeRefreshMethod
+Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh-method
 
 # Module loaded confirmation
 if ($env:ENABLE_TEST_CONSOLE -ne "false") {
@@ -235,7 +235,7 @@ ${aliases.map(alias =>
 Set-Alias -Name ${alias} -Value Invoke-${alias}`).join('\n\n')}
 
 # Refresh function to reload aliases
-function Invoke-PaeRefresh {
+function Invoke-PaeRefreshMethod {
     # Find workspace root by looking for nx.json
     $workspaceRoot = $PWD
     while ($workspaceRoot -and -not (Test-Path (Join-Path $workspaceRoot "nx.json"))) {
@@ -256,11 +256,11 @@ function Invoke-PaeRefresh {
 }
 
 # Alias for backward compatibility
-Set-Alias -Name pae-refresh -Value Invoke-PaeRefresh
+Set-Alias -Name pae-refresh-method -Value Invoke-PaeRefreshMethod
 
 # Export all functions and aliases
-Export-ModuleMember -Function ${aliases.map(a => `Invoke-${a}`).join(', ')}, Invoke-PaeRefresh
-Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh
+Export-ModuleMember -Function ${aliases.map(a => `Invoke-${a}`).join(', ')}, Invoke-PaeRefreshMethod
+Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh-method
 
 # Module loaded confirmation
 if ($env:ENABLE_TEST_CONSOLE -ne "false") {
@@ -471,13 +471,13 @@ pae-refresh() {
                 // Execute pae-refresh in PowerShell (load module first)
                 const modulePath = path.resolve('libs/project-alias-expander/dist/pae-functions.psm1')
 
-                await execa('powershell', ['-Command', `Import-Module '${modulePath}' -Force; pae-refresh`], {
+                await execa('powershell', ['-Command', `Import-Module '${modulePath}' -Force; pae-refresh-method`], {
                     cwd: process.cwd(),
                     timeout: 5000
                 })
             } else if (shell === 'gitbash') {
                 // Execute pae-refresh in Git Bash
-                await execa('pae-refresh', [], {
+                await execa('pae-refresh-method', [], {
                     cwd: process.cwd(),
                     timeout: 5000
                 })
@@ -486,8 +486,8 @@ pae-refresh() {
             }
         } catch (_error) {
             console.log('\x1b[31m❌ Refresh failed. Manual refresh required.\x1b[0m')
-            console.log('\x1b[90m   PowerShell: pae-refresh\x1b[0m')
-            console.log('\x1b[90m   Git Bash: pae-refresh\x1b[0m')
+            console.log('\x1b[90m   PowerShell: pae-refresh-method\x1b[0m')
+            console.log('\x1b[90m   Git Bash: pae-refresh-method\x1b[0m')
         }
     }
 

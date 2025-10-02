@@ -5,6 +5,8 @@ import aliasConfig, { resolveProjectForAlias as resolveProjectForAliasFromConfig
 import { detectShell } from './shell.js'
 import type { AliasConfig } from './_types/index.js'
 import type { ChildProcess } from 'child_process'
+import { execa } from 'execa'
+import * as fs from 'fs'
 
 // Debug mode - activated by -d or --debug flags
 let DEBUG = false
@@ -106,6 +108,66 @@ function success(message: string, ...args: unknown[]) {
     const checkmark = '✔'
 
     console.log(`${green}${bold}${checkmark}${reset}${green} ${message}${reset}`, ...args)
+}
+
+async function loadPAEModule() {
+    try {
+        console.log('🔄 Setting up PAE module auto-load...')
+        
+        // Add to PowerShell profile - get the actual profile path from PowerShell
+        let profilePath: string
+
+        try {
+            const { stdout } = await execa('powershell', ['-Command', '$PROFILE'], { stdio: 'pipe' })
+
+            profilePath = stdout.trim()
+        } catch (error) {
+            // Fallback to default path
+            profilePath = `${process.env.USERPROFILE}\\Documents\\PowerShell\\Microsoft.PowerShell_profile.ps1`
+        }
+
+        const loadCommand = `
+# PAE Module Auto-Load
+Import-Module -Name "PAE" -Force
+
+# PAE Refresh Function
+function pae-refresh {
+    pae-refresh-method
+}
+`
+        
+        // Ensure profile exists
+        if (!fs.existsSync(profilePath)) {
+            fs.writeFileSync(profilePath, '# PowerShell Profile\n')
+        }
+        
+        // Check if already added
+        const profileContent = fs.readFileSync(profilePath, 'utf8')
+        
+        if (!profileContent.includes('Import-Module -Name "PAE"')) {
+            fs.appendFileSync(profilePath, loadCommand)
+            console.log('✅ PAE module added to PowerShell profile')
+        } else {
+            console.log('✅ PAE module already in PowerShell profile')
+        }
+        
+        // Try to load immediately
+        try {
+            await execa('powershell', ['-Command', '. $PROFILE'], { stdio: 'pipe' })
+            console.log('✅ PowerShell profile reloaded - PAE module should now be available')
+        } catch (_profileError) {
+            console.log('⚠️  Could not reload profile automatically')
+            console.log('   Please run: . $PROFILE')
+            console.log('   Or restart your PowerShell session')
+        }
+    } catch (error) {
+        console.log('⚠️  Could not set up PAE module auto-load')
+        console.log('   Please run: Import-Module -Name "PAE" -Force')
+        
+        if (DEBUG) {
+            console.error('Load error details:', error)
+        }
+    }
 }
 
 function showDynamicHelp(config?: AliasConfig) {
@@ -251,6 +313,7 @@ function showDynamicHelp(config?: AliasConfig) {
         console.log('  refresh                      Refresh PAE aliases in current PowerShell session')
         console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
         console.log('  install                      Install PAE scripts directly to native modules directory')
+        console.log('  load                         Load PAE module into active PowerShell session')
         console.log('  refresh-scripts-locally      Generate PAE scripts in dist directory only')
         console.log('  help                         Show this help with all available aliases and flags (deprecated)')
         console.log('')
@@ -381,7 +444,7 @@ async function main() {
                 // Provide clear instructions for manual refresh
                 console.log('\n🔄 To refresh PAE aliases in your current PowerShell session:')
                 console.log('   Import-Module PAE -Force')
-                console.log('   # Or use: pae-refresh')
+                console.log('   # Or use: pae-refresh-method')
                 console.log('')
                 console.log('💡 Note: PAE commands cannot directly modify your current PowerShell session.')
                 console.log('   This is a PowerShell security limitation.')
@@ -471,6 +534,12 @@ async function main() {
                 debug('install completed, returning 0')
                 return 0
                 
+            case 'load':
+                debug('Executing load command')
+                await loadPAEModule()
+                debug('load completed, returning 0')
+                return 0
+
             case 'help':
                 debug('Executing deprecated help command')
                 console.error('')

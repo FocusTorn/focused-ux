@@ -63,6 +63,7 @@ export const config: AliasConfig = {
         "refresh": "Refresh PAE aliases in current PowerShell session",
         "refresh-direct": "Refresh aliases directly (bypasses session reload)",
         "install": "Install PAE scripts directly to native modules directory",
+        "load": "Load PAE module into active PowerShell session",
         "refresh-scripts-locally": "Generate PAE scripts in dist directory only",
         "help": "Show this help with all available aliases and flags (deprecated)"
     }, //<
