@@ -105,43 +105,6 @@ catch {
 Write-Host -ForegroundColor DarkGreen "FocusedUX project profile loaded."
 
 
-#- Load PAE aliases for shorthand execution -->>
-
-try {
-    # Try to load from installed modules directory first, then fall back to local dist
-    $paeModulePath = "$env:USERPROFILE\Documents\WindowsPowerShell\Modules\PAE\PAE.psm1"
-    $paeLocalPath = ".\libs\project-alias-expander\dist\pae-functions.psm1"
-
-    if (Test-Path $paeModulePath) {
-        # Check if module is already loaded to prevent multiple instances
-        if (-not (Get-Module PAE -ErrorAction SilentlyContinue)) {
-            Import-Module PAE -Force
-        } else {
-            # Module already loaded, just refresh it
-            Remove-Module PAE -Force -ErrorAction SilentlyContinue
-            Import-Module PAE -Force
-        }
-    }
-    elseif (Test-Path $paeLocalPath) {
-        # Fallback to local dist directory
-        if (-not (Get-Module PAE -ErrorAction SilentlyContinue)) {
-            Import-Module $paeLocalPath -Force
-        } else {
-            Remove-Module PAE -Force -ErrorAction SilentlyContinue
-            Import-Module $paeLocalPath -Force
-        }
-    }
-    else {
-        Write-Host -ForegroundColor Yellow "PAE module not found in modules directory or local dist"
-        Write-Host -ForegroundColor Yellow "Run 'pae refresh-scripts' to install the module"
-    }
-}
-catch {
-    Write-Host -ForegroundColor Red "Error loading PAE module: $($_.Exception.Message)"
-}
-
-#--<<
-
 
 # ┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
 # └───────────────────────────────────────────────────────────────────────────────────────────────────┘
