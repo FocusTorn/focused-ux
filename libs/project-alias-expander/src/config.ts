@@ -53,18 +53,13 @@ export const config: AliasConfig = {
     
     // Agnostic alias assignments, directly replaces alias with command as written
     "expandable-commands": { //>
-        "ish": "pae install-shorthand-aliases",
         "build": "nx build @fux/project-alias-expander -s"
     }, //<
     
     // PAE built-in commands with descriptions
     "commands": { //>
-        "install-shorthand-aliases": "Generate and install PowerShell module with PAE aliases",
-        "refresh": "Refresh PAE aliases in current PowerShell session",
-        "refresh-direct": "Refresh aliases directly (bypasses session reload)",
-        "install": "Install PAE scripts directly to native modules directory",
+        "install": "Install PAE scripts to native modules directory (use --local for dist-based install)",
         "load": "Load PAE module into active PowerShell session",
-        "refresh-scripts-locally": "Generate PAE scripts in dist directory only",
         "help": "Show this help with all available aliases and flags (deprecated)"
     }, //<
     

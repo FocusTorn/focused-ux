@@ -118,12 +118,12 @@ async function loadPAEModule() {
         let profilePath: string
 
         try {
-            const { stdout } = await execa('powershell', ['-Command', '$PROFILE'], { stdio: 'pipe' })
+            const { stdout } = await execa('pwsh', ['-Command', '$PROFILE.CurrentUserAllHosts'], { stdio: 'pipe' })
 
             profilePath = stdout.trim()
-        } catch (error) {
+        } catch (_error) {
             // Fallback to default path
-            profilePath = `${process.env.USERPROFILE}\\Documents\\PowerShell\\Microsoft.PowerShell_profile.ps1`
+            profilePath = `${process.env.USERPROFILE}\\Documents\\PowerShell\\profile.ps1`
         }
 
         const loadCommand = `
@@ -131,9 +131,6 @@ async function loadPAEModule() {
 Import-Module -Name "PAE" -Force
 
 # PAE Refresh Function
-function pae-refresh {
-    pae-refresh-method
-}
 `
         
         // Ensure profile exists
@@ -167,6 +164,281 @@ function pae-refresh {
         if (DEBUG) {
             console.error('Load error details:', error)
         }
+    }
+}
+
+async function handleInstallCommand(args: string[]) {
+    const ora = (await import('ora')).default
+    
+    // Check for flags
+    const isLocal = args.includes('--local') || args.includes('-l')
+    const isGet = args.includes('--get') || args.includes('-g')
+    
+    if (isGet) {
+        // Show current install type
+        try {
+            const { stdout } = await execa('powershell', ['-Command', 'Get-ItemProperty -Path "HKCU:\\Environment" -Name "PAE_INSTALL_TYPE" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PAE_INSTALL_TYPE'], { stdio: 'pipe' })
+            const installType = stdout.trim() || 'standard'
+
+            console.log(`Current PAE install type: ${installType}`)
+        } catch (_error) {
+            console.log('Current PAE install type: standard (default)')
+        }
+        return
+    }
+    
+    const spinner = ora({
+        text: isLocal ? 'Installing PAE scripts (local mode)...' : 'Installing PAE scripts (standard mode)...',
+        spinner: 'dots'
+    }).start()
+    
+    try {
+        if (isLocal) {
+            // Local install: generate to dist, then copy to native modules
+            spinner.text = 'Generating scripts to local dist...'
+            aliasManager.generateLocalFiles()
+            await new Promise(resolve => setTimeout(resolve, 300))
+            
+            spinner.text = 'Copying to native modules...'
+            aliasManager.generateDirectToNativeModules()
+            await new Promise(resolve => setTimeout(resolve, 300))
+            
+            // Mark as local install - persist to registry
+            await execa('powershell', ['-Command', 'Set-ItemProperty -Path "HKCU:\\Environment" -Name "PAE_INSTALL_TYPE" -Value "local"'], { stdio: 'pipe' })
+        } else {
+            // Standard install: generate directly to native modules
+            spinner.text = 'Installing scripts to native modules...'
+            aliasManager.generateDirectToNativeModules()
+            await new Promise(resolve => setTimeout(resolve, 500))
+            
+            // Mark as standard install - persist to registry
+            await execa('powershell', ['-Command', 'Set-ItemProperty -Path "HKCU:\\Environment" -Name "PAE_INSTALL_TYPE" -Value "standard"'], { stdio: 'pipe' })
+        }
+        
+        // Add inProfile block to PowerShell profile
+        spinner.text = 'Adding inProfile block...'
+        await addInProfileBlock(isLocal)
+        await new Promise(resolve => setTimeout(resolve, 300))
+        
+        // Load module into active shell
+        const shell = (await import('./shell.js')).detectShell()
+
+        if (shell === 'powershell') {
+            spinner.text = 'Loading module into active shell: [pwsh]'
+        } else if (shell === 'gitbash') {
+            spinner.text = 'Loading module into active shell: [GitBash]'
+        } else {
+            spinner.text = 'Loading module into active shell: [unknown]'
+        }
+        await new Promise(resolve => setTimeout(resolve, 300))
+        
+        // Stop spinner and show success
+        spinner.stop()
+        success(`PAE scripts installed (${isLocal ? 'local' : 'standard'} mode)`)
+    } catch (error) {
+        spinner.stop()
+        throw error
+    }
+}
+
+async function addInProfileBlock(_isLocal: boolean) {
+    // Get the actual profile path from PowerShell
+    let profilePath: string
+
+    try {
+        const { stdout } = await execa('pwsh', ['-Command', 'Write-Output $PROFILE.CurrentUserAllHosts'], { stdio: 'pipe' })
+
+        profilePath = stdout.trim()
+        if (DEBUG) {
+            console.log(`Profile path: ${profilePath}`)
+        }
+    } catch (_error) {
+        // Fallback to default path
+        profilePath = `${process.env.USERPROFILE}\\Documents\\PowerShell\\profile.ps1`
+        if (DEBUG) {
+            console.log(`Using fallback profile path: ${profilePath}`)
+        }
+    }
+    
+    const inProfileBlock = `
+# PAE inProfile Block - Auto-generated
+# DO NOT EDIT MANUALLY - Use 'pae-remove' to uninstall
+
+# PAE Module Auto-Load
+Import-Module -Name "PAE" -Force
+
+# PAE Functions
+function Invoke-PaeRefresh {
+    # Find workspace root by looking for nx.json
+    $workspaceRoot = $PWD
+    while ($workspaceRoot -and -not (Test-Path (Join-Path $workspaceRoot "nx.json"))) {
+        $workspaceRoot = Split-Path $workspaceRoot -Parent
+    }
+    
+    if (-not $workspaceRoot) {
+        Write-Error "Could not find workspace root (nx.json not found)"
+        return 1
+    }
+    
+    # Generate the alias scripts directly into the native modules directories for the respective shells
+    & pae install
+    
+    # Force load the module into the shell
+    Import-Module -Name "PAE" -Force
+}
+
+function Invoke-PaeRefresh-Local {
+    # Find workspace root by looking for nx.json
+    $workspaceRoot = $PWD
+    while ($workspaceRoot -and -not (Test-Path (Join-Path $workspaceRoot "nx.json"))) {
+        $workspaceRoot = Split-Path $workspaceRoot -Parent
+    }
+    
+    if (-not $workspaceRoot) {
+        Write-Error "Could not find workspace root (nx.json not found)"
+        return 1
+    }
+    
+    # Generate the alias scripts into the local dist
+    & pae install --local
+    
+    # Force load the module into the shell
+    Import-Module -Name "PAE" -Force
+}
+
+function pae-refresh {
+    # Check install type and call appropriate refresh function
+    if ($env:PAE_INSTALL_TYPE -eq "local") {
+        Invoke-PaeRefresh-Local
+    } else {
+        Invoke-PaeRefresh
+    }
+}
+
+function pae-remove {
+    
+    # Remove from current session
+    Remove-Module -Name "PAE" -Force -ErrorAction SilentlyContinue
+    
+    # Find and delete module files
+    $module = Get-Module -ListAvailable -Name "PAE"
+    if ($module) {
+        Write-Host "Deleting module from: $($module.ModuleBase)" -ForegroundColor Yellow
+        Remove-Item -Path $module.ModuleBase -Recurse -Force
+        
+        # Verify deletion
+        Write-Host "Verifying deletion..." -ForegroundColor Gray
+        Start-Sleep -Milliseconds 500
+        $verifyModule = Get-Module -ListAvailable -Name "PAE"
+        if (-not $verifyModule) {
+            Write-Host "\`e[32m✔\`e[0m Module files deleted" -ForegroundColor Green
+        } else {
+            Write-Host "\`e[31m✗\`e[0m Module files still exist" -ForegroundColor Red
+        }
+    }
+    
+    # Remove from current session
+    Write-Host "Removing PAE from current shell" -ForegroundColor Yellow
+    Remove-Module -Name "PAE" -Force -ErrorAction SilentlyContinue
+    
+    # Verify removal from session
+    Write-Host "Verifying removal..." -ForegroundColor Gray
+    Start-Sleep -Milliseconds 500
+    $verifyLoaded = Get-Module -Name "PAE"
+    if (-not $verifyLoaded) {
+        Write-Host "\`e[32m✔\`e[0m PAE removed from current shell" -ForegroundColor Green
+    } else {
+        Write-Host "\`e[31m✗\`e[0m PAE still loaded in current shell" -ForegroundColor Red
+    }
+    
+    # Remove environment variables
+    Write-Host "Removing PAE environment variables" -ForegroundColor Yellow
+    $envVars = Get-ChildItem Env: | Where-Object { $_.Name -like "PAE_*" }
+    if ($envVars) {
+        Remove-Item Env:PAE_* -ErrorAction SilentlyContinue
+    }
+    
+    # Verify environment variable removal
+    Write-Host "Verifying removal..." -ForegroundColor Gray
+    Start-Sleep -Milliseconds 500
+    $verifyEnvVars = Get-ChildItem Env: | Where-Object { $_.Name -like "PAE_*" }
+    if (-not $verifyEnvVars) {
+        Write-Host "\`e[32m✔\`e[0m PAE environment variables removed" -ForegroundColor Green
+    } else {
+        Write-Host "\`e[31m✗\`e[0m PAE environment variables still exist" -ForegroundColor Red
+    }
+    
+    # Remove this inProfile block
+    if (Test-Path $PROFILE.CurrentUserAllHosts) {
+        $profileContent = Get-Content $PROFILE.CurrentUserAllHosts
+        $filteredContent = $profileContent | Where-Object { 
+            $_ -notmatch "PAE inProfile Block" -and 
+            $_ -notmatch "Import-Module -Name PAE" -and
+            $_ -notmatch "function pae-refresh" -and
+            $_ -notmatch "function pae-remove" -and
+            $_ -notmatch "function Invoke-PaeRefresh" -and
+            $_ -notmatch "DO NOT EDIT MANUALLY" -and
+            $_ -notmatch "End PAE inProfile Block"
+        }
+        $filteredContent | Set-Content $PROFILE.CurrentUserAllHosts
+    }
+    
+    # Remove any remaining PAE aliases from current session
+    Get-Alias | Where-Object { $_.Name -like "pae*" -or $_.Name -like "*pae*" } | ForEach-Object {
+        Remove-Item Alias:$($_.Name) -Force -ErrorAction SilentlyContinue
+    }
+    
+    # Remove any remaining PAE functions from current session
+    Get-ChildItem Function: | Where-Object { $_.Name -like "pae*" -or $_.Name -like "*pae*" } | ForEach-Object {
+        Remove-Item Function:$($_.Name) -Force -ErrorAction SilentlyContinue
+    }
+    
+    Write-Host "\`e[32m✔\`e[0m PAE removed" -ForegroundColor Green
+}
+
+# End PAE inProfile Block
+`
+    
+    // Ensure profile exists
+    if (!fs.existsSync(profilePath)) {
+        fs.writeFileSync(profilePath, '# PowerShell Profile\n')
+    }
+    
+    // Check if inProfile block already exists and remove it if found
+    const profileContent = fs.readFileSync(profilePath, 'utf8')
+
+    if (DEBUG) {
+        console.log(`Profile content length: ${profileContent.length}`)
+        console.log(`Contains PAE block: ${profileContent.includes('PAE inProfile Block')}`)
+    }
+
+    if (profileContent.includes('PAE inProfile Block')) {
+        if (DEBUG) {
+            console.log('Removing existing PAE inProfile block...')
+        }
+
+        const lines = profileContent.split('\n')
+        const filteredLines = lines.filter(line =>
+            !line.includes('PAE inProfile Block')
+            && !line.includes('Import-Module -Name PAE')
+            && !line.includes('function pae-refresh')
+            && !line.includes('function pae-remove')
+            && !line.includes('function Invoke-PaeRefresh')
+            && !line.includes('DO NOT EDIT MANUALLY')
+            && !line.includes('End PAE inProfile Block'))
+
+        fs.writeFileSync(profilePath, filteredLines.join('\n'))
+        if (DEBUG) {
+            console.log('Existing PAE inProfile block removed')
+        }
+    }
+
+    if (DEBUG) {
+        console.log('Adding PAE inProfile block...')
+    }
+    fs.appendFileSync(profilePath, inProfileBlock)
+    if (DEBUG) {
+        console.log('PAE inProfile block added successfully')
     }
 }
 
@@ -237,7 +509,7 @@ function showDynamicHelp(config?: AliasConfig) {
             const dimmed = '\x1b[2m'
             const reset = '\x1b[0m'
 
-            console.log(`Expandable Flags: ${dimmed}${desc}${reset}`)
+            console.log(`expandable Flags: ${dimmed}${desc}${reset}`)
             Object.entries(helpConfig['expandable-flags']).forEach(([flag, expansion]) => {
                 if (flag !== 'desc') {
                     const expansionStr = typeof expansion === 'string' ? expansion : expansion.template || 'template'
@@ -254,7 +526,7 @@ function showDynamicHelp(config?: AliasConfig) {
             const dimmed = '\x1b[2m'
             const reset = '\x1b[0m'
 
-            console.log(`Expandable Templates: ${dimmed}${desc}${reset}`)
+            console.log(`expandable Templates: ${dimmed}${desc}${reset}`)
             Object.entries(helpConfig['expandable-templates']).forEach(([template, config]) => {
                 if (template !== 'desc') {
                     console.log(`  -${template.padEnd(8)} → ${config['pwsh-template'] ? 'PowerShell template' : 'Template'}`)
@@ -269,7 +541,7 @@ function showDynamicHelp(config?: AliasConfig) {
             const dimmed = '\x1b[2m'
             const reset = '\x1b[0m'
 
-            console.log(`Expandable Commands: ${dimmed}${desc}${reset}`)
+            console.log(`expandable Commands: ${dimmed}${desc}${reset}`)
             Object.entries(helpConfig['expandable-commands']).forEach(([alias, command]) => {
                 if (alias !== 'desc') {
                     console.log(`  ${alias.padEnd(8)} → ${command}`)
@@ -309,12 +581,9 @@ function showDynamicHelp(config?: AliasConfig) {
         console.log('       pae <command> [args]')
         console.log('')
         console.log('Commands:')
-        console.log('  install-shorthand-aliases    Generate and install PowerShell module with PAE aliases')
-        console.log('  refresh                      Refresh PAE aliases in current PowerShell session')
-        console.log('  refresh-direct               Refresh aliases directly (bypasses session reload)')
-        console.log('  install                      Install PAE scripts directly to native modules directory')
+        console.log('  install                      Install PAE scripts to native modules directory (use --local for dist-based install)')
         console.log('  load                         Load PAE module into active PowerShell session')
-        console.log('  refresh-scripts-locally      Generate PAE scripts in dist directory only')
+        console.log('  remove                       Remove all traces of PAE')
         console.log('  help                         Show this help with all available aliases and flags (deprecated)')
         console.log('')
         console.log('Flags:')
@@ -357,7 +626,7 @@ async function main() {
         process.on('exit', async () => {
             try {
                 await commandExecution.shutdownProcessPool()
-            } catch (error) {
+            } catch (_error) {
                 debug('Error shutting down ProcessPool:', error)
             }
         })
@@ -430,107 +699,10 @@ async function main() {
         // Handle special commands
         debug('Checking for special commands...')
         switch (command) {
-            case 'install-shorthand-aliases':
-                debug('Executing install-shorthand-aliases command')
-                debug('Executing install-shorthand-aliases')
-                await aliasManager.processAliases()
-                // Success message is now handled by the loading message replacement
-                debug('install-shorthand-aliases completed, returning 0')
-                return 0
-
-            case 'refresh':
-                debug('Executing refresh command')
-                debug('Executing refresh')
-                // Provide clear instructions for manual refresh
-                console.log('\n🔄 To refresh PAE aliases in your current PowerShell session:')
-                console.log('   Import-Module PAE -Force')
-                console.log('   # Or use: pae-refresh-method')
-                console.log('')
-                console.log('💡 Note: PAE commands cannot directly modify your current PowerShell session.')
-                console.log('   This is a PowerShell security limitation.')
-                success('PAE refresh instructions displayed')
-                debug('refresh completed, returning 0')
-                return 0
-
-            case 'refresh-direct':
-                debug('Executing refresh-direct command')
-                debug('Executing refresh-direct')
-                await aliasManager.refreshAliasesDirect()
-                success('PAE Aliases refreshed directly')
-                debug('refresh-direct completed, returning 0')
-                return 0
-
-            case 'refresh-scripts-locally':
-                debug('Executing refresh-scripts-locally command')
-                debug('Executing refresh-scripts-locally')
-                
-                // Import ora for spinner
-                const oraLocal = (await import('ora')).default
-                
-                const spinnerLocal = oraLocal({
-                    text: 'Generating scripts locally...',
-                    spinner: 'dots'
-                }).start()
-                
-                try {
-                    // Only generate local files (no installation)
-                    spinnerLocal.text = 'Generating pwsh module...'
-                    await aliasManager.generateLocalFiles()
-                    await new Promise(resolve => setTimeout(resolve, 200))
-                    
-                    spinnerLocal.text = 'Generating GitBash module...'
-                    // GitBash generation is handled in generateLocalFiles()
-                    await new Promise(resolve => setTimeout(resolve, 200))
-                    
-                    // Stop spinner and show success
-                    spinnerLocal.stop()
-                    success('PAE scripts generated locally in dist directory')
-                } catch (error) {
-                    spinnerLocal.stop()
-                    throw error
-                }
-                
-                debug('refresh-scripts-locally completed, returning 0')
-                return 0
 
             case 'install':
                 debug('Executing install command')
-                debug('Executing install')
-                
-                // Import ora for spinner
-                const ora = (await import('ora')).default
-                
-                const spinner = ora({
-                    text: 'Installing PAE scripts to native modules...',
-                    spinner: 'dots'
-                }).start()
-                
-                try {
-                    // Generate scripts directly to native modules directories (bypass dist)
-                    spinner.text = 'Installing scripts to native modules...'
-                    aliasManager.generateDirectToNativeModules()
-                    await new Promise(resolve => setTimeout(resolve, 500))
-                    
-                    // Load module into active shell
-                    const shell = (await import('./shell.js')).detectShell()
-
-                    if (shell === 'powershell') {
-                        spinner.text = 'Loading module into active shell: [pwsh]'
-                    } else if (shell === 'gitbash') {
-                        spinner.text = 'Loading module into active shell: [GitBash]'
-                    } else {
-                        spinner.text = 'Loading module into active shell: [unknown]'
-                    }
-                    await new Promise(resolve => setTimeout(resolve, 300))
-                    
-                    // Stop spinner and show success
-                    spinner.stop()
-                    success('PAE scripts installed to native modules directory')
-                } catch (error) {
-                    spinner.stop()
-                    throw error
-                }
-                
+                await handleInstallCommand(filteredArgs.slice(1))
                 debug('install completed, returning 0')
                 return 0
                 
@@ -618,7 +790,7 @@ async function main() {
                     process.argv = originalArgv
                 }
             }
-        } catch (error) {
+        } catch (_error) {
             debug('Error checking expandable commands:', error)
         }
         
@@ -759,7 +931,7 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
                     process.env.PAE_ECHO = '1'
                     if (variant) {
                         process.env.PAE_ECHO_VARIANT = variant
-                        debug(`Echo mode enabled via --pae-echo flag with variant: ${variant}`)
+                        debug(`echo mode enabled via --pae-echo flag with variant: ${variant}`)
                     } else {
                         debug('Echo mode enabled via --pae-echo flag (no variant - will show all)')
                     }
@@ -773,7 +945,7 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
                     process.env.PAE_ECHO_X = '1'
                     if (variant) {
                         process.env.PAE_ECHO_VARIANT = variant
-                        debug(`EchoX mode enabled via --pae-echoX flag with variant: ${variant}`)
+                        debug(`echoX mode enabled via --pae-echoX flag with variant: ${variant}`)
                     } else {
                         debug('EchoX mode enabled via --pae-echoX flag (no variant - will show all)')
                     }
@@ -862,10 +1034,10 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
         debug('Final command', { finalCommand })
         
         // Execute command
-        debug(`Executing: ${finalCommand.join(' ')}${timeoutMs ? ` (timeout: ${timeoutMs}ms)` : ''}`)
+        debug(`executing: ${finalCommand.join(' ')}${timeoutMs ? ` (timeout: ${timeoutMs}ms)` : ''}`)
         return await commandExecution.runNx(finalCommand, timeoutMs)
     } catch (err) {
-        error(`Error handling package alias ${alias}:`, err)
+        error(`error handling package alias ${alias}:`, err)
         return 1
     }
 }
@@ -942,7 +1114,7 @@ async function handleExpandableCommand(alias: string, args: string[], config: Al
                 process.env.PAE_ECHO = '1'
                 if (variant) {
                     process.env.PAE_ECHO_VARIANT = variant
-                    debug(`Echo mode enabled via --pae-echo flag with variant: ${variant}`)
+                    debug(`echo mode enabled via --pae-echo flag with variant: ${variant}`)
                 } else {
                     debug('Echo mode enabled via --pae-echo flag (no variant - will show all)')
                 }
@@ -956,7 +1128,7 @@ async function handleExpandableCommand(alias: string, args: string[], config: Al
                 process.env.PAE_ECHO_X = '1'
                 if (variant) {
                     process.env.PAE_ECHO_VARIANT = variant
-                    debug(`EchoX mode enabled via --pae-echoX flag with variant: ${variant}`)
+                    debug(`echoX mode enabled via --pae-echoX flag with variant: ${variant}`)
                 } else {
                     debug('EchoX mode enabled via --pae-echoX flag (no variant - will show all)')
                 }

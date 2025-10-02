@@ -8,9 +8,20 @@
 
 ### **Documentation References**
 
-- **ARCHITECTURE_DOCS**: `docs/Architecture.md`
+- **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
+- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
+- **SOP_DOCS**: `docs/_SOP.md`
 - **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **ACTIONS_LOG**: `docs/Actions-Log.md`
+
+### **Command References**
+
+- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
+- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
+- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
+- **FLUENCY_PHASE_3**: `@fluency-phase3-Functionality.md`
+- **FLUENCY_PHASE_4**: `@fluency-phase4-Implementation.md`
+- **FLUENCY_PHASE_5**: `@fluency-phase5-Integration.md`
+- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
 
 ---
 

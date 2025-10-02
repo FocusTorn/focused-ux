@@ -12,9 +12,20 @@
 
 ### **Documentation References**
 
-- **ARCHITECTURE_DOCS**: `docs/Architecture.md`
+- **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
+- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
+- **SOP_DOCS**: `docs/_SOP.md`
 - **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **ACTIONS_LOG**: `docs/Actions-Log.md`
+
+### **Command References**
+
+- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
+- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
+- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
+- **FLUENCY_PHASE_3**: `@fluency-phase3-Functionality.md`
+- **FLUENCY_PHASE_4**: `@fluency-phase4-Implementation.md`
+- **FLUENCY_PHASE_5**: `@fluency-phase5-Integration.md`
+- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
 
 ---
 
@@ -69,22 +80,24 @@
 
 **OUTPUT PROCESS**:
 
-1. **Create Final Document**: Generate **FINAL_OUTPUT**
-2. **Apply Template**: Use comprehensive comprehension model template
-3. **Integrate Knowledge**: Combine all phase outputs with synthesis
-4. **Include Troubleshooting Framework**: Add systematic troubleshooting guidance
-5. **Validate Completeness**: Ensure all sections are present and complete
+1. **Read Staging File**: Read complete content from **STAGING_FILE**
+2. **Synthesize Content**: Transform staged content into comprehensive analysis
+3. **Apply Template**: Use comprehensive comprehension model template
+4. **Integrate Knowledge**: Combine all phase outputs with synthesis
+5. **Include Troubleshooting Framework**: Add systematic troubleshooting guidance
+6. **Validate Completeness**: Ensure all sections are present and complete
 
-### **STEP 5: OUTPUT GENERATION AND STORAGE**
+### **STEP 5: FINAL OUTPUT CREATION**
 
-**AI TASK**: Generate structured output and create final comprehension document
+**AI TASK**: Create final output file with synthesized content
 
 **OUTPUT PROCESS**:
 
-1. **Generate Phase 6 Output**: Create comprehensive package comprehension model
-2. **Create Final Document**: Write to **FINAL_OUTPUT**
-3. **Validate Output Completeness**: Ensure all required sections are present
-4. **Mark Analysis Complete**: Document that comprehensive analysis is finished
+1. **Extract Package Name**: Determine package name from staging file content
+2. **Generate Final Output Path**: Create **FINAL_OUTPUT** path with package name
+3. **Write Final Document**: Write synthesized content to **FINAL_OUTPUT**
+4. **Validate Output Completeness**: Ensure all required sections are present
+5. **Mark Analysis Complete**: Document that comprehensive analysis is finished
 
 ## **OUTPUT FORMAT**
 

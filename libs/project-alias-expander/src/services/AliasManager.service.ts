@@ -1,19 +1,46 @@
 import * as path from 'path'
 import * as fs from 'fs'
 import { execa } from 'execa'
-import ora from 'ora'
 import type { AliasConfig, IAliasManagerService } from '../_types/index.js'
 import { loadAliasConfigCached } from '../config.js'
 import { detectShellTypeCached } from '../shell.js'
 
 export class AliasManagerService implements IAliasManagerService {
 
-    async processAliases(): Promise<void> {
-        // Main orchestrator function for alias processing
+    /**
+     * Helper function to remove leading whitespace from template strings
+     * Allows for clean, readable template definitions
+     */
+    private trimTemplate(template: string): string { //>
+        const lines = template.split('\n')
+        
+        // Find the minimum indentation (excluding empty lines)
+        let minIndent = Infinity
+
+        for (const line of lines) {
+            if (line.trim() === '') continue
+
+            const indent = line.match(/^(\s*)/)?.[1]?.length || 0
+
+            minIndent = Math.min(minIndent, indent)
+        }
+        
+        // Remove the minimum indentation from all lines
+        return lines
+            .map(line => line.slice(minIndent))
+            .join('\n')
+            .trim()
+    } //<
+
+    /**
+     * Main orchestrator function for alias processing
+     * Generates local files and installs aliases to native modules
+     */
+    async processAliases(): Promise<void> { //>
         console.log('🔄 Regenerating PAE aliases...')
         
         try {
-            // Step 1: Generate the lpae-refreshocal files
+            // Step 1: Generate the local files
             this.generateLocalFiles()
             
             // Step 2: Install the aliases
@@ -26,137 +53,34 @@ export class AliasManagerService implements IAliasManagerService {
         }
     }
 
-    generateDirectToNativeModules(): void {
+    /**
+     * Generates alias files directly to native module directories
+     * Creates PowerShell and Bash scripts in the appropriate system locations
+     */
+    generateDirectToNativeModules(): void { //>
         const config = loadAliasConfigCached()
         const aliases = Object.keys(config['nxPackages'])
         const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
+        const isDebug = process.argv.includes('--debug') || process.argv.includes('-d') || process.env.PAE_DEBUG === '1'
+        const isInfo = process.argv.includes('--info') || process.argv.includes('-i') || process.env.PAE_INFO === '1'
         const shell = detectShellTypeCached()
 
-        if (isVerbose) {
-            console.log(`Detected shell: ${shell}`)
-            console.log(`Found ${aliases.length} aliases: ${aliases.join(', ')}`)
-            console.log('Generating scripts directly to native modules directories')
+        if (isInfo || isDebug || isVerbose) {
+            console.log(`[PAE INFO] Detected shell: ${shell}`)
+            console.log(`[PAE INFO] Found ${aliases.length} aliases: ${aliases.join(', ')}`)
+            console.log('[PAE INFO] Generating scripts directly to native modules directories')
         }
 
-        // Generate PowerShell module content
-        const moduleContent = `# PAE Global Aliases - Auto-generated PowerShell Module
-# Generated from config.json - DO NOT EDIT MANUALLY
-# Simple approach: each alias just calls 'pae <alias> <args>'
-
-${aliases.map(alias =>
-    `function Invoke-${alias} { 
-    [CmdletBinding()] 
-    param([Parameter(Position = 0, ValueFromRemainingArguments = $true)][string[]]$Arguments) 
-    
-    # Capture short-in command for echo variants
-    if ($env:PAE_ECHO -eq "1" -or $env:PAE_ECHO_X -eq "1") {
-        $env:PAE_SHORT_IN = "${alias} $($Arguments -join ' ')"
-    }
-    
-    # Build the command to send to PAE
-    $paeCommand = "pae ${alias} $($Arguments -join ' ')"
-    
-    # Capture short-out command for echo variants
-    if ($env:PAE_ECHO -eq "1" -or $env:PAE_ECHO_X -eq "1") {
-        $env:PAE_SHORT_OUT = $paeCommand
-    }
-    
-    # Execute the PAE command
-    Invoke-Expression $paeCommand
-}
-
-# Alias for backward compatibility
-Set-Alias -Name ${alias} -Value Invoke-${alias}`).join('\n\n')}
-
-# Refresh function to reload aliases
-function Invoke-PaeRefreshMethod {
-    # Find workspace root by looking for nx.json
-    $workspaceRoot = $PWD
-    while ($workspaceRoot -and -not (Test-Path (Join-Path $workspaceRoot "nx.json"))) {
-        $workspaceRoot = Split-Path $workspaceRoot -Parent
-    }
-    
-    if (-not $workspaceRoot) {
-        Write-Error "Could not find workspace root (nx.json not found)"
-        return 1
-    }
-    
-    # Call pae install to regenerate and install with ora spinner
-    & pae install
-    
-    # Reload the module
-    $modulePath = Join-Path $workspaceRoot "libs\\project-alias-expander\\dist\\pae-functions.psm1"
-    Import-Module $modulePath -Force
-}
-
-# Alias for backward compatibility
-Set-Alias -Name pae-refresh-method -Value Invoke-PaeRefreshMethod
-
-# Export all functions and aliases
-Export-ModuleMember -Function ${aliases.map(a => `Invoke-${a}`).join(', ')}, Invoke-PaeRefreshMethod
-Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh-method
-
-# Module loaded confirmation
-if ($env:ENABLE_TEST_CONSOLE -ne "false") {
-    Write-Host "\`e[1m\`e[32m✔\`e[0m \`e[32mModule loaded: [pwsh] PAE Shorthand Aliases\`e[0m"
-    Write-Host ""
-}
-
-# Module cleanup handlers to prevent COM object accumulation
-$MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
-    # Clean up any COM objects or event handlers
-    try {
-        # Remove any global variables that might hold references
-        Remove-Variable -Name "PAE_ModuleLoaded" -ErrorAction SilentlyContinue
-        
-        # Force garbage collection to clean up any lingering objects
-        [System.GC]::Collect()
-        [System.GC]::WaitForPendingFinalizers()
-        
-        # Cleanup completed silently
-    } catch {
-        # Silently handle cleanup errors
-    }
-}
-
-# Set a flag to track module loading
-$Global:PAE_ModuleLoaded = $true
-`
-
-        // Generate Bash aliases content
-        const bashContent = `# PAE Global Aliases - Auto-generated Bash Script
-# Generated from config.json - DO NOT EDIT MANUALLY
-# Simple approach: each alias just calls 'pae <alias> <args>'
-
-${aliases.map(alias => `alias ${alias}='pae ${alias}'`).join('\n')}
-
-# Refresh function to reload aliases
-pae-refresh() {
-    if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
-        echo "Refreshing [BASH] PAE aliases..."
-    fi
-    
-    # Find workspace root by looking for nx.json
-    WORKSPACE_ROOT="$PWD"
-    while [ -n "$WORKSPACE_ROOT" ] && [ ! -f "$WORKSPACE_ROOT/nx.json" ]; do
-        WORKSPACE_ROOT="$(dirname "$WORKSPACE_ROOT")"
-    done
-    
-    if [ -z "$WORKSPACE_ROOT" ]; then
-        echo "Error: Could not find workspace root (nx.json not found)" >&2
-        return 1
-    fi
-    
-    source "$WORKSPACE_ROOT/libs/project-alias-expander/dist/pae-aliases.sh"
-    if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
-        echo "[BASH] PAE aliases refreshed!"
-    fi
-}
-`
+        const { moduleContent, bashContent } = this.generateScriptContent(aliases)
 
         // Install PowerShell module directly to modules directory
         try {
-            const psModuleDir = path.join(process.env.USERPROFILE || process.env.HOME || '', 'Documents', 'WindowsPowerShell', 'Modules', 'PAE')
+            // Get the first PowerShell modules directory from PSModulePath
+            const psModulePath = process.env.PSModulePath || ''
+            const psModuleDirs = psModulePath.split(';').filter(dir =>
+                dir.includes('PowerShell') && dir.includes('Modules') && !dir.includes('WindowsPowerShell'))
+            const baseModuleDir = psModuleDirs[0] || path.join(process.env.USERPROFILE || process.env.HOME || '', 'Documents', 'PowerShell', 'Modules')
+            const psModuleDir = path.join(baseModuleDir, 'PAE')
 
             if (!fs.existsSync(psModuleDir)) {
                 fs.mkdirSync(psModuleDir, { recursive: true })
@@ -165,12 +89,12 @@ pae-refresh() {
             // Write the module file directly to the PowerShell modules directory
             fs.writeFileSync(path.join(psModuleDir, 'PAE.psm1'), moduleContent)
             
-            if (isVerbose) {
-                console.log(`\x1b[32m✅ PowerShell module generated directly to: ${psModuleDir}\x1b[0m`)
+            if (isInfo || isDebug || isVerbose) {
+                console.log(`[PAE INFO] ✅ PowerShell module generated directly to: ${psModuleDir}`)
             }
         } catch (error) {
-            if (isVerbose) {
-                console.log(`\x1b[33m⚠️  Failed to generate PowerShell module: ${error}\x1b[0m`)
+            if (isInfo || isDebug || isVerbose) {
+                console.log(`[PAE INFO] ⚠️  Failed to generate PowerShell module: ${error}`)
             }
         }
         
@@ -190,9 +114,13 @@ pae-refresh() {
                 console.log(`\x1b[33m⚠️  Failed to generate Bash script: ${error}\x1b[0m`)
             }
         }
-    }
+    } //<
 
-    generateLocalFiles(): void {
+    /**
+     * Generates local alias files in the dist directory
+     * Creates PowerShell module and Bash script files for local use
+     */
+    generateLocalFiles(): void { //>
         const config = loadAliasConfigCached()
         const aliases = Object.keys(config['nxPackages'])
         const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
@@ -204,123 +132,9 @@ pae-refresh() {
             console.log('Generating local files only (build process)')
         }
 
-        // Generate PowerShell module content - Simple approach
-        const moduleContent = `# PAE Global Aliases - Auto-generated PowerShell Module
-# Generated from config.json - DO NOT EDIT MANUALLY
-# Simple approach: each alias just calls 'pae <alias> <args>'
+        const { moduleContent, bashContent } = this.generateScriptContent(aliases)
 
-${aliases.map(alias =>
-    `function Invoke-${alias} { 
-    [CmdletBinding()] 
-    param([Parameter(Position = 0, ValueFromRemainingArguments = $true)][string[]]$Arguments) 
-    
-    # Capture short-in command for echo variants
-    if ($env:PAE_ECHO -eq "1" -or $env:PAE_ECHO_X -eq "1") {
-        $env:PAE_SHORT_IN = "${alias} $($Arguments -join ' ')"
-    }
-    
-    # Build the command to send to PAE
-    $paeCommand = "pae ${alias} $($Arguments -join ' ')"
-    
-    # Capture short-out command for echo variants
-    if ($env:PAE_ECHO -eq "1" -or $env:PAE_ECHO_X -eq "1") {
-        $env:PAE_SHORT_OUT = $paeCommand
-    }
-    
-    # Execute the PAE command
-    Invoke-Expression $paeCommand
-}
-
-# Alias for backward compatibility
-Set-Alias -Name ${alias} -Value Invoke-${alias}`).join('\n\n')}
-
-# Refresh function to reload aliases
-function Invoke-PaeRefreshMethod {
-    # Find workspace root by looking for nx.json
-    $workspaceRoot = $PWD
-    while ($workspaceRoot -and -not (Test-Path (Join-Path $workspaceRoot "nx.json"))) {
-        $workspaceRoot = Split-Path $workspaceRoot -Parent
-    }
-    
-    if (-not $workspaceRoot) {
-        Write-Error "Could not find workspace root (nx.json not found)"
-        return 1
-    }
-    
-    # Call pae install to regenerate and install with ora spinner
-    & pae install
-    
-    # Reload the module
-    $modulePath = Join-Path $workspaceRoot "libs\\project-alias-expander\\dist\\pae-functions.psm1"
-    Import-Module $modulePath -Force
-}
-
-# Alias for backward compatibility
-Set-Alias -Name pae-refresh-method -Value Invoke-PaeRefreshMethod
-
-# Export all functions and aliases
-Export-ModuleMember -Function ${aliases.map(a => `Invoke-${a}`).join(', ')}, Invoke-PaeRefreshMethod
-Export-ModuleMember -Alias ${aliases.join(', ')}, pae-refresh-method
-
-# Module loaded confirmation
-if ($env:ENABLE_TEST_CONSOLE -ne "false") {
-    Write-Host "\`e[1m\`e[32m✔\`e[0m \`e[32mModule loaded: [pwsh] PAE Shorthand Aliases\`e[0m"
-    Write-Host ""
-}
-
-# Module cleanup handlers to prevent COM object accumulation
-$MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
-    # Clean up any COM objects or event handlers
-    try {
-        # Remove any global variables that might hold references
-        Remove-Variable -Name "PAE_ModuleLoaded" -ErrorAction SilentlyContinue
-        
-        # Force garbage collection to clean up any lingering objects
-        [System.GC]::Collect()
-        [System.GC]::WaitForPendingFinalizers()
-        
-        # Cleanup completed silently
-    } catch {
-        # Silently handle cleanup errors
-    }
-}
-
-# Set a flag to track module loading
-$Global:PAE_ModuleLoaded = $true
-`
-
-        // Generate Bash aliases content
-        const bashContent = `# PAE Global Aliases - Auto-generated Bash Script
-# Generated from config.json - DO NOT EDIT MANUALLY
-# Simple approach: each alias just calls 'pae <alias> <args>'
-
-${aliases.map(alias => `alias ${alias}='pae ${alias}'`).join('\n')}
-
-# Refresh function to reload aliases
-pae-refresh() {
-    if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
-        echo "Refreshing [BASH] PAE aliases..."
-    fi
-    
-    # Find workspace root by looking for nx.json
-    WORKSPACE_ROOT="$PWD"
-    while [ -n "$WORKSPACE_ROOT" ] && [ ! -f "$WORKSPACE_ROOT/nx.json" ]; do
-        WORKSPACE_ROOT="$(dirname "$WORKSPACE_ROOT")"
-    done
-    
-    if [ -z "$WORKSPACE_ROOT" ]; then
-        echo "Error: Could not find workspace root (nx.json not found)" >&2
-        return 1
-    fi
-    
-    source "$WORKSPACE_ROOT/libs/project-alias-expander/dist/pae-aliases.sh"
-    if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
-        echo "[BASH] PAE aliases refreshed!"
-    fi
-}
-`
-
-        // Write files
+        // Write files to dist directory
         const distDir = path.join(process.cwd(), 'libs', 'project-alias-expander', 'dist')
 
         if (!fs.existsSync(distDir)) {
@@ -329,9 +143,217 @@ pae-refresh() {
 
         fs.writeFileSync(path.join(distDir, 'pae-functions.psm1'), moduleContent)
         fs.writeFileSync(path.join(distDir, 'pae-aliases.sh'), bashContent)
-    }
+    } //<
+    
+    /**
+     * Generates both PowerShell module and Bash script content
+     * @param aliases Array of alias names to generate
+     * @returns Object containing moduleContent and bashContent strings
+     */
+    private generateScriptContent(aliases: string[]): { moduleContent: string; bashContent: string } { //>
+        const moduleContent = this.generatePowerShellModule(aliases)
+        const bashContent = this.generateBashScript(aliases)
+        
+        return { moduleContent, bashContent }
+    } //<
 
-    async installAliases(): Promise<void> {
+    /**
+     * Generates complete PowerShell module content
+     * @param aliases Array of alias names to generate
+     * @returns Complete PowerShell module as string
+     */
+    private generatePowerShellModule(aliases: string[]): string { //>
+        const header = this.getPowerShellHeader()
+        const functions = this.generatePowerShellFunctions(aliases)
+        const exports = this.generatePowerShellExports(aliases)
+        const footer = this.getPowerShellFooter()
+        
+        return [header, functions, exports, footer].join('\n\n')
+    } //<
+
+    /**
+     * Generates complete Bash script content
+     * @param aliases Array of alias names to generate
+     * @returns Complete Bash script as string
+     */
+    private generateBashScript(aliases: string[]): string { //>
+        const header = this.getBashHeader()
+        const aliasesList = this.generateBashAliases(aliases)
+        const refreshFunction = this.getBashRefreshFunction()
+        
+        return [header, aliasesList, refreshFunction].join('\n\n')
+    } //<
+
+    // POWERSHELL ------------------------------------------------------------->> 
+    
+    /**
+     * Gets the PowerShell module header template
+     * @returns PowerShell module header as string
+     */
+    private getPowerShellHeader(): string { //>
+        return this.trimTemplate(`
+            # PAE Global Aliases - Auto-generated PowerShell Module
+            # Generated from config.json - DO NOT EDIT MANUALLY
+            # Simple approach: each alias just calls 'pae <alias> <args>'
+        `)
+    } //<
+
+    /**
+     * Gets the PowerShell module footer template
+     * Includes module loading confirmation and cleanup handlers
+     * @returns PowerShell module footer as string
+     */
+    private getPowerShellFooter(): string { //>
+        return this.trimTemplate(`
+            # Module loaded confirmation
+            if ($env:ENABLE_TEST_CONSOLE -ne "false") {
+                Write-Host "\`e[1m\`e[32m✔\`e[0m \`e[32mModule loaded: [pwsh] PAE Shorthand Aliases\`e[0m"
+            }
+
+            # Module cleanup handlers to prevent COM object accumulation
+            $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
+                # Clean up any COM objects or event handlers
+                try {
+                    # Remove any global variables that might hold references
+                    Remove-Variable -Name "PAE_ModuleLoaded" -ErrorAction SilentlyContinue
+                    
+                    # Force garbage collection to clean up any lingering objects
+                    [System.GC]::Collect()
+                    [System.GC]::WaitForPendingFinalizers()
+                    
+                    # Cleanup completed silently
+                } catch {
+                    # Silently handle cleanup errors
+                }
+            }
+
+            # Set a flag to track module loading
+            $Global:PAE_ModuleLoaded = $true
+        `)
+    } //<
+
+    /**
+     * Generates all PowerShell functions for the given aliases
+     * @param aliases Array of alias names to generate functions for
+     * @returns Combined PowerShell functions as string
+     */
+    private generatePowerShellFunctions(aliases: string[]): string { //>
+        return aliases.map(alias => this.generatePowerShellFunction(alias)).join('\n\n')
+    } //<
+
+    /**
+     * Generates a single PowerShell function for an alias
+     * @param alias The alias name to generate a function for
+     * @returns PowerShell function definition as string
+     */
+    private generatePowerShellFunction(alias: string): string { //>
+        return this.trimTemplate(`
+            function Invoke-${alias} { 
+                [CmdletBinding()] 
+                param([Parameter(Position = 0, ValueFromRemainingArguments = $true)][string[]]$Arguments) 
+                
+                # Capture short-in command for echo variants
+                if ($env:PAE_ECHO -eq "1" -or $env:PAE_ECHO_X -eq "1") {
+                    $env:PAE_SHORT_IN = "${alias} $($Arguments -join ' ')"
+                }
+                
+                # Build the command to send to PAE
+                $paeCommand = "pae ${alias} $($Arguments -join ' ')"
+                
+                # Capture short-out command for echo variants
+                if ($env:PAE_ECHO -eq "1" -or $env:PAE_ECHO_X -eq "1") {
+                    $env:PAE_SHORT_OUT = $paeCommand
+                }
+                
+                # Execute the PAE command
+                Invoke-Expression $paeCommand
+            }
+
+            # Alias for backward compatibility
+            Set-Alias -Name ${alias} -Value Invoke-${alias}
+        `)
+    } //<
+
+    /**
+     * Generates PowerShell module exports for functions and aliases
+     * @param aliases Array of alias names to export
+     * @returns PowerShell export statements as string
+     */
+    private generatePowerShellExports(aliases: string[]): string { //>
+        const functions = aliases.map(a => `Invoke-${a}`).join(', ')
+        const aliasesList = aliases.join(', ')
+        
+        return this.trimTemplate(`
+            # Export all functions and aliases
+            Export-ModuleMember -Function ${functions}
+            Export-ModuleMember -Alias ${aliasesList}
+        `)
+    } //<
+
+    //--------------------------------------------------------------------------------------------<<
+    
+    // BASH ------------------------------------------------------------------->> 
+    
+    /**
+     * Gets the Bash script header template
+     * @returns Bash script header as string
+     */
+    private getBashHeader(): string { //>
+        return this.trimTemplate(`
+            # PAE Global Aliases - Auto-generated Bash Script
+            # Generated from config.json - DO NOT EDIT MANUALLY
+            # Simple approach: each alias just calls 'pae <alias> <args>'
+        `)
+    } //<
+
+    /**
+     * Generates Bash alias definitions for all aliases
+     * @param aliases Array of alias names to generate
+     * @returns Bash alias definitions as string
+     */
+    private generateBashAliases(aliases: string[]): string { //>
+        return aliases.map(alias => `alias ${alias}='pae ${alias}'`).join('\n')
+    } //<
+
+    /**
+     * Gets the Bash refresh function template
+     * Function to reload aliases from the workspace
+     * @returns Bash refresh function as string
+     */
+    private getBashRefreshFunction(): string { //>
+        return this.trimTemplate(`
+            # Refresh function to reload aliases
+            pae-refresh() {
+                if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+                    echo "Refreshing [BASH] PAE aliases..."
+                fi
+                
+                # Find workspace root by looking for nx.json
+                WORKSPACE_ROOT="$PWD"
+                while [ -n "$WORKSPACE_ROOT" ] && [ ! -f "$WORKSPACE_ROOT/nx.json" ]; do
+                    WORKSPACE_ROOT="$(dirname "$WORKSPACE_ROOT")"
+                done
+                
+                if [ -z "$WORKSPACE_ROOT" ]; then
+                    echo "Error: Could not find workspace root (nx.json not found)" >&2
+                    return 1
+                fi
+                
+                source "$WORKSPACE_ROOT/libs/project-alias-expander/dist/pae-aliases.sh"
+                if [ "$ENABLE_TEST_CONSOLE" != "false" ]; then
+                    echo "[BASH] PAE aliases refreshed!"
+                fi
+            }
+        `)
+    } //<
+    
+    //--------------------------------------------------------------------------------------------<<
+    
+    /**
+     * Installs PAE aliases to the user's shell profile
+     * Adds the PAE inProfile block to the appropriate profile file
+     */
+    async installAliases(): Promise<void> { //>
         // Prevent multiple installations during the same process
         if (process.env.PAE_INSTALLING === '1') {
             return
@@ -344,7 +366,7 @@ pae-refresh() {
         // Install PowerShell module to modules directory
         try {
             const distDir = path.join(process.cwd(), 'libs', 'project-alias-expander', 'dist')
-            const psModuleDir = path.join(process.env.USERPROFILE || process.env.HOME || '', 'Documents', 'WindowsPowerShell', 'Modules', 'PAE')
+            const psModuleDir = path.join(process.env.USERPROFILE || process.env.HOME || '', 'Documents', 'PowerShell', 'Modules', 'PAE')
 
             if (!fs.existsSync(psModuleDir)) {
                 fs.mkdirSync(psModuleDir, { recursive: true })
@@ -389,107 +411,7 @@ pae-refresh() {
             console.log('\n\x1b[33m🔄 Manual refresh:\x1b[0m')
             console.log('   pae refresh')
         }
-        
-        // Try to execute PowerShell command in the current session
-        // The issue is that execa creates a child process, not executing in current session
-        // For now, provide clear instructions for manual loading
-    }
-
-    async autoRefreshAliases(): Promise<void> {
-        const shell = detectShellTypeCached()
-        
-        // Auto-refresh (load module into current session)
-        if (shell === 'powershell') {
-            // For PowerShell, we need to load the module into the current session
-            // Since we can't directly modify the parent session from Node.js,
-            // we'll provide clear instructions and try to make it as easy as possible
-            try {
-                // Try to execute the import command in the current PowerShell session
-                // This might work if we're running from within PowerShell
-                const psCommand = 'Import-Module PAE -Force'
-                
-                console.log('\n🔄 Loading aliases into current PowerShell session...')
-                
-                // Use execa to run the command in the current shell context
-                await execa('powershell', ['-Command', psCommand], {
-                    cwd: process.cwd(),
-                    timeout: 5000,
-                    shell: true,
-                    stdio: 'inherit' // This will show the output in the current terminal
-                })
-                
-                console.log('✅ PAE aliases loaded successfully!')
-            } catch (error) {
-                console.log('\n⚠️  Could not auto-load aliases into current session.')
-                console.log('📋 To load aliases manually, run:')
-                console.log('   Import-Module PAE -Force')
-                console.log('   # Or use: pae-refresh')
-                
-                const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
-
-                if (isVerbose) {
-                    console.log(`\nDebug info: ${error}`)
-                }
-                
-                // Don't throw error - this is expected behavior in some environments
-                console.log('\n💡 Tip: Add "Import-Module PAE" to your PowerShell profile for automatic loading.')
-            }
-        } else if (shell === 'gitbash') {
-            // For Git Bash, source the aliases and then run pae-refresh
-            try {
-                const aliasFile = path.resolve('libs/project-alias-expander/dist/pae-aliases.sh').replace(/\\/g, '/')
-
-                console.log('\n🔄 Loading aliases into current Git Bash session...')
-                
-                await execa('bash', ['-c', `source '${aliasFile}' && pae-refresh`], {
-                    cwd: process.cwd(),
-                    timeout: 5000,
-                    shell: true,
-                    stdio: 'inherit'
-                })
-                
-                console.log('✅ PAE aliases loaded successfully!')
-            } catch (_error) {
-                console.log('\n⚠️  Could not auto-load aliases into current session.')
-                console.log('📋 To load aliases manually, run:')
-                console.log('   source libs/project-alias-expander/dist/pae-aliases.sh')
-                console.log('   # Or use: pae-refresh')
-            }
-        } else {
-            console.log('\n⚠️  Unknown shell. Manual loading required.')
-            console.log('📋 To load aliases manually:')
-            console.log('   PowerShell: Import-Module PAE -Force')
-            console.log('   Git Bash: source libs/project-alias-expander/dist/pae-aliases.sh')
-        }
-    }
-
-    async refreshAliasesDirect(): Promise<void> {
-        const shell = detectShellTypeCached()
-        
-        try {
-            if (shell === 'powershell') {
-                // Execute pae-refresh in PowerShell (load module first)
-                const modulePath = path.resolve('libs/project-alias-expander/dist/pae-functions.psm1')
-
-                await execa('powershell', ['-Command', `Import-Module '${modulePath}' -Force; pae-refresh-method`], {
-                    cwd: process.cwd(),
-                    timeout: 5000
-                })
-            } else if (shell === 'gitbash') {
-                // Execute pae-refresh in Git Bash
-                await execa('pae-refresh-method', [], {
-                    cwd: process.cwd(),
-                    timeout: 5000
-                })
-            } else {
-                console.log('\n\x1b[33m⚠️  Unknown shell. Manual refresh required.\x1b[0m')
-            }
-        } catch (_error) {
-            console.log('\x1b[31m❌ Refresh failed. Manual refresh required.\x1b[0m')
-            console.log('\x1b[90m   PowerShell: pae-refresh-method\x1b[0m')
-            console.log('\x1b[90m   Git Bash: pae-refresh-method\x1b[0m')
-        }
-    }
+    } //<
 
 }
 

@@ -1184,13 +1184,6 @@ nx show projects --graph
 
 ### **Documentation Sources**
 
-**Primary Sources**:
-
-- `docs/Architecture.md` - Architectural patterns and principles
-- `docs/SOP.md` - Operational procedures and workflows
-- `docs/FocusedUX-Testing-Strategy.md` - Testing patterns and strategies
-- `docs/Actions-Log.md` - Previous implementations and lessons learned
-
 **Documentation Priority**:
 
 1. **Architecture**: Core principles and patterns

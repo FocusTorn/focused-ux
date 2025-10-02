@@ -46,6 +46,14 @@
 
 //-------------------------------------------------------------------------------<<
 
+// 51 = bright cyan
+// 196 = bright red
+// 46 = bright green
+// 226 = bright yellow
+// 21 = bright blue
+// 201 = bright magenta
+// 231 = bright white
+
 function calculateContrastRatio(foregroundHex, backgroundHex) { //>
     const l1 = relativeLuminance(hexToRgb(foregroundHex))
     const l2 = relativeLuminance(hexToRgb(backgroundHex))
