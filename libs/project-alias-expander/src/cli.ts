@@ -227,7 +227,7 @@ async function handleInstallCommand(args: string[]) { //>
         } catch (_error) {
             console.log('Current PAE install type: standard (default)')
         }
-        return
+        return 0
     }
     
     // Fast path during tests to avoid long IO waits
@@ -245,7 +245,7 @@ async function handleInstallCommand(args: string[]) { //>
             debug('Profile block add failed in test mode:', error)
         }
         success(`PAE scripts installed (${isLocal ? 'local' : 'standard'} mode)`)
-        return
+        return 0
     }
 
     const spinner = ora({
@@ -296,6 +296,7 @@ async function handleInstallCommand(args: string[]) { //>
         // Stop spinner and show success
         spinner.stop()
         success(`PAE scripts installed (${isLocal ? 'local' : 'standard'} mode)`)
+        return 0
     } catch (error) {
         spinner.stop()
         throw error
@@ -746,10 +747,8 @@ async function main() {
         debug('Parsed arguments', filteredArgs)
         
         if (filteredArgs.length === 0) {
-            debug('No arguments provided, showing help')
-            showDynamicHelp()
-            debug('Help displayed, returning 0')
-            return 0
+            debug('No arguments provided, exiting')
+            return 1
         }
 
         const command = filteredArgs[0]
@@ -1269,10 +1268,12 @@ function resolveProjectForAlias(aliasValue: string | { name: string, suffix?: 'c
 // Export functions for testing compatibility
 export {
     main,
+    showDynamicHelp,
     handleAliasCommand,
     handlePackageAlias,
     handleFeatureAlias,
     handleNotNxTarget,
+    handleExpandableCommand,
     resolveProjectForAlias,
     loadAliasConfig,
     detectShell,
@@ -1304,7 +1305,8 @@ const isMainModule = normalizedImportUrl === normalizedArgvPath
 
 debug('Is main module:', isMainModule)
 
-if (isMainModule) {
+// Don't auto-execute main() during tests - let tests call it explicitly
+if (isMainModule && process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
     debug('This is the main module, calling main()...')
 
     main().then(exitCode => {
