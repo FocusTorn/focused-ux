@@ -619,6 +619,135 @@ Use inline mocks for:
     })
     ```
 
+## Global Mock Integration Patterns
+
+### **Critical Rule: Global Mocks Override Local Implementations**
+
+**Global mocks can override real implementations and prevent local mocks from working.** This is a common source of test failures.
+
+#### **Problem Pattern:**
+
+```typescript
+// ❌ PROBLEMATIC: Global mock hardcodes return values
+vi.mock('../../src/shell.js', () => ({
+    detectShellTypeCached: vi.fn().mockReturnValue('powershell'),
+}))
+
+// ❌ PROBLEMATIC: Service mock hardcodes return values
+vi.mock('../../src/services/ExpandableProcessor.service.js', () => ({
+    ExpandableProcessorService: vi.fn().mockImplementation(() => ({
+        detectShellType: vi.fn().mockReturnValue('pwsh'), // Hardcoded!
+    })),
+}))
+```
+
+#### **Solution Pattern:**
+
+```typescript
+// ✅ CORRECT: Global mock integrates with other mocked functions
+vi.mock('../../src/shell.js', () => {
+    const detectShell = vi.fn().mockImplementation(() => {
+        // Check environment variables for realistic behavior
+        if (process.env.PSModulePath) return 'powershell'
+        if (process.env.MSYS_ROOT) return 'gitbash'
+        return 'unknown'
+    })
+
+    const detectShellTypeCached = vi.fn().mockImplementation(() => {
+        return detectShell() // Use the mocked function
+    })
+
+    return { detectShell, detectShellTypeCached, clearShellDetectionCache: vi.fn() }
+})
+
+// ✅ CORRECT: Service mock uses mocked dependencies
+vi.mock('../../src/services/ExpandableProcessor.service.js', () => ({
+    ExpandableProcessorService: vi.fn().mockImplementation(() => ({
+        detectShellType: vi.fn().mockImplementation(() => {
+            // Use the mocked detectShellTypeCached function
+            const result = mockDetectShellTypeCached()
+
+            // Normalize like real implementation
+            if (result === 'powershell') return 'pwsh'
+            if (result === 'gitbash') return 'linux'
+            return 'cmd'
+        }),
+    })),
+}))
+```
+
+### **Mock Hierarchy Integration**
+
+**Mock hierarchy matters - global mocks must integrate properly with mocked dependencies.**
+
+#### **Integration Checklist:**
+
+- [ ] Global mocks call other mocked functions, not hardcode values
+- [ ] Mock normalization logic matches real implementation exactly
+- [ ] Environment variable control is used for realistic test scenarios
+- [ ] Mock functions are designed to work with test environment changes
+
+### **ESM Import Requirements**
+
+**ESM imports vs require() statements affect module resolution in test environments.**
+
+#### **❌ PROBLEMATIC: require() in test helpers**
+
+```typescript
+// This causes module resolution issues
+const config = vi.mocked(require('../../src/config.js'))
+const shell = vi.mocked(require('../../src/shell.js'))
+```
+
+#### **✅ CORRECT: ESM imports in test helpers**
+
+```typescript
+import * as config from '../../src/config.js'
+import * as shell from '../../src/shell.js'
+
+export function setupPaeTestEnvironment(): PaeTestMocks {
+    const mockedConfig = vi.mocked(config)
+    const mockedShell = vi.mocked(shell)
+    // ...
+}
+```
+
+### **Environment Variable Testing**
+
+**Environment variable testing is the correct approach for shell detection scenarios.**
+
+#### **Pattern:**
+
+```typescript
+it('should detect PowerShell on Windows', () => {
+    // Set environment variables to trigger specific behavior
+    process.env.PSModulePath = 'C:\\Program Files\\PowerShell\\Modules'
+
+    const result = service.detectShellType()
+    expect(result).toBe('pwsh')
+})
+
+it('should fallback to CMD when PowerShell not available', () => {
+    // Clear conflicting environment variables
+    delete process.env.PSModulePath
+    delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+
+    const result = service.detectShellType()
+    expect(result).toBe('cmd')
+})
+```
+
+### **Import Timing Issues**
+
+**When global mocks exist, local test mocks may not be applied due to import timing.**
+
+#### **Debugging Steps:**
+
+1. Check if spy call count is 0 - indicates mock not applied
+2. Use console logging to verify which implementation is called
+3. Verify mock is applied before the module is imported
+4. Ensure global mock integrates with local test needs
+
 ## Things to Avoid
 
 ### **🚨 CRITICAL: NEVER SIMPLIFY MOCKS TO MAKE TESTS PASS**

@@ -743,6 +743,147 @@ it('should detect PowerShell on Windows', () => {
 3. **Consistent Behavior**: Same approach across all shell detection tests
 4. **Easy to Maintain**: Changes to shell detection logic update all tests
 
+## 🔧 Global Mock Integration Issues
+
+### **"Global Mock Override" Problem**
+
+**Symptoms**:
+
+- Tests fail with hardcoded values despite local mocking attempts
+- Spy call count is 0 (mocked function never called)
+- Tests return hardcoded values regardless of local mock setup
+
+**Cause**: Global mocks are overriding local implementations
+
+**Solution**: Update global mocks to integrate with local test needs:
+
+```typescript
+// ❌ PROBLEMATIC: Global mock hardcodes return values
+vi.mock('../../src/shell.js', () => ({
+    detectShellTypeCached: vi.fn().mockReturnValue('powershell'),
+}))
+
+// ✅ CORRECT: Global mock integrates with environment variables
+vi.mock('../../src/shell.js', () => {
+    const detectShell = vi.fn().mockImplementation(() => {
+        if (process.env.PSModulePath) return 'powershell'
+        if (process.env.MSYS_ROOT) return 'gitbash'
+        return 'unknown'
+    })
+
+    const detectShellTypeCached = vi.fn().mockImplementation(() => {
+        return detectShell() // Use the mocked function
+    })
+
+    return { detectShell, detectShellTypeCached, clearShellDetectionCache: vi.fn() }
+})
+```
+
+### **"Mock Normalization Mismatch" Problem**
+
+**Symptoms**: Tests expect normalized values but get raw values
+
+**Cause**: Mock normalization logic doesn't match real implementation
+
+**Solution**: Ensure mock normalization matches real implementation:
+
+```typescript
+// ✅ CORRECT: Mock normalization matches real implementation
+detectShellType: vi.fn().mockImplementation(() => {
+    const result = mockDetectShellTypeCached()
+
+    // Normalize like real implementation
+    if (result === 'powershell') return 'pwsh'
+    if (result === 'gitbash') return 'linux'
+    return 'cmd'
+})
+```
+
+### **"ESM Import Issues" Problem**
+
+**Symptoms**: `SyntaxError: Unexpected token '{'` or module resolution errors
+
+**Cause**: Using require() statements in test helpers
+
+**Solution**: Convert to ESM imports:
+
+```typescript
+// ❌ PROBLEMATIC: require() in test helpers
+const config = vi.mocked(require('../../src/config.js'))
+const shell = vi.mocked(require('../../src/shell.js'))
+
+// ✅ CORRECT: ESM imports in test helpers
+import * as config from '../../src/config.js'
+import * as shell from '../../src/shell.js'
+
+export function setupPaeTestEnvironment(): PaeTestMocks {
+    const mockedConfig = vi.mocked(config)
+    const mockedShell = vi.mocked(shell)
+    // ...
+}
+```
+
+### **"Test Isolation Failures" Problem**
+
+**Symptoms**: Tests interfere with each other, returning wrong values
+
+**Cause**: Insufficient test isolation setup
+
+**Solution**: Implement complete test isolation:
+
+```typescript
+beforeEach(async () => {
+    // 1. Clear shell detection cache
+    clearShellDetectionCache()
+
+    // 2. Clear environment variables
+    delete process.env.PSModulePath
+    delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+    delete process.env.PSExecutionPolicyPreference
+    delete process.env.MSYS_ROOT
+    delete process.env.MINGW_ROOT
+    delete process.env.WSL_DISTRO_NAME
+    delete process.env.WSLENV
+    delete process.env.SHELL
+
+    // 3. Clear all mocks
+    vi.clearAllMocks()
+})
+
+afterEach(() => {
+    // Restore original environment
+    process.env = originalEnv
+    vi.clearAllMocks()
+    clearShellDetectionCache()
+})
+```
+
+### **"Debugging Mock Issues" Problem**
+
+**Symptoms**: Difficult to determine why mocks aren't working
+
+**Solution**: Use systematic debugging approach:
+
+```typescript
+it('should detect PowerShell on Windows', () => {
+    // Debug: Log environment variables
+    console.log('PSModulePath:', process.env.PSModulePath)
+
+    // Debug: Log cache status
+    console.log('Cache cleared:' /* check cache status */)
+
+    // Debug: Log spy calls
+    const spy = vi.spyOn(shellModule, 'detectShellTypeCached')
+    console.log('Spy call count:', spy.mock.calls.length)
+
+    // Set environment variables
+    process.env.PSModulePath = 'C:\\Program Files\\PowerShell\\Modules'
+
+    const result = expandableProcessor.detectShellType()
+    expect(result).toBe('pwsh')
+})
+```
+
 ## 🔧 Debugging Tips
 
 ### 1. Use `vi.mocked()` for type safety

@@ -48,6 +48,13 @@
 
 ### Critical Mocking Rules
 
+- **Scenario Builders First**: Always start with scenario builders for complex mocking
+- **Global Mock Integration**: Ensure global mocks integrate with local test needs
+- **Environment Variable Control**: Use environment variables for realistic test scenarios
+- **Mock Normalization**: Mock normalization logic must match real implementation exactly
+- **ESM Import Requirements**: Use ESM imports in test helpers, not require() statements
+- **Cache Clearing Strategy**: Test isolation requires both cache clearing AND proper mock integration
+- **Global Mock Analysis**: Complex mocking scenarios should start with global mock analysis before local approaches
 - **Shell Detection Mocking** → Always use scenario builder, never manual mocking
 - **Complex Multi-Step Setups** → Use scenario builder pattern
 - **Simple Single Function Mocks** → Use standard vi.mocked() approach
@@ -882,6 +889,124 @@ it('should detect PowerShell correctly', () => {
     expect(result).toBe('pwsh')
 })
 ```
+
+#### Global Mock Integration Patterns
+
+**Global mocks can override real implementations and prevent local mocks from working.**
+
+##### **Problem Pattern:**
+
+```typescript
+// ❌ PROBLEMATIC: Global mock hardcodes return values
+vi.mock('../../src/shell.js', () => ({
+    detectShellTypeCached: vi.fn().mockReturnValue('powershell'),
+}))
+
+// ❌ PROBLEMATIC: Service mock hardcodes return values
+vi.mock('../../src/services/ExpandableProcessor.service.js', () => ({
+    ExpandableProcessorService: vi.fn().mockImplementation(() => ({
+        detectShellType: vi.fn().mockReturnValue('pwsh'), // Hardcoded!
+    })),
+}))
+```
+
+##### **Solution Pattern:**
+
+```typescript
+// ✅ CORRECT: Global mock integrates with other mocked functions
+vi.mock('../../src/shell.js', () => {
+    const detectShell = vi.fn().mockImplementation(() => {
+        // Check environment variables for realistic behavior
+        if (process.env.PSModulePath) return 'powershell'
+        if (process.env.MSYS_ROOT) return 'gitbash'
+        return 'unknown'
+    })
+
+    const detectShellTypeCached = vi.fn().mockImplementation(() => {
+        return detectShell() // Use the mocked function
+    })
+
+    return { detectShell, detectShellTypeCached, clearShellDetectionCache: vi.fn() }
+})
+
+// ✅ CORRECT: Service mock uses mocked dependencies
+vi.mock('../../src/services/ExpandableProcessor.service.js', () => ({
+    ExpandableProcessorService: vi.fn().mockImplementation(() => ({
+        detectShellType: vi.fn().mockImplementation(() => {
+            // Use the mocked detectShellTypeCached function
+            const result = mockDetectShellTypeCached()
+
+            // Normalize like real implementation
+            if (result === 'powershell') return 'pwsh'
+            if (result === 'gitbash') return 'linux'
+            return 'cmd'
+        }),
+    })),
+}))
+```
+
+#### ESM Import Requirements
+
+**ESM imports vs require() statements affect module resolution in test environments.**
+
+##### **❌ PROBLEMATIC: require() in test helpers**
+
+```typescript
+// This causes module resolution issues
+const config = vi.mocked(require('../../src/config.js'))
+const shell = vi.mocked(require('../../src/shell.js'))
+```
+
+##### **✅ CORRECT: ESM imports in test helpers**
+
+```typescript
+import * as config from '../../src/config.js'
+import * as shell from '../../src/shell.js'
+
+export function setupPaeTestEnvironment(): PaeTestMocks {
+    const mockedConfig = vi.mocked(config)
+    const mockedShell = vi.mocked(shell)
+    // ...
+}
+```
+
+#### Test Isolation Strategy
+
+**Test isolation requires both cache clearing AND proper mock integration.**
+
+##### **Complete Test Isolation Pattern:**
+
+```typescript
+beforeEach(async () => {
+    // 1. Clear shell detection cache
+    clearShellDetectionCache()
+
+    // 2. Clear environment variables
+    delete process.env.PSModulePath
+    delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+
+    // 3. Clear all mocks
+    vi.clearAllMocks()
+})
+
+it('should detect PowerShell on Windows', () => {
+    // 4. Set specific environment variables for this test
+    process.env.PSModulePath = 'C:\\Program Files\\PowerShell\\Modules'
+
+    const result = expandableProcessor.detectShellType()
+    expect(result).toBe('pwsh')
+})
+```
+
+#### Debugging Mock Issues
+
+**When mocks aren't working, follow this debugging approach:**
+
+1. **Check Spy Call Count**: If spy call count is 0, the mocked function is never called
+2. **Console Logging**: Add console.log to verify which implementation is called
+3. **Environment Variable Logging**: Verify environment variables are set correctly
+4. **Global Mock Analysis**: Check if global mocks are overriding local implementations
+5. **Import Timing**: Verify mocks are applied before modules are imported
 
 #### Backup Management Scenarios
 

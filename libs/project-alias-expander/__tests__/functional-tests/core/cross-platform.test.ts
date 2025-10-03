@@ -178,8 +178,13 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
             }
             const variables = { message: 'test' }
             
-            // Mock Linux detection
-            vi.spyOn(expandableProcessor, 'detectShellType').mockReturnValue('linux')
+            // Clear PowerShell environment variables first
+            delete process.env.PSModulePath
+            delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+            delete process.env.PSExecutionPolicyPreference
+            
+            // Setup environment variables to trigger Linux detection
+            process.env.MSYS_ROOT = 'C:\\msys64'
             
             const result = expandableProcessor.processShellSpecificTemplate(expandable, variables)
             
