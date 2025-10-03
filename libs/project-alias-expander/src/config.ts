@@ -77,13 +77,49 @@ export const config: AliasConfig = {
         "f": "--fix",
         "c": "--coverage",
         "watch": "--watch",
-        "name": { //>
+        "tn": { //>
             "defaults": {"namePattern": ""},
             "template": "--testNamePattern='{namePattern}'"
         }, //<
+        "tf": { //>
+            "defaults": {"fileName": ""},
+            "template": "--testfile='{fileName}'"
+        }, //<
+        
         "bail": { //>
             "defaults": {"bailOn": "1"},
             "template": "--bail {bailOn}"
+        } //<
+    }, //<
+    
+    // Context-aware flags that behave differently based on target alias
+    "context-aware-flags": { //> Does not work
+        "f": { //>
+            // "l": "--fix",                    // lint → --fix
+            // "lint": "--fix",                 // lint:deps → --fix  
+            // "lf": "--fix",                   // lint:deps → --fix
+            // "t": "--testfile={value}",       // test → --testfile={value}
+            // "test": "--testfile={value}",    // test:deps → --testfile={value}
+            // "td": "--testfile={value}",      // test:deps → --testfile={value}
+            // "tc": "--testfile={value}",      // test:coverage-tests → --testfile={value}
+            // "tdc": "--testfile={value}",     // test:deps:coverage-tests → --testfile={value}
+            // "ti": "--testfile={value}",      // test:integration → --testfile={value}
+            // "tf": "--testfile={value}",      // test:file → --testfile={value}
+            // "ct": "--strict",                // check-types → --strict
+            // "check-types": "--strict",        // check-types:deps → --strict
+            // "ctd": "--strict",               // check-types:deps → --strict
+            // "v": "--verbose",                // validate → --verbose
+            // "validate": "--verbose",         // validate:deps → --verbose
+            // "vf": "--verbose",               // validate:deps → --verbose
+            "default": "--fix"
+        }, //<
+        "c": { //>
+            // "t": "--coverage",               // test → --coverage
+            // "test": "--coverage",            // test:deps → --coverage
+            // "td": "--coverage",              // test:deps → --coverage
+            // "tc": "--coverage",              // test:coverage-tests → --coverage (redundant but explicit)
+            // "tdc": "--coverage",             // test:deps:coverage-tests → --coverage (redundant but explicit)
+            "default": "--coverage"
         } //<
     }, //<
     

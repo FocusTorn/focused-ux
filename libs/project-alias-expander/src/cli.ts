@@ -25,6 +25,49 @@ function error(message: string, ...args: unknown[]) {
     console.error(`[PAE ERROR] ${message}`, ...args)
 }
 
+// Helper function to get context-aware flags based on target
+function getContextAwareFlags(config: AliasConfig, target: string, expandedTarget: string): Record<string, any> {
+    const expandableFlags = { ...config['expandable-flags'] }
+    
+    // Merge expandable-templates into expandable-flags for processing
+    if (config['expandable-templates']) {
+        Object.assign(expandableFlags, config['expandable-templates'])
+    }
+    
+    // Apply context-aware flag overrides if they exist
+    if (config['context-aware-flags']) {
+        const contextAwareFlags = config['context-aware-flags']
+        
+        Object.keys(contextAwareFlags).forEach(flagKey => {
+            const flagDef = contextAwareFlags[flagKey]
+            
+            // Check for exact target match first
+            if (flagDef[flagKey]) {
+                expandableFlags[flagKey] = flagDef[target]
+            }
+            // Check for expanded target match
+            else if (flagDef[expandedTarget]) {
+                expandableFlags[flagKey] = flagDef[expandedTarget]
+            }
+            // Check for specific target combinations
+            else if (flagDef[target]) {
+                expandableFlags[flagKey] = flagDef[target]
+            }
+            // Use default if available
+            else if (flagDef.default) {
+                expandableFlags[flagKey] = flagDef.default
+            }
+            
+            debug(`Context-aware flag ${flagKey} for target ${target}/${expandedTarget}:`, { 
+                original: config['expandable-flags']?.[flagKey], 
+                contextAware: expandableFlags[flagKey] 
+            })
+        })
+    }
+    
+    return expandableFlags
+}
+
 // Process cleanup handlers
 function setupProcessCleanup() {
     // Only set up cleanup handlers in production, not during testing
@@ -894,12 +937,21 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
             return 0
         }
         
-        // Merge expandable-templates into expandable-flags for processing
-        const expandableFlags = { ...config['expandable-flags'] }
-
-        if (config['expandable-templates']) {
-            Object.assign(expandableFlags, config['expandable-templates'])
+        // Extract target BEFORE processing flags for context-aware behavior
+        let target = 'b' // default
+        
+        if (args.length > 0 && !args[0].startsWith('-')) {
+            target = args[0]
+            args.shift() // Remove target from args before flag processing
         }
+        
+        // Expand target shortcuts using config.nxTargets
+        const expandedTarget = config['nxTargets']?.[target] || target
+        
+        debug('Target extraction (pre-flag processing)', { original: target, expanded: expandedTarget })
+        
+        // Get context-aware flags based on target
+        const expandableFlags = getContextAwareFlags(config, target, expandedTarget)
         
         // Process internal flags first (these affect PAE behavior, not the command)
         let timeoutMs: number | undefined = undefined
@@ -1018,21 +1070,6 @@ async function handlePackageAlias(alias: string, args: string[], config: AliasCo
         const { start, prefix, preArgs, suffix, end, remainingArgs } = expandableProcessor.expandFlags(args, expandableFlags)
         
         debug('Expanded flags', { start, prefix, preArgs, suffix, end, remainingArgs })
-        
-        // Determine target - use 'b' as default (expands to 'build')
-        let target = 'b' // default
-
-        if (remainingArgs.length > 0 && !remainingArgs[0].startsWith('-')) {
-            target = remainingArgs[0]
-            remainingArgs.shift()
-        }
-        
-        // Expand target shortcuts using config.nxTargets
-        const expandedTarget = config['nxTargets']?.[target] || target
-
-        debug('Target expansion', { original: target, expanded: expandedTarget })
-        
-        debug('Final target', { target: expandedTarget })
         
         // Build command
         const baseCommand = ['nx', 'run', `${project}:${expandedTarget}`, ...prefix, ...preArgs, ...suffix, ...remainingArgs]
