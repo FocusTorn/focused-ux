@@ -1,7 +1,22 @@
 import { vi, beforeAll, afterAll, afterEach } from 'vitest'
 
 // Global mock reference for shell detection
-let mockDetectShellTypeCached: any
+let mockDetectShellTypeCached: any = vi.fn().mockImplementation(() => {
+    // Default implementation that checks environment variables
+    if (process.env.PSModulePath || process.env.POWERSHELL_DISTRIBUTION_CHANNEL || process.env.PSExecutionPolicyPreference) {
+        return 'powershell'
+    }
+    if (
+        process.env.MSYS_ROOT
+        || process.env.MINGW_ROOT
+        || process.env.WSL_DISTRO_NAME
+        || process.env.WSLENV
+        || (process.env.SHELL && (process.env.SHELL.includes('bash') || process.env.SHELL.includes('git-bash')))
+    ) {
+        return 'gitbash'
+    }
+    return 'unknown'
+})
 
 // Export the mock for use in tests
 export { mockDetectShellTypeCached }
@@ -891,7 +906,7 @@ vi.mock('../../src/services/ExpandableProcessor.service.js', () => {
             let result = template
             // Replace all variables, but leave missing ones as-is with curly braces
             for (const [key, value] of Object.entries(variables)) {
-                if (value !== undefined && value !== null) {
+                if (value !== undefined && value !== null && value !== '') {
                     result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value)
                 }
             }
@@ -936,8 +951,21 @@ vi.mock('../../src/services/ExpandableProcessor.service.js', () => {
         }),
         constructCommand: vi.fn().mockImplementation((args: string[], _variables: Record<string, string>) => args),
         processShellSpecificTemplate: vi.fn().mockImplementation((expandable: any, variables: Record<string, string>) => {
-            const shellType = process.env.TEST_SHELL_TYPE || 'pwsh'
-            const shellTemplateKey = `${shellType}-template`
+            const shellType = mockDetectShellTypeCached()
+            
+            // Normalize the result like the real implementation
+            let normalizedShellType: string
+            if (shellType === 'powershell' || shellType === 'pwsh') {
+                normalizedShellType = 'pwsh'
+            } else if (shellType === 'gitbash' || shellType === 'linux') {
+                normalizedShellType = 'linux'
+            } else if (shellType === 'cmd') {
+                normalizedShellType = 'cmd'
+            } else {
+                normalizedShellType = 'cmd' // Default fallback
+            }
+            
+            const shellTemplateKey = `${normalizedShellType}-template`
             
             if (expandable[shellTemplateKey]) {
                 const shellTemplate = expandable[shellTemplateKey]
@@ -957,6 +985,21 @@ vi.mock('../../src/services/ExpandableProcessor.service.js', () => {
                         }
                     })
                     return { start, end }
+                } else if (typeof shellTemplate === 'object' && shellTemplate !== null) {
+                    // Handle single object template
+                    const templateVariables = { ...variables, ...shellTemplate.defaults }
+                    let expanded = shellTemplate.template || ''
+                    for (const [key, value] of Object.entries(templateVariables)) {
+                        if (value !== undefined && value !== null && value !== '') {
+                            expanded = expanded.replace(new RegExp(`\\{${key}\\}`, 'g'), value)
+                        }
+                    }
+                    
+                    if (shellTemplate.position === 'end') {
+                        return { start: [], end: [expanded] }
+                    } else {
+                        return { start: [expanded], end: [] }
+                    }
                 } else if (typeof shellTemplate === 'string') {
                     let expanded = shellTemplate
                     for (const [key, value] of Object.entries(variables)) {
@@ -1034,7 +1077,7 @@ vi.mock('../../../src/services/ExpandableProcessor.service.js', () => {
             let result = template
             // Replace all variables, but leave missing ones as-is with curly braces
             for (const [key, value] of Object.entries(variables)) {
-                if (value !== undefined && value !== null) {
+                if (value !== undefined && value !== null && value !== '') {
                     result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value)
                 }
             }
@@ -1079,8 +1122,21 @@ vi.mock('../../../src/services/ExpandableProcessor.service.js', () => {
         }),
         constructCommand: vi.fn().mockImplementation((args: string[], _variables: Record<string, string>) => args),
         processShellSpecificTemplate: vi.fn().mockImplementation((expandable: any, variables: Record<string, string>) => {
-            const shellType = process.env.TEST_SHELL_TYPE || 'pwsh'
-            const shellTemplateKey = `${shellType}-template`
+            const shellType = mockDetectShellTypeCached()
+            
+            // Normalize the result like the real implementation
+            let normalizedShellType: string
+            if (shellType === 'powershell' || shellType === 'pwsh') {
+                normalizedShellType = 'pwsh'
+            } else if (shellType === 'gitbash' || shellType === 'linux') {
+                normalizedShellType = 'linux'
+            } else if (shellType === 'cmd') {
+                normalizedShellType = 'cmd'
+            } else {
+                normalizedShellType = 'cmd' // Default fallback
+            }
+            
+            const shellTemplateKey = `${normalizedShellType}-template`
             
             if (expandable[shellTemplateKey]) {
                 const shellTemplate = expandable[shellTemplateKey]
@@ -1100,6 +1156,21 @@ vi.mock('../../../src/services/ExpandableProcessor.service.js', () => {
                         }
                     })
                     return { start, end }
+                } else if (typeof shellTemplate === 'object' && shellTemplate !== null) {
+                    // Handle single object template
+                    const templateVariables = { ...variables, ...shellTemplate.defaults }
+                    let expanded = shellTemplate.template || ''
+                    for (const [key, value] of Object.entries(templateVariables)) {
+                        if (value !== undefined && value !== null && value !== '') {
+                            expanded = expanded.replace(new RegExp(`\\{${key}\\}`, 'g'), value)
+                        }
+                    }
+                    
+                    if (shellTemplate.position === 'end') {
+                        return { start: [], end: [expanded] }
+                    } else {
+                        return { start: [expanded], end: [] }
+                    }
                 } else if (typeof shellTemplate === 'string') {
                     let expanded = shellTemplate
                     for (const [key, value] of Object.entries(variables)) {

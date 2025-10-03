@@ -160,8 +160,9 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
             }
             const variables = { message: 'test' }
             
-            // Mock PowerShell detection
-            vi.spyOn(expandableProcessor, 'detectShellType').mockReturnValue('pwsh')
+            // Setup environment variables to trigger PowerShell detection
+            process.env.PSModulePath = 'C:\\Program Files\\PowerShell\\Modules'
+            process.env.POWERSHELL_DISTRIBUTION_CHANNEL = 'MSI:Windows 10 Home'
             
             const result = expandableProcessor.processShellSpecificTemplate(expandable, variables)
             
@@ -201,8 +202,15 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
             }
             const variables = { message: 'test' }
             
-            // Mock CMD detection
-            vi.spyOn(expandableProcessor, 'detectShellType').mockReturnValue('cmd')
+            // Clear all shell detection environment variables
+            delete process.env.PSModulePath
+            delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+            delete process.env.PSExecutionPolicyPreference
+            delete process.env.MSYS_ROOT
+            delete process.env.MINGW_ROOT
+            delete process.env.WSL_DISTRO_NAME
+            delete process.env.WSLENV
+            delete process.env.SHELL
             
             const result = expandableProcessor.processShellSpecificTemplate(expandable, variables)
             
@@ -218,8 +226,13 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
             }
             const variables = { message: 'test' }
             
-            // Mock Linux detection (no linux-template available)
-            vi.spyOn(expandableProcessor, 'detectShellType').mockReturnValue('linux')
+            // Clear PowerShell environment variables first
+            delete process.env.PSModulePath
+            delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+            delete process.env.PSExecutionPolicyPreference
+            
+            // Setup environment variables to trigger Linux detection (no linux-template available)
+            process.env.MSYS_ROOT = 'C:\\msys64'
             
             const result = expandableProcessor.processShellSpecificTemplate(expandable, variables)
             
@@ -308,7 +321,9 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
             }
             const variables = { project: 'test-project' }
             
-            vi.spyOn(expandableProcessor, 'detectShellType').mockReturnValue('pwsh')
+            // Setup environment variables to trigger PowerShell detection
+            process.env.PSModulePath = 'C:\\Program Files\\PowerShell\\Modules'
+            process.env.POWERSHELL_DISTRIBUTION_CHANNEL = 'MSI:Windows 10 Home'
             
             const result = expandableProcessor.processShellSpecificTemplate(expandable, variables)
             
@@ -326,7 +341,13 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
             }
             const variables = { message: 'test' }
             
-            vi.spyOn(expandableProcessor, 'detectShellType').mockReturnValue('linux')
+            // Clear PowerShell environment variables first
+            delete process.env.PSModulePath
+            delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+            delete process.env.PSExecutionPolicyPreference
+            
+            // Setup environment variables to trigger Linux detection
+            process.env.MSYS_ROOT = 'C:\\msys64'
             
             const result = expandableProcessor.processShellSpecificTemplate(expandable, variables)
             
@@ -356,7 +377,9 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
             }
             const variables = { message: 'Hello' }
             
-            vi.spyOn(expandableProcessor, 'detectShellType').mockReturnValue('pwsh')
+            // Setup environment variables to trigger PowerShell detection
+            process.env.PSModulePath = 'C:\\Program Files\\PowerShell\\Modules'
+            process.env.POWERSHELL_DISTRIBUTION_CHANNEL = 'MSI:Windows 10 Home'
             
             const result = expandableProcessor.processShellSpecificTemplate(expandable, variables)
             

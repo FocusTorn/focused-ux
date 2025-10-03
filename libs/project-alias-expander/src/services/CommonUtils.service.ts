@@ -159,7 +159,12 @@ export class TemplateUtils {
 
     static expandTemplate(template: string, variables: Record<string, string>): string {
         return template.replace(/\{(\w+)\}/g, (match, varName) => {
-            return variables[varName] || match
+            const value = variables[varName]
+            // If value is undefined, null, or empty string, keep the original placeholder
+            if (value === undefined || value === null || value === '') {
+                return match
+            }
+            return value
         })
     }
 
