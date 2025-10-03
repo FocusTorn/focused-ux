@@ -4,10 +4,9 @@
 
 ### **Documentation References**
 
+- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
 - **ARCHITECTURE_DOCS**: `docs/Architecture.md`
 - **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **ACTIONS_LOG**: `docs/Actions-Log.md`
-- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
 
 ### **Output File References**
 

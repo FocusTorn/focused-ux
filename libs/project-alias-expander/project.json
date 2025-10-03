@@ -11,8 +11,7 @@
             "inputs": [
                 "production",
                 "^production",
-                "{projectRoot}/src/**/*",
-                "{projectRoot}/config.json"
+                "{projectRoot}/src/**/*"
             ],
             "options": {
                 "main": "libs/project-alias-expander/src/cli.ts",
@@ -93,7 +92,7 @@
         "test": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            // "dependsOn": ["build"],
+            "dependsOn": ["build:bundle"],
             "options": {
                 "configFile": "{projectRoot}/vitest.config.ts",
                 "reportsDirectory": "__tests__/_reports/functional",
@@ -103,13 +102,15 @@
         "test:coverage-tests": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            // "dependsOn": ["build"],
+            "dependsOn": ["build:bundle"],
             "options": {
                 "configFile": "{projectRoot}/vitest.coverage.config.ts",
                 "reportsDirectory": "__tests__/_reports/coverage",
                 "passWithNoTests": true
             }
         },
+        
+        
         "test:file": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
@@ -118,6 +119,35 @@
                 "reportsDirectory": "__tests__/_reports/functional",
                 "passWithNoTests": true,
                 "testPathPattern": "{args.testFile}"
+            }
+        },
+        "test:integration": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "options": {
+                "configFile": "{projectRoot}/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/integration",
+                "passWithNoTests": true,
+                "testPathPattern": "integration-tests"
+            }
+        },
+        "test:performance": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "options": {
+                "configFile": "{projectRoot}/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/performance",
+                "passWithNoTests": true,
+                "testPathPattern": "performance-tests"
+            }
+        },
+        "test:all": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "options": {
+                "configFile": "{projectRoot}/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/all",
+                "passWithNoTests": true
             }
         }
          

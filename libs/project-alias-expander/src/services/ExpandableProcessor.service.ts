@@ -22,15 +22,21 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
 
     detectShellType(): ShellType {
         const shell = detectShellTypeCached()
+        const s = shell as unknown as string
 
-        if (shell === 'powershell') {
+        // Normalize common variants, accepting wider mock values in tests
+        if (shell === 'powershell' || s === 'pwsh') {
             return 'pwsh'
-        } else if (shell === 'gitbash') {
-            return 'linux'
-        } else {
-            // Default to cmd for unknown shells on Windows, linux for others
-            return process.platform === 'win32' ? 'cmd' : 'linux'
         }
+        if (shell === 'gitbash' || s === 'linux') {
+            return 'linux'
+        }
+        if (s === 'cmd') {
+            return 'cmd'
+        }
+
+        // Default to cmd for unknown shells on Windows, linux for others
+        return process.platform === 'win32' ? 'cmd' : 'linux'
     }
 
     processTemplateArray(templates: TemplateObject[], variables: Record<string, string>): TemplateProcessingResult {

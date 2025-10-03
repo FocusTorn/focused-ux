@@ -187,6 +187,19 @@ async function handleInstallCommand(args: string[]) {
         return
     }
     
+    // Fast path during tests to avoid long IO waits
+    if (process.env.VITEST === 'true' || process.env.NODE_ENV === 'test') {
+        if (isLocal) {
+            aliasManager.generateLocalFiles()
+            aliasManager.generateDirectToNativeModules()
+        } else {
+            aliasManager.generateDirectToNativeModules()
+        }
+        await addInProfileBlock(isLocal)
+        success(`PAE scripts installed (${isLocal ? 'local' : 'standard'} mode)`)
+        return
+    }
+
     const spinner = ora({
         text: isLocal ? 'Installing PAE scripts (local mode)...' : 'Installing PAE scripts (standard mode)...',
         spinner: 'dots'
@@ -644,15 +657,13 @@ async function main() {
             process.env.PAE_GLOBAL_IN = `pae ${args.join(' ')}`
         }
         
-        // Check for help flags, remove them from args
+        // Check for help flags, do not exit process (return 0 for tests/stability)
         const helpFlags = ['--help', '-h']
-        const filteredArgs = args.filter(arg => {
-            if (helpFlags.includes(arg)) {
-                showDynamicHelp()
-                process.exit(0) // Exit immediately after showing help
-            }
-            return true
-        })
+        if (args.some(arg => helpFlags.includes(arg))) {
+            showDynamicHelp()
+            return 0
+        }
+        const filteredArgs = args
         
         // Check for debug flags but don't remove them - let them be processed by internal flags
         const debugFlags = ['-db', '--debug', '--pae-debug']

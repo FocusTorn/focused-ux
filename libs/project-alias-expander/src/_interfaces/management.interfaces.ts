@@ -10,7 +10,9 @@ import type {
 export interface IAliasManagerService {
     processAliases(): Promise<void>
     generateLocalFiles(): void
+    generateDirectToNativeModules(): void
     installAliases(): Promise<void>
+    refreshAliasesDirect(): Promise<void>
 }
 
 export interface IPAEDependencies {

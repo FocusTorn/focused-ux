@@ -8,6 +8,8 @@ export default mergeConfig(
             setupFiles: ['./__tests__/__mocks__/globals.ts'],
             include: [
                 '__tests__/functional-tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+                '__tests__/integration-tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+                '__tests__/performance-tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
             ],
         },
     }),

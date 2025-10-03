@@ -14,13 +14,13 @@
 ```typescript
 // trial-coverage-test.test-cov.ts
 import { describe, it, expect } from 'vitest'
-import { SomeService } from '../../src/services/SomeService.js'
+import { DynamiconsManagerService } from '../../src/services/DynamiconsManager.service.js'
 
-describe('Coverage Tests - SomeService', () => {
+describe('Coverage Tests - Dynamicons Manager', () => {
     it('should handle undefined input for coverage', () => {
-        const service = new SomeService()
+        const manager = new DynamiconsManagerService()
         // This test specifically covers the undefined input path
-        expect(() => service.processData(undefined)).toThrow()
+        expect(() => manager.processData(undefined)).toThrow()
     })
 })
 ```
@@ -31,6 +31,4 @@ describe('Coverage Tests - SomeService', () => {
 - **Branch Coverage**: Cover all conditional branches
 - **Function Coverage**: Ensure all functions are called
 - **Statement Coverage**: Cover all executable statements
-
-
 

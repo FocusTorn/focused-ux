@@ -353,6 +353,19 @@ export class AliasManagerService implements IAliasManagerService {
      * Installs PAE aliases to the user's shell profile
      * Adds the PAE inProfile block to the appropriate profile file
      */
+    async refreshAliasesDirect(): Promise<void> { //>
+        // Direct refresh without installation - just regenerate local files
+        console.log('🔄 Refreshing PAE aliases...')
+        
+        try {
+            this.generateLocalFiles()
+            console.log('✅ PAE aliases refreshed successfully')
+        } catch (error) {
+            console.error('❌ Failed to refresh PAE aliases:', error)
+            throw error
+        }
+    } //<
+
     async installAliases(): Promise<void> { //>
         // Prevent multiple installations during the same process
         if (process.env.PAE_INSTALLING === '1') {
