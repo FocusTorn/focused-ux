@@ -1,4 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+// Mock execa before importing
+vi.mock('execa', () => ({
+    execa: vi.fn()
+}))
 import { execa } from 'execa'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -58,8 +62,12 @@ describe('CLI-Config-Services Integration Tests', () => {
             // Arrange - change to directory without config
             process.chdir(tempDir)
             
-            // Act & Assert
-            expect(() => loadAliasConfig()).toThrow()
+            // Act - static config should always return the config object
+            const config = loadAliasConfig()
+            
+            // Assert - static config should always be available
+            expect(config).toBeDefined()
+            expect(config.nxPackages).toBeDefined()
         })
     })
 
@@ -82,7 +90,7 @@ describe('CLI-Config-Services Integration Tests', () => {
             // Mock the install process to avoid actual file system operations
             vi.spyOn(aliasManager, 'generateLocalFiles').mockImplementation(() => {})
             vi.spyOn(aliasManager, 'generateDirectToNativeModules').mockImplementation(() => {})
-            vi.spyOn(execa, 'execa').mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 } as any)
+            vi.mocked(execa).mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 } as any)
             
             // Act
             const result = await main()
@@ -105,7 +113,8 @@ describe('CLI-Config-Services Integration Tests', () => {
             // Assert
             expect(result).toBe(0)
             expect(commandExecution.runNx).toHaveBeenCalledWith(
-                expect.arrayContaining(['nx', 'run', 'dynamicons:build'])
+                expect.arrayContaining(['nx', 'run', 'dynamicons:build']),
+                undefined
             )
         })
     })

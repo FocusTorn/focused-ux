@@ -1,4 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+// Mock execa before importing
+vi.mock('execa', () => ({
+    execa: vi.fn()
+}))
 import { execa } from 'execa'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -55,7 +59,7 @@ describe('E2E Integration Tests', () => {
             vi.spyOn(fs, 'readFileSync').mockReturnValue('# PowerShell Profile\n')
             vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {})
             vi.spyOn(fs, 'appendFileSync').mockImplementation(() => {})
-            vi.spyOn(execa, 'execa').mockResolvedValue({ 
+            vi.mocked(execa).mockResolvedValue({ 
                 stdout: 'C:\\Users\\Test\\Documents\\PowerShell\\profile.ps1', 
                 stderr: '', 
                 exitCode: 0 
@@ -102,7 +106,7 @@ describe('E2E Integration Tests', () => {
             })
             vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {})
             vi.spyOn(fs, 'appendFileSync').mockImplementation(() => {})
-            vi.spyOn(execa, 'default').mockResolvedValue({ 
+            vi.mocked(execa).mockResolvedValue({ 
                 stdout: profilePath, 
                 stderr: '', 
                 exitCode: 0 
@@ -133,7 +137,8 @@ describe('E2E Integration Tests', () => {
             // Assert
             expect(result).toBe(0)
             expect(commandExecution.runNx).toHaveBeenCalledWith(
-                expect.arrayContaining(['nx', 'run', 'dynamicons:build'])
+                expect.arrayContaining(['nx', 'run', 'dynamicons:build']),
+                undefined
             )
         })
 
@@ -150,7 +155,8 @@ describe('E2E Integration Tests', () => {
             // Assert
             expect(result).toBe(0)
             expect(commandExecution.runNx).toHaveBeenCalledWith(
-                expect.arrayContaining(['nx', 'run', 'project-butler-core:build'])
+                expect.arrayContaining(['nx', 'run', 'project-butler-core:build']),
+                undefined
             )
         })
 
@@ -167,7 +173,8 @@ describe('E2E Integration Tests', () => {
             // Assert
             expect(result).toBe(0)
             expect(commandExecution.runNx).toHaveBeenCalledWith(
-                expect.arrayContaining(['--fix', '--skip-nx-cache'])
+                expect.arrayContaining(['--fix', '--skip-nx-cache']),
+                undefined
             )
         })
 
@@ -298,7 +305,7 @@ describe('E2E Integration Tests', () => {
             process.argv = ['node', 'cli.js', 'load']
             
             // Mock PowerShell operations
-            vi.spyOn(execa, 'execa').mockResolvedValue({ 
+            vi.mocked(execa).mockResolvedValue({ 
                 stdout: 'C:\\Users\\Test\\Documents\\PowerShell\\profile.ps1', 
                 stderr: '', 
                 exitCode: 0 
@@ -316,7 +323,7 @@ describe('E2E Integration Tests', () => {
             process.argv = ['node', 'cli.js', 'load']
             
             // Mock PowerShell errors
-            vi.spyOn(execa, 'execa').mockRejectedValue(new Error('PowerShell not found'))
+            vi.mocked(execa).mockRejectedValue(new Error('PowerShell not found'))
             
             // Act
             const result = await main()
