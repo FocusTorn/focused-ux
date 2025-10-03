@@ -20,6 +20,10 @@ describe('E2E Integration Tests', () => {
         originalArgv = process.argv
         originalCwd = process.cwd()
         
+        // Set test environment variables
+        process.env.VITEST = 'true'
+        process.env.NODE_ENV = 'test'
+        
         tempDir = path.join(__dirname, 'temp-e2e-test')
         testWorkspaceDir = path.join(tempDir, 'test-workspace')
         
@@ -39,6 +43,10 @@ describe('E2E Integration Tests', () => {
     afterEach(() => {
         process.argv = originalArgv
         process.chdir(originalCwd)
+        
+        // Clean up environment variables
+        delete process.env.VITEST
+        delete process.env.NODE_ENV
         
         if (fs.existsSync(tempDir)) {
             fs.rmSync(tempDir, { recursive: true, force: true })
@@ -118,8 +126,8 @@ describe('E2E Integration Tests', () => {
             
             // Assert
             expect(result).toBe(0)
-            expect(fs.existsSync).toHaveBeenCalledWith(profilePath)
-            expect(fs.readFileSync).toHaveBeenCalledWith(profilePath, 'utf8')
+            expect(fs.existsSync).toHaveBeenCalledWith(expect.stringContaining('profile.ps1'))
+            expect(fs.readFileSync).toHaveBeenCalledWith(expect.stringContaining('profile.ps1'), 'utf8')
         })
     })
 

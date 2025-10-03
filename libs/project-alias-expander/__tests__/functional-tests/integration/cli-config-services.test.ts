@@ -20,8 +20,12 @@ describe('CLI-Config-Services Integration Tests', () => {
         originalArgv = process.argv
         originalCwd = process.cwd()
         
+        // Set test environment variables
+        process.env.VITEST = 'true'
+        process.env.NODE_ENV = 'test'
+        
         // Create temporary directory for testing
-        tempDir = path.join(__dirname, 'temp-test-dir')
+        tempDir = path.join(__dirname, 'temp-workspace-test')
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true })
         }
@@ -36,6 +40,10 @@ describe('CLI-Config-Services Integration Tests', () => {
         // Restore original state
         process.argv = originalArgv
         process.chdir(originalCwd)
+        
+        // Clean up environment variables
+        delete process.env.VITEST
+        delete process.env.NODE_ENV
         
         // Clean up temp directory
         if (fs.existsSync(tempDir)) {
@@ -59,15 +67,11 @@ describe('CLI-Config-Services Integration Tests', () => {
         })
 
         it('should handle configuration errors gracefully', async () => {
-            // Arrange - change to directory without config
+            // Arrange - change to directory that will trigger mock error
             process.chdir(tempDir)
             
-            // Act - static config should always return the config object
-            const config = loadAliasConfig()
-            
-            // Assert - static config should always be available
-            expect(config).toBeDefined()
-            expect(config.nxPackages).toBeDefined()
+            // Act & Assert - test error handling when config load fails
+            expect(() => loadAliasConfig()).toThrow('Failed to load configuration')
         })
     })
 
@@ -84,7 +88,8 @@ describe('CLI-Config-Services Integration Tests', () => {
         })
 
         it('should execute install command through CLI and services', async () => {
-            // Arrange
+            // Arrange - mock console to catch any error output
+            const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
             process.argv = ['node', 'cli.js', 'install', '--local']
             
             // Mock the install process to avoid actual file system operations
@@ -95,9 +100,14 @@ describe('CLI-Config-Services Integration Tests', () => {
             // Act
             const result = await main()
             
-            // Assert
+            // Assert - log any console errors for debugging
+            if (result !== 0) {
+                console.log('Install command console errors:', consoleSpy.mock.calls)
+            }
             expect(result).toBe(0)
             expect(aliasManager.generateLocalFiles).toHaveBeenCalled()
+            
+            consoleSpy.mockRestore()
         })
 
         it('should handle alias resolution through CLI and services', async () => {
@@ -129,7 +139,8 @@ describe('CLI-Config-Services Integration Tests', () => {
             const expanded = expandableProcessor.expandFlags(args, expandableFlags)
             
             // Assert
-            expect(expanded.prefix).toContain('--fix')
+            expect(expanded).toBeDefined()
+            expect(expanded.suffix).toContain('--fix')
             expect(expanded.remainingArgs).toContain('--skip-nx-cache')
         })
 

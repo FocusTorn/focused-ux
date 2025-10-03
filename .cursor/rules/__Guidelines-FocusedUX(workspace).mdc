@@ -6,6 +6,17 @@ alwaysApply: true
 
 # FocusedUX AI Guidelines
 
+
+## **REFERENCE FILES**
+
+### **Documentation References**
+
+- **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
+- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
+- **SOP_DOCS**: `docs/_SOP.md`
+- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
+- **PACKAGE_ARCHETYPES**: `docs/testing/_Testing-Strategy.md`
+
 ## CRITICAL ENFORCEMENT NOTICE
 
 **THESE ARE MANDATORY DIRECTIVES, NOT SUGGESTIONS**
@@ -25,7 +36,7 @@ alwaysApply: true
 
 
 - [ ] **Alias Discovery**: Will I attempt `pae help` first to discover available aliases?
-- [ ] **Workspace Root**: Will I use `cd D:/_dev/_Projects/_fux/_FocusedUX` to be in the workspace root?
+- [ ] **Workspace Root**: When I need to return to the workspace root, will I use `cd D:/_dev/_Projects/_fux/_FocusedUX` ?
 - [ ] **Alias Usage**: Will I use appropriate alias for the operation (e.g., `pae dc b` for dynamicons build)?
 - [ ] **Fallback Protocol**: Will I only use direct nx commands if no alias exists or alias fails?
 - [ ] **Documentation**: Will I document any missing aliases that should be added to PAE system?
@@ -33,13 +44,13 @@ alwaysApply: true
 **STEP 2: BUILD ERROR RESOLUTION**
 
 - [ ] **Error Resolution**: Will I fix build errors immediately before proceeding?
+
 - [ ] **Cache Bypass**: Will I use `--skip-nx-cache` for troubleshooting when needed?
 
 **STEP 3: DOCUMENTATION FIRST COMPLIANCE**
 
-- [ ] **Architecture Check**: Have I checked `docs/Architecture.md` for package structure and patterns?
-- [ ] **Testing Check**: Have I checked `docs/FocusedUX-Testing-Strategy.md` for testing patterns?
-- [ ] **Previous Solutions**: Have I checked `./docs/Actions-Log.md` for existing implementations?
+- [ ] **Architecture Check**: Have I checked **ARCHITECTURE_DOCS** for package structure and patterns?
+- [ ] **Testing Check**: Have I checked **TESTING_STRATEGY** for testing patterns?
 
 **STEP 4: PACKAGE ANALYSIS COMPLIANCE**
 
@@ -52,6 +63,9 @@ alwaysApply: true
 - [ ] **Violation Detection**: If I detect any protocol violation, will I acknowledge immediately?
 
 **VIOLATION PENALTY**: Any failure to complete this checklist constitutes a critical failure requiring immediate acknowledgment and correction.
+
+
+
 
 ## Core Processing Flow
 
@@ -67,8 +81,8 @@ alwaysApply: true
 - **MANDATORY**: Reference existing patterns directly in responses
 - **MANDATORY**: Execute documented solutions without additional analysis
 - **MANDATORY**: Prevent violations by never creating solutions when documentation exists
-- **MANDATORY**: Testing Strategy - ALWAYS check `docs/FocusedUX-Testing-Strategy.md` before creating any test setup
-- **MANDATORY**: Architecture Patterns - ALWAYS check `docs/Architecture.md` before creating any package structure
+- **MANDATORY**: Testing Strategy - ALWAYS check **TESTING_STRATEGY** before creating any test setup
+- **MANDATORY**: Architecture Patterns - ALWAYS check **ARCHITECTURE_DOCS** before creating any package structure
 
 ### Personality Activation
 
@@ -177,10 +191,9 @@ alwaysApply: true
 
 ## Documentation Mapping
 
-- **Architecture** → `docs/Architecture.md`
-- **Testing** → `docs/FocusedUX-Testing-Strategy.md`
-- **Previous Solutions** → `docs/Actions-Log.md`
-- **Package Patterns** → `docs/Package-Archetypes.md`
+- **Architecture** → **ARCHITECTURE_DOCS**
+- **Testing** → **TESTING_STRATEGY**
+- **Package Patterns** → **PACKAGE_ARCHETYPES**
 
 ## Quick Reference
 

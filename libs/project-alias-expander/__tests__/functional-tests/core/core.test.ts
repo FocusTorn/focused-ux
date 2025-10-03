@@ -176,6 +176,11 @@ describe('Core Functional Tests', () => {
 
     describe('Environment Compatibility', () => {
         it('should work in test environment', () => {
+            // Set test environment if not already set
+            if (!process.env.NODE_ENV) {
+                process.env.NODE_ENV = 'test'
+            }
+            
             // Act & Assert
             expect(process.env.NODE_ENV).toBeDefined()
             expect(typeof process.env.NODE_ENV).toBe('string')

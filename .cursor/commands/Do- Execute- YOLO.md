@@ -1,4 +1,4 @@
-# Create Command Direct
+# Do Execute YOLO
 
 ## Purpose
 
@@ -16,10 +16,18 @@ Followed by any task description.
 
 **MANDATORY EXECUTION PROTOCOL**:
 
-1. **No Progress Summaries**: The AI agent MUST NOT provide summaries of progress, status updates, or intermediate reports
-2. **No General Commentary**: The AI agent MUST NOT offer general observations, thoughts, or commentary during execution
-3. **Continuous Iteration**: The AI agent MUST iterate continuously (run tests → fix failures → run tests → fix failures) until completion
-4. **Only Two Stop Conditions**:
+1. **Pre-Work Analysis Phase** (ALLOWED):
+    - Initial clarifying questions if needed
+    - Creation of todo lists for organization
+    - Understanding workspace configuration
+    - Analysis of current state
+
+2. **Execution Phase** (STRICT PROTOCOL):
+    - **No Progress Summaries**: The AI agent MUST NOT provide summaries of progress, status updates, or intermediate reports
+    - **No General Commentary**: The AI agent MUST NOT offer general observations, thoughts, or commentary during execution
+    - **Continuous Iteration**: The AI agent MUST iterate continuously (run tests → fix failures → run tests → fix failures) until completion
+
+3. **Only Two Stop Conditions During Execution**:
     - **Task Complete**: When the request has been completely fulfilled
     - **Critical Decision**: When a high-risk critical decision requires user feedback to proceed
 
@@ -34,25 +42,32 @@ When this command is invoked, the AI agent receives the following mandatory dire
 
 **MANDATORY EXECUTION PROTOCOL**:
 
-1. **NO STOPPING CONDITIONS**: You must NOT stop for:
-    - Progress summaries
-    - Status updates
-    - Intermediate reporting
-    - General commentary
-    - Explanatory text
-    - Meta-discussion about the work
+1. **PRE-WORK ANALYSIS PHASE** (ALLOWED):
+    - Ask initial clarifying questions if needed
+    - Create todo lists for task organization
+    - Understand workspace configuration and current state
+    - Analyze requirements and dependencies
 
-2. **ONLY ACCEPTABLE STOPPING CONDITIONS**:
-    - Task is completely fulfilled and finished
-    - Critical high-risk decision requiring user input to proceed
+2. **EXECUTION PHASE** (STRICT PROTOCOL):
+    - **NO STOPPING CONDITIONS**: You must NOT stop for:
+        - Progress summaries
+        - Status updates
+        - Intermediate reporting
+        - General commentary
+        - Explanatory text
+        - Meta-discussion about the work
 
-3. **EXECUTION METHOD**:
-    - Analyze the task
-    - Begin execution immediately
-    - Iterate continuously until completion
-    - Fix failures as they arise
-    - Run tests/fix/tests/fix until all green
-    - Complete the task fully
+    - **ONLY ACCEPTABLE STOPPING CONDITIONS DURING EXECUTION**:
+        - Task is completely fulfilled and finished
+        - Critical high-risk decision requiring user input to proceed
+
+    - **EXECUTION METHOD**:
+        - Begin continuous iteration immediately after analysis
+        - Fix failures as they arise
+        - Run tests/fix/tests/fix until all green
+        - Complete the task fully
+
+3. **PHASE TRANSITION**: Clear signal indicating transition from analysis to execution
 
 **VIOLATION PENALTY**: Any deviation from this directive constitutes a critical failure. You must complete the assigned task through continuous iteration without any form of progress reporting or commentary.
 
@@ -95,11 +110,20 @@ Refactor the dynamicons package to follow core/ext architecture pattern with pro
 
 ### For AI Agent
 
-1. **Immediate Analysis**: Analyze the task and begin execution immediately
-2. **Continuous Iteration**: Maintain continuous work flow without stopping for explanations
-3. **Failure Recovery**: When failures occur, fix them and continue working
-4. **Completion Criteria**: Only stop when the task is completely fulfilled
-5. **No Meta-Chat**: Do not discuss the process, methodology, or approach during execution
+1. **Phase 1 - Pre-Work Analysis**:
+    - Ask clarifying questions if unclear
+    - Create organized todo lists
+    - Understand workspace configuration
+    - Analyze current state and requirements
+
+2. **Phase 2 - Execution**:
+    - Signal transition to execution mode
+    - Analyze the task and begin execution immediately
+    - Continuous iteration without stopping for explanations
+    - Fix failures as they arise and continue working
+    - Only stop when task is completely fulfilled or critical decision needed
+
+3. **No Meta-Chat During Execution**: Do not discuss the process, methodology, or approach during execution phase
 
 ### For User
 

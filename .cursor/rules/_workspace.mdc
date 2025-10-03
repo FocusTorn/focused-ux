@@ -5,6 +5,17 @@ alwaysApply: true
 
 # Workspace Rules
 
+## **REFERENCE FILES**
+
+### **Documentation References**
+
+- **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
+- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
+- **SOP_DOCS**: `docs/_SOP.md`
+- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
+- **PACKAGE_ARCHETYPES**: `docs/testing/_Testing-Strategy.md`
+
+
 ## MANDATORY Workflow:
 
 1. **Read rules** → 2. **Discover tools** → 3. **Check docs** → 4. **Build** → 5. **Execute**
@@ -17,9 +28,8 @@ alwaysApply: true
 
 ## Documentation First Protocol:
 
-- Check `docs/Architecture.md` for package patterns
-- Check `docs/FocusedUX-Testing-Strategy.md` for testing patterns
-- Check `./docs/Actions-Log.md` for existing implementations
+- Check **ARCHITECTURE_DOCS** for package patterns
+- Check **TESTING_STRATEGY** for testing patterns
 - Reference existing patterns directly
 
 ## Package Classification:

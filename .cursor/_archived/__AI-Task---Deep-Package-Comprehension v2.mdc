@@ -1,8 +1,6 @@
 ---
-description: Shall only be executed when directed to do any definitional variation of "doing a 'DPC' "
 alwaysApply: false
 ---
-
 # Protocol: Deep-Package-Comprehension v2.mdc
 
 **Location**: .cursor/rules/\_\_AI-Task---Deep-Package-Comprehension v2.mdc
