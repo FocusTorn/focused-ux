@@ -212,6 +212,12 @@ export class PaeMockBuilder {
         return this
     }
 
+    // Shell detection scenarios
+    shellDetection(type: 'powershell' | 'gitbash' | 'unknown'): PaeMockBuilder {
+        this.mocks.shell.detectShell.mockReturnValue(type)
+        return this
+    }
+
     build(): PaeTestMocks {
         return this.mocks
     }

@@ -124,11 +124,12 @@ describe('Generated Content - Dynamic Script Generation', () => {
 
     describe('Flag Expansion and Command Construction', () => {
         it('should expand flags correctly', () => {
-            const args = ['-s', '-o=stream', 'build', 'test-project']
+            const args = ['-s', '-os=stream', 'build', 'test-project']
             const expandables = {
                 's': '--skip-nx-cache',
-                'o': {
-                    template: '--output-style={o}',
+                'os': {
+                    template: '--output-style={style}',
+                    defaults: { style: 'stream' },
                     position: 'suffix'
                 }
             }

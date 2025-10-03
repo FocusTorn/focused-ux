@@ -28,16 +28,51 @@
 
 ---
 
+## 🚀 Quick Start: Which Mocking Approach?
+
+**For ANY mocking scenario, follow this order:**
+
+1. **Try Scenario Builder FIRST** - Most complex mocking needs
+2. **Fall back to Standard Mocks** - Only for simple, single-function cases
+3. **Use Global Mocks** - Only for Node.js built-ins
+
+**Rule of Thumb**: If you need more than 2 mocks working together → Use Scenario Builder
+
+## Primary Approach: Scenario Builders
+
+**Scenario builders are the RECOMMENDED approach for most mocking needs.**
+
+### Why Scenario Builders First?
+
+- Handle complex interactions automatically
+- Avoid common mocking pitfalls (caching, global conflicts, state management)
+- Provide consistent behavior across tests
+- Are easier to maintain and extend
+- Work seamlessly with global mocks
+
+### When to Use Other Approaches:
+
+- **Standard mocks**: Only for single-function, simple cases
+- **Global mocks**: Only for Node.js built-ins
+
 ## Mock Creation & Reference Priority (Top to Bottom)
 
-### 1. **Global Mock Strategy** (`libs/mock-strategy/`)
+### 1. **Scenario Builders** (`packages/{package}/__tests__/__mocks__/mock-scenario-builder.ts`)
+
+- **When**: **ANY complex mocking scenario** (3+ mocks, related behavior, stateful interactions)
+- **What**: Composable mock scenarios, business logic testing, realistic test conditions
+- **Examples**: Shell detection, file operations, command execution, cross-platform scenarios
+- **Reference**: Import from `../__mocks__/mock-scenario-builder`
+- **MANDATORY**: Use scenario builders for any mocking that involves multiple related mocks
+
+### 2. **Global Mock Strategy** (`libs/mock-strategy/`)
 
 - **When**: Create mocks that **multiple packages** will use
 - **What**: Common Node.js APIs, standard patterns, cross-package functionality
 - **Examples**: `fs`, `path`, `process`, `child_process`, common file operations
 - **Reference**: Import from `@fux/mock-strategy/lib`
 
-### 1.1. **Package-Level Global Mocks** (`packages/{package}/__tests__/__mocks__/globals.ts`)
+### 2.1. **Package-Level Global Mocks** (`packages/{package}/__tests__/__mocks__/globals.ts`)
 
 - **When**: Native Node.js built-in modules need to be mocked for the entire package
 - **What**: Node.js built-in modules that cause ESLint violations or need consistent mocking
@@ -46,7 +81,7 @@
 - **Purpose**: Prevents ESLint errors from `require()` statements and provides consistent mocking across all tests in the package
 - **Reference**: Import from `../__mocks__/globals`
 
-### 2. **Package-Level Mocks** (`packages/{package}/__tests__/__mocks__/`)
+### 3. **Package-Level Mocks** (`packages/{package}/__tests__/__mocks__/`)
 
 - **When**: Create mocks, helpers, and scenarios that **multiple test files within the same package** will use
 - **What**: Package-specific APIs, scenarios, helpers not covered by global mocks
@@ -56,14 +91,14 @@
     - **Scenarios**: Package-specific test scenarios, mock configurations
 - **Reference**: Import from `../__mocks__/helpers`, `../__mocks__/scenarios`, or `../__mocks__/mock-scenario-builder`
 
-### 3. **File-Level Mocks** (Within individual test files)
+### 4. **File-Level Mocks** (Within individual test files)
 
 - **When**: Create mocks that **multiple tests within the same file** will use
 - **What**: Test-specific setup, file-specific scenarios, repeated mock patterns
 - **Examples**: `beforeEach` setups, shared mock configurations, file-specific helpers
 - **Reference**: Define within the test file, use in multiple `it()` blocks
 
-### 4. **Test-Level Mocks** (Within individual `it()` blocks)
+### 5. **Test-Level Mocks** (Within individual `it()` blocks)
 
 - **When**: Create mocks that **only one specific test** will use
 - **What**: Test-specific scenarios, one-off mock behaviors, isolated test logic
@@ -73,15 +108,17 @@
 ## Decision Tree for Mock Placement
 
 ```
-Is this a native Node.js built-in module that needs mocking?
-├─ YES → packages/{package}/__tests__/__mocks__/globals.ts (MANDATORY)
-└─ NO → Is this mock/helper/scenario used by multiple packages?
-    ├─ YES → libs/mock-strategy/
-    └─ NO → Is this mock/helper/scenario used by multiple test files in the same package?
-        ├─ YES → packages/{package}/__tests__/__mocks__/
-        └─ NO → Is this mock/helper/scenario used by multiple tests in the same file?
-            ├─ YES → Define in test file (beforeEach, shared setup)
-            └─ NO → Define within the specific it() block
+Do you need multiple related mocks working together?
+├─ YES → Scenario Builder (RECOMMENDED FIRST CHOICE)
+└─ NO → Is this a native Node.js built-in module that needs mocking?
+    ├─ YES → packages/{package}/__tests__/__mocks__/globals.ts (MANDATORY)
+    └─ NO → Is this mock/helper/scenario used by multiple packages?
+        ├─ YES → libs/mock-strategy/
+        └─ NO → Is this mock/helper/scenario used by multiple test files in the same package?
+            ├─ YES → packages/{package}/__tests__/__mocks__/
+            └─ NO → Is this mock/helper/scenario used by multiple tests in the same file?
+                ├─ YES → Define in test file (beforeEach, shared setup)
+                └─ NO → Define within the specific it() block
 ```
 
 ## Benefits of This Hierarchy
@@ -257,16 +294,22 @@ await builder
 
 ### **Decision Matrix:**
 
-| Situation              | Use Standard Mock | Use Scenario |
-| ---------------------- | ----------------- | ------------ |
-| Single function mock   | ✅                | ❌           |
-| Multiple related mocks | ❌                | ✅           |
-| One-time test setup    | ✅                | ❌           |
-| Repeated across tests  | ❌                | ✅           |
-| Simple return value    | ✅                | ❌           |
-| Complex workflow       | ❌                | ✅           |
-| Business logic testing | ❌                | ✅           |
-| API replacement        | ✅                | ❌           |
+| Situation                    | Use Standard Mock | Use Scenario Builder |
+| ---------------------------- | ----------------- | -------------------- |
+| Single function mock         | ✅                | ❌                   |
+| Multiple related mocks       | ❌                | **✅ RECOMMENDED**   |
+| **Shell detection mocking**  | ❌                | **✅ ALWAYS**        |
+| **File operations**          | ❌                | **✅ RECOMMENDED**   |
+| **Command execution**        | ❌                | **✅ RECOMMENDED**   |
+| **Cross-platform scenarios** | ❌                | **✅ RECOMMENDED**   |
+| One-time test setup          | ✅                | ❌                   |
+| Repeated across tests        | ❌                | **✅ RECOMMENDED**   |
+| Simple return value          | ✅                | ❌                   |
+| Complex workflow             | ❌                | **✅ RECOMMENDED**   |
+| Business logic testing       | ❌                | **✅ RECOMMENDED**   |
+| API replacement              | ✅                | ❌                   |
+
+**Key Rule**: If you need more than 2 mocks working together, use Scenario Builder.
 
 ## Shell Output Control for Test Environments
 
@@ -1033,3 +1076,4 @@ After implementing proper mock strategies:
 - ✅ **Fewer Bugs**: Centralized mocks reduce setup errors
 - ✅ **Better Debugging**: Consistent mock behavior across tests
 - ✅ **Easier Onboarding**: Clear patterns for new developers
+

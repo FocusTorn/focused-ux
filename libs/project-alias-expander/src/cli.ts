@@ -15,18 +15,18 @@ let DEBUG = false
 let isExiting = false
 let activeProcesses: Set<ChildProcess> = new Set()
 
-function debug(message: string, ...args: unknown[]) {
+function debug(message: string, ...args: unknown[]) { //>
     if (DEBUG) {
         console.error(`[PAE DEBUG] ${message}`, ...args)
     }
-}
+} //<
 
-function error(message: string, ...args: unknown[]) {
+function error(message: string, ...args: unknown[]) { //>
     console.error(`[PAE ERROR] ${message}`, ...args)
-}
+} //<
 
 // Helper function to get context-aware flags based on target
-function getContextAwareFlags(config: AliasConfig, target: string, expandedTarget: string): Record<string, any> {
+function getContextAwareFlags(config: AliasConfig, target: string, expandedTarget: string): Record<string, import('./_types/expandable.types.js').ExpandableValue> { //>
     const expandableFlags = { ...config['expandable-flags'] }
     
     // Merge expandable-templates into expandable-flags for processing
@@ -58,18 +58,18 @@ function getContextAwareFlags(config: AliasConfig, target: string, expandedTarge
                 expandableFlags[flagKey] = flagDef.default
             }
             
-            debug(`Context-aware flag ${flagKey} for target ${target}/${expandedTarget}:`, { 
-                original: config['expandable-flags']?.[flagKey], 
-                contextAware: expandableFlags[flagKey] 
+            debug(`Context-aware flag ${flagKey} for target ${target}/${expandedTarget}:`, {
+                original: config['expandable-flags']?.[flagKey],
+                contextAware: expandableFlags[flagKey]
             })
         })
     }
     
     return expandableFlags
-}
+} //<
 
 // Process cleanup handlers
-function setupProcessCleanup() {
+function setupProcessCleanup() { //>
     // Only set up cleanup handlers in production, not during testing
     if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
         return
@@ -97,9 +97,9 @@ function setupProcessCleanup() {
         error('Unhandled Rejection at:', promise, 'reason:', reason)
         gracefulShutdown(1)
     })
-}
+} //<
 
-function gracefulShutdown(exitCode: number) {
+function gracefulShutdown(exitCode: number) { //>
     if (isExiting) {
         debug('Already shutting down, forcing exit')
         process.exit(exitCode)
@@ -124,10 +124,10 @@ function gracefulShutdown(exitCode: number) {
     
     debug('Cleanup complete, exiting with code:', exitCode)
     process.exit(exitCode)
-}
+} //<
 
 // Track child processes for cleanup
-function trackChildProcess(childProcess: ChildProcess) {
+function trackChildProcess(childProcess: ChildProcess) { //>
     activeProcesses.add(childProcess)
     
     childProcess.on('exit', () => {
@@ -137,13 +137,13 @@ function trackChildProcess(childProcess: ChildProcess) {
     childProcess.on('error', () => {
         activeProcesses.delete(childProcess)
     })
-}
+} //<
 
 // function info(message: string, ...args: any[]) {
 //     console.log(`[PAE INFO] ${message}`, ...args)
 // }
 
-function success(message: string, ...args: unknown[]) {
+function success(message: string, ...args: unknown[]) { //>
     // Use the same green color as Nx success messages, with bold checkmark
     const green = '\x1b[32m'
     const bold = '\x1b[1m'
@@ -151,9 +151,9 @@ function success(message: string, ...args: unknown[]) {
     const checkmark = '✔'
 
     console.log(`${green}${bold}${checkmark}${reset}${green} ${message}${reset}`, ...args)
-}
+} //<
 
-async function loadPAEModule() {
+async function loadPAEModule() { //>
     try {
         console.log('🔄 Setting up PAE module auto-load...')
         
@@ -208,9 +208,9 @@ Import-Module -Name "PAE" -Force
             console.error('Load error details:', error)
         }
     }
-}
+} //<
 
-async function handleInstallCommand(args: string[]) {
+async function handleInstallCommand(args: string[]) { //>
     const ora = (await import('ora')).default
     
     // Check for flags
@@ -300,9 +300,9 @@ async function handleInstallCommand(args: string[]) {
         spinner.stop()
         throw error
     }
-}
+} //<
 
-async function addInProfileBlock(_isLocal: boolean) {
+async function addInProfileBlock(_isLocal: boolean) { //>
     // Get the actual profile path from PowerShell
     let profilePath: string
 
@@ -501,9 +501,9 @@ function pae-remove {
     if (DEBUG) {
         console.log('PAE inProfile block added successfully')
     }
-}
+} //<
 
-function showDynamicHelp(config?: AliasConfig) {
+function showDynamicHelp(config?: AliasConfig) { //>
     try {
         const helpConfig = config || aliasConfig
 
@@ -669,7 +669,7 @@ function showDynamicHelp(config?: AliasConfig) {
         console.log('   To debug this issue, run: pae <command> -d')
         console.log('')
     }
-}
+} //<
 
 async function main() {
     try {
@@ -707,10 +707,12 @@ async function main() {
         
         // Check for help flags, do not exit process (return 0 for tests/stability)
         const helpFlags = ['--help', '-h']
+
         if (args.some(arg => helpFlags.includes(arg))) {
             showDynamicHelp()
             return 0
         }
+
         const filteredArgs = args
         
         // Check for debug flags but don't remove them - let them be processed by internal flags

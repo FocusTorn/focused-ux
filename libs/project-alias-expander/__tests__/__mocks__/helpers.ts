@@ -1,6 +1,13 @@
 import { vi } from 'vitest'
+import * as fs from 'fs'
+import * as path from 'path'
+import * as childProcess from 'child_process'
+import * as os from 'os'
+import * as url from 'url'
+import stripJsonComments from 'strip-json-comments'
+import * as config from '../../src/config.js'
+import * as shell from '../../src/shell.js'
 
-// PAE-specific test mocks interface
 export interface PaeTestMocks {
     fs: {
         existsSync: ReturnType<typeof vi.fn>
@@ -30,29 +37,37 @@ export interface PaeTestMocks {
         execSync: ReturnType<typeof vi.fn>
         spawn: ReturnType<typeof vi.fn>
         exec: ReturnType<typeof vi.fn>
-        fork: ReturnType<typeof vi.fn>
     }
     os: {
         platform: ReturnType<typeof vi.fn>
+        arch: ReturnType<typeof vi.fn>
         homedir: ReturnType<typeof vi.fn>
         tmpdir: ReturnType<typeof vi.fn>
+        cpus: ReturnType<typeof vi.fn>
+        freemem: ReturnType<typeof vi.fn>
+        totalmem: ReturnType<typeof vi.fn>
+        uptime: ReturnType<typeof vi.fn>
         userInfo: ReturnType<typeof vi.fn>
+        type: ReturnType<typeof vi.fn>
+        release: ReturnType<typeof vi.fn>
+        networkInterfaces: ReturnType<typeof vi.fn>
+        hostname: ReturnType<typeof vi.fn>
+        loadavg: ReturnType<typeof vi.fn>
+        endianness: ReturnType<typeof vi.fn>
+        EOL: string
     }
     url: {
+        parse: ReturnType<typeof vi.fn>
+        format: ReturnType<typeof vi.fn>
+        resolve: ReturnType<typeof vi.fn>
+        URL: ReturnType<typeof vi.fn>
+        URLSearchParams: ReturnType<typeof vi.fn>
+        domainToASCII: ReturnType<typeof vi.fn>
+        domainToUnicode: ReturnType<typeof vi.fn>
         fileURLToPath: ReturnType<typeof vi.fn>
         pathToFileURL: ReturnType<typeof vi.fn>
-        URL: ReturnType<typeof vi.fn>
     }
     stripJsonComments: ReturnType<typeof vi.fn>
-    process: {
-        argv: string[]
-        env: Record<string, string>
-        platform: string
-        cwd: ReturnType<typeof vi.fn>
-        exit: ReturnType<typeof vi.fn>
-        on: ReturnType<typeof vi.fn>
-        off: ReturnType<typeof vi.fn>
-    }
     config: {
         loadAliasConfig: ReturnType<typeof vi.fn>
     }
@@ -63,72 +78,80 @@ export interface PaeTestMocks {
 
 export function setupPaeTestEnvironment(): PaeTestMocks {
     // Get the mocked modules directly
-    const fs = vi.mocked(require('fs'))
-    const path = vi.mocked(require('path'))
-    const childProcess = vi.mocked(require('child_process'))
-    const os = vi.mocked(require('os'))
-    const url = vi.mocked(require('url'))
-    const stripJsonComments = vi.mocked(require('strip-json-comments'))
-    const config = vi.mocked(require('../../src/config.js'))
-    const shell = vi.mocked(require('../../src/shell.js'))
+    const mockedFs = vi.mocked(fs)
+    const mockedPath = vi.mocked(path)
+    const mockedChildProcess = vi.mocked(childProcess)
+    const mockedOs = vi.mocked(os)
+    const mockedUrl = vi.mocked(url)
+    const mockedStripJsonComments = vi.mocked(stripJsonComments)
+    const mockedConfig = vi.mocked(config)
+    const mockedShell = vi.mocked(shell)
 
     return {
         fs: {
-            existsSync: fs.existsSync,
-            readFileSync: fs.readFileSync,
-            writeFileSync: fs.writeFileSync,
-            mkdirSync: fs.mkdirSync,
-            copyFileSync: fs.copyFileSync,
-            rmSync: fs.rmSync,
-            statSync: fs.statSync,
-            readdirSync: fs.readdirSync,
-            unlinkSync: fs.unlinkSync,
-            rmdirSync: fs.rmdirSync,
+            existsSync: mockedFs.existsSync,
+            readFileSync: mockedFs.readFileSync,
+            writeFileSync: mockedFs.writeFileSync,
+            mkdirSync: mockedFs.mkdirSync,
+            copyFileSync: mockedFs.copyFileSync,
+            rmSync: mockedFs.rmSync,
+            statSync: mockedFs.statSync,
+            readdirSync: mockedFs.readdirSync,
+            unlinkSync: mockedFs.unlinkSync,
+            rmdirSync: mockedFs.rmdirSync,
         },
         path: {
-            join: path.join,
-            resolve: path.resolve,
-            dirname: path.dirname,
-            basename: path.basename,
-            extname: path.extname,
-            relative: path.relative,
-            isAbsolute: path.isAbsolute,
+            join: mockedPath.join,
+            resolve: mockedPath.resolve,
+            dirname: mockedPath.dirname,
+            basename: mockedPath.basename,
+            extname: mockedPath.extname,
+            relative: mockedPath.relative,
+            isAbsolute: mockedPath.isAbsolute,
             sep: '/',
             delimiter: ':',
         },
         childProcess: {
-            spawnSync: childProcess.spawnSync,
-            execSync: childProcess.execSync,
-            spawn: childProcess.spawn,
-            exec: childProcess.exec,
-            fork: childProcess.fork,
+            spawnSync: mockedChildProcess.spawnSync,
+            execSync: mockedChildProcess.execSync,
+            spawn: mockedChildProcess.spawn,
+            exec: mockedChildProcess.exec,
         },
         os: {
-            platform: os.platform,
-            homedir: os.homedir,
-            tmpdir: os.tmpdir,
-            userInfo: os.userInfo,
+            platform: mockedOs.platform,
+            arch: mockedOs.arch,
+            homedir: mockedOs.homedir,
+            tmpdir: mockedOs.tmpdir,
+            cpus: mockedOs.cpus,
+            freemem: mockedOs.freemem,
+            totalmem: mockedOs.totalmem,
+            uptime: mockedOs.uptime,
+            userInfo: mockedOs.userInfo,
+            type: mockedOs.type,
+            release: mockedOs.release,
+            networkInterfaces: mockedOs.networkInterfaces,
+            hostname: mockedOs.hostname,
+            loadavg: mockedOs.loadavg,
+            endianness: mockedOs.endianness,
+            EOL: '\n',
         },
         url: {
-            fileURLToPath: url.fileURLToPath,
-            pathToFileURL: url.pathToFileURL,
-            URL: url.URL,
+            parse: mockedUrl.parse,
+            format: mockedUrl.format,
+            resolve: mockedUrl.resolve,
+            URL: mockedUrl.URL as any,
+            URLSearchParams: mockedUrl.URLSearchParams as any,
+            domainToASCII: mockedUrl.domainToASCII,
+            domainToUnicode: mockedUrl.domainToUnicode,
+            fileURLToPath: mockedUrl.fileURLToPath,
+            pathToFileURL: mockedUrl.pathToFileURL,
         },
-        stripJsonComments: stripJsonComments.default,
-        process: {
-            argv: ['node', 'script.js'],
-            env: {},
-            platform: 'win32',
-            cwd: vi.fn(),
-            exit: vi.fn(),
-            on: vi.fn(),
-            off: vi.fn(),
-        },
+        stripJsonComments: mockedStripJsonComments,
         config: {
-            loadAliasConfig: config.loadAliasConfig,
+            loadAliasConfig: mockedConfig.loadAliasConfig,
         },
         shell: {
-            detectShell: shell.detectShell,
+            detectShell: mockedShell.detectShell,
         },
     }
 }
@@ -140,119 +163,44 @@ export function resetPaeMocks(mocks: PaeTestMocks): void {
             mock.mockReset()
         }
     })
+    
     Object.values(mocks.path).forEach(mock => {
         if (typeof mock === 'function' && 'mockReset' in mock) {
             mock.mockReset()
         }
     })
+    
     Object.values(mocks.childProcess).forEach(mock => {
         if (typeof mock === 'function' && 'mockReset' in mock) {
             mock.mockReset()
         }
     })
+    
     Object.values(mocks.os).forEach(mock => {
         if (typeof mock === 'function' && 'mockReset' in mock) {
             mock.mockReset()
         }
     })
+    
     Object.values(mocks.url).forEach(mock => {
         if (typeof mock === 'function' && 'mockReset' in mock) {
             mock.mockReset()
         }
     })
-    mocks.stripJsonComments.mockReset()
-    Object.values(mocks.process).forEach(mock => {
-        if (typeof mock === 'function' && 'mockReset' in mock) {
-            mock.mockReset()
-        }
-    })
+    
+    if ('mockReset' in mocks.stripJsonComments) {
+        mocks.stripJsonComments.mockReset()
+    }
+    
     Object.values(mocks.config).forEach(mock => {
         if (typeof mock === 'function' && 'mockReset' in mock) {
             mock.mockReset()
         }
     })
+    
     Object.values(mocks.shell).forEach(mock => {
         if (typeof mock === 'function' && 'mockReset' in mock) {
             mock.mockReset()
         }
     })
-}
-
-export function setupPaeFileSystemMocks(mocks: PaeTestMocks): void {
-    // Setup default file system behavior
-    mocks.fs.existsSync.mockReturnValue(false)
-    mocks.fs.readFileSync.mockReturnValue('{}')
-    mocks.fs.writeFileSync.mockImplementation(() => {})
-    mocks.fs.mkdirSync.mockImplementation(() => {})
-    mocks.fs.copyFileSync.mockImplementation(() => {})
-    mocks.fs.rmSync.mockImplementation(() => {})
-    mocks.fs.statSync.mockReturnValue({ isFile: () => true, isDirectory: () => false })
-    mocks.fs.readdirSync.mockReturnValue([])
-    mocks.fs.unlinkSync.mockImplementation(() => {})
-    mocks.fs.rmdirSync.mockImplementation(() => {})
-}
-
-export function setupPaePathMocks(mocks: PaeTestMocks): void {
-    // Setup default path behavior
-    mocks.path.join.mockImplementation((...args: string[]) => args.join('/'))
-    mocks.path.resolve.mockImplementation((...args: string[]) => '/' + args.join('/'))
-    mocks.path.dirname.mockImplementation((path: string) => path.split('/').slice(0, -1).join('/') || '.')
-    mocks.path.basename.mockImplementation((path: string) => path.split('/').pop() || '')
-    mocks.path.extname.mockImplementation((path: string) => {
-        const parts = path.split('.')
-        return parts.length > 1 ? '.' + parts.pop() : ''
-    })
-    mocks.path.relative.mockImplementation((from: string, to: string) => to)
-    mocks.path.isAbsolute.mockImplementation((path: string) => path.startsWith('/'))
-}
-
-export function setupPaeProcessMocks(mocks: PaeTestMocks): void {
-    // Setup default process behavior
-    mocks.process.cwd.mockReturnValue('/test')
-    mocks.process.exit.mockImplementation(() => {})
-    mocks.process.on.mockImplementation(() => {})
-    mocks.process.off.mockImplementation(() => {})
-}
-
-export function setupPaeChildProcessMocks(mocks: PaeTestMocks): void {
-    // Setup default child process behavior
-    mocks.childProcess.spawnSync.mockReturnValue({
-        status: 0,
-        signal: null,
-        output: [''],
-        pid: 123,
-        stdout: Buffer.from(''),
-        stderr: Buffer.from(''),
-        error: undefined
-    })
-    mocks.childProcess.execSync.mockReturnValue(Buffer.from('success'))
-    mocks.childProcess.spawn.mockImplementation(() => ({ pid: 123, kill: vi.fn() }))
-    mocks.childProcess.exec.mockImplementation(() => ({ pid: 123, kill: vi.fn() }))
-    mocks.childProcess.fork.mockImplementation(() => ({ pid: 123, kill: vi.fn() }))
-}
-
-export function setupPaeUrlMocks(mocks: PaeTestMocks): void {
-    // Setup default URL behavior
-    mocks.url.fileURLToPath.mockImplementation((url: string) => url.replace('file://', ''))
-    mocks.url.pathToFileURL.mockImplementation((path: string) => `file://${path}`)
-    mocks.url.URL.mockImplementation((url: string) => ({ href: url }))
-}
-
-export function setupPaeStripJsonCommentsMocks(mocks: PaeTestMocks): void {
-    // Setup default strip-json-comments behavior
-    mocks.stripJsonComments.mockImplementation((content: string) => {
-        try {
-            return JSON.parse(content)
-        } catch {
-            return {}
-        }
-    })
-}
-
-export function setupPaeOsMocks(mocks: PaeTestMocks): void {
-    // Setup default OS behavior
-    mocks.os.platform.mockReturnValue('win32')
-    mocks.os.homedir.mockReturnValue('/home/user')
-    mocks.os.tmpdir.mockReturnValue('/tmp')
-    mocks.os.userInfo.mockReturnValue({ username: 'user' })
 }

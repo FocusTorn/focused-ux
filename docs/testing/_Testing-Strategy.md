@@ -46,6 +46,14 @@
 - `{alias} tc` - Tests with coverage
 - `{alias} ti` - Integration tests (extensions only)
 
+### Critical Mocking Rules
+
+- **Shell Detection Mocking** → Always use scenario builder, never manual mocking
+- **Complex Multi-Step Setups** → Use scenario builder pattern
+- **Simple Single Function Mocks** → Use standard vi.mocked() approach
+- **Node.js Built-ins** → Use globals.ts for consistent mocking
+- **Rule of Thumb**: If you need more than 2 mocks working together, use scenario builder
+
 ### Anti-Patterns (NEVER DO)
 
 - Business logic in extension packages
@@ -854,6 +862,26 @@ export function setupTestEnvironment(): TestMocks {
 ```
 
 ### Reusable Mock Scenarios
+
+#### Shell Detection Scenarios
+
+```typescript
+// Shell detection is a common complex scenario
+export function setupShellDetectionScenario(
+    mocks: TestMocks,
+    shellType: 'powershell' | 'gitbash' | 'unknown'
+): void {
+    mocks.shell.detectShell.mockReturnValue(shellType)
+}
+
+// Usage in tests
+it('should detect PowerShell correctly', () => {
+    setupShellDetectionScenario(mocks, 'powershell')
+
+    const result = service.detectShellType()
+    expect(result).toBe('pwsh')
+})
+```
 
 #### Backup Management Scenarios
 

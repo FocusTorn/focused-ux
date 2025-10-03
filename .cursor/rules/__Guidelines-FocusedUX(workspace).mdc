@@ -44,7 +44,7 @@ alwaysApply: true
 **STEP 2: BUILD ERROR RESOLUTION**
 
 - [ ] **Error Resolution**: Will I fix build errors immediately before proceeding?
-
+- [ ] **No Git Usage**: Will I need to revert a files contents, will I use a file's context from a within the current conversation?
 - [ ] **Cache Bypass**: Will I use `--skip-nx-cache` for troubleshooting when needed?
 
 **STEP 3: DOCUMENTATION FIRST COMPLIANCE**

@@ -645,6 +645,104 @@ const mockTerminal = {
 - `"Conversion of type '{ ... }' to type 'Terminal' may be a mistake"` → Use `as unknown as vscode.Terminal`
 - `"Type '{ ... }' is missing the following properties from type 'WorkspaceFolder'"` → Add `name` and `index` properties
 
+## 🎭 Scenario Builder Troubleshooting
+
+### **"Cannot find module" Error**
+
+**Symptoms**: `Error: Cannot find module '../../src/config.js'`
+
+**Cause**: Wrong import paths in `helpers.ts`
+
+**Solution**: Fix the relative paths:
+
+```typescript
+// ❌ Wrong paths
+const config = vi.mocked(require('../../src/config.js'))
+const shell = vi.mocked(require('../../src/shell.js'))
+
+// ✅ Correct paths (adjust based on your directory structure)
+const config = vi.mocked(require('../../../src/config.js'))
+const shell = vi.mocked(require('../../../src/shell.js'))
+```
+
+### **"createPaeMockBuilder is not a function" Error**
+
+**Symptoms**: `TypeError: createPaeMockBuilder is not a function`
+
+**Cause**: Wrong import path or missing export
+
+**Solution**: Check import path:
+
+```typescript
+// ❌ Wrong import
+import { createPaeMockBuilder } from '../__mocks__/helpers'
+
+// ✅ Correct import
+import { createPaeMockBuilder } from '../__mocks__/mock-scenario-builder'
+```
+
+### **"Mock not working" Error**
+
+**Symptoms**: Mock returns real values instead of mocked values
+
+**Cause**: Global mock conflicts or cache issues
+
+**Solution**: Use scenario builder instead of manual mocking - it handles these issues automatically.
+
+### **"Scenario builder methods not available" Error**
+
+**Symptoms**: `TypeError: mockBuilder.shellDetection is not a function`
+
+**Cause**: Missing scenario methods in builder
+
+**Solution**: Extend the scenario builder with needed methods:
+
+```typescript
+// Add to mock-scenario-builder.ts
+shellDetection(type: 'powershell' | 'gitbash' | 'unknown'): PaeMockBuilder {
+    this.mocks.shell.detectShell.mockReturnValue(type)
+    return this
+}
+```
+
+### **Shell Detection Mocking Issues**
+
+**Problem**: Shell detection mocking fails with cache conflicts or global mock interference
+
+**Symptoms**:
+
+- Mock returns real shell detection values
+- Tests pass individually but fail when run together
+- Cache not clearing between tests
+
+**Root Cause**: Shell detection functions often have internal caching that conflicts with manual mocking
+
+**Solution**: Always use scenario builders for shell detection mocking:
+
+```typescript
+// ❌ DON'T: Manual mocking approach
+const spy = vi.spyOn(shellModule, 'detectShellTypeCached').mockReturnValue('powershell')
+// Problems: Cache conflicts, global mock interference, inconsistent behavior
+
+// ✅ DO: Use scenario builder approach
+import { createPaeMockBuilder } from '../__mocks__/mock-scenario-builder'
+
+it('should detect PowerShell on Windows', () => {
+    const mockBuilder = createPaeMockBuilder()
+    mockBuilder.shellDetection('powershell').build()
+
+    const result = expandableProcessor.detectShellType()
+    expect(result).toBe('pwsh')
+})
+```
+
+**Why Scenario Builders Work Better:**
+
+1. **Handles Caching**: Scenario builders properly manage shell detection cache
+2. **Avoids Global Conflicts**: Works with global mocks without interference
+3. **Consistent Behavior**: Same approach across all shell detection tests
+4. **Easy to Maintain**: Changes to shell detection logic update all tests
+
 ## 🔧 Debugging Tips
 
 ### 1. Use `vi.mocked()` for type safety
@@ -849,3 +947,4 @@ If you're still encountering test failures after trying these solutions:
 4. **Check mock call history** to see what's actually being called
 5. **Verify test isolation** by running tests in different orders
 6. **Ask for help** - include the specific error message and test code
+

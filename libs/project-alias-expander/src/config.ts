@@ -77,6 +77,7 @@ export const config: AliasConfig = {
         "f": "--fix",
         "c": "--coverage",
         "watch": "--watch",
+        
         "tn": { //>
             "defaults": {"namePattern": ""},
             "template": "--testNamePattern='{namePattern}'"
@@ -85,7 +86,6 @@ export const config: AliasConfig = {
             "defaults": {"fileName": ""},
             "template": "--testfile='{fileName}'"
         }, //<
-        
         "bail": { //>
             "defaults": {"bailOn": "1"},
             "template": "--bail {bailOn}"

@@ -5,12 +5,10 @@ import type {
     ExpandableValue,
     TemplateProcessingResult
 } from '../../../src/_types/index.js'
-import { ExpandableProcessorService } from '../../../src/services/ExpandableProcessor.service.js'
 
-// Mock the shell detection module
-vi.mock('../../../src/shell.js', () => ({
-    detectShellTypeCached: vi.fn()
-}))
+import { ExpandableProcessorService } from '../../../src/services/ExpandableProcessor.service.js'
+import * as shellModule from '../../../src/shell.js'
+import { clearShellDetectionCache } from '../../../src/shell.js'
 
 /**
  * Cross-Platform Testing
@@ -23,19 +21,14 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
     let expandableProcessor: ExpandableProcessorService
     let originalPlatform: string
     let originalEnv: NodeJS.ProcessEnv
-    let mockDetectShellTypeCached: any
 
     beforeEach(async () => {
-        // Get the mocked function first
-        const { detectShellTypeCached } = await import('../../../src/shell.js')
-        mockDetectShellTypeCached = detectShellTypeCached
-        
         expandableProcessor = new ExpandableProcessorService()
         originalPlatform = process.platform
         originalEnv = { ...process.env }
         
-        // Reset the mock for each test
-        mockDetectShellTypeCached.mockClear()
+        // Clear the shell detection cache before each test
+        clearShellDetectionCache()
     })
 
     afterEach(() => {
@@ -46,12 +39,25 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
         })
         process.env = originalEnv
         vi.clearAllMocks()
+        
+        // Clear the shell detection cache after each test
+        clearShellDetectionCache()
+        
+        // Clear shell detection environment variables
+        delete process.env.PSModulePath
+        delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+        delete process.env.PSExecutionPolicyPreference
+        delete process.env.MSYS_ROOT
+        delete process.env.MINGW_ROOT
+        delete process.env.WSL_DISTRO_NAME
+        delete process.env.WSLENV
+        delete process.env.SHELL
     })
 
     describe('Shell Detection Across Platforms', () => {
         it('should detect PowerShell on Windows', () => {
-            // Mock shell detection
-            mockDetectShellTypeCached.mockReturnValue('pwsh')
+            // Setup environment variables to trigger PowerShell detection
+            process.env.PSModulePath = 'C:\\Program Files\\PowerShell\\Modules'
             
             const result = expandableProcessor.detectShellType()
             
@@ -59,8 +65,11 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
         })
 
         it('should detect CMD on Windows when PowerShell is not available', () => {
-            // Mock shell detection
-            mockDetectShellTypeCached.mockReturnValue('cmd')
+            // No PowerShell environment variables set, should fallback to CMD
+            // Clear any existing PowerShell environment variables
+            delete process.env.PSModulePath
+            delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+            delete process.env.PSExecutionPolicyPreference
             
             const result = expandableProcessor.detectShellType()
             
@@ -68,8 +77,13 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
         })
 
         it('should detect Linux shell on Unix-like systems', () => {
-            // Mock shell detection
-            mockDetectShellTypeCached.mockReturnValue('linux')
+            // Clear PowerShell environment variables first
+            delete process.env.PSModulePath
+            delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+            delete process.env.PSExecutionPolicyPreference
+            
+            // Setup environment variables to trigger Git Bash detection
+            process.env.MSYS_ROOT = 'C:\\msys64'
             
             const result = expandableProcessor.detectShellType()
             
@@ -77,8 +91,13 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
         })
 
         it('should detect Linux shell on macOS', () => {
-            // Mock shell detection
-            mockDetectShellTypeCached.mockReturnValue('linux')
+            // Clear PowerShell environment variables first
+            delete process.env.PSModulePath
+            delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+            delete process.env.PSExecutionPolicyPreference
+            
+            // Setup environment variables to trigger Git Bash detection
+            process.env.SHELL = '/bin/bash'
             
             const result = expandableProcessor.detectShellType()
             
@@ -86,8 +105,13 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
         })
 
         it('should handle Git Bash on Windows', () => {
-            // Mock shell detection
-            mockDetectShellTypeCached.mockReturnValue('linux')
+            // Clear PowerShell environment variables first
+            delete process.env.PSModulePath
+            delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+            delete process.env.PSExecutionPolicyPreference
+            
+            // Setup environment variables to trigger Git Bash detection
+            process.env.MINGW_ROOT = 'C:\\mingw64'
             
             const result = expandableProcessor.detectShellType()
             
@@ -95,8 +119,15 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
         })
 
         it('should fallback to platform default for unknown shells', () => {
-            // Mock shell detection
-            mockDetectShellTypeCached.mockReturnValue('cmd')
+            // Clear all shell detection environment variables
+            delete process.env.PSModulePath
+            delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+            delete process.env.PSExecutionPolicyPreference
+            delete process.env.MSYS_ROOT
+            delete process.env.MINGW_ROOT
+            delete process.env.WSL_DISTRO_NAME
+            delete process.env.WSLENV
+            delete process.env.SHELL
             
             const result = expandableProcessor.detectShellType()
             
@@ -104,12 +135,19 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
         })
 
         it('should handle missing environment variables gracefully', () => {
-            // Mock shell detection
-            mockDetectShellTypeCached.mockReturnValue('linux')
+            // Clear all shell detection environment variables
+            delete process.env.PSModulePath
+            delete process.env.POWERSHELL_DISTRIBUTION_CHANNEL
+            delete process.env.PSExecutionPolicyPreference
+            delete process.env.MSYS_ROOT
+            delete process.env.MINGW_ROOT
+            delete process.env.WSL_DISTRO_NAME
+            delete process.env.WSLENV
+            delete process.env.SHELL
             
             const result = expandableProcessor.detectShellType()
             
-            expect(result).toBe('linux')
+            expect(result).toBe('cmd')
         })
     })
 
