@@ -4,6 +4,7 @@ import { resolveProjectForAlias as resolveProjectForAliasFromConfig } from '../s
 import { HelpCommand } from './HelpCommand.js'
 
 export class AliasCommand {
+
     private debug: (message: string, ...args: unknown[]) => void
     private error: (message: string, ...args: unknown[]) => void
     private getContextAwareFlags: (config: AliasConfig, target: string, expandedTarget: string) => Record<string, any>
@@ -409,4 +410,5 @@ export class AliasCommand {
 
         return { project: result.project, full: result.isFull }
     }
+
 }

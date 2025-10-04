@@ -160,6 +160,7 @@ export class TemplateUtils {
     static expandTemplate(template: string, variables: Record<string, string>): string {
         return template.replace(/\{(\w+)\}/g, (match, varName) => {
             const value = variables[varName]
+
             // If value is undefined, null, or empty string, keep the original placeholder
             if (value === undefined || value === null || value === '') {
                 return match
@@ -199,6 +200,7 @@ export class TemplateUtils {
         // Pattern: Math.round(parseFloat(bailOn) || 0) - handle variable name substitution
         if (expression.includes('Math.round(parseFloat(') && expression.includes('|| 0)')) {
             const match = expression.match(/Math\.round\(parseFloat\((\w+)\) \|\| 0\)/)
+
             if (match) {
                 return Math.round(parseFloat(value) || 0)
             }
@@ -237,6 +239,7 @@ export class TemplateUtils {
             try {
                 const regex = new RegExp(jsPattern)
                 const beforeReplace = result
+
                 result = result.replace(regex, replacement)
                 console.log(`[DEBUG] Replacement result: "${beforeReplace}" -> "${result}"`)
             } catch (regexError) {

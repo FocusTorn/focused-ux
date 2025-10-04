@@ -125,7 +125,7 @@ const jsonStylisticOverrides = {
 // TypeScript-specific rules
 const tsRules = {
     //>
-    'ts/no-explicit-any': 'warn',
+    'ts/no-explicit-any': 'error',
     'ts/explicit-function-return-type': 'off',
 } //<
 
@@ -136,7 +136,6 @@ const testOverrides = {
     'import/extensions': 'off',
     'ts/no-explicit-any': 'off',
     'ts/explicit-function-return-type': 'off',
-    'ts/no-unused-vars': 'off',
     'ts/no-use-before-define': 'off',
     'no-console': 'off',
     'no-unused-expressions': 'off',

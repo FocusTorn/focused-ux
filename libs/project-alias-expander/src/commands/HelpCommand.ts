@@ -1,11 +1,12 @@
 import type { AliasConfig } from '../_types/index.js'
-import { loadAliasConfig } from '../services/ConfigLoader.service.js'
+import { ConfigLoader } from '../services/ConfigLoader.service.js'
 
 export class HelpCommand {
-    execute(config?: AliasConfig): void {
+
+    async execute(config?: AliasConfig): Promise<void> {
         try {
             // Try to load config from JSON, or use provided config
-            const helpConfig = config || loadAliasConfig()
+            const helpConfig = config || await ConfigLoader.getInstance().loadConfig()
 
             if (!helpConfig) {
                 throw new Error('Failed to load configuration')
@@ -26,7 +27,7 @@ export class HelpCommand {
                 console.log(`Available Aliases: ${dimmed}${desc}${reset}`)
                 Object.entries(helpConfig.nxPackages).forEach(([alias, project]) => {
                     if (alias !== 'desc') {
-                        const projectName = typeof project === 'string' ? project : project.name
+                        const projectName = typeof project === 'string' ? project : (project as any).name
 
                         console.log(`  ${alias.padEnd(8)} → ${projectName}`)
                     }
@@ -58,7 +59,7 @@ export class HelpCommand {
                 console.log(`Feature Targets: ${dimmed}${desc}${reset}`)
                 Object.entries(helpConfig['feature-nxTargets']).forEach(([alias, config]) => {
                     if (alias !== 'desc') {
-                        console.log(`  ${alias.padEnd(8)} → ${config['run-target']} (from ${config['run-from']})`)
+                        console.log(`  ${alias.padEnd(8)} → ${(config as any)['run-target']} (from ${(config as any)['run-from']})`)
                     }
                 })
                 console.log('')
@@ -73,7 +74,7 @@ export class HelpCommand {
                 console.log(`expandable Flags: ${dimmed}${desc}${reset}`)
                 Object.entries(helpConfig['expandable-flags']).forEach(([flag, expansion]) => {
                     if (flag !== 'desc') {
-                        const expansionStr = typeof expansion === 'string' ? expansion : expansion.template || 'template'
+                        const expansionStr = typeof expansion === 'string' ? expansion : (expansion as any).template || 'template'
 
                         console.log(`  -${flag.padEnd(8)} → ${expansionStr}`)
                     }
@@ -90,7 +91,7 @@ export class HelpCommand {
                 console.log(`expandable Templates: ${dimmed}${desc}${reset}`)
                 Object.entries(helpConfig['expandable-templates']).forEach(([template, config]) => {
                     if (template !== 'desc') {
-                        console.log(`  -${template.padEnd(8)} → ${config['pwsh-template'] ? 'PowerShell template' : 'Template'}`)
+                        console.log(`  -${template.padEnd(8)} → ${(config as any)['pwsh-template'] ? 'PowerShell template' : 'Template'}`)
                     }
                 })
                 console.log('')
@@ -170,4 +171,5 @@ export class HelpCommand {
             console.log('')
         }
     }
+
 }

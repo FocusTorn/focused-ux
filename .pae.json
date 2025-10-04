@@ -55,27 +55,31 @@
         "f": "--fix",
         "c": "--coverage",
         "watch": "--watch",
-        "tn": {
-            "defaults": {"namePattern": ""},
-            "template": "--testNamePattern='{namePattern}'"
-        },
-        "tf": {
-            "defaults": {"fileName": ""},
-            "template": "--testfile='{fileName}'"
-        },
+
         "bail": {
             "defaults": {"bailOn": "1"},
             "template": "--bail {bailOn}"
         }
     },
+    
     "context-aware-flags": {
-        "f": {
-            "default": "--fix"
-        },
-        "c": {
-            "default": "--coverage"
+        "file": {
+            "l": {
+                "defaults": {"file": ""},
+                "template": "--lintFilePatterns=={file}"
+            },
+            "t": {
+                "defaults": {"file": ""},
+                "template": "--testFile=={file}"
+            },
+            "ct": {
+                "defaults": {"file": ""},
+                "template": "--testFile=={file}"
+            }
         }
     },
+    
+    
     "expandable-templates": {},
     "internal-flags": {
         "h": "--help",
@@ -128,3 +132,12 @@
         "reco": "@fux/recommended"
     }
 }
+
+// "tn": {
+//     "defaults": {"namePattern": ""},
+//     "template": "--testNamePattern='{namePattern}'"
+// },
+// "tf": {
+//     "defaults": {"fileName": ""},
+//     "template": "--testfile='{fileName}'"
+// },

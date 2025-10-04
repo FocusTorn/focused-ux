@@ -19,7 +19,11 @@ vi.mock('../../src/config.js', () => {
     }
 
     return {
-        loadAliasConfig: vi.fn().mockReturnValue(mockConfig),
+        ConfigLoader: {
+            getInstance: vi.fn(() => ({
+                loadConfig: vi.fn().mockResolvedValue(mockConfig)
+            }))
+        },
         resolveProjectForAlias: vi.fn().mockImplementation((aliasValue) => {
             if (typeof aliasValue === 'string') {
                 return { project: aliasValue, isFull: false }
@@ -66,7 +70,7 @@ vi.mock('../../src/services/index.js', () => {
 
 // Import after mocking
 import { main } from '../../../src/cli.js'
-import { loadAliasConfig } from '../../../src/services/ConfigLoader.service.js'
+import { ConfigLoader } from '../../../src/services/ConfigLoader.service.js'
 import { commandExecution, expandableProcessor, aliasManager } from '../../../src/services/index.js'
 
 describe('Startup Performance Tests', () => {
@@ -141,7 +145,7 @@ describe('Startup Performance Tests', () => {
             const startTime = performance.now()
             
             // Act
-            const config = loadAliasConfig()
+            const config = await ConfigLoader.getInstance().loadConfig()
             const endTime = performance.now()
             
             // Assert
@@ -158,7 +162,7 @@ describe('Startup Performance Tests', () => {
             // Act
             for (let i = 0; i < iterations; i++) {
                 const startTime = performance.now()
-                const config = loadAliasConfig()
+                const config = await ConfigLoader.getInstance().loadConfig()
                 const endTime = performance.now()
                 
                 // Note: In test environment, config may be undefined due to mocking issues
@@ -233,7 +237,7 @@ describe('Startup Performance Tests', () => {
             const startTime = performance.now()
             
             // Act - simulate cold start by loading everything fresh
-            const config = loadAliasConfig()
+            const config = await ConfigLoader.getInstance().loadConfig()
             const services = {
                 commandExecution,
                 expandableProcessor,
@@ -254,13 +258,13 @@ describe('Startup Performance Tests', () => {
 
         it('should handle warm start efficiently', async () => {
             // Arrange - warm up by loading once
-            loadAliasConfig()
+            await ConfigLoader.getInstance().loadConfig()
             expandableProcessor.expandFlags(['-f'], { 'f': '--fix' })
             
             const startTime = performance.now()
             
             // Act - simulate warm start
-            const config = loadAliasConfig()
+            const config = await ConfigLoader.getInstance().loadConfig()
             const services = {
                 commandExecution,
                 expandableProcessor,
@@ -286,7 +290,7 @@ describe('Startup Performance Tests', () => {
             const initialMemory = process.memoryUsage()
             
             // Act
-            const config = loadAliasConfig()
+            const config = await ConfigLoader.getInstance().loadConfig()
             const services = {
                 commandExecution,
                 expandableProcessor,
@@ -319,7 +323,7 @@ describe('Startup Performance Tests', () => {
             
             // Act
             for (let i = 0; i < 10; i++) {
-                const config = loadAliasConfig()
+                const config = await ConfigLoader.getInstance().loadConfig()
                 const services = {
                     commandExecution,
                     expandableProcessor,

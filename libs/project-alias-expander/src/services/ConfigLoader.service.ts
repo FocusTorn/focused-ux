@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'fs'
 import { join, resolve } from 'path'
+import stripJsonComments from 'strip-json-comments'
 import type { AliasConfig } from '../_types/index.js'
 import { ConfigUtils } from './CommonUtils.service.js'
 
@@ -8,6 +9,7 @@ import { ConfigUtils } from './CommonUtils.service.js'
  * Supports both JSON and TypeScript config sources
  */
 export class ConfigLoader {
+
     private static instance: ConfigLoader
     private config: AliasConfig | null = null
     private configPath: string | null = null
@@ -77,6 +79,7 @@ export class ConfigLoader {
 
         try {
             const stats = require('fs').statSync(this.configPath)
+
             return stats.mtime.getTime() === this.lastModified
         } catch {
             return false
@@ -93,6 +96,7 @@ export class ConfigLoader {
             if (existsSync(path)) {
                 try {
                     const config = await this.loadFromPath(path)
+
                     if (config) {
                         this.config = config
                         this.configPath = path
@@ -113,6 +117,7 @@ export class ConfigLoader {
      */
     private getConfigPaths(): string[] {
         const cwd = process.cwd()
+
         return [
             join(cwd, '.pae.json')  // Only root level JSON config
         ]
@@ -135,7 +140,7 @@ export class ConfigLoader {
     private loadJsonConfig(path: string): AliasConfig {
         try {
             const content = readFileSync(path, 'utf-8')
-            const config = JSON.parse(content)
+            const config = JSON.parse(stripJsonComments(content))
             
             // Validate configuration
             this.validateConfig(config, path)
@@ -145,7 +150,6 @@ export class ConfigLoader {
             throw new Error(`Failed to parse JSON config from ${path}: ${error}`)
         }
     }
-
 
     /**
      * Validate configuration structure
@@ -207,44 +211,13 @@ export class ConfigLoader {
     private getFileModifiedTime(path: string): number {
         try {
             const stats = require('fs').statSync(path)
+
             return stats.mtime.getTime()
         } catch {
             return Date.now()
         }
     }
-}
 
-// Legacy compatibility functions
-export function loadAliasConfig(): AliasConfig {
-    const loader = ConfigLoader.getInstance()
-    const cached = loader.getCachedConfig()
-    if (cached) {
-        return cached
-    }
-    
-    // Synchronous fallback for backward compatibility
-    const cwd = process.cwd()
-    const jsonPath = join(cwd, '.pae.json')
-    
-    if (!existsSync(jsonPath)) {
-        throw new Error('No configuration file found. Please ensure .pae.json exists in the project root.')
-    }
-    
-    try {
-        const content = readFileSync(jsonPath, 'utf-8')
-        return JSON.parse(content) as AliasConfig
-    } catch (error) {
-        throw new Error(`Failed to load configuration from .pae.json: ${error}`)
-    }
-}
-
-export function loadAliasConfigCached(): AliasConfig {
-    const loader = ConfigLoader.getInstance()
-    const cached = loader.getCachedConfig()
-    if (cached) {
-        return cached
-    }
-    return loadAliasConfig()
 }
 
 export function clearAllCaches(): void {

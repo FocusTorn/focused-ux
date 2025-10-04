@@ -3,14 +3,15 @@ import type {
     AliasConfig,
     FlagExpansion,
     IExpandableProcessorService,
-    ICommandExecutionService
+    ICommandExecutionService,
+    ExpandableValue
 } from '../_types/index.js'
 
 // Alias management service interfaces
 export interface IAliasManagerService {
     processAliases(): Promise<void>
-    generateLocalFiles(): void
-    generateDirectToNativeModules(): void
+    generateLocalFiles(): Promise<void>
+    generateDirectToNativeModules(): Promise<void>
     installAliases(): Promise<void>
     refreshAliasesDirect(): Promise<void>
 }
@@ -23,7 +24,7 @@ export interface IPAEDependencies {
 
 export interface IPAEManagerService {
     // Alias management operations
-    generateLocalFiles(): void
+    generateLocalFiles(): Promise<void>
     installAliases(): Promise<void>
     refreshAliasesDirect(): Promise<void>
     
@@ -36,8 +37,8 @@ export interface IPAEManagerService {
     expandTemplate(template: string, variables: Record<string, string>): string
     detectShellType(): 'pwsh' | 'linux' | 'cmd'
     processTemplateArray(templates: Array<{ position: 'start' | 'prefix' | 'pre-args' | 'suffix' | 'end', template: string }>, variables: Record<string, string>): { start: string[], end: string[] }
-    processShellSpecificTemplate(expandable: any, variables: Record<string, string>): { start: string[], end: string[] }
+    processShellSpecificTemplate(expandable: ExpandableValue, variables: Record<string, string>): { start: string[], end: string[] }
     parseExpandableFlag(arg: string): { key: string, value: string | undefined }
-    expandFlags(args: string[], expandables: Record<string, any>): FlagExpansion
+    expandFlags(args: string[], expandables: Record<string, ExpandableValue>): FlagExpansion
     constructWrappedCommand(baseCommand: string[], startTemplates: string[], endTemplates: string[]): string[]
 }

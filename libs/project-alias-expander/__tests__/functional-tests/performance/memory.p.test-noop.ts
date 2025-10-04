@@ -19,7 +19,11 @@ vi.mock('../../src/config.js', () => {
     }
 
     return {
-        loadAliasConfig: vi.fn().mockReturnValue(mockConfig),
+        ConfigLoader: {
+            getInstance: vi.fn(() => ({
+                loadConfig: vi.fn().mockResolvedValue(mockConfig)
+            }))
+        },
         resolveProjectForAlias: vi.fn().mockImplementation((aliasValue) => {
             if (typeof aliasValue === 'string') {
                 return { project: aliasValue, isFull: false }
@@ -65,7 +69,7 @@ vi.mock('../../src/services/index.js', () => {
 })
 
 // Import after mocking
-import { loadAliasConfig } from '../../../src/services/ConfigLoader.service.js'
+import { ConfigLoader } from '../../../src/services/ConfigLoader.service.js'
 import { commandExecution, expandableProcessor, aliasManager } from '../../../src/services/index.js'
 
 describe('Memory Performance Tests', () => {
@@ -93,7 +97,7 @@ describe('Memory Performance Tests', () => {
             
             // Act
             for (let i = 0; i < 100; i++) {
-                const config = loadAliasConfig()
+                const config = await ConfigLoader.getInstance().loadConfig()
                 // Note: In test environment, config may be undefined due to mocking issues
                 // This test focuses on performance, not functionality
                 
@@ -129,8 +133,8 @@ describe('Memory Performance Tests', () => {
             for (let i = 0; i < 1000; i++) {
                 const expanded = expandableProcessor.expandFlags(
                     ['-f', '-s', `-t${i}`],
-                    { 
-                        'f': '--fix', 
+                    {
+                        'f': '--fix',
                         's': '--skip-nx-cache',
                         [`t${i}`]: `--target-${i}`
                     }
@@ -207,7 +211,7 @@ describe('Memory Performance Tests', () => {
             // Act - perform operations that might cause memory leaks
             for (let i = 0; i < 500; i++) {
                 // Load configuration
-                const config = loadAliasConfig()
+                const config = await ConfigLoader.getInstance().loadConfig()
                 // Note: In test environment, config may be undefined due to mocking issues
                 // This test focuses on performance, not functionality
                 
@@ -303,7 +307,7 @@ describe('Memory Performance Tests', () => {
             }
             
             // Perform operations under memory pressure
-            const config = loadAliasConfig()
+            const config = await ConfigLoader.getInstance().loadConfig()
             const expanded = expandableProcessor.expandFlags(['-f'], { 'f': '--fix' })
             
             // Force garbage collection if available
@@ -335,7 +339,7 @@ describe('Memory Performance Tests', () => {
             }
             
             // Perform operations under memory pressure
-            const config = loadAliasConfig()
+            const config = await ConfigLoader.getInstance().loadConfig()
             const expanded = expandableProcessor.expandFlags(['-f'], { 'f': '--fix' })
             
             // Release memory pressure
@@ -364,7 +368,7 @@ describe('Memory Performance Tests', () => {
             // Arrange
             const memorySnapshots: NodeJS.MemoryUsage[] = []
             const operations = [
-                () => loadAliasConfig(),
+                () => ConfigLoader.getInstance().loadConfig(),
                 () => expandableProcessor.expandFlags(['-f'], { 'f': '--fix' }),
                 () => expandableProcessor.expandFlags(['-s'], { 's': '--skip-nx-cache' }),
                 () => expandableProcessor.expandFlags(['-f', '-s'], { 'f': '--fix', 's': '--skip-nx-cache' })
@@ -406,7 +410,7 @@ describe('Memory Performance Tests', () => {
                 const startMemory = process.memoryUsage()
                 
                 // Perform operation
-                const config = loadAliasConfig()
+                const config = await ConfigLoader.getInstance().loadConfig()
                 const expanded = expandableProcessor.expandFlags(['-f'], { 'f': '--fix' })
                 
                 const endMemory = process.memoryUsage()

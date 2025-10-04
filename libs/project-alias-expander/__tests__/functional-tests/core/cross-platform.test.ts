@@ -1,13 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import * as os from 'os'
 import type {
     ShellType,
     ExpandableValue,
-    TemplateProcessingResult
 } from '../../../src/_types/index.js'
 
 import { ExpandableProcessorService } from '../../../src/services/ExpandableProcessor.service.js'
-import * as shellModule from '../../../src/shell.js'
 import { clearShellDetectionCache } from '../../../src/shell.js'
 
 /**

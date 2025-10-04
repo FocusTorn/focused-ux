@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { commandExecution, expandableProcessor, aliasManager } from './services/index.js'
-import { loadAliasConfig, clearAllCaches, resolveProjectForAlias as resolveProjectForAliasFromConfig } from './services/ConfigLoader.service.js'
+import { ConfigLoader, clearAllCaches, resolveProjectForAlias as resolveProjectForAliasFromConfig } from './services/ConfigLoader.service.js'
 import { detectShell } from './shell.js'
 import type { AliasConfig } from './_types/index.js'
 import type { ChildProcess } from 'child_process'
@@ -44,16 +44,12 @@ function getContextAwareFlags(config: AliasConfig, target: string, expandedTarge
             const flagDef = contextAwareFlags[flagKey]
             
             // Check for exact target match first
-            if (flagDef[flagKey]) {
+            if (flagDef[target]) {
                 expandableFlags[flagKey] = flagDef[target]
             }
             // Check for expanded target match
             else if (flagDef[expandedTarget]) {
                 expandableFlags[flagKey] = flagDef[expandedTarget]
-            }
-            // Check for specific target combinations
-            else if (flagDef[target]) {
-                expandableFlags[flagKey] = flagDef[target]
             }
             // Use default if available
             else if (flagDef.default) {
@@ -403,7 +399,7 @@ function pae-remove {
     }
 } //<
 
-async function main() {
+async function main(): Promise<number> {
     try {
         // Set up process cleanup handlers
         setupProcessCleanup()
@@ -506,8 +502,8 @@ async function main() {
         let config: AliasConfig
 
         try {
-            debug('Calling loadAliasConfig()...')
-            config = loadAliasConfig()
+            debug('Calling ConfigLoader.getInstance().loadConfig()...')
+            config = await ConfigLoader.getInstance().loadConfig()
             debug('Configuration loaded successfully')
             debug('Configuration loaded successfully', {
                 packages: Object.keys(config['nxPackages'] || {}),
@@ -561,7 +557,7 @@ async function main() {
                 process.argv = ['node', 'cli.js', ...newArgs]
                 
                 try {
-                    const result = await main()
+                    const result: number = await main()
 
                     return result
                 } finally {
@@ -602,7 +598,7 @@ function resolveProjectForAlias(aliasValue: string | { name: string, suffix?: 'c
 export {
     main, debug, error, getContextAwareFlags, setupProcessCleanup,
     gracefulShutdown, trackChildProcess, loadPAEModule, resolveProjectForAlias,
-    loadAliasConfig, detectShell, commandExecution, expandableProcessor, aliasManager
+    ConfigLoader, detectShell, commandExecution, expandableProcessor, aliasManager
 }
 
 // Service functions are available directly for optimal performance
@@ -632,11 +628,11 @@ debug('Is main module:', isMainModule)
 if (isMainModule && process.env.NODE_ENV !== 'test' && process.env.VITEST !== 'true') {
     debug('This is the main module, calling main()...')
 
-    main().then(exitCode => {
+    main().then((exitCode: number) => {
         debug('Main function returned:', exitCode)
         debug('Exiting with code:', exitCode)
         process.exit(exitCode)
-    }).catch(error => {
+    }).catch((error: any) => {
         debug('Main function error:', error)
         console.error('Error:', error)
         process.exit(1)

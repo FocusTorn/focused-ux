@@ -2,6 +2,7 @@ import type { AliasConfig } from '../_types/index.js'
 import { expandableProcessor } from '../services/index.js'
 
 export class ExpandableCommand {
+
     private debug: (message: string, ...args: unknown[]) => void
 
     constructor(debug: (message: string, ...args: unknown[]) => void) {
@@ -135,4 +136,5 @@ export class ExpandableCommand {
             return (error as { exitCode?: number }).exitCode || 1
         }
     }
+
 }

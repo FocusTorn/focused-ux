@@ -5,6 +5,7 @@ import { AliasCommand } from './AliasCommand.js'
 import { ExpandableCommand } from './ExpandableCommand.js'
 
 export class CommandRouter {
+
     private installCommand: InstallCommand
     private helpCommand: HelpCommand
     private aliasCommand: AliasCommand
@@ -58,4 +59,5 @@ export class CommandRouter {
         // Otherwise route as alias command
         return await this.aliasCommand.execute([alias, ...args], config)
     }
+
 }

@@ -311,96 +311,101 @@ vi.mock('fs', () => ({
 
 // Mock config module for CLI imports
 vi.mock('./services/ConfigLoader.service.js', () => ({
-    loadAliasConfig: vi.fn().mockImplementation(() => {
-        console.log(`[MOCK ./services/ConfigLoader.service.js] loadAliasConfig called with cwd: "${process.cwd()}"`)
-        console.log(`[MOCK ./services/ConfigLoader.service.js] Returning valid config`)
-        return {
-            'feature-nxTargets': {
-                'dc': {
-                    'template': 'nx run {targets|dynamicons:build}',
-                    'nxTargets': ['dynamicons:build']
-                },
-                'pb': {
-                    'template': 'nx run {targets|project-butler:build}',
-                    'nxTargets': ['project-butler:build']
-                }
-            },
-            'nxTargets': {
-                'dc': {
-                    'template': 'nx run {targets|dynamicons:build}',
-                    'nxTargets': ['dynamicons:build']
-                },
-                'pb': {
-                    'template': 'nx run {targets|project-butler:build}',
-                    'nxTargets': ['project-butler:build']
-                }
-            },
-            'not-nxTargets': {
-                'help': {
-                    'template': 'echo "Help for {args}"',
-                    'description': 'Show help'
-                }
-            },
-            'expandable-commands': {
-                'hello': {
-                    'template': 'echo "Hello {args}"',
-                    'description': 'Say hello'
-                },
-                'npx-run': {
-                    'template': 'npx {global-targets} {args}',
-                    'description': 'Run NPX command'
-                }
-            },
-            'commands': {
-                'hello': {
-                    'template': 'echo "Hello {args}"',
-                    'description': 'Say hello'
-                }
-            },
-            'expandable-flags': {
-                'o': '--output-style=stream',
-                'e': '--elements',
-                's': '--size',
-                'f': '--fix',
-                'fix': '--fix'
-            },
-            'context-aware-flags': {
-                'project': '--project',
-                'target': '--target'
-            },
-            'internal-flags': {
-                'help': '--help',
-                'version': '--version',
-                'debug': '--debug'
-            },
-            'env-setting-flags': {
-                'debug': { 'env': 'DEBUG', 'value': 'true' },
-                'verbose': { 'env': 'VERBOSE', 'value': 'true' }
-            },
-            'expandable-templates': {
-                'default-project': {
-                    'template': 'echo "Starting {PROJECT_NAME}"',
-                    'pwsh-template': {
-                        'template': 'Write-Host "Starting {PROJECT_NAME}"',
-                        'defaults': { 'PROJECT_NAME': 'default-project' }
+    ConfigLoader: {
+        getInstance: vi.fn(() => ({
+            loadConfig: vi.fn().mockImplementation(() => {
+                console.log(`[MOCK ./services/ConfigLoader.service.js] ConfigLoader.getInstance().loadConfig called with cwd: "${process.cwd()}"`)
+                console.log(`[MOCK ./services/ConfigLoader.service.js] Returning valid config`)
+                return Promise.resolve({
+                    'feature-nxTargets': {
+                        'dc': {
+                            'template': 'nx run {targets|dynamicons:build}',
+                            'nxTargets': ['dynamicons:build']
+                        },
+                        'pb': {
+                            'template': 'nx run {targets|project-butler:build}',
+                            'nxTargets': ['project-butler:build']
+                        }
                     },
-                    'linux-template': {
-                        'template': 'echo "Starting {PROJECT_NAME}"',
-                        'defaults': { 'PROJECT_NAME': 'default-project' }
+                    'nxTargets': {
+                        'dc': {
+                            'template': 'nx run {targets|dynamicons:build}',
+                            'nxTargets': ['dynamicons:build']
+                        },
+                        'pb': {
+                            'template': 'nx run {targets|project-butler:build}',
+                            'nxTargets': ['project-butler:build']
+                        }
                     },
-                    'cmd-template': {
-                        'template': 'echo Starting {PROJECT_NAME}',
-                        'defaults': { 'PROJECT_NAME': 'default-project' }
+                    'not-nxTargets': {
+                        'help': {
+                            'template': 'echo "Help for {args}"',
+                            'description': 'Show help'
+                        }
                     },
-                    'defaults': { 'PROJECT_NAME': 'default-project' }
-                }
-            },
-            'nxPackages': {
-                'dynamicons': 'dynamicons',
-                'project-butler': 'project-butler'
-            }
-        }
-    }),
+                    'expandable-commands': {
+                        'hello': {
+                            'template': 'echo "Hello {args}"',
+                            'description': 'Say hello'
+                        },
+                        'npx-run': {
+                            'template': 'npx {global-targets} {args}',
+                            'description': 'Run NPX command'
+                        }
+                    },
+                    'commands': {
+                        'hello': {
+                            'template': 'echo "Hello {args}"',
+                            'description': 'Say hello'
+                        }
+                    },
+                    'expandable-flags': {
+                        'o': '--output-style=stream',
+                        'e': '--elements',
+                        's': '--size',
+                        'f': '--fix',
+                        'fix': '--fix'
+                    },
+                    'context-aware-flags': {
+                        'project': '--project',
+                        'target': '--target'
+                    },
+                    'internal-flags': {
+                        'help': '--help',
+                        'version': '--version',
+                        'debug': '--debug'
+                    },
+                    'env-setting-flags': {
+                        'debug': { 'env': 'DEBUG', 'value': 'true' },
+                        'verbose': { 'env': 'VERBOSE', 'value': 'true' }
+                    },
+                    'expandable-templates': {
+                        'default-project': {
+                            'template': 'echo "Starting {PROJECT_NAME}"',
+                            'pwsh-template': {
+                                'template': 'Write-Host "Starting {PROJECT_NAME}"',
+                                'defaults': { 'PROJECT_NAME': 'default-project' }
+                            },
+                            'linux-template': {
+                                'template': 'echo "Starting {PROJECT_NAME}"',
+                                'defaults': { 'PROJECT_NAME': 'default-project' }
+                            },
+                            'cmd-template': {
+                                'template': 'echo Starting {PROJECT_NAME}',
+                                'defaults': { 'PROJECT_NAME': 'default-project' }
+                            },
+                            'defaults': { 'PROJECT_NAME': 'default-project' }
+                        }
+                    },
+                    'nxPackages': {
+                        'dynamicons': 'dynamicons',
+                        'project-butler': 'project-butler'
+                    }
+                })
+            }),
+        }))
+    },
+            
     resolveProjectForAlias: vi.fn().mockImplementation(alias => {
         console.log(`[MOCK ./services/ConfigLoader.service.js] resolveProjectForAlias called with alias: "${alias}"`)
         const aliasMap: Record<string, string> = {
@@ -413,98 +418,93 @@ vi.mock('./services/ConfigLoader.service.js', () => ({
         return aliasMap[alias] || null
     }),
     clearAllCaches: vi.fn(),
-    ConfigLoader: vi.fn().mockImplementation(() => ({
-        getInstance: vi.fn().mockReturnValue({
-            clearCache: vi.fn(),
-            loadConfig: vi.fn(),
-            reloadConfig: vi.fn(),
-            getCachedConfig: vi.fn(),
-            validateConfig: vi.fn()
-        })
-    })),
     default: {}
 }))
 
 // Mock config module for tests imports
 vi.mock('../../src/services/ConfigLoader.service.js', () => ({
-    loadAliasConfig: vi.fn().mockImplementation(() => {
-        console.log(`[MOCK ../../src/services/ConfigLoader.service.js] loadAliasConfig called with cwd: "${process.cwd()}"`)
-        const _cwd = process.cwd()
-        console.log(`[MOCK ../../src/services/ConfigLoader.service.js] Returning valid config`)
-        // Always return a valid config for tests
-        return {
-            'feature-nxTargets': {
-                'b': { 'run-from': 'ext', 'run-target': 'build' },
-                't': { 'run-from': 'ext', 'run-target': 'test:deps --output-style=stream' },
-                'ti': { 'run-from': 'ext', 'run-target': 'test:integration' },
-                'tsc': { 'run-from': 'ext', 'run-target': 'type-check' },
-                'l': { 'run-from': 'ext', 'run-target': 'lint:deps --output-style=stream' },
-                'ct': { 'run-from': 'ext', 'run-target': 'check-types:deps --output-style=stream' }
-            },
-            'nxTargets': {
-                'b': 'build',
-                't': 'test',
-                'ti': 'test:integration',
-                'tsc': 'type-check',
-                'l': 'lint',
-                'ct': 'check-types'
-            },
-            'not-nxTargets': {
-                'esv': 'npx esbuild-visualizer --metadata'
-            },
-            'expandable-commands': {
-                'build': 'nx build @fux/project-alias-expander -s'
-            },
-            'commands': {
-                'install': 'Install PAE scripts to native modules directory',
-                'load': 'Load PAE module into active PowerShell session',
-                'help': 'Show this help with all available aliases and flags'
-            },
-            'expandable-flags': {
-                'f': '--fix',
-                's': '--skip-nx-cache',
-                'os': { 'template': '--output-style={style}', 'defaults': { 'style': 'stream' } },
-                'c': '--coverage',
-                't': '--timeout',
-                'sto': {'template': '-sto={ms}', 'defaults': { 'ms': '5000' } },
-                'stoX': {'template': '-stoX={ms}', 'defaults': { 'ms': '10000' } },
-                'debug': { 'env-var': 'PAE_DEBUG' },
-                'echo': { 'env-var': 'PAE_ECHO' },
-                'echoX': { 'env-var': 'PAE_ECHO_X' },
-                'pae-debug': '--debug --pae-debug',
-                'cache-clear': '--clear-cache',
-            },
-            'context-aware-flags': {
-                'build': {
-                    default: {'f': '--fix'}
-                },
-                'test': {
-                    default: {'c': '--coverage'}
-                }
-            },
-            'internal-flags': {
-                'debug': { 'env-var': 'PAE_DEBUG' },
-                'echo': { 'env-var': 'PAE_ECHO' },
-                'echoX': { 'env-var': 'PAE_ECHO_X' },
-                'timeout': {'env-var': 'PAE_TIMEOUT'}
-            },
-            'env-setting-flags': {
-                'pae-debug': { 'env-var': 'PAE_DEBUG', 'env-value': '1' },
-                'sto': {'template': '-sto={ms}', 'env-var': 'PAE_TIMEOUT', 'env-value': '{ms}'},
-                'stoX': {'template': '-stoX={ms}', 'env-var': 'PAE_TIMEOUT', 'env-value': '{ms}'}
-            },
-            'expandable-templates': {
-                'timeout': { 'template': 'timeout {ms} ms', 'defaults': { 'ms': '5000' } },
-                'prefix': { 'template': '{prefix}', 'defaults': { 'prefix': 'echo "Starting..."' } },
-                'suffix': { 'template': '{suffix}', 'destinate': { 'suffix': 'echo "Completed"' } }
-            },
-            'nxPackages': {
-                'aka': { project: 'project-alias-expander', suffix: 'core' },
-                'dc': { project: 'dynamicons', suffix: 'ext' },
-                'shared': { project: 'shared', suffix: null },
-            }
-        }
-    }),
+    ConfigLoader: {
+        getInstance: vi.fn(() => ({
+            loadConfig: vi.fn().mockImplementation(() => {
+                console.log(`[MOCK ../../src/services/ConfigLoader.service.js] ConfigLoader.getInstance().loadConfig called with cwd: "${process.cwd()}"`)
+                // const cwd = process.cwd()
+                console.log(`[MOCK ../../src/services/ConfigLoader.service.js] Returning valid config`)
+                // Always return a valid config for tests
+                return Promise.resolve({
+                    'feature-nxTargets': {
+                        'b': { 'run-from': 'ext', 'run-target': 'build' },
+                        't': { 'run-from': 'ext', 'run-target': 'test:deps --output-style=stream' },
+                        'ti': { 'run-from': 'ext', 'run-target': 'test:integration' },
+                        'tsc': { 'run-from': 'ext', 'run-target': 'type-check' },
+                        'l': { 'run-from': 'ext', 'run-target': 'lint:deps --output-style=stream' },
+                        'ct': { 'run-from': 'ext', 'run-target': 'check-types:deps --output-style=stream' }
+                    },
+                    'nxTargets': {
+                        'b': 'build',
+                        't': 'test',
+                        'ti': 'test:integration',
+                        'tsc': 'type-check',
+                        'l': 'lint',
+                        'ct': 'check-types'
+                    },
+                    'not-nxTargets': {
+                        'esv': 'npx esbuild-visualizer --metadata'
+                    },
+                    'expandable-commands': {
+                        'build': 'nx build @fux/project-alias-expander -s'
+                    },
+                    'commands': {
+                        'install': 'Install PAE scripts to native modules directory',
+                        'load': 'Load PAE module into active PowerShell session',
+                        'help': 'Show this help with all available aliases and flags'
+                    },
+                    'expandable-flags': {
+                        'f': '--fix',
+                        's': '--skip-nx-cache',
+                        'os': { 'template': '--output-style={style}', 'defaults': { 'style': 'stream' } },
+                        'c': '--coverage',
+                        't': '--timeout',
+                        'sto': {'template': '-sto={ms}', 'defaults': { 'ms': '5000' } },
+                        'stoX': {'template': '-stoX={ms}', 'defaults': { 'ms': '10000' } },
+                        'debug': { 'env-var': 'PAE_DEBUG' },
+                        'echo': { 'env-var': 'PAE_ECHO' },
+                        'echoX': { 'env-var': 'PAE_ECHO_X' },
+                        'pae-debug': '--debug --pae-debug',
+                        'cache-clear': '--clear-cache',
+                    },
+                    'context-aware-flags': {
+                        'build': {
+                            default: {'f': '--fix'}
+                        },
+                        'test': {
+                            default: {'c': '--coverage'}
+                        }
+                    },
+                    'internal-flags': {
+                        'debug': { 'env-var': 'PAE_DEBUG' },
+                        'echo': { 'env-var': 'PAE_ECHO' },
+                        'echoX': { 'env-var': 'PAE_ECHO_X' },
+                        'timeout': {'env-var': 'PAE_TIMEOUT'}
+                    },
+                    'env-setting-flags': {
+                        'pae-debug': { 'env-var': 'PAE_DEBUG', 'env-value': '1' },
+                        'sto': {'template': '-sto={ms}', 'env-var': 'PAE_TIMEOUT', 'env-value': '{ms}'},
+                        'stoX': {'template': '-stoX={ms}', 'env-var': 'PAE_TIMEOUT', 'env-value': '{ms}'}
+                    },
+                    'expandable-templates': {
+                        'timeout': { 'template': 'timeout {ms} ms', 'defaults': { 'ms': '5000' } },
+                        'prefix': { 'template': '{prefix}', 'defaults': { 'prefix': 'echo "Starting..."' } },
+                        'suffix': { 'template': '{suffix}', 'destinate': { 'suffix': 'echo "Completed"' } }
+                    },
+                    'nxPackages': {
+                        'aka': { project: 'project-alias-expander', suffix: 'core' },
+                        'dc': { project: 'dynamicons', suffix: 'ext' },
+                        'shared': { project: 'shared', suffix: null },
+                    }
+                })
+            })
+        }))
+    },
     resolveProjectForAlias: vi.fn().mockImplementation(
         (aliasValue) => {
             const name = aliasValue.project || aliasValue.name
@@ -634,7 +634,7 @@ vi.mock('../../src/services/index.js', () => {
 })
 
 // Add duplicate mock for integration tests that import differently
-vi.mock('../../../src/services/index.js', () => {
+vi.mock('../../../src/services/index.js', () => { //>
     const commandExecution = {
         runNx: vi.fn().mockResolvedValue(0),
         runCommand: vi.fn().mockResolvedValue(0),
@@ -711,104 +711,98 @@ vi.mock('../../../src/services/index.js', () => {
 
 // Duplicate mocks with different relative specifiers used by some tests
 vi.mock('../../../src/services/ConfigLoader.service.js', () => ({
-    loadAliasConfig: vi.fn().mockImplementation(() => {
-        const cwd = process.cwd()
-        console.log(`[MOCK ../../../src/services/ConfigLoader.service.js] loadAliasConfig called with cwd: "${cwd}"`)
-        if (/temp-|test-workspace/i.test(cwd)) {
-            console.log(`[MOCK ../../../src/services/ConfigLoader.service.js] Throwing error due to temp workspace cwd`)
-            throw new Error('Failed to load configuration: not in workspace root')
-        }
-        console.log(`[MOCK ../../../src/services/ConfigLoader.service.js] Returning valid config`)
-        return {
-            'feature-nxTargets': {
-                'b': { 'run-from': 'ext', 'run-target': 'build' },
-                't': { 'run-from': 'ext', 'run-target': 'test:deps --output-style=stream' },
-                'ti': { 'run-from': 'ext', 'run-target': 'test:integration' },
-                'tsc': { 'run-from': 'ext', 'run-target': 'type-check**' },
-                'l': { 'run-from': 'ext', 'run-target': 'lint:deps --output-style=stream' },
-                'ct': { 'run-from': 'ext', 'run-target': 'check-types:deps --output-style=stream' }
-            },
-            'nxTargets': {
-                'b': 'build',
-                't': 'test',
-                'ti': 'test:integration',
-                'tsc': 'type-check',
-                'l': 'lint',
-                'ct': 'check-types'
-            },
-            'not-nxTargets': {
-                'esv': 'npx esbuild-visualizer --metadata'
-            },
-            'expandable-commands': {
-                'build': 'nx build @fux/project-alias-expander -s'
-            },
-            'commands': {
-                'install': 'Install PAE scripts to native modules directory',
-                'load': 'Load PAE module into active PowerShell session',
-                'help': 'Show this help with all available aliases and flags'
-            },
-            'expandable-flags': {
-                'f': '--fix',
-                's': '--skip-nx-cache',
-                'os': { 'template': '--output-style={style}', 'defaults': { 'style': 'stream' } },
-                'c': '--coverage',
-                'timeout': { 'template': '{ms} ms', 'defaults': { 'ms': '5000' } },
-                'sto': {'template': '-sto={ms}', 'defaults': { 'ms': '5000' } },
-                'stoX': {'template': '-stoX={ms}', 'defaults': { 'ms': '10000' } },
-                'debug': { 'env-var': 'PAE_DEBUG' },
-                'echo': { 'env-var': 'PAE_ECHO' },
-                'echoX': { 'env-var': 'PAE_ECHO_X' },
-                'pae-debug': '--debug --pae-debug',
-                'cache-clear': '--clear-cache',
-            },
-            'context-aware-flags': {
-                'build': {
-                    default: {'f': '--fix'}
-                },
-                'test': {
-                    default: {'c': '--coverage'}
+    ConfigLoader: {
+        getInstance: vi.fn(() => ({
+            loadConfig: vi.fn().mockImplementation(() => {
+                const cwd = process.cwd()
+                console.log(`[MOCK ../../../src/services/ConfigLoader.service.js] ConfigLoader.getInstance().loadConfig called with cwd: "${cwd}"`)
+                if (/temp-|test-workspace/i.test(cwd)) {
+                    console.log(`[MOCK ../../../src/services/ConfigLoader.service.js] Throwing error due to temp workspace cwd`)
+                    throw new Error('Failed to load configuration: not in workspace root')
                 }
-            },
-            'internal-flags': {
-                'debug': { 'env-var': 'PAE_DEBUG' },
-                'echo': { 'env-var': 'PAE_ECHO' },
-                'echoX': { 'env-var': 'PAE_ECHO_X' },
-                'timeout': {'env-var': 'PAE_TIMEOUT'}
-            },
-            'env-setting-flags': {
-                'pae-debug': { 'env-var': 'PAE_DEBUG', 'env-value': '1' },
-                'sto': {'template': '-sto={ms}', 'env-var': 'PAE_TIMEOUT', 'env-value': '{ms}'},
-                'stoX': {'template': '-stoX={ms}', 'env-var': 'PAE_TIMEOUT', 'env-value': '{ms}'}
-            },
-            'expandable-templates': {
-                'timeout': { 'template': 'timeout {ms} ms', 'defaults': { 'ms': '5000' } },
-                'prefix': { 'template': '{prefix}', 'defaults': { 'prefix': 'echo "Starting..."' } },
-                'suffix': { 'template': '{suffix}', 'defaults': { 'suffix': 'echo "Completed"' } }
-            },
-            'nxPackages': {
-                'aka': { project: 'project-alias-expander', suffix: 'core' },
-                'dc': { project: 'dynamicons', suffix: 'ext' },
-                'shared': { project: 'shared', suffix: null },
-            }
-        }
-    }),
-    resolveProjectForAlias: vi.fn().mockImplementation(
-        (aliasValue) => {
-            const name = aliasValue.project || aliasValue.name
-            const suffix = aliasValue.suffix || aliasValue['run-from']
+                console.log(`[MOCK ../../../src/services/ConfigLoader.service.js] Returning valid config`)
+                return Promise.resolve({
+                    'feature-nxTargets': {
+                        'b': { 'run-from': 'ext', 'run-target': 'build' },
+                        't': { 'run-from': 'ext', 'run-target': 'test:deps --output-style=stream' },
+                        'ti': { 'run-from': 'ext', 'run-target': 'test:integration' },
+                        'tsc': { 'run-from': 'ext', 'run-target': 'type-check**' },
+                        'l': { 'run-from': 'ext', 'run-target': 'lint:deps --output-style=stream' },
+                        'ct': { 'run-from': 'ext', 'run-target': 'check-types:deps --output-style=stream' }
+                    },
+                    'nxTargets': {
+                        'b': 'build',
+                        't': 'test',
+                        'ti': 'test:integration',
+                        'tsc': 'type-check',
+                        'l': 'lint',
+                        'ct': 'check-types'
+                    },
+                    'not-nxTargets': {
+                        'esv': 'npx esbuild-visualizer --metadata'
+                    },
+                    'expandable-commands': {
+                        'build': 'nx build @fux/project-alias-expander -s'
+                    },
+                    'commands': {
+                        'install': 'Install PAE scripts to native modules directory',
+                        'load': 'Load PAE module into active PowerShell session',
+                        'help': 'Show this help with all available aliases and flags'
+                    },
+                    'expandable-flags': {
+                        'f': '--fix',
+                        's': '--skip-nx-cache',
+                        'os': { 'template': '--output-style={style}', 'defaults': { 'style': 'stream' } },
+                        'c': '--coverage',
+                        'timeout': { 'template': '{ms} ms', 'defaults': { 'ms': '5000' } },
+                        'sto': {'template': '-sto={ms}', 'defaults': { 'ms': '5000' } },
+                        'stoX': {'template': '-stoX={ms}', 'defaults': { 'ms': '10000' } },
+                        'debug': { 'env-var': 'PAE_DEBUG' },
+                        'echo': { 'env-var': 'PAE_ECHO' },
+                        'echoX': { 'env-var': 'PAE_ECHO_X' },
+                        'pae-debug': '--debug --pae-debug',
+                        'cache-clear': '--clear-cache',
+                    },
+                    'context-aware-flags': {
+                        'build': {
+                            default: {'f': '--fix'}
+                        },
+                        'test': {
+                            default: {'c': '--coverage'}
+                        }
+                    },
+                    'internal-flags': {
+                        'debug': { 'env-var': 'PAE_DEBUG' },
+                        'echo': { 'env-var': 'PAE_ECHO' },
+                        'echoX': { 'env-var': 'PAE_ECHO_X' },
+                        'timeout': {'env-var': 'PAE_TIMEOUT'}
+                    },
+                    'env-setting-flags': {
+                        'pae-debug': { 'env-var': 'PAE_DEBUG', 'env-value': '1' },
+                        'sto': {'template': '-sto={ms}', 'env-var': 'PAE_TIMEOUT', 'env-value': '{ms}'},
+                        'stoX': {'template': '-stoX={ms}', 'env-var': 'PAE_TIMEOUT', 'env-value': '{ms}'}
+                    },
+                    'expandable-templates': {
+                        'timeout': { 'template': 'timeout {ms} ms', 'defaults': { 'ms': '5000' } },
+                        'prefix': { 'template': '{prefix}', 'defaults': { 'prefix': 'echo "Starting..."' } },
+                        'suffix': { 'template': '{suffix}', 'defaults': { 'suffix': 'echo "Completed"' } }
+                    },
+                    'nxPackages': {
+                        'aka': { project: 'project-alias-expander', suffix: 'core' },
+                        'dc': { project: 'dynamicons', suffix: 'ext' },
+                        'shared': { project: 'shared', suffix: null },
+                    }
+                })
+            })
+        }))
+    },
+    resolveProjectForAlias: vi.fn().mockImplementation((aliasValue) => {
+        const name = aliasValue.project || aliasValue.name
+        const suffix = aliasValue.suffix || aliasValue['run-from']
 
-            const projectName = suffix ? `${name}-${suffix}` : name
-            return { project: projectName, isFull: false }
-        }),
-    ConfigLoader: vi.fn().mockImplementation(() => ({
-        getInstance: vi.fn().mockReturnValue({
-            clearCache: vi.fn(),
-            loadConfig: vi.fn(),
-            reloadConfig: vi.fn(),
-            getCachedConfig: vi.fn(),
-            validateConfig: vi.fn()
-        })
-    })),
+        const projectName = suffix ? `${name}-${suffix}` : name
+        return { project: projectName, isFull: false }
+    }),
 }))
 
 // Additional mocks for specific test dependencies

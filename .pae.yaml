@@ -1,0 +1,177 @@
+# Project Alias Expander (PAE) Configuration
+# YAML version of .pae.json for improved readability
+
+# Feature-specific Nx targets with run context
+feature-nxTargets:
+    b:
+        run-from: ext
+        run-target: build
+    t:
+        run-from: ext
+        run-target: test:deps --output-style=stream
+    ti:
+        run-from: ext
+        run-target: test:integration
+    tsc:
+        run-from: ext
+        run-target: type-check
+    l:
+        run-from: ext
+        run-target: lint:deps --output-style=stream
+    ct:
+        run-from: ext
+        run-target: check-types:deps --output-style=stream
+
+# Standard Nx targets
+nxTargets:
+    b: build
+    p: package
+    pd: package:dev
+    pub: publish
+    ct: check-types
+    ctd: check-types:deps
+    l: lint
+    lf: lint:deps
+    v: validate
+    vf: validate:deps
+    a: audit
+    aa: audit:all
+    at: audit:test
+    ac: audit:code
+    t: test
+    tc: test:coverage-tests
+    td: test:deps
+    tdc: test:deps:coverage-tests
+    ti: test:integration
+    tf: test:file
+    c: clean
+    cc: clean:cache
+    cd: clean:dist
+    s: status
+    o: optimize
+    m: monitor
+
+# Non-Nx targets (external commands)
+not-nxTargets:
+    esv: npx esbuild-visualizer --metadata
+
+# Expandable commands
+expandable-commands:
+    build: nx build @fux/project-alias-expander -s
+    globalize: nx install @fux/project-alias-expander -s
+
+# Command descriptions
+commands:
+    install: 'Install PAE scripts to native modules directory (use --local for dist-based install)'
+    load: 'Load PAE module into active PowerShell session'
+    help: 'Show this help with all available aliases and flags (deprecated)'
+
+# Expandable flags with templates
+expandable-flags:
+    # Simple flags (direct expansion)
+    s: --skip-nx-cache
+    f: --fix
+    c: --coverage
+    watch: --watch
+
+    # Complex flags (with templates and defaults)
+    os:
+        default: stream
+        template: '--output-style={{style}}'
+    bail:
+        default: '1'
+        template: '--bail {{bailOn}}'
+
+# Context-aware flags for file operations
+context-aware-flags:
+    file:
+        l:
+            default: ''
+            template: '--lintFilePatterns=={{value}}'
+        t:
+            default: ''
+            template: '--testFile=={{value}}'
+
+# Expandable templates (currently empty)
+expandable-templates: {}
+
+# Internal flags (processed by PAE, not passed to commands)
+internal-flags:
+    h: --help
+    sto:
+        default: '10'
+        mutation: "{{value}} >= 100 ? {{value}} : parseInt({{value}}.toString() + '000')"
+        template: '--pae-execa-timeout={{value}}'
+
+# Environment setting flags
+env-setting-flags:
+    v: --pae-verbose
+    db: --pae-debug
+
+    echo:
+        defaults: ''
+        mutation: "{{echoVariant}} -replace '^si$', 'short-in' -replace '^so$', 'short-out' -replace '^gi$', 'global-in' -replace '^go$', 'global-out'"
+        template: '--pae-echo={{echoVariant}}'
+    echoX:
+        defaults: ''
+        mutation: "{{echoVariant}} -replace '^si$', 'short-in' -replace '^so$', 'short-out' -replace '^gi$', 'global-in' -replace '^go$', 'global-out'"
+        template: '--pae-echoX={{echoVariant}}'
+
+# Nx package aliases - Simplified structure
+nxPackages:
+    # Feature packages with variants
+    context-cherry-picker:
+        aliases: [ccp]
+        variants:
+            core: ccpc
+            ext: ccpe
+        default: ext
+
+    dynamicons:
+        aliases: [dc]
+        variants:
+            core: dcc
+            ext: dce
+        default: ext
+
+    ghost-writer:
+        aliases: [gw]
+        variants:
+            core: gwc
+            ext: gwe
+        default: ext
+
+    project-butler:
+        aliases: [pb]
+        variants:
+            core: pbc
+            ext: pbe
+        default: ext
+
+    note-hub:
+        aliases: [nh]
+        variants:
+            core: nhc
+            ext: nhe
+
+    # Tool packages (direct references)
+    tools:
+        vp: '@fux/vsix-packager'
+        vsct: '@fux/vscode-test-cli-config'
+        aka: '@fux/project-alias-expander'
+        ms: '@fux/mock-strategy'
+        audit: '@fux/structure-auditor'
+        cmo: '@fux/cursor-memory-optimizer'
+        vpack: '@fux/vpack'
+        vscte: '@fux/vscode-test-executor'
+        fttc: '@fux/ft-typescript'
+        reco: '@fux/recommended'
+# Commented out examples (from original JSON)
+# tn:
+#   defaults:
+#     namePattern: ""
+#   template: "--testNamePattern='{namePattern}'"
+# tf:
+#   defaults:
+#     fileName: ""
+#   template: "--testfile='{fileName}'"

@@ -59,6 +59,7 @@ interface ActiveProcess {
  * - Process leak prevention
  */
 export class ProcessPool {
+
     private activeProcesses = new Map<number, ActiveProcess>()
     private config: ProcessPoolConfig
     private metrics: ProcessMetrics
@@ -168,9 +169,9 @@ export class ProcessPool {
                 command,
                 args
             }
-
         } catch (error: any) {
             const duration = Date.now() - startTime
+
             this.updateMetrics('fail', duration)
             
             // Clean up the process if it's still tracked
@@ -201,6 +202,7 @@ export class ProcessPool {
 
         for (const cmd of commands) {
             const promise = this.execute(cmd.command, cmd.args, cmd.options)
+
             promises.push(promise)
         }
 
@@ -291,6 +293,7 @@ export class ProcessPool {
                     setTimeout(checkSlot, 100)
                 }
             }
+
             checkSlot()
         })
     }
@@ -300,6 +303,7 @@ export class ProcessPool {
      */
     private handleProcessExit(pid: number, code: number | null, signal: string | null, startTime: number): void {
         const activeProcess = this.activeProcesses.get(pid)
+
         if (!activeProcess) return
 
         // Clean up timeout
@@ -311,6 +315,7 @@ export class ProcessPool {
         this.activeProcesses.delete(pid)
 
         const duration = Date.now() - startTime
+
         this.updateMetrics('complete', duration)
 
         if (this.config.enableMetrics) {
@@ -323,6 +328,7 @@ export class ProcessPool {
      */
     private handleProcessError(pid: number, error: Error, startTime: number): void {
         const activeProcess = this.activeProcesses.get(pid)
+
         if (!activeProcess) return
 
         // Clean up timeout
@@ -334,6 +340,7 @@ export class ProcessPool {
         this.activeProcesses.delete(pid)
 
         const duration = Date.now() - startTime
+
         this.updateMetrics('fail', duration)
 
         if (this.config.enableMetrics) {
@@ -374,9 +381,9 @@ export class ProcessPool {
                 this.metrics.completedProcesses++
                 this.metrics.activeProcesses = this.activeProcesses.size
                 if (duration) {
-                    this.metrics.averageExecutionTime = 
-                        (this.metrics.averageExecutionTime * (this.metrics.completedProcesses - 1) + duration) / 
-                        this.metrics.completedProcesses
+                    this.metrics.averageExecutionTime
+                        = (this.metrics.averageExecutionTime * (this.metrics.completedProcesses - 1) + duration)
+                        / this.metrics.completedProcesses
                 }
                 break
 
@@ -441,6 +448,7 @@ export class ProcessPool {
         await Promise.race([shutdownPromise, timeoutPromise])
         console.log('ProcessPool shutdown complete')
     }
+
 }
 
 // Export singleton instance for convenience

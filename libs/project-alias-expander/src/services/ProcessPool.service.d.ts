@@ -152,6 +152,7 @@ interface ActiveProcess {
  * ```
  */
 export class ProcessPool {
+
     private activeProcesses = new Map<number, ActiveProcess>()
     private config: ProcessPoolConfig
     private metrics: ProcessMetrics
@@ -311,13 +312,14 @@ export class ProcessPool {
                 command,
                 args
             }
-
         } catch (error: any) {
             const duration = Date.now() - startTime
+
             this.updateMetrics('fail', duration)
             
             // Clean up the process if it's still tracked
             const activeProcess = this.activeProcesses.get(childProcess.pid!)
+
             if (activeProcess?.timeout) {
                 clearTimeout(activeProcess.timeout)
             }
@@ -371,6 +373,7 @@ export class ProcessPool {
 
         for (const cmd of commands) {
             const promise = this.execute(cmd.command, cmd.args, cmd.options)
+
             promises.push(promise)
         }
 
@@ -494,4 +497,5 @@ export class ProcessPool {
     }
 
     // ... (private methods continue with JSDoc comments)
+
 }

@@ -1,5 +1,5 @@
 {
-    "$schema": "https://json-schema.org/schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "version": 2,
     "title": "Typecheck executor",
     "description": "TypeScript strict type checking without tsconfig file",
@@ -15,59 +15,56 @@
         },
         "strict": {
             "type": "boolean",
-            "description": "Enable strict type checking",
-            "default": true
+            "description": "Enable strict type checking (defaults from tsconfig.base.json)"
         },
         "target": {
             "type": "string",
-            "description": "TypeScript compilation target",
-            "default": "ES2022"
+            "description": "TypeScript compilation target (defaults from tsconfig.base.json)"
         },
         "moduleResolution": {
             "type": "string",
-            "description": "Module resolution strategy",
-            "default": "NodeNext"
+            "description": "Module resolution strategy (defaults from tsconfig.base.json)"
         },
         "skipLibCheck": {
             "type": "boolean",
-            "description": "Skip type checking of declaration files",
-            "default": true
+            "description": "Skip type checking of declaration files (defaults from tsconfig.base.json)"
         },
         "noImplicitAny": {
             "type": "boolean",
-            "description": "Enable noImplicitAny",
-            "default": true
+            "description": "Enable noImplicitAny (defaults from tsconfig.base.json)"
         },
         "noImplicitReturns": {
             "type": "boolean",
-            "description": "Enable noImplicitReturns",
-            "default": true
+            "description": "Enable noImplicitReturns (defaults from tsconfig.base.json)"
         },
         "noImplicitThis": {
             "type": "boolean",
-            "description": "Enable noImplicitThis",
-            "default": true
+            "description": "Enable noImplicitThis (defaults from tsconfig.base.json)"
         },
         "noUnusedLocals": {
             "type": "boolean",
-            "description": "Enable noUnusedLocals",
-            "default": true
+            "description": "Enable noUnusedLocals (defaults from tsconfig.base.json)"
         },
         "noUnusedParameters": {
             "type": "boolean",
-            "description": "Enable noUnusedParameters",
-            "default": true
+            "description": "Enable noUnusedParameters (defaults from tsconfig.base.json)"
         },
         "exactOptionalPropertyTypes": {
             "type": "boolean",
-            "description": "Enable exactOptionalPropertyTypes",
-            "default": true
+            "description": "Enable exactOptionalPropertyTypes (defaults from tsconfig.base.json)"
         },
         "configFile": {
             "type": "string",
             "description": "Path to error message override config file",
             "default": "plugins/ft-typescript/config.json"
+        },
+        "show": {
+            "type": "string",
+            "enum": ["totals", "each"],
+            "description": "Output format: 'totals' shows file names with error counts, 'each' shows each error line by line",
+            "default": "each"
         }
+       
     },
     "required": []
 }

@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 // Mock config module
 vi.mock('../../../src/services/ConfigLoader.service.js', () => ({
-    loadAliasConfig: vi.fn(),
+    ConfigLoader: {
+        getInstance: vi.fn(() => ({
+            loadConfig: vi.fn()
+        }))
+    },
     clearAllCaches: vi.fn()
 }))
 
@@ -59,8 +63,9 @@ describe('HelpCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Import and call HelpCommand directly
             const { HelpCommand } = await import('../../../src/commands/HelpCommand.js')
@@ -83,13 +88,14 @@ describe('HelpCommand Tests', () => {
             expect(calls).toContain('Environment Variables:')
             
             // Verify the config was loaded
-            expect(loadAliasConfig).toHaveBeenCalled()
+            expect(ConfigLoader.getInstance().loadConfig).toHaveBeenCalled()
         })
 
         it('should display fallback help when configuration loading fails', async () => {
             // Mock config loading failure
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockImplementation(() => {
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockImplementation(() => {
                 throw new Error('Config loading failed')
             })
 
@@ -136,8 +142,9 @@ describe('HelpCommand Tests', () => {
     describe('help command error handling', () => {
         it('should handle configuration loading errors gracefully', async () => {
             // Mock config loading failure
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockImplementation(() => {
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockImplementation(() => {
                 throw new Error('Config loading failed')
             })
 
@@ -152,8 +159,9 @@ describe('HelpCommand Tests', () => {
 
         it('should handle null configuration gracefully', async () => {
             // Mock null config
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(null as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(null as any)
 
             // Import and call HelpCommand directly
             const { HelpCommand } = await import('../../../src/commands/HelpCommand.js')
@@ -165,8 +173,9 @@ describe('HelpCommand Tests', () => {
 
         it('should handle undefined configuration gracefully', async () => {
             // Mock undefined config
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(undefined as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(undefined as any)
 
             // Import and call HelpCommand directly
             const { HelpCommand } = await import('../../../src/commands/HelpCommand.js')
@@ -184,8 +193,9 @@ describe('HelpCommand Tests', () => {
                 'feature-nxTargets': undefined
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Import and call HelpCommand directly
             const { HelpCommand } = await import('../../../src/commands/HelpCommand.js')

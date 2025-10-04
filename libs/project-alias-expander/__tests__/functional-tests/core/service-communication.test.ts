@@ -1,12 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import type { 
+import type {
     IPAEDependencies,
     IExpandableProcessorService,
     ICommandExecutionService,
-    IAliasManagerService,
-    ProcessResult,
-    ProcessMetrics
+    IAliasManagerService
 } from '../../../src/_types/index.js'
+import type { ProcessResult, ProcessMetrics } from '../../../src/services/ProcessPool.service.js'
 import { PAEManagerService } from '../../../src/services/PAEManager.service.js'
 import { ExpandableProcessorService } from '../../../src/services/ExpandableProcessor.service.js'
 import { CommandExecutionService } from '../../../src/services/CommandExecution.service.js'
@@ -89,8 +88,12 @@ describe('Service Communication - Inter-Service Patterns', () => {
             const mockConstructCommand = vi.spyOn(expandableProcessor, 'constructWrappedCommand')
             
             mockExpandFlags.mockReturnValue({
-                expanded: ['--skip-nx-cache', '--output-style=stream'],
-                remaining: ['build', 'test-project']
+                start: [],
+                prefix: [],
+                preArgs: ['--skip-nx-cache', '--output-style=stream'],
+                suffix: [],
+                end: [],
+                remainingArgs: ['build', 'test-project']
             })
             mockConstructCommand.mockReturnValue([
                 'echo "Starting"',
@@ -113,7 +116,7 @@ describe('Service Communication - Inter-Service Patterns', () => {
             )
             
             expect(mockExpandFlags).toHaveBeenCalledBefore(mockConstructCommand as any)
-            expect(flagResult.expanded).toContain('--skip-nx-cache')
+            expect(flagResult.preArgs).toContain('--skip-nx-cache')
             expect(commandResult).toContain('nx')
             expect(commandResult).toContain('build')
         })
@@ -122,7 +125,7 @@ describe('Service Communication - Inter-Service Patterns', () => {
             const mockGenerateFiles = vi.spyOn(aliasManager, 'generateLocalFiles')
             const mockInstallAliases = vi.spyOn(aliasManager, 'installAliases')
             
-            mockGenerateFiles.mockReturnValue(undefined)
+            mockGenerateFiles.mockResolvedValue(undefined)
             mockInstallAliases.mockResolvedValue(undefined)
             
             paeManager.generateLocalFiles()
@@ -197,7 +200,7 @@ describe('Service Communication - Inter-Service Patterns', () => {
             mockDetectShell.mockReturnValue('pwsh')
             mockExpandTemplate.mockReturnValue('Write-Host "Starting build"; nx build test-project')
             mockRunCommand.mockResolvedValue(0)
-            mockGenerateFiles.mockReturnValue(undefined)
+            mockGenerateFiles.mockResolvedValue(undefined)
             
             // Complex workflow: detect shell, expand template, generate files, execute command
             const shellType = paeManager.detectShellType()
@@ -240,7 +243,7 @@ describe('Service Communication - Inter-Service Patterns', () => {
             
             mockExpandTemplate.mockReturnValue('async command')
             mockRunCommand.mockResolvedValue(0)
-            mockGenerateFiles.mockReturnValue(undefined)
+            mockGenerateFiles.mockResolvedValue(undefined)
             
             // Mix of sync and async operations
             const syncResult = paeManager.expandTemplate('test', {})
@@ -351,8 +354,8 @@ describe('Service Communication - Inter-Service Patterns', () => {
             const startTime = Date.now()
             
             // Mix of sync and async operations
-            const syncResults = []
-            const asyncPromises = []
+            const syncResults: string[] = []
+            const asyncPromises: Promise<number>[] = []
             
             for (let i = 0; i < 50; i++) {
                 syncResults.push(paeManager.expandTemplate(`template-${i}`, {}))

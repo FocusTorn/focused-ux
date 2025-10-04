@@ -20,8 +20,8 @@ export class CommandExecutionService implements ICommandExecutionService {
      * Execute command using the ProcessPool for better resource management
      */
     async executeWithPool(
-        command: string, 
-        args: string[], 
+        command: string,
+        args: string[],
         options?: {
             timeout?: number
             stdio?: 'inherit' | 'pipe'
@@ -111,7 +111,6 @@ export class CommandExecutionService implements ICommandExecutionService {
             return results.reduce((maxCode, result) => {
                 return result.exitCode !== 0 ? result.exitCode : maxCode
             }, 0)
-
         } catch (error) {
             console.error('Error running parallel commands:', error)
             return 1

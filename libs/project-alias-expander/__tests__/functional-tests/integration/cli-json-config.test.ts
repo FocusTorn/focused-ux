@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { writeFileSync, unlinkSync, existsSync } from 'fs'
+import { writeFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync } from 'fs'
 import { join } from 'path'
 import { execa } from 'execa'
 import type { AliasConfig } from '../../../src/_types/index.js'
@@ -168,7 +168,7 @@ describe('CLI Integration with JSON Config', () => {
 
             // Create a subdirectory and test from there
             const subDir = join(tempDir, 'subdir')
-            require('fs').mkdirSync(subDir, { recursive: true })
+            mkdirSync(subDir, { recursive: true })
 
             const result = await execa('pae', ['help'], {
                 cwd: subDir,
@@ -178,7 +178,7 @@ describe('CLI Integration with JSON Config', () => {
             expect(result.exitCode).toBe(0)
 
             // Clean up
-            require('fs').rmdirSync(subDir)
+            rmdirSync(subDir)
         })
     })
 

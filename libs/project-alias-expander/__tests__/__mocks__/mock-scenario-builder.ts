@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { PaeTestMocks, setupPaeTestEnvironment } from './helpers'
 
 // PAE-specific scenario interfaces
@@ -185,12 +184,12 @@ export class PaeMockBuilder {
     }
 
     // Path scenarios
-    pathJoin(...paths: string[]): PaeMockBuilder {
+    pathJoin(..._paths: string[]): PaeMockBuilder {
         this.mocks.path.join.mockImplementation((...args: string[]) => args.join('/'))
         return this
     }
 
-    pathResolve(...paths: string[]): PaeMockBuilder {
+    pathResolve(..._paths: string[]): PaeMockBuilder {
         this.mocks.path.resolve.mockImplementation((...args: string[]) => '/' + args.join('/'))
         return this
     }

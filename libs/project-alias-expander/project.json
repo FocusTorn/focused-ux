@@ -5,7 +5,7 @@
      
         //= Finalize ============================================================ 
         
-        "build:bundle": { //>
+        "build": { //>
             "executor": "@nx/esbuild:esbuild",
             "outputs": ["{options.outputPath}"],
             "inputs": [
@@ -33,7 +33,7 @@
                 "metafile": true
             }
         }, //<
-        "build:package": { //>
+        "build:install": { //>
             "executor": "@fux/npack:pack",
             "dependsOn": ["build:bundle"],
             "outputs": [
@@ -52,9 +52,9 @@
                 "installGlobal": true
             }
         }, //<
-        "build": { //>
+        "install": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["build:bundle", "build:package"],
+            "dependsOn": ["build", "build:install"],
             "outputs": [
                 "{projectRoot}/dist"
             ],
@@ -67,17 +67,21 @@
                 "parallel": false
             }
         }, //<
-
         
         //= Quality ============================================================= 
-        "check-types": {
-            "extends": "check-types",
-            "dependsOn": ["build:bundle"]
-        },
+        "check-types": { "extends": "check-types" },
         "check-types:deps": { "extends": "check-types:deps" },
          
         "lint": { "extends": "lint" },
         "lint:deps": { "extends": "lint:deps" },
+        "lint:file": {
+            "executor": "@nx/eslint:lint",
+            "cache": true,
+            "dependsOn": ["build"],
+            "options": {
+                "lintFilePatterns": ["{projectRoot}/src/*.ts"]
+            }
+        },
          
         "audit": { "extends": "audit" },
         "audit:code": { "extends": "audit:code" },
@@ -89,30 +93,26 @@
         "clean:dist": { "extends": "clean:dist" },
         "clean:cache": { "extends": "clean:cache" },
          
-        //= Single Package Testing ============================================== 
-        "test": {
+        //= Testing ============================================================= 
+        "test": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build:bundle"],
             "options": {
                 "configFile": "{projectRoot}/vitest.config.ts",
                 "reportsDirectory": "__tests__/_reports/functional",
                 "passWithNoTests": true
             }
-        },
-        "test:coverage-tests": {
+        }, //<
+        "test:coverage-tests": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build:bundle"],
             "options": {
                 "configFile": "{projectRoot}/vitest.coverage.config.ts",
                 "reportsDirectory": "__tests__/_reports/coverage",
                 "passWithNoTests": true
             }
-        },
-        
-        
-        "test:file": {
+        }, //<
+        "test:file": { //>
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],
             "options": {
@@ -121,38 +121,7 @@
                 "passWithNoTests": true,
                 "testFile": "{args.testFile}"
             }
-        },
-        
-        
-        "test:integration": {
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/integration",
-                "passWithNoTests": true,
-                "testPathPattern": "integration-tests"
-            }
-        },
-        "test:performance": {
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/performance",
-                "passWithNoTests": true,
-                "testPathPattern": "performance-tests"
-            }
-        },
-        "test:all": {
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "options": {
-                "configFile": "{projectRoot}/vitest.config.ts",
-                "reportsDirectory": "__tests__/_reports/all",
-                "passWithNoTests": true
-            }
-        }
+        } //<
          
     },
     "$schema": "../../node_modules/nx/schemas/project-schema.json",

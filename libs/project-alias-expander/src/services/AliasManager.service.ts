@@ -2,7 +2,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { execa } from 'execa'
 import type { AliasConfig, IAliasManagerService } from '../_types/index.js'
-import { loadAliasConfigCached } from './ConfigLoader.service.js'
+import { ConfigLoader } from './ConfigLoader.service.js'
 import { detectShellTypeCached } from '../shell.js'
 
 export class AliasManagerService implements IAliasManagerService {
@@ -57,8 +57,8 @@ export class AliasManagerService implements IAliasManagerService {
      * Generates alias files directly to native module directories
      * Creates PowerShell and Bash scripts in the appropriate system locations
      */
-    generateDirectToNativeModules(): void { //>
-        const config = loadAliasConfigCached()
+    async generateDirectToNativeModules(): Promise<void> { //>
+        const config = await ConfigLoader.getInstance().loadConfig()
         const aliases = Object.keys(config['nxPackages'])
         const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
         const isDebug = process.argv.includes('--debug') || process.argv.includes('-d') || process.env.PAE_DEBUG === '1'
@@ -120,8 +120,8 @@ export class AliasManagerService implements IAliasManagerService {
      * Generates local alias files in the dist directory
      * Creates PowerShell module and Bash script files for local use
      */
-    generateLocalFiles(): void { //>
-        const config = loadAliasConfigCached()
+    async generateLocalFiles(): Promise<void> { //>
+        const config = await ConfigLoader.getInstance().loadConfig()
         const aliases = Object.keys(config['nxPackages'])
         const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
         const shell = detectShellTypeCached()

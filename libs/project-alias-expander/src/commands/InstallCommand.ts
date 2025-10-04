@@ -3,6 +3,7 @@ import { aliasManager } from '../services/index.js'
 import { detectShell } from '../shell.js'
 
 export class InstallCommand {
+
     private debug: (message: string, ...args: unknown[]) => void
     private success: (message: string) => void
 
@@ -110,6 +111,7 @@ export class InstallCommand {
 
         try {
             const { stdout } = await execa('pwsh', ['-Command', 'Write-Output $PROFILE.CurrentUserAllHosts'], { stdio: 'pipe' })
+
             profilePath = stdout.trim()
         } catch (error) {
             this.debug('Failed to get PowerShell profile path:', error)
@@ -138,6 +140,7 @@ if (Test-Path "$env:USERPROFILE\\AppData\\Local\\Microsoft\\Windows\\PowerShell\
             
             // Append PAE block
             const newContent = existingContent + '\n\n' + inProfileBlock
+
             fs.writeFileSync(profilePath, newContent, 'utf8')
         } else {
             // Create new profile with PAE block
@@ -146,4 +149,5 @@ if (Test-Path "$env:USERPROFILE\\AppData\\Local\\Microsoft\\Windows\\PowerShell\
 
         this.debug('PAE block added to PowerShell profile:', profilePath)
     }
+
 }

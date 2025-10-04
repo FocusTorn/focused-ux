@@ -21,5 +21,3 @@ export interface IExpandableProcessorService {
     expandFlags(args: string[], expandables: Record<string, ExpandableValue>): FlagExpansion
     constructWrappedCommand(baseCommand: string[], startTemplates: string[], endTemplates: string[]): string[]
 }
-
-

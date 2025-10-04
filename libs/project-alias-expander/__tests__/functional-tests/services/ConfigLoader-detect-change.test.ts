@@ -4,7 +4,7 @@ import { join } from 'path'
 import { ConfigLoader } from '../../../src/services/ConfigLoader.service.js'
 import type { AliasConfig } from '../../../src/_types/index.js'
 
-describe('ConfigLoader File Modification Detection', () => {
+describe('ConfigLoader Change Detection', () => {
     let configLoader: ConfigLoader
     let tempDir: string
     let tempConfigPath: string
@@ -110,7 +110,7 @@ describe('ConfigLoader File Modification Detection', () => {
             await configLoader.loadConfig()
 
             // Mock statSync to throw permission error
-            vi.spyOn(require('fs'), 'statSync').mockImplementation(() => {
+            vi.spyOn({ statSync }, 'statSync').mockImplementation(() => {
                 throw new Error('Permission denied')
             })
 

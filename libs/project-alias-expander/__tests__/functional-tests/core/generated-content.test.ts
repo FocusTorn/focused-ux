@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
-import type { 
+import type {
     ExpandableValue,
     TemplateObject,
     ShellType,
@@ -353,10 +353,10 @@ describe('Generated Content - Dynamic Script Generation', () => {
 
         it('should handle complex template processing efficiently', () => {
             const complexTemplate = 'Command: {command} --target={target} {flags}'
-            const variables = { 
-                command: 'nx', 
-                target: 'build', 
-                flags: '--skip-nx-cache --output-style=stream' 
+            const variables = {
+                command: 'nx',
+                target: 'build',
+                flags: '--skip-nx-cache --output-style=stream'
             }
             
             const startTime = Date.now()

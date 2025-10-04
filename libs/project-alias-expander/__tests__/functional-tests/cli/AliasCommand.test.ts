@@ -24,7 +24,11 @@ vi.mock('ora', () => ({
 
 vi.mock('../../../src/services/ConfigLoader.service.js', () => ({
     default: {},
-    loadAliasConfig: vi.fn(),
+    ConfigLoader: {
+        getInstance: vi.fn(() => ({
+            loadConfig: vi.fn()
+        }))
+    },
     resolveProjectForAlias: vi.fn(),
     clearAllCaches: vi.fn()
 }))
@@ -106,8 +110,9 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Mock resolveProjectForAlias
             const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
@@ -161,8 +166,9 @@ describe('AliasCommand Tests', () => {
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Mock resolveProjectForAlias for feature - it gets called with { name: 'test', suffix: 'core' }
             const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
@@ -211,8 +217,9 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Mock resolveProjectForAlias
             const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
@@ -257,8 +264,9 @@ describe('AliasCommand Tests', () => {
                 nxTargets: {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Import and instantiate AliasCommand
             const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
@@ -288,8 +296,9 @@ describe('AliasCommand Tests', () => {
                 'internal-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Mock resolveProjectForAlias
             const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
@@ -327,8 +336,9 @@ describe('AliasCommand Tests', () => {
                 nxTargets: {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Import and instantiate AliasCommand
             const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
@@ -357,8 +367,9 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Mock resolveProjectForAlias
             const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
@@ -404,8 +415,9 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Mock resolveProjectForAlias
             const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
@@ -453,8 +465,9 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Mock resolveProjectForAlias
             const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
@@ -501,8 +514,9 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Mock commandExecution.runCommand
             const { commandExecution } = await import('../../../src/services/index.js')
@@ -530,8 +544,9 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')

@@ -1,53 +1,12 @@
 {
-
-   
-    "prettier.configPath": "prettier.config.cjs",
-    "prettier.experimentalTernaries": true,
-    "prettier.requireConfig": true,
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "editor.formatOnSave": true,
-    "nxConsole.generateAiAgentRules": true,
-    "editor.tabSize": 4,
-    "editor.insertSpaces": true,
-    "editor.detectIndentation": false,
-    "editor.inlayHints.enabled": "off",
-    "editor.inlayHints.parameterNames.enabled": "none",
-    "editor.inlayHints.variableTypes.enabled": "none",
-    "editor.inlayHints.propertyDeclarationTypes.enabled": "none",
-    "editor.inlayHints.functionLikeReturnTypes.enabled": "none",
-    "editor.inlayHints.other.enabled": "none",
-    "cursor.inlayHints.enabled": false,
-    "cursor.showInlineCompletions": "off",
-    "cursor.showParameterHints": "off",
-    "cursor.ai.enableInlineCompletions": false,
-    "cursor.ai.enableInlayHints": false,
-    "cursor.ai.enableParameterHints": false,
-    "cursor.ai.enableSuggestions": false,
-    "[json]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.fixAll.eslint": "explicit"
-        }
+    "[yaml]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false
     },
-    "[jsonc]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.fixAll.eslint": "explicit"
-        }
-    },
-    
-    // Terminal environment settings to avoid restart requirements
-    "terminal.integrated.inheritEnv": true,
-    "terminal.integrated.env.windows": {
-        "VSCODE_INJECTION": "1"
-    },
-    "terminal.integrated.shellIntegration.enabled": true,
-    "terminal.integrated.shellIntegration.decorationsEnabled": "both",
-    
-    // Disable extension terminal contributions if not needed
-    "terminal.integrated.allowChords": false,
-    "terminal.integrated.allowMnemonics": false
-
+    "[yml]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false
+    }
 }

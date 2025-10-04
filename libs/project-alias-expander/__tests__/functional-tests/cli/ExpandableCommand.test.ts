@@ -23,7 +23,11 @@ vi.mock('ora', () => ({
 }))
 
 vi.mock('../../../src/services/ConfigLoader.service.js', () => ({
-    loadAliasConfig: vi.fn(),
+    ConfigLoader: {
+        getInstance: vi.fn(() => ({
+            loadConfig: vi.fn()
+        }))
+    },
     resolveProjectForAlias: vi.fn(),
     clearAllCaches: vi.fn()
 }))
@@ -81,8 +85,9 @@ describe('ExpandableCommand Tests', () => {
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -134,8 +139,9 @@ describe('ExpandableCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Mock expandableProcessor to return expanded flags
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -178,8 +184,9 @@ describe('ExpandableCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -220,8 +227,9 @@ describe('ExpandableCommand Tests', () => {
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -262,8 +270,9 @@ describe('ExpandableCommand Tests', () => {
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -298,8 +307,9 @@ describe('ExpandableCommand Tests', () => {
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -344,8 +354,9 @@ describe('ExpandableCommand Tests', () => {
                 'internal-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -386,8 +397,9 @@ describe('ExpandableCommand Tests', () => {
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -428,8 +440,9 @@ describe('ExpandableCommand Tests', () => {
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -472,8 +485,9 @@ describe('ExpandableCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -516,8 +530,9 @@ describe('ExpandableCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
+            const { ConfigLoader } = await import('../../../src/services/ConfigLoader.service.js')
+            const mockInstance = ConfigLoader.getInstance()
+            vi.mocked(mockInstance.loadConfig).mockResolvedValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')

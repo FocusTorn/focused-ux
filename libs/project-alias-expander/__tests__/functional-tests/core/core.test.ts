@@ -53,8 +53,10 @@ describe('Core Functional Tests', () => {
             
             // Assert
             expect(configModule).toBeDefined()
-            expect(configModule.loadAliasConfig).toBeDefined()
-            expect(typeof configModule.loadAliasConfig).toBe('function')
+            expect(configModule.ConfigLoader).toBeDefined()
+            expect(typeof configModule.ConfigLoader).toBe('function')
+            expect(configModule.clearAllCaches).toBeDefined()
+            expect(typeof configModule.clearAllCaches).toBe('function')
         })
 
         it('should be able to import services module', async () => {

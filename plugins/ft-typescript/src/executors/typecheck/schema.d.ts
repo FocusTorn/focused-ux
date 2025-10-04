@@ -58,4 +58,9 @@ export interface TypecheckExecutorSchema {
    * Path to error message override config file
    */
   configFile?: string;
+  
+  /**
+   * Output format: 'totals' shows file names with error counts, 'each' shows each error line by line
+   */
+  show?: 'totals' | 'each';
 }

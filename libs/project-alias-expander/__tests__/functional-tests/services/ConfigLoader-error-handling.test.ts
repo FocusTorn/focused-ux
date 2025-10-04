@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { writeFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync } from 'fs'
+import { writeFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { ConfigLoader,
-    loadAliasConfig,
-    loadAliasConfigCached,
     clearAllCaches
 } from '../../../src/services/ConfigLoader.service.js'
 
@@ -50,7 +48,7 @@ describe('ConfigLoader Error Handling', () => {
 
         it('should handle permission denied errors', async () => {
             // Mock readFileSync to throw permission error
-            vi.spyOn(require('fs'), 'readFileSync').mockImplementation(() => {
+            vi.spyOn({ readFileSync }, 'readFileSync').mockImplementation(() => {
                 throw new Error('EACCES: permission denied')
             })
 
@@ -65,7 +63,7 @@ describe('ConfigLoader Error Handling', () => {
             writeFileSync(tempConfigPath, '{}')
 
             // Mock readFileSync to throw file locked error
-            vi.spyOn(require('fs'), 'readFileSync').mockImplementation(() => {
+            vi.spyOn({ readFileSync }, 'readFileSync').mockImplementation(() => {
                 throw new Error('EBUSY: resource busy or locked')
             })
 
@@ -187,43 +185,6 @@ describe('ConfigLoader Error Handling', () => {
 
             await expect(configLoader.loadConfig()).rejects.toThrow(
                 'Failed to parse JSON config from'
-            )
-        })
-    })
-
-    describe('legacy function error handling', () => {
-        it('should handle missing config in loadAliasConfig', () => {
-            expect(() => loadAliasConfig()).toThrow(
-                'No configuration file found. Please ensure .pae.json exists in the project root.'
-            )
-        })
-
-        it('should handle invalid JSON in loadAliasConfig', () => {
-            writeFileSync(tempConfigPath, '{ invalid json }')
-
-            expect(() => loadAliasConfig()).toThrow(
-                'Failed to load configuration from .pae.json'
-            )
-        })
-
-        it('should handle file read errors in loadAliasConfig', () => {
-            writeFileSync(tempConfigPath, '{}')
-
-            // Mock readFileSync to throw error
-            vi.spyOn(require('fs'), 'readFileSync').mockImplementation(() => {
-                throw new Error('Read error')
-            })
-
-            expect(() => loadAliasConfig()).toThrow(
-                'Failed to load configuration from .pae.json'
-            )
-
-            vi.restoreAllMocks()
-        })
-
-        it('should handle missing config in loadAliasConfigCached', () => {
-            expect(() => loadAliasConfigCached()).toThrow(
-                'No configuration file found. Please ensure .pae.json exists in the project root.'
             )
         })
     })

@@ -44,8 +44,12 @@ vi.mock('../../../src/shell.js', () => ({
 // Mock config module
 vi.mock('../../../src/services/ConfigLoader.service.js', () => ({
     default: {},
+    ConfigLoader: {
+        getInstance: vi.fn(() => ({
+            loadConfig: vi.fn()
+        }))
+    },
     resolveProjectForAlias: vi.fn(),
-    loadAliasConfig: vi.fn(),
     clearAllCaches: vi.fn()
 }))
 

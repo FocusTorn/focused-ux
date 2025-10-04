@@ -3,7 +3,10 @@ import type {
     IPAEManagerService,
     IExpandableProcessorService,
     ICommandExecutionService,
-    IAliasManagerService
+    IAliasManagerService,
+    AliasConfig,
+    ExpandableValue,
+    FlagExpansion
 } from '../_types/index.js'
 import { expandableProcessor } from './ExpandableProcessor.service.js'
 import { commandExecution } from './CommandExecution.service.js'
@@ -14,7 +17,7 @@ export class PAEManagerService implements IPAEManagerService {
     constructor(private readonly dependencies: IPAEDependencies) {}
 
     // Alias management operations - delegated to AliasManagerService
-    generateLocalFiles(): void {
+    async generateLocalFiles(): Promise<void> {
         return this.dependencies.aliasManager.generateLocalFiles()
     }
 
@@ -35,7 +38,7 @@ export class PAEManagerService implements IPAEManagerService {
         return this.dependencies.commandExecution.runCommand(command, args)
     }
 
-    async runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: any): Promise<number> {
+    async runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: AliasConfig): Promise<number> {
         return this.dependencies.commandExecution.runMany(runType, targets, flags, config)
     }
 
@@ -52,7 +55,7 @@ export class PAEManagerService implements IPAEManagerService {
         return this.dependencies.expandableProcessor.processTemplateArray(templates, variables)
     }
 
-    processShellSpecificTemplate(expandable: any, variables: Record<string, string>): { start: string[], end: string[] } {
+    processShellSpecificTemplate(expandable: ExpandableValue, variables: Record<string, string>): { start: string[], end: string[] } {
         return this.dependencies.expandableProcessor.processShellSpecificTemplate(expandable, variables)
     }
 
@@ -60,7 +63,7 @@ export class PAEManagerService implements IPAEManagerService {
         return this.dependencies.expandableProcessor.parseExpandableFlag(arg)
     }
 
-    expandFlags(args: string[], expandables: Record<string, any>): any {
+    expandFlags(args: string[], expandables: Record<string, ExpandableValue>): FlagExpansion {
         return this.dependencies.expandableProcessor.expandFlags(args, expandables)
     }
 

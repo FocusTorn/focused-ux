@@ -4,6 +4,19 @@ import { execSync } from 'child_process'
 import { join } from 'path'
 import { writeFileSync, unlinkSync, readFileSync } from 'fs'
 
+interface TypeScriptCompilerOptions {
+    strict?: boolean
+    target?: string
+    moduleResolution?: string
+    skipLibCheck?: boolean
+    noImplicitAny?: boolean
+    noImplicitReturns?: boolean
+    noImplicitThis?: boolean
+    noUnusedLocals?: boolean
+    noUnusedParameters?: boolean
+    exactOptionalPropertyTypes?: boolean
+}
+
 const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
     options: TypecheckExecutorSchema,
     context: ExecutorContext
@@ -13,36 +26,7 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
         const projectRoot = context.projectsConfigurations?.projects[context.projectName!]?.root || ''
         const workspaceRoot = context.root
 
-        // Default options
-        const {
-            files = [`${projectRoot}/**/*.ts`],
-            strict = true,
-            target = 'ES2022',
-            moduleResolution = 'NodeNext',
-            skipLibCheck = true,
-            noImplicitAny = true,
-            noImplicitReturns = true,
-            noImplicitThis = true,
-            noUnusedLocals = true,
-            noUnusedParameters = true,
-            exactOptionalPropertyTypes = true,
-            configFile = 'plugins/ft-typescript/config.json',
-        } = options
-
-        // Load error message overrides
-        const configPath = join(workspaceRoot, configFile)
-        let errorOverrides: Record<string, string> = {}
-        
-        try { const configContent = readFileSync(configPath, 'utf8')
-            const config = JSON.parse(configContent)
-
-            errorOverrides = config['error-msg-override'] || {}
-            logger.info(`✅ Loaded error message overrides from ${configFile}`)
-        } catch (error) {
-            logger.warn(`Could not load error message config: ${error instanceof Error ? error.message : String(error)}`)
-        }
-
-        // Load base tsconfig as foundation
+        // Load base tsconfig as foundation first
         const baseTsconfigPath = join(workspaceRoot, 'tsconfig.base.json')
         let baseTsconfig = { compilerOptions: {} }
         
@@ -59,6 +43,39 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
         } catch (error) {
             logger.warn(`Could not load tsconfig.base.json: ${error instanceof Error ? error.message : String(error)}`)
             logger.warn('Using minimal defaults')
+        }
+
+        // Extract defaults from base tsconfig
+        const baseOptions: TypeScriptCompilerOptions = baseTsconfig.compilerOptions || {}
+
+        // Default options - use base tsconfig values as defaults
+        const {
+            files = [`${projectRoot}/**/*.ts`],
+            strict = baseOptions.strict ?? true,
+            target = baseOptions.target ?? 'ES2022',
+            moduleResolution = baseOptions.moduleResolution ?? 'NodeNext',
+            skipLibCheck = baseOptions.skipLibCheck ?? true,
+            noImplicitAny = baseOptions.noImplicitAny ?? false,
+            noImplicitReturns = baseOptions.noImplicitReturns ?? true,
+            noImplicitThis = baseOptions.noImplicitThis ?? true,
+            noUnusedLocals = baseOptions.noUnusedLocals ?? false,
+            noUnusedParameters = baseOptions.noUnusedParameters ?? false,
+            exactOptionalPropertyTypes = baseOptions.exactOptionalPropertyTypes ?? false,
+            configFile = 'plugins/ft-typescript/config.json',
+            show = 'each',
+        } = options
+
+        // Load error message overrides
+        const configPath = join(workspaceRoot, configFile)
+        let errorOverrides: Record<string, string> = {}
+        
+        try { const configContent = readFileSync(configPath, 'utf8')
+            const config = JSON.parse(configContent)
+
+            errorOverrides = config['error-msg-override'] || {}
+            logger.info(`✅ Loaded error message overrides from ${configFile}`)
+        } catch (error) {
+            logger.warn(`Could not load error message config: ${error instanceof Error ? error.message : String(error)}`)
         }
 
         // Create a temporary tsconfig file for the type check
@@ -102,7 +119,7 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
 
             // Execute the command and capture output for message override
             try {
-                const output = execSync(command, {
+                const _output = execSync(command, {
                     stdio: 'pipe',
                     cwd: workspaceRoot,
                     encoding: 'utf8'
@@ -114,14 +131,15 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
                 // TypeScript errors are returned as non-zero exit code - avoiding 'any'
                 const err = error as Record<string, unknown>
 
-                if (err && (err['stdout'] || err['stderr'])) {
-                    const output = (err['stdout'] || err['stderr'] || '').toString()
+                if (err && (err['stdout'] || err['stderr'] || err['output'])) {
+                    const output = (err['stdout'] || err['stderr'] || err['output'] || '').toString()
                     
                     // Override error messages and clean up paths
                     let modifiedOutput = output
                     
-                    // Remove packages/ prefix from file paths
+                    // Remove packages/ and libs/ prefixes from file paths
                     modifiedOutput = modifiedOutput.replace(/packages\//g, '')
+                    modifiedOutput = modifiedOutput.replace(/libs\//g, '')
                     
                     // Keep error codes but clean up the format - change "error TS####: " to "TS####: "
                     modifiedOutput = modifiedOutput.replace(/error (TS\d+: )/g, '$1')
@@ -134,17 +152,40 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
                         modifiedOutput = modifiedOutput.replace(regex, `$1: ${errorCode}: ${newMessage}`)
                     }
                     
-                    // Add color formatting to file paths (blue for path:line:col) - do this AFTER error override
-                    modifiedOutput = modifiedOutput.replace(/^([^(]+\(\d+,\d+\)): /gm, '\x1B[38;5;39m$1\x1B[0m: ')
-                    
-                    // Output only lines with actual error content - no blank lines
+                    // Process output based on show option BEFORE color formatting
                     const lines = modifiedOutput.split('\n')
                         .filter(line => line.trim().length > 0) // Remove blank lines
-                        .join('\n')
+                    
+                    if (show === 'totals') {
+                        // Group errors by file and show counts
+                        const fileErrors: Record<string, number> = {}
+                        
+                        for (const line of lines) {
+                            // Extract file path from error line (format: path(line,col): [error] TS####: message)
+                            const match = line.match(/^([^(]+)\(\d+,\d+\):/)
 
-                    console.log(lines)
+                            if (match) {
+                                const filePath = match[1]
+
+                                fileErrors[filePath] = (fileErrors[filePath] || 0) + 1
+                            }
+                        }
+                        
+                        // Output summary
+                        for (const [filePath, count] of Object.entries(fileErrors)) {
+                            console.log(`${filePath} (${count} error${count === 1 ? '' : 's'})`)
+                        }
+                    } else {
+                        // Add color formatting to file paths (blue for path:line:col) - do this AFTER error override
+                        modifiedOutput = modifiedOutput.replace(/^([^(]+\(\d+,\d+\)): /gm, '\x1B[38;5;39m$1\x1B[0m: ')
+                        
+                        // Show each error line by line (default behavior)
+                        console.log(lines.join('\n'))
+                    }
                 }
-                throw error // Re-throw to maintain error behavior
+                
+                // Always throw the error to maintain error behavior
+                throw error
             }
         } finally {
             // Clean up temporary file

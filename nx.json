@@ -81,7 +81,8 @@
             "dependsOn": ["build"],
             "cache": true,
             "options": {
-                "files": ["{projectRoot}/**/*.ts"]
+                "files": ["{projectRoot}/**/*.ts"],
+                "show": "totals"
             }
         },
         "check-types:loose": {

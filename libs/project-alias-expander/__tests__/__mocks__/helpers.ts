@@ -69,10 +69,16 @@ export interface PaeTestMocks {
     }
     stripJsonComments: ReturnType<typeof vi.fn>
     config: {
-        loadAliasConfig: ReturnType<typeof vi.fn>
+        ConfigLoader: any
     }
     shell: {
         detectShell: ReturnType<typeof vi.fn>
+    }
+    process: {
+        argv: string[]
+        env: Record<string, string | undefined>
+        cwd: ReturnType<typeof vi.fn>
+        exit: ReturnType<typeof vi.fn>
     }
 }
 
@@ -148,10 +154,16 @@ export function setupPaeTestEnvironment(): PaeTestMocks {
         },
         stripJsonComments: mockedStripJsonComments,
         config: {
-            loadAliasConfig: mockedConfig.loadAliasConfig,
+            ConfigLoader: mockedConfig.ConfigLoader,
         },
         shell: {
             detectShell: mockedShell.detectShell,
+        },
+        process: {
+            argv: process.argv,
+            env: process.env,
+            cwd: vi.fn().mockReturnValue(process.cwd()),
+            exit: vi.fn()
         },
     }
 }
@@ -192,15 +204,26 @@ export function resetPaeMocks(mocks: PaeTestMocks): void {
         mocks.stripJsonComments.mockReset()
     }
     
-    Object.values(mocks.config).forEach(mock => {
-        if (typeof mock === 'function' && 'mockReset' in mock) {
-            mock.mockReset()
-        }
-    })
+    // Reset config mocks
+    if (mocks.config.ConfigLoader && typeof mocks.config.ConfigLoader === 'object') {
+        Object.values(mocks.config.ConfigLoader).forEach(mock => {
+            if (typeof mock === 'function' && 'mockReset' in mock && typeof mock.mockReset === 'function') {
+                mock.mockReset()
+            }
+        })
+    }
     
     Object.values(mocks.shell).forEach(mock => {
         if (typeof mock === 'function' && 'mockReset' in mock) {
             mock.mockReset()
         }
     })
+    
+    // Reset process mocks
+    if (mocks.process.cwd && 'mockReset' in mocks.process.cwd) {
+        mocks.process.cwd.mockReset()
+    }
+    if (mocks.process.exit && 'mockReset' in mocks.process.exit) {
+        mocks.process.exit.mockReset()
+    }
 }
