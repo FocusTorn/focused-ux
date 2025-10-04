@@ -1,6 +1,6 @@
 import type { AliasConfig } from '../_types/index.js'
 import { commandExecution, expandableProcessor } from '../services/index.js'
-import { resolveProjectForAlias as resolveProjectForAliasFromConfig } from '../config.js'
+import { resolveProjectForAlias as resolveProjectForAliasFromConfig } from '../services/ConfigLoader.service.js'
 import { HelpCommand } from './HelpCommand.js'
 
 export class AliasCommand {
@@ -53,20 +53,20 @@ export class AliasCommand {
             
             // Unknown alias
             this.error(`Unknown alias: ${alias}`)
-            console.error('')
-            console.error('Available aliases:')
-            console.error('  Packages:', Object.keys(config['nxPackages']).join(', '))
+            this.error('')
+            this.error('Available aliases:')
+            this.error('  Packages:', Object.keys(config['nxPackages']).join(', '))
             if (config['feature-nxTargets']) {
-                console.error('  Features:', Object.keys(config['feature-nxTargets']).join(', '))
+                this.error('  Features:', Object.keys(config['feature-nxTargets']).join(', '))
             }
             if (config['not-nxTargets']) {
-                console.error('  Not-NX:', Object.keys(config['not-nxTargets']).join(', '))
+                this.error('  Not-NX:', Object.keys(config['not-nxTargets']).join(', '))
             }
             if (config['expandable-commands']) {
-                console.error('  Commands:', Object.keys(config['expandable-commands']).join(', '))
+                this.error('  Commands:', Object.keys(config['expandable-commands']).join(', '))
             }
-            console.error('')
-            console.error('Use "pae help" for more information.')
+            this.error('')
+            this.error('Use "pae help" for more information.')
             return 1
         } catch (err) {
             this.error('Error handling alias command:', err)

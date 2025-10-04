@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import type { 
+import type {
     IPAEDependencies,
     IPAEManagerService,
     IExpandableProcessorService,
@@ -13,7 +13,7 @@ import { AliasManagerService } from '../../../src/services/AliasManager.service.
 
 // Mock the shell detection module
 vi.mock('../../../src/shell.js', async (importOriginal) => {
-    const actual = await importOriginal()
+    const actual = await importOriginal() as any
     return {
         ...actual,
         detectShellTypeCached: vi.fn()
@@ -37,7 +37,6 @@ describe('Dependency Injection - Service Composition and Coordination', () => {
         // Create comprehensive mocks for all service dependencies
         mockExpandableProcessor = {
             expandTemplate: vi.fn(),
-            applyMutation: vi.fn(),
             detectShellType: vi.fn(),
             processTemplateArray: vi.fn(),
             processShellSpecificTemplate: vi.fn(),
@@ -159,7 +158,7 @@ describe('Dependency Injection - Service Composition and Coordination', () => {
         })
 
         it('should validate dependency injection contracts', () => {
-            const paeManager = new PAEManagerService(mockDependencies)
+            const _paeManager = new PAEManagerService(mockDependencies)
             
             // Verify that all required dependencies are present
             expect(mockDependencies.expandableProcessor).toBeDefined()
@@ -467,8 +466,8 @@ describe('Dependency Injection - Service Composition and Coordination', () => {
             
             // Perform many coordinated operations
             for (let i = 0; i < 50; i++) {
-                const shellType = paeManager.detectShellType()
-                const expanded = paeManager.expandTemplate(`template-${i}`, {})
+                const _shellType = paeManager.detectShellType()
+                const _expanded = paeManager.expandTemplate(`template-${i}`, {})
                 await paeManager.runCommand('test', [])
             }
             

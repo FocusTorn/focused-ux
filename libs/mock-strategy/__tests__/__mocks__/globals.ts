@@ -98,6 +98,14 @@ afterEach(() => { vi.clearAllMocks() }) // Keep mocks clean between tests
 // Set this to true to enable console output for debugging
 const ENABLE_CONSOLE_OUTPUT = process.env.ENABLE_TEST_CONSOLE === 'true'
 
+// Output status information (only once)
+if (!globalThis._mockStrategyConsoleStatusShown) {
+    console.log(`[Mock Strategy Library] Console output is ${ENABLE_CONSOLE_OUTPUT ? 'ENABLED' : 'DISABLED'}`)
+    console.log(`[Mock Strategy Library] To toggle console output: set ENABLE_TEST_CONSOLE=true/false`)
+    console.log('') // Blank line
+    globalThis._mockStrategyConsoleStatusShown = true
+}
+
 if (ENABLE_CONSOLE_OUTPUT) {
     console.log('🔍 Test console output enabled - use ENABLE_TEST_CONSOLE=true to enable')
 }

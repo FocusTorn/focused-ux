@@ -33,7 +33,6 @@
                 "metafile": true
             }
         }, //<
-        
         "build:package": { //>
             "executor": "@fux/npack:pack",
             "dependsOn": ["build:bundle"],
@@ -53,7 +52,6 @@
                 "installGlobal": true
             }
         }, //<
-
         "build": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["build:bundle", "build:package"],
@@ -72,7 +70,10 @@
 
         
         //= Quality ============================================================= 
-        "check-types": { "extends": "check-types" },
+        "check-types": {
+            "extends": "check-types",
+            "dependsOn": ["build:bundle"]
+        },
         "check-types:deps": { "extends": "check-types:deps" },
          
         "lint": { "extends": "lint" },
@@ -118,9 +119,11 @@
                 "configFile": "{projectRoot}/vitest.config.ts",
                 "reportsDirectory": "__tests__/_reports/functional",
                 "passWithNoTests": true,
-                "testPathPattern": "{args.testFile}"
+                "testFile": "{args.testFile}"
             }
         },
+        
+        
         "test:integration": {
             "executor": "@nx/vite:test",
             "outputs": ["{options.reportsDirectory}"],

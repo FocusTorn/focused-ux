@@ -3,3 +3,4 @@ export { ExpandableProcessorService, expandableProcessor } from './ExpandablePro
 export { CommandExecutionService, commandExecution } from './CommandExecution.service.js'
 export { AliasManagerService, aliasManager } from './AliasManager.service.js'
 export { PAEManagerService, paeManager } from './PAEManager.service.js'
+export { ConfigLoader } from './ConfigLoader.service.js'

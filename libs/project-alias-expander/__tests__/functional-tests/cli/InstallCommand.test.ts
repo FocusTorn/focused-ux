@@ -42,7 +42,7 @@ vi.mock('../../../src/shell.js', () => ({
 }))
 
 // Mock config module
-vi.mock('../../../src/config.js', () => ({
+vi.mock('../../../src/services/ConfigLoader.service.js', () => ({
     default: {},
     resolveProjectForAlias: vi.fn(),
     loadAliasConfig: vi.fn(),

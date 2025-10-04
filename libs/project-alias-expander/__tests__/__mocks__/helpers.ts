@@ -5,7 +5,7 @@ import * as childProcess from 'child_process'
 import * as os from 'os'
 import * as url from 'url'
 import stripJsonComments from 'strip-json-comments'
-import * as config from '../../src/config.js'
+import * as config from '../../src/services/ConfigLoader.service.js'
 import * as shell from '../../src/shell.js'
 
 export interface PaeTestMocks {

@@ -65,7 +65,7 @@ vi.mock('../../src/services/index.js', () => {
 })
 
 // Import after mocking
-import { loadAliasConfig } from '../../../src/config.js'
+import { loadAliasConfig } from '../../../src/services/ConfigLoader.service.js'
 import { commandExecution, expandableProcessor, aliasManager } from '../../../src/services/index.js'
 
 describe('Memory Performance Tests', () => {

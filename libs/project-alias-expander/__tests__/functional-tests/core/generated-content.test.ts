@@ -98,13 +98,17 @@ describe('Generated Content - Dynamic Script Generation', () => {
             }
             const variables = { message: 'Hello World' }
             
-            // Mock shell detection
-            vi.spyOn(expandableProcessor, 'detectShellType').mockReturnValue('pwsh')
+            // Mock the shell detection by replacing the method
+            const originalDetectShellType = expandableProcessor.detectShellType
+            expandableProcessor.detectShellType = vi.fn().mockReturnValue('pwsh')
             
             const result = expandableProcessor.processShellSpecificTemplate(expandable, variables)
             
             expect(result.start).toContain('Write-Host "PowerShell: Hello World"')
             expect(result.end).toHaveLength(0)
+            
+            // Restore the original method
+            expandableProcessor.detectShellType = originalDetectShellType
         })
 
         it('should fallback to generic template when shell-specific template is missing', () => {

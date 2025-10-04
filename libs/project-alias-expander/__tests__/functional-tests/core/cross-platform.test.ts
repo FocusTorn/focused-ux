@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import * as os from 'os'
-import type { 
+import type {
     ShellType,
     ExpandableValue,
     TemplateProcessingResult
@@ -244,7 +244,7 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
     describe('Path Handling and Environment Variables', () => {
         it('should handle Windows path separators', () => {
             const template = 'cd {workspace} && {command}'
-            const variables = { 
+            const variables = {
                 workspace: 'C:\\Users\\Developer\\Projects\\FocusedUX',
                 command: 'nx build'
             }
@@ -257,7 +257,7 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
 
         it('should handle Unix path separators', () => {
             const template = 'cd {workspace} && {command}'
-            const variables = { 
+            const variables = {
                 workspace: '/home/developer/projects/focusedux',
                 command: 'nx build'
             }
@@ -270,7 +270,7 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
 
         it('should handle mixed path separators in templates', () => {
             const template = 'cd {workspace}'
-            const variables = { 
+            const variables = {
                 workspace: process.platform === 'win32' ? 'C:\\workspace' : '/workspace'
             }
             
@@ -285,7 +285,7 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
 
         it('should handle environment variable substitution', () => {
             const template = 'cd {WORKSPACE_ROOT} && echo {TEST_VAR}'
-            const variables = { 
+            const variables = {
                 'WORKSPACE_ROOT': '/workspace',
                 'TEST_VAR': 'test-value'
             }
@@ -298,7 +298,7 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
 
         it('should handle missing environment variables gracefully', () => {
             const template = 'cd {MISSING} && echo {ANOTHER}'
-            const variables = { 
+            const variables = {
                 'MISSING': '',
                 'ANOTHER': ''
             }
@@ -535,7 +535,7 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
                 cmd: 'echo "CMD syntax test"'
             }
             
-            Object.entries(templates).forEach(([shell, template]) => {
+            Object.entries(templates).forEach(([_shell, template]) => {
                 const result = expandableProcessor.expandTemplate(template, {})
                 
                 expect(result).toContain('syntax test')
@@ -552,7 +552,7 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
                 process.env.PSModulePath = 'C:\\Program Files\\PowerShell\\7\\Modules'
                 
                 const template = 'cd {USERPROFILE} && echo {PSModulePath}'
-                const variables = { 
+                const variables = {
                     'USERPROFILE': process.env.USERPROFILE,
                     'PSModulePath': process.env.PSModulePath
                 }
@@ -570,7 +570,7 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
                 process.env.SHELL = '/bin/bash'
                 
                 const template = 'cd {HOME} && echo {SHELL}'
-                const variables = { 
+                const variables = {
                     'HOME': process.env.HOME,
                     'SHELL': process.env.SHELL
                 }
@@ -583,7 +583,7 @@ describe('Cross-Platform - Shell Detection and Platform Compatibility', () => {
         })
 
         it('should handle cross-platform environment variables', () => {
-            process.env.PATH = process.platform === 'win32' 
+            process.env.PATH = process.platform === 'win32'
                 ? 'C:\\Windows\\System32;C:\\Program Files\\Node.js'
                 : '/usr/local/bin:/usr/bin:/bin'
             

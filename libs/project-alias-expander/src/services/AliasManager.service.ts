@@ -2,7 +2,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { execa } from 'execa'
 import type { AliasConfig, IAliasManagerService } from '../_types/index.js'
-import { loadAliasConfigCached } from '../config.js'
+import { loadAliasConfigCached } from './ConfigLoader.service.js'
 import { detectShellTypeCached } from '../shell.js'
 
 export class AliasManagerService implements IAliasManagerService {

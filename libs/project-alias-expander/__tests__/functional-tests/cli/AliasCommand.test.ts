@@ -22,7 +22,7 @@ vi.mock('ora', () => ({
     }))
 }))
 
-vi.mock('../../../src/config.js', () => ({
+vi.mock('../../../src/services/ConfigLoader.service.js', () => ({
     default: {},
     loadAliasConfig: vi.fn(),
     resolveProjectForAlias: vi.fn(),
@@ -65,27 +65,19 @@ vi.mock('../../../src/shell.js', () => ({
 
 // Mock cli.js to allow importing specific functions
 vi.mock('../../../src/cli.js', async (importOriginal) => {
-    const actual = await importOriginal()
+    const actual = await importOriginal() as any
     return {
         ...actual,
-        handleAliasCommand: actual.handleAliasCommand,
-        handlePackageAlias: actual.handlePackageAlias,
-        handleFeatureAlias: actual.handleFeatureAlias,
-        handleNotNxTarget: actual.handleNotNxTarget,
-        handleExpandableCommand: actual.handleExpandableCommand,
-        resolveProjectForAlias: actual.resolveProjectForAlias,
-        showDynamicHelp: actual.showDynamicHelp
+        resolveProjectForAlias: actual.resolveProjectForAlias
     }
 })
 
 describe('AliasCommand Tests', () => {
     let mockConsoleLog: ReturnType<typeof vi.spyOn>
-    let mockConsoleError: ReturnType<typeof vi.spyOn>
 
     beforeEach(() => {
         // Mock console methods
         mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
-        mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
         
         // Reset all mocks
         vi.clearAllMocks()
@@ -100,7 +92,7 @@ describe('AliasCommand Tests', () => {
         vi.restoreAllMocks()
     })
 
-    describe('handleAliasCommand() function', () => {
+    describe('AliasCommand class', () => {
         it('should handle package alias resolution', async () => {
             // Mock successful config loading
             const mockConfig = {
@@ -114,11 +106,11 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
 
             // Mock resolveProjectForAlias
-            const { resolveProjectForAlias } = await import('../../../src/config.js')
+            const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(resolveProjectForAlias).mockReturnValue({ project: 'dynamicons', isFull: false })
 
             // Mock expandableProcessor
@@ -137,9 +129,14 @@ describe('AliasCommand Tests', () => {
             const { commandExecution } = await import('../../../src/services/index.js')
             vi.mocked(commandExecution.runNx).mockResolvedValue(0)
 
-            // Import and call handleAliasCommand
-            const { handleAliasCommand } = await import('../../../src/cli.js')
-            const result = await handleAliasCommand(['dc', 'b'], mockConfig)
+            // Import and call AliasCommand directly
+            const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
+            const aliasCommand = new AliasCommand(
+                () => {}, // debug
+                () => {}, // error  
+                () => ({}) // getContextAwareFlags
+            )
+            const result = await aliasCommand.execute(['dc', 'b'], mockConfig)
             
             expect(result).toBe(0)
             expect(commandExecution.runNx).toHaveBeenCalledWith(
@@ -155,7 +152,7 @@ describe('AliasCommand Tests', () => {
                 'feature-nxTargets': {
                     test: {
                         'run-target': 'test',
-                        'run-from': 'core'
+                        'run-from': 'core' as const
                     }
                 },
                 nxTargets: {
@@ -164,11 +161,11 @@ describe('AliasCommand Tests', () => {
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
 
             // Mock resolveProjectForAlias for feature - it gets called with { name: 'test', suffix: 'core' }
-            const { resolveProjectForAlias } = await import('../../../src/config.js')
+            const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(resolveProjectForAlias).mockReturnValue({ project: 'test-core', isFull: false })
 
             // Mock expandableProcessor
@@ -187,9 +184,14 @@ describe('AliasCommand Tests', () => {
             const { commandExecution } = await import('../../../src/services/index.js')
             vi.mocked(commandExecution.runNx).mockResolvedValue(0)
 
-            // Import and call handleAliasCommand
-            const { handleAliasCommand } = await import('../../../src/cli.js')
-            const result = await handleAliasCommand(['test'], mockConfig)
+            // Import and instantiate AliasCommand
+            const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
+            const aliasCommand = new AliasCommand(
+                vi.fn(), // debug
+                vi.fn(), // error
+                vi.fn()  // getContextAwareFlags
+            )
+            const result = await aliasCommand.execute(['test'], mockConfig as any)
             
             expect(result).toBe(0)
             expect(commandExecution.runNx).toHaveBeenCalledWith(
@@ -209,11 +211,11 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
 
             // Mock resolveProjectForAlias
-            const { resolveProjectForAlias } = await import('../../../src/config.js')
+            const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(resolveProjectForAlias).mockReturnValue({ project: 'dynamicons', isFull: false })
 
             // Mock expandableProcessor
@@ -232,9 +234,14 @@ describe('AliasCommand Tests', () => {
             const { commandExecution } = await import('../../../src/services/index.js')
             vi.mocked(commandExecution.runNx).mockResolvedValue(0)
 
-            // Import and call handleAliasCommand
-            const { handleAliasCommand } = await import('../../../src/cli.js')
-            const result = await handleAliasCommand(['dc', 't'], mockConfig)
+            // Import and instantiate AliasCommand
+            const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
+            const aliasCommand = new AliasCommand(
+                vi.fn(), // debug
+                vi.fn(), // error
+                vi.fn()  // getContextAwareFlags
+            )
+            const result = await aliasCommand.execute(['dc', 't'], mockConfig)
             
             expect(result).toBe(0)
             expect(commandExecution.runNx).toHaveBeenCalledWith(
@@ -250,15 +257,21 @@ describe('AliasCommand Tests', () => {
                 nxTargets: {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
 
-            // Import and call handleAliasCommand with unknown alias
-            const { handleAliasCommand } = await import('../../../src/cli.js')
-            const result = await handleAliasCommand(['unknown'], mockConfig)
+            // Import and instantiate AliasCommand
+            const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
+            const mockError = vi.fn()
+            const aliasCommand = new AliasCommand(
+                vi.fn(), // debug
+                mockError, // error
+                vi.fn()  // getContextAwareFlags
+            )
+            const result = await aliasCommand.execute(['unknown'], mockConfig)
             
             expect(result).toBe(1)
-            expect(mockConsoleError).toHaveBeenCalledWith(
+            expect(mockError).toHaveBeenCalledWith(
                 expect.stringContaining('Unknown alias: unknown')
             )
         })
@@ -275,11 +288,11 @@ describe('AliasCommand Tests', () => {
                 'internal-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
 
             // Mock resolveProjectForAlias
-            const { resolveProjectForAlias } = await import('../../../src/config.js')
+            const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(resolveProjectForAlias).mockReturnValue({ project: 'dynamicons', isFull: false })
 
             // Mock expandableProcessor
@@ -293,9 +306,14 @@ describe('AliasCommand Tests', () => {
                 remainingArgs: []
             })
 
-            // Import and call handleAliasCommand with help flag
-            const { handleAliasCommand } = await import('../../../src/cli.js')
-            const result = await handleAliasCommand(['dc', '--help'], mockConfig)
+            // Import and instantiate AliasCommand
+            const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
+            const aliasCommand = new AliasCommand(
+                vi.fn(), // debug
+                vi.fn(), // error
+                vi.fn()  // getContextAwareFlags
+            )
+            const result = await aliasCommand.execute(['dc', '--help'], mockConfig)
             
             expect(result).toBe(0)
             expect(mockConsoleLog).toHaveBeenCalledWith('')
@@ -309,15 +327,21 @@ describe('AliasCommand Tests', () => {
                 nxTargets: {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
 
-            // Import and call handleAliasCommand with invalid alias
-            const { handleAliasCommand } = await import('../../../src/cli.js')
-            const result = await handleAliasCommand(['invalid'], mockConfig)
+            // Import and instantiate AliasCommand
+            const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
+            const mockError = vi.fn()
+            const aliasCommand = new AliasCommand(
+                vi.fn(), // debug
+                mockError, // error
+                vi.fn()  // getContextAwareFlags
+            )
+            const result = await aliasCommand.execute(['invalid'], mockConfig)
             
             expect(result).toBe(1)
-            expect(mockConsoleError).toHaveBeenCalledWith(
+            expect(mockError).toHaveBeenCalledWith(
                 expect.stringContaining('Unknown alias: invalid')
             )
         })
@@ -333,11 +357,11 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
 
             // Mock resolveProjectForAlias
-            const { resolveProjectForAlias } = await import('../../../src/config.js')
+            const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(resolveProjectForAlias).mockReturnValue({ project: 'dynamicons', isFull: false })
 
             // Mock expandableProcessor
@@ -356,9 +380,14 @@ describe('AliasCommand Tests', () => {
             const { commandExecution } = await import('../../../src/services/index.js')
             vi.mocked(commandExecution.runNx).mockResolvedValue(0)
 
-            // Import and call handleAliasCommand
-            const { handleAliasCommand } = await import('../../../src/cli.js')
-            const result = await handleAliasCommand(['dc', 'b'], mockConfig)
+            // Import and call AliasCommand directly
+            const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
+            const aliasCommand = new AliasCommand(
+                () => {}, // debug
+                () => {}, // error  
+                () => ({}) // getContextAwareFlags
+            )
+            const result = await aliasCommand.execute(['dc', 'b'], mockConfig)
             
             expect(result).toBe(0)
             // Note: loadAliasConfig is not called in handleAliasCommand - it's called in main()
@@ -375,11 +404,11 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
 
             // Mock resolveProjectForAlias
-            const { resolveProjectForAlias } = await import('../../../src/config.js')
+            const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(resolveProjectForAlias).mockReturnValue({ project: 'dynamicons', isFull: false })
 
             // Mock expandableProcessor
@@ -398,9 +427,14 @@ describe('AliasCommand Tests', () => {
             const { commandExecution } = await import('../../../src/services/index.js')
             vi.mocked(commandExecution.runNx).mockResolvedValue(0)
 
-            // Import and call handleAliasCommand
-            const { handleAliasCommand } = await import('../../../src/cli.js')
-            const result = await handleAliasCommand(['dc', 'b'], mockConfig)
+            // Import and call AliasCommand directly
+            const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
+            const aliasCommand = new AliasCommand(
+                () => {}, // debug
+                () => {}, // error  
+                () => ({}) // getContextAwareFlags
+            )
+            const result = await aliasCommand.execute(['dc', 'b'], mockConfig)
             
             expect(result).toBe(0)
             expect(expandableProcessor.expandFlags).toHaveBeenCalled()
@@ -419,11 +453,11 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
 
             // Mock resolveProjectForAlias
-            const { resolveProjectForAlias } = await import('../../../src/config.js')
+            const { resolveProjectForAlias } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(resolveProjectForAlias).mockReturnValue({ project: 'dynamicons', isFull: false })
 
             // Mock expandableProcessor to return specific args
@@ -442,9 +476,14 @@ describe('AliasCommand Tests', () => {
             const { commandExecution } = await import('../../../src/services/index.js')
             vi.mocked(commandExecution.runNx).mockResolvedValue(0)
 
-            // Import and call handleAliasCommand with additional args
-            const { handleAliasCommand } = await import('../../../src/cli.js')
-            const result = await handleAliasCommand(['dc', 'b', '--verbose', '--watch'], mockConfig)
+            // Import and instantiate AliasCommand
+            const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
+            const aliasCommand = new AliasCommand(
+                vi.fn(), // debug
+                vi.fn(), // error
+                vi.fn()  // getContextAwareFlags
+            )
+            const result = await aliasCommand.execute(['dc', 'b', '--verbose', '--watch'], mockConfig)
             
             expect(result).toBe(0)
             expect(commandExecution.runNx).toHaveBeenCalledWith(
@@ -462,16 +501,21 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
 
             // Mock commandExecution.runCommand
             const { commandExecution } = await import('../../../src/services/index.js')
             vi.mocked(commandExecution.runCommand).mockResolvedValue(0)
 
-            // Import and call handleAliasCommand
-            const { handleAliasCommand } = await import('../../../src/cli.js')
-            const result = await handleAliasCommand(['ls', '/tmp'], mockConfig)
+            // Import and instantiate AliasCommand
+            const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
+            const aliasCommand = new AliasCommand(
+                vi.fn(), // debug
+                vi.fn(), // error
+                vi.fn()  // getContextAwareFlags
+            )
+            const result = await aliasCommand.execute(['ls', '/tmp'], mockConfig)
             
             expect(result).toBe(0)
             expect(commandExecution.runCommand).toHaveBeenCalledWith('dir', ['/tmp'])
@@ -486,7 +530,7 @@ describe('AliasCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
             vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
 
             // Mock expandableProcessor
@@ -502,14 +546,31 @@ describe('AliasCommand Tests', () => {
 
             // Mock commandExecution.executeWithPool (both from index.js and CommandExecution.service.js)
             const { commandExecution } = await import('../../../src/services/index.js')
-            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
-            
-            const { commandExecution: commandExecutionService } = await import('../../../src/services/CommandExecution.service.js')
-            vi.mocked(commandExecutionService.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
 
-            // Import and call handleAliasCommand
-            const { handleAliasCommand } = await import('../../../src/cli.js')
-            const result = await handleAliasCommand(['clean'], mockConfig)
+            const { commandExecution: commandExecutionService } = await import('../../../src/services/CommandExecution.service.js')
+            vi.mocked(commandExecutionService.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
+
+            // Import and instantiate AliasCommand
+            const { AliasCommand } = await import('../../../src/commands/AliasCommand.js')
+            const aliasCommand = new AliasCommand(
+                vi.fn(), // debug
+                vi.fn(), // error
+                vi.fn()  // getContextAwareFlags
+            )
+            const result = await aliasCommand.execute(['clean'], mockConfig)
             
             expect(result).toBe(0)
             expect(commandExecutionService.executeWithPool).toHaveBeenCalledWith(

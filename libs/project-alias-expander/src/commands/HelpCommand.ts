@@ -1,10 +1,11 @@
 import type { AliasConfig } from '../_types/index.js'
-import aliasConfig from '../config.js'
+import { loadAliasConfig } from '../services/ConfigLoader.service.js'
 
 export class HelpCommand {
     execute(config?: AliasConfig): void {
         try {
-            const helpConfig = config || aliasConfig
+            // Try to load config from JSON, or use provided config
+            const helpConfig = config || loadAliasConfig()
 
             if (!helpConfig) {
                 throw new Error('Failed to load configuration')
@@ -159,11 +160,11 @@ export class HelpCommand {
             console.log('   Configuration loading failed - showing static help only.')
             console.log('   This usually means:')
             console.log('   • You\'re not in the project root directory')
-            console.log('   • The config.json file is missing or corrupted')
-            console.log('   • There\'s a syntax error in libs/project-alias-expander/config.json')
+            console.log('   • The .pae.json file is missing or corrupted')
+            console.log('   • There\'s a syntax error in .pae.json')
             console.log('')
             console.log('   Current working directory:', process.cwd())
-            console.log('   Expected config location: libs/project-alias-expander/config.json')
+            console.log('   Expected config location: .pae.json')
             console.log('')
             console.log('   To debug this issue, run: pae <command> -d')
             console.log('')

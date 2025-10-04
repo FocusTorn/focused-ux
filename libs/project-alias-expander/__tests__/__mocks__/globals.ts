@@ -21,8 +21,11 @@ let mockDetectShellTypeCached: any = vi.fn().mockImplementation(() => {
 // Export the mock for use in tests
 export { mockDetectShellTypeCached }
 
+
+
 // Console output control
 const ENABLE_CONSOLE_OUTPUT = (process.env.ENABLE_TEST_CONSOLE || 'false') === 'true'
+
 if (!ENABLE_CONSOLE_OUTPUT) {
     console.log = vi.fn()
     console.info = vi.fn()
@@ -34,6 +37,8 @@ if (!ENABLE_CONSOLE_OUTPUT) {
 if (!ENABLE_CONSOLE_OUTPUT) {
     process.env.ENABLE_TEST_CONSOLE = 'false'
 }
+
+
 
 // Global timer setup
 beforeAll(() => vi.useFakeTimers())
@@ -305,10 +310,10 @@ vi.mock('fs', () => ({
 }))
 
 // Mock config module for CLI imports
-vi.mock('./config.js', () => ({
+vi.mock('./services/ConfigLoader.service.js', () => ({
     loadAliasConfig: vi.fn().mockImplementation(() => {
-        console.log(`[MOCK ./config.js] loadAliasConfig called with cwd: "${process.cwd()}"`)
-        console.log(`[MOCK ./config.js] Returning valid config`)
+        console.log(`[MOCK ./services/ConfigLoader.service.js] loadAliasConfig called with cwd: "${process.cwd()}"`)
+        console.log(`[MOCK ./services/ConfigLoader.service.js] Returning valid config`)
         return {
             'feature-nxTargets': {
                 'dc': {
@@ -397,7 +402,7 @@ vi.mock('./config.js', () => ({
         }
     }),
     resolveProjectForAlias: vi.fn().mockImplementation(alias => {
-        console.log(`[MOCK ./config.js] resolveProjectForAlias called with alias: "${alias}"`)
+        console.log(`[MOCK ./services/ConfigLoader.service.js] resolveProjectForAlias called with alias: "${alias}"`)
         const aliasMap: Record<string, string> = {
             'dc': 'dynamicons',
             'pb': 'project-butler',
@@ -408,15 +413,24 @@ vi.mock('./config.js', () => ({
         return aliasMap[alias] || null
     }),
     clearAllCaches: vi.fn(),
+    ConfigLoader: vi.fn().mockImplementation(() => ({
+        getInstance: vi.fn().mockReturnValue({
+            clearCache: vi.fn(),
+            loadConfig: vi.fn(),
+            reloadConfig: vi.fn(),
+            getCachedConfig: vi.fn(),
+            validateConfig: vi.fn()
+        })
+    })),
     default: {}
 }))
 
 // Mock config module for tests imports
-vi.mock('../../src/config.js', () => ({
+vi.mock('../../src/services/ConfigLoader.service.js', () => ({
     loadAliasConfig: vi.fn().mockImplementation(() => {
-        console.log(`[MOCK ../../src/config.js] loadAliasConfig called with cwd: "${process.cwd()}"`)
+        console.log(`[MOCK ../../src/services/ConfigLoader.service.js] loadAliasConfig called with cwd: "${process.cwd()}"`)
         const _cwd = process.cwd()
-        console.log(`[MOCK ../../src/config.js] Returning valid config`)
+        console.log(`[MOCK ../../src/services/ConfigLoader.service.js] Returning valid config`)
         // Always return a valid config for tests
         return {
             'feature-nxTargets': {
@@ -696,15 +710,15 @@ vi.mock('../../../src/services/index.js', () => {
 })
 
 // Duplicate mocks with different relative specifiers used by some tests
-vi.mock('../../../src/config.js', () => ({
+vi.mock('../../../src/services/ConfigLoader.service.js', () => ({
     loadAliasConfig: vi.fn().mockImplementation(() => {
         const cwd = process.cwd()
-        console.log(`[MOCK ../../../src/config.js] loadAliasConfig called with cwd: "${cwd}"`)
+        console.log(`[MOCK ../../../src/services/ConfigLoader.service.js] loadAliasConfig called with cwd: "${cwd}"`)
         if (/temp-|test-workspace/i.test(cwd)) {
-            console.log(`[MOCK ../../../src/config.js] Throwing error due to temp workspace cwd`)
+            console.log(`[MOCK ../../../src/services/ConfigLoader.service.js] Throwing error due to temp workspace cwd`)
             throw new Error('Failed to load configuration: not in workspace root')
         }
-        console.log(`[MOCK ../../../src/config.js] Returning valid config`)
+        console.log(`[MOCK ../../../src/services/ConfigLoader.service.js] Returning valid config`)
         return {
             'feature-nxTargets': {
                 'b': { 'run-from': 'ext', 'run-target': 'build' },
@@ -786,6 +800,15 @@ vi.mock('../../../src/config.js', () => ({
             const projectName = suffix ? `${name}-${suffix}` : name
             return { project: projectName, isFull: false }
         }),
+    ConfigLoader: vi.fn().mockImplementation(() => ({
+        getInstance: vi.fn().mockReturnValue({
+            clearCache: vi.fn(),
+            loadConfig: vi.fn(),
+            reloadConfig: vi.fn(),
+            getCachedConfig: vi.fn(),
+            validateConfig: vi.fn()
+        })
+    })),
 }))
 
 // Additional mocks for specific test dependencies
@@ -1267,6 +1290,15 @@ vi.mock('../../src/cli.ts', () => {
             'context-aware-flags': {},
             scripts: {}
         }),
+        ConfigLoader: vi.fn().mockImplementation(() => ({
+            getInstance: vi.fn().mockReturnValue({
+                clearCache: vi.fn(),
+                loadConfig: vi.fn(),
+                reloadConfig: vi.fn(),
+                getCachedConfig: vi.fn(),
+                validateConfig: vi.fn()
+            })
+        })),
         default: mockMain
     }
 })
@@ -1299,6 +1331,15 @@ vi.mock('../../../src/cli.js', () => {
             'context-aware-flags': {},
             scripts: {}
         }),
+        ConfigLoader: vi.fn().mockImplementation(() => ({
+            getInstance: vi.fn().mockReturnValue({
+                clearCache: vi.fn(),
+                loadConfig: vi.fn(),
+                reloadConfig: vi.fn(),
+                getCachedConfig: vi.fn(),
+                validateConfig: vi.fn()
+            })
+        })),
         default: mockMain
     }
 })

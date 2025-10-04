@@ -49,7 +49,7 @@ describe('Core Functional Tests', () => {
     describe('Configuration Loading', () => {
         it('should be able to import configuration module', async () => {
             // Act
-            const configModule = await import('../../../src/config.js')
+            const configModule = await import('../../../src/services/ConfigLoader.service.js')
             
             // Assert
             expect(configModule).toBeDefined()
@@ -126,7 +126,9 @@ describe('Core Functional Tests', () => {
         it('should handle module import errors gracefully', async () => {
             // Act & Assert
             await expect(async () => {
-                await import('../../src/nonexistent-module.js')
+                // Use a dynamic import with a string to avoid TypeScript compilation errors
+                const nonexistentModulePath = '../../../src/nonexistent-module.js'
+                await import(nonexistentModulePath)
             }).rejects.toThrow()
         })
 

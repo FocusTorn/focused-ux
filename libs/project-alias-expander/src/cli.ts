@@ -1,17 +1,14 @@
 #!/usr/bin/env node
 
 import { commandExecution, expandableProcessor, aliasManager } from './services/index.js'
-import aliasConfig, { resolveProjectForAlias as resolveProjectForAliasFromConfig, loadAliasConfig, clearAllCaches } from './config.js'
+import { loadAliasConfig, clearAllCaches, resolveProjectForAlias as resolveProjectForAliasFromConfig } from './services/ConfigLoader.service.js'
 import { detectShell } from './shell.js'
 import type { AliasConfig } from './_types/index.js'
 import type { ChildProcess } from 'child_process'
 import { execa } from 'execa'
 import * as fs from 'fs'
 import { CommandRouter } from './commands/CommandRouter.js'
-import { InstallCommand } from './commands/InstallCommand.js'
 import { HelpCommand } from './commands/HelpCommand.js'
-import { AliasCommand } from './commands/AliasCommand.js'
-import { ExpandableCommand } from './commands/ExpandableCommand.js'
 
 // Debug mode - activated by -d or --debug flags
 let DEBUG = false
@@ -148,16 +145,6 @@ function trackChildProcess(childProcess: ChildProcess) { //>
 //     console.log(`[PAE INFO] ${message}`, ...args)
 // }
 
-function success(message: string, ...args: unknown[]) { //>
-    // Use the same green color as Nx success messages, with bold checkmark
-    const green = '\x1b[32m'
-    const bold = '\x1b[1m'
-    const reset = '\x1b[0m'
-    const checkmark = '✔'
-
-    console.log(`${green}${bold}${checkmark}${reset}${green} ${message}${reset}`, ...args)
-} //<
-
 async function loadPAEModule() { //>
     try {
         console.log('🔄 Setting up PAE module auto-load...')
@@ -215,13 +202,7 @@ Import-Module -Name "PAE" -Force
     }
 } //<
 
-async function handleInstallCommand(args: string[]) {
-    const installCommand = new InstallCommand(debug, (message: string) => console.log(`✅ ${message}`))
-
-    return await installCommand.execute(args)
-}
-
-async function addInProfileBlock(_isLocal: boolean) { //>
+async function _addInProfileBlock(_isLocal: boolean) { //>
     // Get the actual profile path from PowerShell
     let profilePath: string
 
@@ -422,12 +403,6 @@ function pae-remove {
     }
 } //<
 
-function showDynamicHelp(config?: AliasConfig) {
-    const helpCommand = new HelpCommand()
-
-    helpCommand.execute(config)
-}
-
 async function main() {
     try {
         // Set up process cleanup handlers
@@ -466,7 +441,9 @@ async function main() {
         const helpFlags = ['--help', '-h']
 
         if (args.some(arg => helpFlags.includes(arg))) {
-            showDynamicHelp()
+            const helpCommand = new HelpCommand()
+
+            helpCommand.execute()
             return 0
         }
 
@@ -487,7 +464,7 @@ async function main() {
 
         for (const arg of filteredArgs) {
             if (cacheFlags.includes(arg)) {
-                const { clearAllCaches } = await import('./config.js')
+                const { clearAllCaches } = await import('./services/ConfigLoader.service.js')
 
                 clearAllCaches()
                 debug('All caches cleared')
@@ -515,27 +492,10 @@ async function main() {
         // Handle special commands
         debug('Checking for special commands...')
         switch (command) {
-
-            case 'install':
-                debug('Executing install command')
-                await handleInstallCommand(filteredArgs.slice(1))
-                debug('install completed, returning 0')
-                return 0
-                
             case 'load':
                 debug('Executing load command')
                 await loadPAEModule()
                 debug('load completed, returning 0')
-                return 0
-
-            case 'help':
-                debug('Executing deprecated help command')
-                console.error('')
-                console.error('⚠️  DEPRECATION WARNING: "pae help" is deprecated.')
-                console.error('   Use "pae --help" or "pae -h" instead.')
-                console.error('')
-                showDynamicHelp()
-                debug('help completed, returning 0')
                 return 0
         }
 
@@ -561,7 +521,7 @@ async function main() {
             error('Failed to load configuration:', configError)
             console.error('')
             console.error('Make sure you are running from the project root directory.')
-            console.error('The config.json file should be located at: libs/project-alias-expander/config.json')
+            console.error('The .pae.json file should be located at: .pae.json')
             console.error('')
             console.error('Current working directory:', process.cwd())
             console.error('')
@@ -569,6 +529,9 @@ async function main() {
             debug('Returning error code 1 due to config failure')
             return 1
         }
+
+        // Create command router
+        const commandRouter = new CommandRouter(debug, error, getContextAwareFlags)
 
         // Check for expandable commands
         debug('Checking for expandable commands...')
@@ -610,13 +573,13 @@ async function main() {
             debug('Error checking expandable commands:', error)
         }
         
-        // Handle alias resolution and command execution
-        debug('Configuration loaded, handling alias command...')
-        debug('Handling alias command', { alias: filteredArgs[0], remainingArgs: filteredArgs.slice(1) })
+        // Route command through CommandRouter
+        debug('Configuration loaded, routing command...')
+        debug('Routing command', { command: filteredArgs[0], remainingArgs: filteredArgs.slice(1) })
 
-        const result = await handleAliasCommand(filteredArgs, config)
+        const result = await commandRouter.routeCommand(command, filteredArgs.slice(1), config)
 
-        debug('Alias command handled, result:', result)
+        debug('Command routed, result:', result)
         return result
     } catch (err) {
         debug('Unexpected error caught in main:', err)
@@ -629,221 +592,6 @@ async function main() {
     }
 }
 
-async function handleAliasCommand(args: string[], config: AliasConfig): Promise<number> {
-    const aliasCommand = new AliasCommand(debug, error, getContextAwareFlags)
-
-    return await aliasCommand.execute(args, config)
-}
-
-async function handlePackageAlias(alias: string, args: string[], config: AliasConfig): Promise<number> {
-    try {
-        debug('Handling package alias', { alias, args })
-        
-        const packageConfig = config['nxPackages'][alias]
-        const { project } = resolveProjectForAlias(packageConfig)
-        
-        debug('Resolved project', { alias, project })
-        
-        // Special handling for help command with package aliases
-        if (args.length > 0 && args[0] === 'help') {
-            debug('Help command detected for package alias, showing PAE help')
-            showDynamicHelp()
-            return 0
-        }
-        
-        // Extract target BEFORE processing flags for context-aware behavior
-        let target = 'b' // default
-
-        if (args.length > 0 && !args[0].startsWith('-')) {
-            target = args[0]
-
-            // Don't modify the original args array - create a new array without the target
-            args = args.slice(1)
-        }
-        
-        // Expand target shortcuts using config.nxTargets
-        const expandedTarget = config['nxTargets']?.[target] || target
-        
-        debug('Target extraction (pre-flag processing)', { original: target, expanded: expandedTarget })
-        
-        // Get context-aware flags based on target
-        const expandableFlags = getContextAwareFlags(config, target, expandedTarget)
-        
-        // Process internal flags first (these affect PAE behavior, not the command)
-        let timeoutMs: number | undefined = undefined
-
-        // Process env-setting-flags FIRST - these set environment variables before any expansion or execution
-        debug('About to check env-setting-flags', { hasEnvSettingFlags: !!config['env-setting-flags'], envSettingFlagsKeys: config['env-setting-flags'] ? Object.keys(config['env-setting-flags']) : [] })
-        
-        if (config['env-setting-flags']) {
-            debug('Processing env-setting flags', { envSettingFlags: config['env-setting-flags'] })
-
-            const envSettingFlags = { ...config['env-setting-flags'] }
-            
-            // Process env-setting flags first to set environment variables
-            debug('About to process env-setting flags', { args, envSettingFlags })
-
-            const { start: envStart, prefix: envPrefix, preArgs: envPreArgs, suffix: envSuffix, end: envEnd, remainingArgs: envRemainingArgs } = expandableProcessor.expandFlags(args, envSettingFlags)
-
-            debug('Env-setting flags processed', { envStart, envPrefix, envPreArgs, envSuffix, envEnd, envRemainingArgs })
-            
-            // Check for PAE-specific env-setting flags and set environment variables
-            const allEnvProcessedArgs = [...envStart, ...envPrefix, ...envPreArgs, ...envSuffix, ...envEnd, ...envRemainingArgs]
-            
-            // Filter out echo flags from the processed args for clean command capture
-            const _cleanArgs = allEnvProcessedArgs.filter(arg =>
-                !arg.startsWith('--pae-echo')
-                && !arg.startsWith('-sto=')
-                && !arg.startsWith('-stoX='))
-
-            for (const arg of allEnvProcessedArgs) {
-                if (arg === '--pae-debug') {
-                    DEBUG = true
-                    process.env.PAE_DEBUG = '1'
-                    debug('Debug mode enabled via --pae-debug flag')
-                } else if (arg === '--pae-verbose') {
-                    process.env.PAE_VERBOSE = '1'
-                    debug('Verbose mode enabled via --pae-verbose flag')
-                } else if (arg.startsWith('--pae-echo=')) {
-                    const variant = arg.split('=')[1]?.replace(/['"]/g, '') || ''
-
-                    process.env.PAE_ECHO = '1'
-                    if (variant) {
-                        process.env.PAE_ECHO_VARIANT = variant
-                        debug(`echo mode enabled via --pae-echo flag with variant: ${variant}`)
-                    } else {
-                        debug('Echo mode enabled via --pae-echo flag (no variant - will show all)')
-                    }
-                } else if (arg === '--pae-echo') {
-                    process.env.PAE_ECHO = '1'
-                    // No variant set - will show all 6 variants
-                    debug('Echo mode enabled via --pae-echo flag')
-                } else if (arg.startsWith('--pae-echoX=')) {
-                    const variant = arg.split('=')[1]?.replace(/['"]/g, '')
-
-                    process.env.PAE_ECHO_X = '1'
-                    if (variant) {
-                        process.env.PAE_ECHO_VARIANT = variant
-                        debug(`echoX mode enabled via --pae-echoX flag with variant: ${variant}`)
-                    } else {
-                        debug('EchoX mode enabled via --pae-echoX flag (no variant - will show all)')
-                    }
-                } else if (arg === '--pae-echoX') {
-                    process.env.PAE_ECHO_X = '1'
-                    // No variant set - will show all 6 variants
-                    debug('EchoX mode enabled via --pae-echoX flag')
-                }
-            }
-            
-            // Update args to use the processed env-setting flags
-            args = envRemainingArgs
-        }
-
-        debug('About to check internal-flags', { hasInternalFlags: !!config['internal-flags'], internalFlagsKeys: config['internal-flags'] ? Object.keys(config['internal-flags']) : [] })
-        
-        if (config['internal-flags']) {
-            debug('Processing internal flags', { internalFlags: config['internal-flags'] })
-
-            const internalFlags = { ...config['internal-flags'] }
-
-            if (config['expandable-templates']) {
-                Object.assign(internalFlags, config['expandable-templates'])
-            }
-            
-            // Check for help flags before processing other internal flags
-            for (const arg of args) {
-                if (arg === '-h' || arg === '--help') {
-                    debug('Help flag detected in package alias, showing PAE help')
-                    showDynamicHelp()
-                    return 0
-                }
-            }
-            
-            // Process internal flags
-            debug('About to process internal flags', { args, internalFlags })
-
-            const { start, prefix, preArgs, suffix, end, remainingArgs: internalRemainingArgs } = expandableProcessor.expandFlags(args, internalFlags)
-
-            debug('Internal flags processed', { start, prefix, preArgs, suffix, end, internalRemainingArgs })
-            
-            // Check for PAE-specific flags in the processed args and expanded flags
-            const allProcessedArgs = [...start, ...prefix, ...preArgs, ...suffix, ...end, ...internalRemainingArgs]
-
-            for (const arg of allProcessedArgs) {
-                if (arg.startsWith('--pae-execa-timeout=')) {
-                    timeoutMs = parseInt(arg.split('=')[1])
-                    debug('Detected PAE timeout flag', { timeoutMs })
-                }
-            }
-            
-            // Update args to use the processed internal flags
-            args = internalRemainingArgs
-        }
-        
-        debug('Processing expandable flags', { expandableFlags })
-        
-        // Process expandable flags
-        const { start, prefix, preArgs, suffix, end, remainingArgs } = expandableProcessor.expandFlags(args, expandableFlags)
-        
-        debug('Expanded flags', { start, prefix, preArgs, suffix, end, remainingArgs })
-        
-        // Build command
-        const baseCommand = ['nx', 'run', `${project}:${expandedTarget}`, ...prefix, ...preArgs, ...suffix, ...remainingArgs]
-        
-        debug('Base command', { baseCommand })
-        
-        // Wrap with start/end templates if needed
-        const finalCommand = expandableProcessor.constructWrappedCommand(baseCommand, start, end)
-        
-        debug('Final command', { finalCommand })
-        
-        // Execute command
-        debug(`executing: ${finalCommand.join(' ')}${timeoutMs ? ` (timeout: ${timeoutMs}ms)` : ''}`)
-        return await commandExecution.runNx(finalCommand, timeoutMs)
-    } catch (err) {
-        error(`error handling package alias ${alias}:`, err)
-        return 1
-    }
-}
-
-async function handleFeatureAlias(alias: string, args: string[], config: AliasConfig): Promise<number> {
-    const featureTarget = config['feature-nxTargets']![alias]
-    const { project } = resolveProjectForAlias({ name: alias, suffix: featureTarget['run-from'] })
-    
-    // Merge expandable-templates into expandable-flags for processing
-    const expandableFlags = { ...config['expandable-flags'] }
-
-    if (config['expandable-templates']) {
-        Object.assign(expandableFlags, config['expandable-templates'])
-    }
-    
-    // Process expandable flags
-    const { start, prefix, preArgs, suffix, end, remainingArgs } = expandableProcessor.expandFlags(args, expandableFlags)
-    
-    // Build command
-    const baseCommand = ['nx', 'run', `${project}:${featureTarget['run-target']}`, ...prefix, ...preArgs, ...suffix, ...remainingArgs]
-    
-    // Wrap with start/end templates if needed
-    const finalCommand = expandableProcessor.constructWrappedCommand(baseCommand, start, end)
-    
-    // Execute command
-    return await commandExecution.runNx(finalCommand)
-}
-
-async function handleNotNxTarget(alias: string, args: string[], config: AliasConfig): Promise<number> {
-    const command = config['not-nxTargets']![alias]
-    const allArgs = [command, ...args]
-    
-    // Execute non-nx command
-    return await commandExecution.runCommand(allArgs[0], allArgs.slice(1))
-}
-
-async function handleExpandableCommand(alias: string, args: string[], config: AliasConfig): Promise<number> {
-    const expandableCommand = new ExpandableCommand(debug)
-
-    return await expandableCommand.execute(alias, args, config)
-}
-
 function resolveProjectForAlias(aliasValue: string | { name: string, suffix?: 'core' | 'ext', full?: boolean }): { project: string, full?: boolean } {
     const result = resolveProjectForAliasFromConfig(aliasValue)
 
@@ -852,19 +600,9 @@ function resolveProjectForAlias(aliasValue: string | { name: string, suffix?: 'c
 
 // Export functions for testing compatibility
 export {
-    main,
-    showDynamicHelp,
-    handleAliasCommand,
-    handlePackageAlias,
-    handleFeatureAlias,
-    handleNotNxTarget,
-    handleExpandableCommand,
-    resolveProjectForAlias,
-    loadAliasConfig,
-    detectShell,
-    commandExecution,
-    expandableProcessor,
-    aliasManager
+    main, debug, error, getContextAwareFlags, setupProcessCleanup,
+    gracefulShutdown, trackChildProcess, loadPAEModule, resolveProjectForAlias,
+    loadAliasConfig, detectShell, commandExecution, expandableProcessor, aliasManager
 }
 
 // Service functions are available directly for optimal performance

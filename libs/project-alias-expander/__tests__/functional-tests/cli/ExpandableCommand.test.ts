@@ -22,8 +22,7 @@ vi.mock('ora', () => ({
     }))
 }))
 
-vi.mock('../../../src/config.js', () => ({
-    default: {},
+vi.mock('../../../src/services/ConfigLoader.service.js', () => ({
     loadAliasConfig: vi.fn(),
     resolveProjectForAlias: vi.fn(),
     clearAllCaches: vi.fn()
@@ -41,17 +40,18 @@ vi.mock('../../../src/shell.js', () => ({
 
 // Mock cli.js to allow importing specific functions
 vi.mock('../../../src/cli.js', async (importOriginal) => {
-    const actual = await importOriginal()
+    const actual = await importOriginal() as any
     return {
-        ...actual,
-        handleExpandableCommand: actual.handleExpandableCommand
+        ...actual
     }
 })
 
 describe('ExpandableCommand Tests', () => {
+    /* eslint-disable unused-imports/no-unused-vars */
     let mockConsoleLog: ReturnType<typeof vi.spyOn>
     let mockConsoleError: ReturnType<typeof vi.spyOn>
-
+    /* eslint-enable unused-imports/no-unused-vars */
+    
     beforeEach(() => {
         // Mock console methods
         mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -70,18 +70,19 @@ describe('ExpandableCommand Tests', () => {
         vi.restoreAllMocks()
     })
 
-    describe('handleExpandableCommand() function', () => {
+    describe('ExpandableCommand class', () => {
         it('should handle expandable command processing', async () => {
             // Mock config with expandable command
             const mockConfig = {
+                nxPackages: {}, // Add required property
                 'expandable-commands': {
                     clean: 'npm run clean'
                 },
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
+            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -96,11 +97,18 @@ describe('ExpandableCommand Tests', () => {
 
             // Mock commandExecution.executeWithPool
             const { commandExecution } = await import('../../../src/services/CommandExecution.service.js')
-            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
 
-            // Import and call handleExpandableCommand
-            const { handleExpandableCommand } = await import('../../../src/cli.js')
-            const result = await handleExpandableCommand('clean', [], mockConfig)
+            // Import and call ExpandableCommand directly
+            const { ExpandableCommand } = await import('../../../src/commands/ExpandableCommand.js')
+            const expandableCommand = new ExpandableCommand(() => {}) // debug
+            const result = await expandableCommand.execute('clean', [], mockConfig)
             
             expect(result).toBe(0)
             expect(commandExecution.executeWithPool).toHaveBeenCalledWith(
@@ -116,6 +124,7 @@ describe('ExpandableCommand Tests', () => {
         it('should handle expandable command flag expansion', async () => {
             // Mock config with expandable command and flags
             const mockConfig = {
+                nxPackages: {}, // Add required property
                 'expandable-commands': {
                     build: 'npm run build'
                 },
@@ -125,8 +134,8 @@ describe('ExpandableCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
+            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
 
             // Mock expandableProcessor to return expanded flags
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -141,11 +150,18 @@ describe('ExpandableCommand Tests', () => {
 
             // Mock commandExecution.executeWithPool
             const { commandExecution } = await import('../../../src/services/CommandExecution.service.js')
-            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
 
-            // Import and call handleExpandableCommand
-            const { handleExpandableCommand } = await import('../../../src/cli.js')
-            const result = await handleExpandableCommand('build', ['-verbose', '-watch'], mockConfig)
+            // Import and instantiate ExpandableCommand
+            const { ExpandableCommand } = await import('../../../src/commands/ExpandableCommand.js')
+            const expandableCommand = new ExpandableCommand(vi.fn()) // debug
+            const result = await expandableCommand.execute('build', ['-verbose', '-watch'], mockConfig)
             
             expect(result).toBe(0)
         })
@@ -153,6 +169,7 @@ describe('ExpandableCommand Tests', () => {
         it('should handle expandable command template processing', async () => {
             // Mock config with expandable command and templates
             const mockConfig = {
+                nxPackages: {}, // Add required property
                 'expandable-commands': {
                     test: 'npm test'
                 },
@@ -161,8 +178,8 @@ describe('ExpandableCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
+            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -177,11 +194,18 @@ describe('ExpandableCommand Tests', () => {
 
             // Mock commandExecution.executeWithPool
             const { commandExecution } = await import('../../../src/services/CommandExecution.service.js')
-            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
 
-            // Import and call handleExpandableCommand
-            const { handleExpandableCommand } = await import('../../../src/cli.js')
-            const result = await handleExpandableCommand('test', ['-coverage'], mockConfig)
+            // Import and instantiate ExpandableCommand
+            const { ExpandableCommand } = await import('../../../src/commands/ExpandableCommand.js')
+            const expandableCommand = new ExpandableCommand(vi.fn()) // debug
+            const result = await expandableCommand.execute('test', ['-coverage'], mockConfig)
             
             expect(result).toBe(0)
         })
@@ -189,14 +213,15 @@ describe('ExpandableCommand Tests', () => {
         it('should handle expandable command argument handling', async () => {
             // Mock config with expandable command
             const mockConfig = {
+                nxPackages: {}, // Add required property
                 'expandable-commands': {
                     lint: 'npm run lint'
                 },
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
+            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -211,11 +236,18 @@ describe('ExpandableCommand Tests', () => {
 
             // Mock commandExecution.executeWithPool
             const { commandExecution } = await import('../../../src/services/CommandExecution.service.js')
-            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
 
-            // Import and call handleExpandableCommand
-            const { handleExpandableCommand } = await import('../../../src/cli.js')
-            const result = await handleExpandableCommand('lint', ['--fix', 'src/'], mockConfig)
+            // Import and instantiate ExpandableCommand
+            const { ExpandableCommand } = await import('../../../src/commands/ExpandableCommand.js')
+            const expandableCommand = new ExpandableCommand(vi.fn()) // debug
+            const result = await expandableCommand.execute('lint', ['--fix', 'src/'], mockConfig)
             
             expect(result).toBe(0)
         })
@@ -223,14 +255,15 @@ describe('ExpandableCommand Tests', () => {
         it('should handle expandable command error scenarios', async () => {
             // Mock config with expandable command
             const mockConfig = {
+                nxPackages: {}, // Add required property
                 'expandable-commands': {
                     fail: 'nonexistent-command'
                 },
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
+            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -247,9 +280,10 @@ describe('ExpandableCommand Tests', () => {
             const { commandExecution } = await import('../../../src/services/CommandExecution.service.js')
             vi.mocked(commandExecution.executeWithPool).mockRejectedValue(new Error('Command failed'))
 
-            // Import and call handleExpandableCommand
-            const { handleExpandableCommand } = await import('../../../src/cli.js')
-            const result = await handleExpandableCommand('fail', [], mockConfig)
+            // Import and instantiate ExpandableCommand
+            const { ExpandableCommand } = await import('../../../src/commands/ExpandableCommand.js')
+            const expandableCommand = new ExpandableCommand(vi.fn()) // debug
+            const result = await expandableCommand.execute('fail', [], mockConfig)
             
             expect(result).toBe(1)
         })
@@ -257,14 +291,15 @@ describe('ExpandableCommand Tests', () => {
         it('should handle expandable command service integration', async () => {
             // Mock config with expandable command
             const mockConfig = {
+                nxPackages: {}, // Add required property
                 'expandable-commands': {
                     serve: 'npm run serve'
                 },
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
+            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -279,11 +314,18 @@ describe('ExpandableCommand Tests', () => {
 
             // Mock commandExecution.executeWithPool
             const { commandExecution } = await import('../../../src/services/CommandExecution.service.js')
-            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
 
-            // Import and call handleExpandableCommand
-            const { handleExpandableCommand } = await import('../../../src/cli.js')
-            const result = await handleExpandableCommand('serve', [], mockConfig)
+            // Import and instantiate ExpandableCommand
+            const { ExpandableCommand } = await import('../../../src/commands/ExpandableCommand.js')
+            const expandableCommand = new ExpandableCommand(vi.fn()) // debug
+            const result = await expandableCommand.execute('serve', [], mockConfig)
             
             expect(result).toBe(0)
         })
@@ -291,6 +333,7 @@ describe('ExpandableCommand Tests', () => {
         it('should handle expandable command configuration access', async () => {
             // Mock config with expandable command
             const mockConfig = {
+                nxPackages: {}, // Add required property
                 'expandable-commands': {
                     deploy: 'npm run deploy'
                 },
@@ -301,8 +344,8 @@ describe('ExpandableCommand Tests', () => {
                 'internal-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
+            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -317,11 +360,18 @@ describe('ExpandableCommand Tests', () => {
 
             // Mock commandExecution.executeWithPool
             const { commandExecution } = await import('../../../src/services/CommandExecution.service.js')
-            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
 
-            // Import and call handleExpandableCommand
-            const { handleExpandableCommand } = await import('../../../src/cli.js')
-            const result = await handleExpandableCommand('deploy', [], mockConfig)
+            // Import and instantiate ExpandableCommand
+            const { ExpandableCommand } = await import('../../../src/commands/ExpandableCommand.js')
+            const expandableCommand = new ExpandableCommand(vi.fn()) // debug
+            const result = await expandableCommand.execute('deploy', [], mockConfig)
             
             expect(result).toBe(0)
         })
@@ -329,14 +379,15 @@ describe('ExpandableCommand Tests', () => {
         it('should handle expandable command validation', async () => {
             // Mock config with expandable command
             const mockConfig = {
+                nxPackages: {}, // Add required property
                 'expandable-commands': {
                     valid: 'echo "valid command"'
                 },
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
+            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -351,11 +402,18 @@ describe('ExpandableCommand Tests', () => {
 
             // Mock commandExecution.executeWithPool
             const { commandExecution } = await import('../../../src/services/CommandExecution.service.js')
-            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
 
-            // Import and call handleExpandableCommand
-            const { handleExpandableCommand } = await import('../../../src/cli.js')
-            const result = await handleExpandableCommand('valid', [], mockConfig)
+            // Import and instantiate ExpandableCommand
+            const { ExpandableCommand } = await import('../../../src/commands/ExpandableCommand.js')
+            const expandableCommand = new ExpandableCommand(vi.fn()) // debug
+            const result = await expandableCommand.execute('valid', [], mockConfig)
             
             expect(result).toBe(0)
         })
@@ -363,14 +421,15 @@ describe('ExpandableCommand Tests', () => {
         it('should handle expandable command execution', async () => {
             // Mock config with expandable command
             const mockConfig = {
+                nxPackages: {}, // Add required property
                 'expandable-commands': {
                     exec: 'node script.js'
                 },
                 'expandable-flags': {}
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
+            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -385,11 +444,18 @@ describe('ExpandableCommand Tests', () => {
 
             // Mock commandExecution.executeWithPool
             const { commandExecution } = await import('../../../src/services/CommandExecution.service.js')
-            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
 
-            // Import and call handleExpandableCommand
-            const { handleExpandableCommand } = await import('../../../src/cli.js')
-            const result = await handleExpandableCommand('exec', [], mockConfig)
+            // Import and instantiate ExpandableCommand
+            const { ExpandableCommand } = await import('../../../src/commands/ExpandableCommand.js')
+            const expandableCommand = new ExpandableCommand(vi.fn()) // debug
+            const result = await expandableCommand.execute('exec', [], mockConfig)
             
             expect(result).toBe(0)
         })
@@ -397,6 +463,7 @@ describe('ExpandableCommand Tests', () => {
         it('should handle env-setting flags processing', async () => {
             // Mock config with expandable command and env-setting flags
             const mockConfig = {
+                nxPackages: {}, // Add required property
                 'expandable-commands': {
                     debug: 'echo "debug mode"'
                 },
@@ -405,8 +472,8 @@ describe('ExpandableCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
+            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -421,11 +488,18 @@ describe('ExpandableCommand Tests', () => {
 
             // Mock commandExecution.executeWithPool
             const { commandExecution } = await import('../../../src/services/CommandExecution.service.js')
-            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
 
-            // Import and call handleExpandableCommand
-            const { handleExpandableCommand } = await import('../../../src/cli.js')
-            const result = await handleExpandableCommand('debug', ['--pae-debug'], mockConfig)
+            // Import and instantiate ExpandableCommand
+            const { ExpandableCommand } = await import('../../../src/commands/ExpandableCommand.js')
+            const expandableCommand = new ExpandableCommand(vi.fn()) // debug
+            const result = await expandableCommand.execute('debug', ['--pae-debug'], mockConfig)
             
             expect(result).toBe(0)
         })
@@ -433,6 +507,7 @@ describe('ExpandableCommand Tests', () => {
         it('should handle internal flags processing', async () => {
             // Mock config with expandable command and internal flags
             const mockConfig = {
+                nxPackages: {}, // Add required property
                 'expandable-commands': {
                     timeout: 'echo "timeout test"'
                 },
@@ -441,8 +516,8 @@ describe('ExpandableCommand Tests', () => {
                 }
             }
 
-            const { loadAliasConfig } = await import('../../../src/config.js')
-            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig)
+            const { loadAliasConfig } = await import('../../../src/services/ConfigLoader.service.js')
+            vi.mocked(loadAliasConfig).mockReturnValue(mockConfig as any)
 
             // Mock expandableProcessor
             const { expandableProcessor } = await import('../../../src/services/index.js')
@@ -457,11 +532,18 @@ describe('ExpandableCommand Tests', () => {
 
             // Mock commandExecution.executeWithPool
             const { commandExecution } = await import('../../../src/services/CommandExecution.service.js')
-            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            vi.mocked(commandExecution.executeWithPool).mockResolvedValue({
+                exitCode: 0,
+                duration: 100,
+                pid: 1234,
+                command: 'cmd',
+                args: ['/c', 'npm run clean']
+            })
 
-            // Import and call handleExpandableCommand
-            const { handleExpandableCommand } = await import('../../../src/cli.js')
-            const result = await handleExpandableCommand('timeout', ['--pae-execa-timeout=5000'], mockConfig)
+            // Import and instantiate ExpandableCommand
+            const { ExpandableCommand } = await import('../../../src/commands/ExpandableCommand.js')
+            const expandableCommand = new ExpandableCommand(vi.fn()) // debug
+            const result = await expandableCommand.execute('timeout', ['--pae-execa-timeout=5000'], mockConfig)
             
             expect(result).toBe(0)
         })

@@ -95,18 +95,18 @@ const runExecutor: PromiseExecutor<TypecheckExecutorSchema> = async (
         try {
             writeFileSync(tempTsconfigPath, JSON.stringify(tsconfig, null, 2))
       
-            const command = `tsc --project ${tempTsconfigPath}`
+            const command = `npx tsc --project ${tempTsconfigPath}`
 
             logger.info(`Running TypeScript strict type check for project: ${context.projectName}`)
             logger.info(`Command: ${command}`)
 
             // Execute the command and capture output for message override
             try {
-                // const output = execSync(command, {
-                //     stdio: 'pipe',
-                //     cwd: workspaceRoot,
-                //     encoding: 'utf8'
-                // })
+                const output = execSync(command, {
+                    stdio: 'pipe',
+                    cwd: workspaceRoot,
+                    encoding: 'utf8'
+                })
 
                 // If we get here, there were no errors
                 logger.info('✅ Type checking passed!')
