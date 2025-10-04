@@ -47,6 +47,18 @@ vi.mock('../../../src/services/index.js', () => ({
     }
 }))
 
+// Mock the specific CommandExecution service file for dynamic imports
+vi.mock('../../../src/services/CommandExecution.service.js', () => ({
+    commandExecution: {
+        runNx: vi.fn(),
+        runCommand: vi.fn(),
+        executeWithPool: vi.fn(),
+        shutdownProcessPool: vi.fn(),
+        setChildProcessTracker: vi.fn()
+    },
+    setChildProcessTracker: vi.fn()
+}))
+
 vi.mock('../../../src/shell.js', () => ({
     detectShell: vi.fn(() => 'powershell')
 }))
@@ -139,6 +151,7 @@ describe('AliasCommand Tests', () => {
         it('should handle feature alias resolution', async () => {
             // Mock config with feature alias
             const mockConfig = {
+                nxPackages: {},
                 'feature-nxTargets': {
                     test: {
                         'run-target': 'test',
@@ -176,17 +189,11 @@ describe('AliasCommand Tests', () => {
 
             // Import and call handleAliasCommand
             const { handleAliasCommand } = await import('../../../src/cli.js')
-            try {
-                const result = await handleAliasCommand(['test'], mockConfig)
-                console.log('Feature alias test result:', result)
-                expect(result).toBe(0)
-            } catch (error) {
-                console.error('Feature alias test error:', error)
-                throw error
-            }
+            const result = await handleAliasCommand(['test'], mockConfig)
+            
+            expect(result).toBe(0)
             expect(commandExecution.runNx).toHaveBeenCalledWith(
-                ['nx', 'run', 'test-core:test'],
-                undefined
+                ['nx', 'run', 'test-core:test']
             )
         })
 
@@ -449,6 +456,7 @@ describe('AliasCommand Tests', () => {
         it('should handle not-nx target resolution', async () => {
             // Mock config with not-nx target
             const mockConfig = {
+                nxPackages: {},
                 'not-nxTargets': {
                     ls: 'dir'
                 }
@@ -472,6 +480,7 @@ describe('AliasCommand Tests', () => {
         it('should handle expandable command resolution', async () => {
             // Mock config with expandable command
             const mockConfig = {
+                nxPackages: {},
                 'expandable-commands': {
                     clean: 'npm run clean'
                 }
@@ -491,16 +500,19 @@ describe('AliasCommand Tests', () => {
                 remainingArgs: []
             })
 
-            // Mock commandExecution.executeWithPool
+            // Mock commandExecution.executeWithPool (both from index.js and CommandExecution.service.js)
             const { commandExecution } = await import('../../../src/services/index.js')
             vi.mocked(commandExecution.executeWithPool).mockResolvedValue({ exitCode: 0 })
+            
+            const { commandExecution: commandExecutionService } = await import('../../../src/services/CommandExecution.service.js')
+            vi.mocked(commandExecutionService.executeWithPool).mockResolvedValue({ exitCode: 0 })
 
             // Import and call handleAliasCommand
             const { handleAliasCommand } = await import('../../../src/cli.js')
             const result = await handleAliasCommand(['clean'], mockConfig)
             
             expect(result).toBe(0)
-            expect(commandExecution.executeWithPool).toHaveBeenCalledWith(
+            expect(commandExecutionService.executeWithPool).toHaveBeenCalledWith(
                 'cmd',
                 ['/c', 'npm run clean'],
                 expect.any(Object)
