@@ -7,6 +7,11 @@ import type { AliasConfig } from './_types/index.js'
 import type { ChildProcess } from 'child_process'
 import { execa } from 'execa'
 import * as fs from 'fs'
+import { CommandRouter } from './commands/CommandRouter.js'
+import { InstallCommand } from './commands/InstallCommand.js'
+import { HelpCommand } from './commands/HelpCommand.js'
+import { AliasCommand } from './commands/AliasCommand.js'
+import { ExpandableCommand } from './commands/ExpandableCommand.js'
 
 // Debug mode - activated by -d or --debug flags
 let DEBUG = false
@@ -210,98 +215,11 @@ Import-Module -Name "PAE" -Force
     }
 } //<
 
-async function handleInstallCommand(args: string[]) { //>
-    const ora = (await import('ora')).default
-    
-    // Check for flags
-    const isLocal = args.includes('--local') || args.includes('-l')
-    const isGet = args.includes('--get') || args.includes('-g')
-    
-    if (isGet) {
-        // Show current install type
-        try {
-            const { stdout } = await execa('powershell', ['-Command', 'Get-ItemProperty -Path "HKCU:\\Environment" -Name "PAE_INSTALL_TYPE" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PAE_INSTALL_TYPE'], { stdio: 'pipe' })
-            const installType = stdout.trim() || 'standard'
+async function handleInstallCommand(args: string[]) {
+    const installCommand = new InstallCommand(debug, (message: string) => console.log(`✅ ${message}`))
 
-            console.log(`Current PAE install type: ${installType}`)
-        } catch (_error) {
-            console.log('Current PAE install type: standard (default)')
-        }
-        return 0
-    }
-    
-    // Fast path during tests to avoid long IO waits
-    if (process.env.VITEST === 'true' || process.env.NODE_ENV === 'test') {
-        if (isLocal) {
-            aliasManager.generateLocalFiles()
-            aliasManager.generateDirectToNativeModules()
-        } else {
-            aliasManager.generateDirectToNativeModules()
-        }
-        try {
-            await addInProfileBlock(isLocal)
-        } catch (error) {
-            // In test mode, don't fail if profile operations fail
-            debug('Profile block add failed in test mode:', error)
-        }
-        success(`PAE scripts installed (${isLocal ? 'local' : 'standard'} mode)`)
-        return 0
-    }
-
-    const spinner = ora({
-        text: isLocal ? 'Installing PAE scripts (local mode)...' : 'Installing PAE scripts (standard mode)...',
-        spinner: 'dots'
-    }).start()
-    
-    try {
-        if (isLocal) {
-            // Local install: generate to dist, then copy to native modules
-            spinner.text = 'Generating scripts to local dist...'
-            aliasManager.generateLocalFiles()
-            await new Promise(resolve => setTimeout(resolve, 300))
-            
-            spinner.text = 'Copying to native modules...'
-            aliasManager.generateDirectToNativeModules()
-            await new Promise(resolve => setTimeout(resolve, 300))
-            
-            // Mark as local install - persist to registry
-            await execa('powershell', ['-Command', 'Set-ItemProperty -Path "HKCU:\\Environment" -Name "PAE_INSTALL_TYPE" -Value "local"'], { stdio: 'pipe' })
-        } else {
-            // Standard install: generate directly to native modules
-            spinner.text = 'Installing scripts to native modules...'
-            aliasManager.generateDirectToNativeModules()
-            await new Promise(resolve => setTimeout(resolve, 500))
-            
-            // Mark as standard install - persist to registry
-            await execa('powershell', ['-Command', 'Set-ItemProperty -Path "HKCU:\\Environment" -Name "PAE_INSTALL_TYPE" -Value "standard"'], { stdio: 'pipe' })
-        }
-        
-        // Add inProfile block to PowerShell profile
-        spinner.text = 'Adding inProfile block...'
-        await addInProfileBlock(isLocal)
-        await new Promise(resolve => setTimeout(resolve, 300))
-        
-        // Load module into active shell
-        const shell = (await import('./shell.js')).detectShell()
-
-        if (shell === 'powershell') {
-            spinner.text = 'Loading module into active shell: [pwsh]'
-        } else if (shell === 'gitbash') {
-            spinner.text = 'Loading module into active shell: [GitBash]'
-        } else {
-            spinner.text = 'Loading module into active shell: [unknown]'
-        }
-        await new Promise(resolve => setTimeout(resolve, 300))
-        
-        // Stop spinner and show success
-        spinner.stop()
-        success(`PAE scripts installed (${isLocal ? 'local' : 'standard'} mode)`)
-        return 0
-    } catch (error) {
-        spinner.stop()
-        throw error
-    }
-} //<
+    return await installCommand.execute(args)
+}
 
 async function addInProfileBlock(_isLocal: boolean) { //>
     // Get the actual profile path from PowerShell
@@ -504,173 +422,11 @@ function pae-remove {
     }
 } //<
 
-function showDynamicHelp(config?: AliasConfig) { //>
-    try {
-        const helpConfig = config || aliasConfig
+function showDynamicHelp(config?: AliasConfig) {
+    const helpCommand = new HelpCommand()
 
-        if (!helpConfig) {
-            throw new Error('Failed to load configuration')
-        }
-        
-        console.log('')
-        console.log('PAE - Project Alias Expander')
-        console.log('Usage: pae <alias> [target] [flags]')
-        console.log('       pae <command> [args]')
-        console.log('')
-        
-        // Show available aliases
-        if (helpConfig.nxPackages && Object.keys(helpConfig.nxPackages).length > 0) {
-            const desc = helpConfig.nxPackages.desc || 'Project aliases'
-            const dimmed = '\x1b[2m'
-            const reset = '\x1b[0m'
-
-            console.log(`Available Aliases: ${dimmed}${desc}${reset}`)
-            Object.entries(helpConfig.nxPackages).forEach(([alias, project]) => {
-                if (alias !== 'desc') {
-                    const projectName = typeof project === 'string' ? project : project.name
-
-                    console.log(`  ${alias.padEnd(8)} → ${projectName}`)
-                }
-            })
-            console.log('')
-        }
-        
-        // Show available targets
-        if (helpConfig.nxTargets && Object.keys(helpConfig.nxTargets).length > 0) {
-            const desc = helpConfig.nxTargets.desc || 'Target shortcuts'
-            const dimmed = '\x1b[2m'
-            const reset = '\x1b[0m'
-
-            console.log(`Available Targets: ${dimmed}${desc}${reset}`)
-            Object.entries(helpConfig.nxTargets).forEach(([shortcut, target]) => {
-                if (shortcut !== 'desc') {
-                    console.log(`  ${shortcut.padEnd(8)} → ${target}`)
-                }
-            })
-            console.log('')
-        }
-        
-        // Show feature targets
-        if (helpConfig['feature-nxTargets'] && Object.keys(helpConfig['feature-nxTargets']).length > 0) {
-            const desc = helpConfig['feature-nxTargets'].desc || 'Feature-specific targets'
-            const dimmed = '\x1b[2m'
-            const reset = '\x1b[0m'
-
-            console.log(`Feature Targets: ${dimmed}${desc}${reset}`)
-            Object.entries(helpConfig['feature-nxTargets']).forEach(([alias, config]) => {
-                if (alias !== 'desc') {
-                    console.log(`  ${alias.padEnd(8)} → ${config['run-target']} (from ${config['run-from']})`)
-                }
-            })
-            console.log('')
-        }
-        
-        // Show expandable flags
-        if (helpConfig['expandable-flags'] && Object.keys(helpConfig['expandable-flags']).length > 0) {
-            const desc = helpConfig['expandable-flags'].desc || 'Flag expansions'
-            const dimmed = '\x1b[2m'
-            const reset = '\x1b[0m'
-
-            console.log(`expandable Flags: ${dimmed}${desc}${reset}`)
-            Object.entries(helpConfig['expandable-flags']).forEach(([flag, expansion]) => {
-                if (flag !== 'desc') {
-                    const expansionStr = typeof expansion === 'string' ? expansion : expansion.template || 'template'
-
-                    console.log(`  -${flag.padEnd(8)} → ${expansionStr}`)
-                }
-            })
-            console.log('')
-        }
-        
-        // Show expandable templates
-        if (helpConfig['expandable-templates'] && Object.keys(helpConfig['expandable-templates']).length > 0) {
-            const desc = helpConfig['expandable-templates'].desc || 'Template expansions'
-            const dimmed = '\x1b[2m'
-            const reset = '\x1b[0m'
-
-            console.log(`expandable Templates: ${dimmed}${desc}${reset}`)
-            Object.entries(helpConfig['expandable-templates']).forEach(([template, config]) => {
-                if (template !== 'desc') {
-                    console.log(`  -${template.padEnd(8)} → ${config['pwsh-template'] ? 'PowerShell template' : 'Template'}`)
-                }
-            })
-            console.log('')
-        }
-        
-        // Show expandable commands
-        if (helpConfig['expandable-commands'] && Object.keys(helpConfig['expandable-commands']).length > 0) {
-            const desc = helpConfig['expandable-commands'].desc || 'Command expansions'
-            const dimmed = '\x1b[2m'
-            const reset = '\x1b[0m'
-
-            console.log(`expandable Commands: ${dimmed}${desc}${reset}`)
-            Object.entries(helpConfig['expandable-commands']).forEach(([alias, command]) => {
-                if (alias !== 'desc') {
-                    console.log(`  ${alias.padEnd(8)} → ${command}`)
-                }
-            })
-            console.log('')
-        }
-        
-        // Show commands
-        if (helpConfig.commands && Object.keys(helpConfig.commands).length > 0) {
-            const desc = helpConfig.commands.desc || 'PAE commands'
-            const dimmed = '\x1b[2m'
-            const reset = '\x1b[0m'
-
-            console.log(`Commands: ${dimmed}${desc}${reset}`)
-            Object.entries(helpConfig.commands).forEach(([command, description]) => {
-                if (command !== 'desc') {
-                    console.log(`  ${command.padEnd(25)} ${description}`)
-                }
-            })
-            console.log('')
-        }
-        console.log('Flags:')
-        console.log('  -h, --help         Show this help message')
-        console.log('  -d, --debug        Enable debug logging')
-        console.log('  -echo              Echo commands instead of executing')
-        console.log('')
-        console.log('Environment Variables:')
-        console.log('  PAE_DEBUG=1        Enable debug logging')
-        console.log('  PAE_ECHO=1         Echo commands instead of executing')
-        console.log('')
-    } catch (_error) {
-        // Fallback to static help if config loading fails
-        console.log('')
-        console.log('PAE - Project Alias Expander')
-        console.log('Usage: pae <alias> [target] [flags]')
-        console.log('       pae <command> [args]')
-        console.log('')
-        console.log('Commands:')
-        console.log('  install                      Install PAE scripts to native modules directory (use --local for dist-based install)')
-        console.log('  load                         Load PAE module into active PowerShell session')
-        console.log('  remove                       Remove all traces of PAE')
-        console.log('  help                         Show this help with all available aliases and flags (deprecated)')
-        console.log('')
-        console.log('Flags:')
-        console.log('  -h, --help         Show this help message')
-        console.log('  -d, --debug        Enable debug logging')
-        console.log('  -echo              Echo commands instead of executing')
-        console.log('')
-        console.log('Environment Variables:')
-        console.log('  PAE_DEBUG=1        Enable debug logging')
-        console.log('  PAE_ECHO=1         Echo commands instead of executing')
-        console.log('')
-        console.log('⚠️  FALLBACK HELP MODE')
-        console.log('   Configuration loading failed - showing static help only.')
-        console.log('   This usually means:')
-        console.log('   • You\'re not in the project root directory')
-        console.log('   • The config.json file is missing or corrupted')
-        console.log('   • There\'s a syntax error in libs/project-alias-expander/config.json')
-        console.log('')
-        console.log('   Current working directory:', process.cwd())
-        console.log('   Expected config location: libs/project-alias-expander/config.json')
-        console.log('')
-        console.log('   To debug this issue, run: pae <command> -d')
-        console.log('')
-    }
-} //<
+    helpCommand.execute(config)
+}
 
 async function main() {
     try {
@@ -874,57 +630,9 @@ async function main() {
 }
 
 async function handleAliasCommand(args: string[], config: AliasConfig): Promise<number> {
-    try {
-        const alias = args[0]
-        const remainingArgs = args.slice(1)
-        
-        debug('Processing alias command', { alias, remainingArgs })
-        
-        // Check if it's a package alias
-        if (config['nxPackages'][alias]) {
-            debug('Found package alias', { alias, config: config['nxPackages'][alias] })
-            return await handlePackageAlias(alias, remainingArgs, config)
-        }
-        
-        // Check if it's a feature alias
-        if (config['feature-nxTargets']?.[alias]) {
-            debug('Found feature alias', { alias, config: config['feature-nxTargets'][alias] })
-            return await handleFeatureAlias(alias, remainingArgs, config)
-        }
-        
-        // Check if it's a not-nx target
-        if (config['not-nxTargets']?.[alias]) {
-            debug('Found not-nx target', { alias, config: config['not-nxTargets'][alias] })
-            return await handleNotNxTarget(alias, remainingArgs, config)
-        }
-        
-        // Check if it's an expandable command
-        if (config['expandable-commands']?.[alias]) {
-            debug('Found expandable command', { alias, config: config['expandable-commands'][alias] })
-            return await handleExpandableCommand(alias, remainingArgs, config)
-        }
-        
-        // Unknown alias
-        error(`Unknown alias: ${alias}`)
-        console.error('')
-        console.error('Available aliases:')
-        console.error('  Packages:', Object.keys(config['nxPackages']).join(', '))
-        if (config['feature-nxTargets']) {
-            console.error('  Features:', Object.keys(config['feature-nxTargets']).join(', '))
-        }
-        if (config['not-nxTargets']) {
-            console.error('  Not-NX:', Object.keys(config['not-nxTargets']).join(', '))
-        }
-        if (config['expandable-commands']) {
-            console.error('  Commands:', Object.keys(config['expandable-commands']).join(', '))
-        }
-        console.error('')
-        console.error('Use "pae help" for more information.')
-        return 1
-    } catch (err) {
-        error('Error handling alias command:', err)
-        return 1
-    }
+    const aliasCommand = new AliasCommand(debug, error, getContextAwareFlags)
+
+    return await aliasCommand.execute(args, config)
 }
 
 async function handlePackageAlias(alias: string, args: string[], config: AliasConfig): Promise<number> {
@@ -1131,132 +839,9 @@ async function handleNotNxTarget(alias: string, args: string[], config: AliasCon
 }
 
 async function handleExpandableCommand(alias: string, args: string[], config: AliasConfig): Promise<number> {
-    const command = config['expandable-commands']![alias]
-    
-    debug('Processing expandable command', { alias, command, args })
-    
-    // Process internal flags first (these affect PAE behavior, not the command)
-    let timeoutMs: number | undefined = undefined
+    const expandableCommand = new ExpandableCommand(debug)
 
-    // Process env-setting-flags FIRST - these set environment variables before any expansion or execution
-    debug('About to check env-setting-flags', { hasEnvSettingFlags: !!config['env-setting-flags'], envSettingFlagsKeys: config['env-setting-flags'] ? Object.keys(config['env-setting-flags']) : [] })
-    
-    if (config['env-setting-flags']) {
-        debug('Processing env-setting flags', { envSettingFlags: config['env-setting-flags'] })
-
-        const envSettingFlags = { ...config['env-setting-flags'] }
-        
-        // Process env-setting flags first to set environment variables
-        debug('About to process env-setting flags', { args, envSettingFlags })
-
-        const { start: envStart, prefix: envPrefix, preArgs: envPreArgs, suffix: envSuffix, end: envEnd, remainingArgs: envRemainingArgs } = expandableProcessor.expandFlags(args, envSettingFlags)
-
-        debug('Env-setting flags processed', { envStart, envPrefix, envPreArgs, envSuffix, envEnd, envRemainingArgs })
-        
-        // Check for PAE-specific env-setting flags and set environment variables
-        const allEnvProcessedArgs = [...envStart, ...envPrefix, ...envPreArgs, ...envSuffix, ...envEnd, ...envRemainingArgs]
-
-        for (const arg of allEnvProcessedArgs) {
-            if (arg === '--pae-debug') {
-                DEBUG = true
-                process.env.PAE_DEBUG = '1'
-                debug('Debug mode enabled via --pae-debug flag')
-            } else if (arg === '--pae-verbose') {
-                process.env.PAE_VERBOSE = '1'
-                debug('Verbose mode enabled via --pae-verbose flag')
-            } else if (arg.startsWith('--pae-echo=')) {
-                const variant = arg.split('=')[1]?.replace(/['"]/g, '')
-
-                process.env.PAE_ECHO = '1'
-                if (variant) {
-                    process.env.PAE_ECHO_VARIANT = variant
-                    debug(`echo mode enabled via --pae-echo flag with variant: ${variant}`)
-                } else {
-                    debug('Echo mode enabled via --pae-echo flag (no variant - will show all)')
-                }
-            } else if (arg === '--pae-echo') {
-                process.env.PAE_ECHO = '1'
-                // No variant set - will show all 6 variants
-                debug('Echo mode enabled via --pae-echo flag')
-            } else if (arg.startsWith('--pae-echoX=')) {
-                const variant = arg.split('=')[1]?.replace(/['"]/g, '')
-
-                process.env.PAE_ECHO_X = '1'
-                if (variant) {
-                    process.env.PAE_ECHO_VARIANT = variant
-                    debug(`echoX mode enabled via --pae-echoX flag with variant: ${variant}`)
-                } else {
-                    debug('EchoX mode enabled via --pae-echoX flag (no variant - will show all)')
-                }
-            } else if (arg === '--pae-echoX') {
-                process.env.PAE_ECHO_X = '1'
-                // No variant set - will show all 6 variants
-                debug('EchoX mode enabled via --pae-echoX flag')
-            }
-        }
-        
-        // Update args to use the processed env-setting flags
-        args = envRemainingArgs
-    }
-
-    if (config['internal-flags']) {
-        const internalFlags = { ...config['internal-flags'] }
-
-        if (config['expandable-templates']) {
-            Object.assign(internalFlags, config['expandable-templates'])
-        }
-        
-        // Process internal flags
-        const { remainingArgs: internalRemainingArgs } = expandableProcessor.expandFlags(args, internalFlags)
-        
-        // Check for PAE-specific flags in the processed args
-        for (const arg of internalRemainingArgs) {
-            if (arg.startsWith('--pae-execa-timeout=')) {
-                timeoutMs = parseInt(arg.split('=')[1])
-                debug('Detected PAE timeout flag', { timeoutMs })
-            }
-        }
-        
-        // Update args to use the processed internal flags
-        args = internalRemainingArgs
-    }
-    
-    // Process expandable flags
-    const expandableFlags = { ...config['expandable-flags'] }
-
-    if (config['expandable-templates']) {
-        Object.assign(expandableFlags, config['expandable-templates'])
-    }
-    
-    const { start: _start, prefix, preArgs, suffix, end: _end, remainingArgs } = expandableProcessor.expandFlags(args, expandableFlags)
-    
-    // Build the final command with processed flags
-    const processedArgs = [...prefix, ...preArgs, ...suffix, ...remainingArgs]
-    const fullCommand = [command, ...processedArgs].join(' ')
-    
-    debug('Final expandable command to execute', { fullCommand, timeoutMs })
-    
-    // Add explicit console logging to debug the issue
-    console.log(`[DEBUG] About to execute expandable command: ${fullCommand}`)
-    
-    try {
-        // Use ProcessPool for better resource management
-        const { commandExecution } = await import('./services/CommandExecution.service.js')
-        
-        console.log(`[DEBUG] About to execute expandable command: ${fullCommand}`)
-        
-        const result = await commandExecution.executeWithPool('cmd', ['/c', fullCommand], {
-            timeout: timeoutMs || 300000,
-            stdio: 'inherit'
-        })
-        
-        console.log(`[DEBUG] Command completed with exit code: ${result.exitCode}`)
-        return result.exitCode
-    } catch (error: unknown) {
-        debug('Expandable command execution error:', error)
-        console.log(`[DEBUG] Command failed with error:`, error)
-        return (error as { exitCode?: number }).exitCode || 1
-    }
+    return await expandableCommand.execute(alias, args, config)
 }
 
 function resolveProjectForAlias(aliasValue: string | { name: string, suffix?: 'core' | 'ext', full?: boolean }): { project: string, full?: boolean } {
