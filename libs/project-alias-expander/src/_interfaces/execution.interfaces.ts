@@ -5,7 +5,6 @@ import type { ProcessResult, ProcessPoolConfig, ProcessMetrics } from '../servic
 
 // Command execution service interfaces
 export interface ICommandExecutionService {
-    runNx(argv: string[], timeoutMs?: number): Promise<number>
     runCommand(command: string, args: string[], timeoutMs?: number): Promise<number>
     runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: AliasConfig): Promise<number>
     executeWithPool(command: string, args: string[], options?: {

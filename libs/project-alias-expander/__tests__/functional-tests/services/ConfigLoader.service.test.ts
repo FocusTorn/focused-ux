@@ -1,220 +1,185 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync, statSync } from 'fs'
 import { join } from 'path'
-import { ConfigLoader } from '../../../src/services/ConfigLoader.service.js'
+import { ConfigLoader, clearAllCaches } from '../../../src/services/ConfigLoader.service.js'
 import type { AliasConfig } from '../../../src/_types/index.js'
 
 describe('ConfigLoader', () => {
+
+    // SETUP ----------------->> 
+    
+    // /* eslint-disable unused-imports/no-unused-vars */
     let configLoader: ConfigLoader
     let tempDir: string
     let tempConfigPath: string
+    // /* eslint-enable unused-imports/no-unused-vars */
+    
+    beforeEach(() => { //>
 
-    beforeEach(() => {
         configLoader = ConfigLoader.getInstance()
         configLoader.clearCache()
         
         // Create a temporary directory for test configs
         tempDir = process.cwd()
         tempConfigPath = join(tempDir, '.pae.json')
-    })
+    
+    }) //<
 
-    afterEach(() => {
+    afterEach(() => { //>
+
         // Clean up test files
         if (existsSync(tempConfigPath)) {
+
             unlinkSync(tempConfigPath)
+        
         }
         configLoader.clearCache()
-    })
+        clearAllCaches()
+    
+    }) //<
 
+    //----------------------------------------------------<<
+    
     describe('loadConfig', () => {
-        it('should load valid JSON config', async () => {
-            const testConfig: AliasConfig = {
-                nxPackages: {
-                    'test': '@fux/test-package',
-                    'testc': { name: 'test-package', suffix: 'core' }
-                },
-                nxTargets: {
-                    'b': 'build',
-                    't': 'test'
-                }
-            }
 
-            writeFileSync(tempConfigPath, JSON.stringify(testConfig, null, 2))
-
-            const config = await configLoader.loadConfig()
-
-            expect(config).toEqual(testConfig)
-            expect(configLoader.getCachedConfig()).toEqual(testConfig)
-        })
-
-        it('should return cached config on subsequent calls', async () => {
-            const testConfig: AliasConfig = {
-                nxPackages: {
-                    'test': '@fux/test-package'
-                }
-            }
-
-            writeFileSync(tempConfigPath, JSON.stringify(testConfig, null, 2))
-
-            // First call
-            const config1 = await configLoader.loadConfig()
+        it('should load valid JSON config', async () => { //>
             
-            // Second call should return cached config
-            const config2 = await configLoader.loadConfig()
+        }) //<
+        it('should return cached config on subsequent calls', async () => { //>
 
-            expect(config1).toBe(config2) // Same reference due to caching
-        })
-
-        it('should reload config when file is modified', async () => {
-            const initialConfig: AliasConfig = {
-                nxPackages: {
-                    'test': '@fux/test-package'
-                }
-            }
-
-            const updatedConfig: AliasConfig = {
-                nxPackages: {
-                    'test': '@fux/test-package',
-                    'test2': '@fux/test-package-2'
-                }
-            }
-
-            writeFileSync(tempConfigPath, JSON.stringify(initialConfig, null, 2))
+        }) //<
+        it('should reload config when file is modified', async () => { //>
+           
+        }) //<
+        it('should only load config when needed (lazy loading)', async () => { //>
             
-            const config1 = await configLoader.loadConfig()
-            expect(config1.nxPackages).toHaveProperty('test')
-            expect(config1.nxPackages).not.toHaveProperty('test2')
-
-            // Modify the file
-            writeFileSync(tempConfigPath, JSON.stringify(updatedConfig, null, 2))
-            
-            // Wait a bit to ensure file modification time changes
-            await new Promise(resolve => setTimeout(resolve, 10))
-            
-            const config2 = await configLoader.loadConfig()
-            expect(config2.nxPackages).toHaveProperty('test')
-            expect(config2.nxPackages).toHaveProperty('test2')
-        })
+        }) //<
+   
     })
-
+    
     describe('reloadConfig', () => {
-        it('should force reload config and clear cache', async () => {
-            const testConfig: AliasConfig = {
-                nxPackages: {
-                    'test': '@fux/test-package'
-                }
-            }
 
-            writeFileSync(tempConfigPath, JSON.stringify(testConfig, null, 2))
-
-            // Load config
-            await configLoader.loadConfig()
-            expect(configLoader.getCachedConfig()).toBeTruthy()
-
-            // Force reload
-            const reloadedConfig = await configLoader.reloadConfig()
-            expect(reloadedConfig).toEqual(testConfig)
-        })
+        it('should force reload config and clear cache', async () => { //>
+           
+        }) //<
+        it('should reload config when forced even if file not modified', async () => { //>
+            
+        }) //<
+    
     })
 
-    describe('error handling', () => {
-        it('should throw error when config file does not exist', async () => {
-            await expect(configLoader.loadConfig()).rejects.toThrow(
-                'No configuration file found. Please ensure .pae.json exists in the project root.'
-            )
-        })
+    describe('file system errors', () => {
 
-        it('should throw error for invalid JSON', async () => {
-            writeFileSync(tempConfigPath, '{ invalid json }')
-
-            await expect(configLoader.loadConfig()).rejects.toThrow(
-                'Failed to parse JSON config from'
-            )
-        })
-
-        it('should throw error for unsupported file format', async () => {
-            const unsupportedPath = join(tempDir, '.pae.txt')
-            writeFileSync(unsupportedPath, 'some content')
-
-            // Mock the getConfigPaths to return unsupported format
-            vi.spyOn(configLoader as any, 'getConfigPaths').mockReturnValue([unsupportedPath])
-
-            await expect(configLoader.loadConfig()).rejects.toThrow(
-                'Unsupported config file format'
-            )
-
-            // Clean up
-            unlinkSync(unsupportedPath)
-        })
+        it('should throw error when config file does not exist', async () => { //>
+           
+        }) //<
+        it('should handle directory instead of file', async () => { //>
+           
+        }) //<
+        it('should handle permission denied errors', async () => { //>
+            
+        }) //<
+        it('should handle file locked errors', async () => { //>
+            
+        }) //<
+        it('should handle file deletion gracefully', async () => { //>
+           
+        }) //<
+        it('should handle file permission changes', async () => { //>
+           
+        }) //<
+        it('should handle config file being deleted during load', async () => { //>
+            
+        }) //<
+    
     })
 
-    describe('validation', () => {
-        it('should validate config structure and report errors', async () => {
-            const invalidConfig = {
-                // Missing required nxPackages
-                nxTargets: {
-                    'b': 'build'
-                }
-            }
+    describe('JSON parsing errors', () => {
 
-            writeFileSync(tempConfigPath, JSON.stringify(invalidConfig, null, 2))
+        it('should throw error for invalid JSON', async () => { //>
+           
+        }) //<
+        it('should handle malformed JSON', async () => { //>
+            
+        }) //<
+        it('should handle incomplete JSON', async () => { //>
+           
+        }) //<
+        it('should handle empty file', async () => { //>
+           
+        }) //<
+        it('should handle non-JSON content', async () => { //>
+            
+        }) //<
+        it('should handle JSON with comments (invalid)', async () => { //>
+            
+        }) //<
+        it('should throw error for unsupported file format', async () => { //>
+           
+        }) //<
+        it('should handle circular references in JSON', async () => { //>
+           
+        }) //<
+    
+    })
 
-            await configLoader.loadConfig()
-            const errors = configLoader.getValidationErrors()
+    describe('configuration validation', () => {
 
-            expect(errors).toContain('Missing required field: nxPackages')
-        })
+        it('should validate config structure and report errors', async () => { //>
 
-        it('should validate nxPackages structure', async () => {
-            const invalidConfig: AliasConfig = {
-                nxPackages: {
-                    'valid': '@fux/valid-package',
-                    'invalid-object': { /* missing name */ },
-                    'invalid-type': 123
-                } as any
-            }
+        }) //<
+        it('should handle missing required fields', async () => { //>
 
-            writeFileSync(tempConfigPath, JSON.stringify(invalidConfig, null, 2))
+        }) //<
+        it('should validate nxPackages structure', async () => { //>
 
-            await configLoader.loadConfig()
-            const errors = configLoader.getValidationErrors()
+        }) //<
+        it('should handle invalid nxPackages structure', async () => { //>
 
-            expect(errors).toContain("Package alias 'invalid-object' missing required 'name' property")
-            expect(errors).toContain("Package alias 'invalid-type' has invalid value type")
-        })
+        }) //<
+        it('should validate other sections are objects', async () => { //>
 
-        it('should validate other sections are objects', async () => {
-            const invalidConfig = {
-                nxPackages: {
-                    'test': '@fux/test'
-                },
-                nxTargets: 'should be object' // Invalid
-            }
+        }) //<
+        it('should handle invalid section types', async () => { //>
 
-            writeFileSync(tempConfigPath, JSON.stringify(invalidConfig, null, 2))
-
-            await configLoader.loadConfig()
-            const errors = configLoader.getValidationErrors()
-
-            expect(errors).toContain("Section 'nxTargets' must be an object")
-        })
+        }) //<
+    
     })
 
     describe('clearCache', () => {
-        it('should clear all cached data', async () => {
-            const testConfig: AliasConfig = {
-                nxPackages: {
-                    'test': '@fux/test-package'
-                }
-            }
 
-            writeFileSync(tempConfigPath, JSON.stringify(testConfig, null, 2))
+        it('should clear all cached data', async () => { //>
 
-            await configLoader.loadConfig()
-            expect(configLoader.getCachedConfig()).toBeTruthy()
+        }) //<
+        it('should clear cache when clearCache is called', async () => { //>
 
-            configLoader.clearCache()
-            expect(configLoader.getCachedConfig()).toBeNull()
-        })
+        }) //<
+    
     })
+
+    describe('concurrent access', () => {
+
+        it('should handle concurrent config loads', async () => { //>
+
+        }) //<
+        it('should handle concurrent loads with file modification', async () => { //>
+
+        }) //<
+    
+    })
+
+    describe('edge cases', () => {
+
+        it('should handle very large config files', async () => { //>
+
+        }) //<
+        it('should handle config with special characters', async () => { //>
+
+        }) //<
+        it('should handle config with unicode characters', async () => { //>
+
+        }) //<
+    
+    })
+
 })

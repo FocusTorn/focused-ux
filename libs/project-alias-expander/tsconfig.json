@@ -1,7 +1,15 @@
 {
     "extends": "../../tsconfig.base.json",
-    "include": ["src/**/*.ts"],
-    "exclude": ["node_modules", "dist/**/*", "__tests__/**/*"],
+    "include": [
+        "src/**/*.ts",
+        "__tests__/functional-tests/migration-services.test.ts",
+        "__tests__/functional-tests/alias-command-v2-integration.test.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist/**/*",
+        "__tests__/**/*"
+    ],
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",

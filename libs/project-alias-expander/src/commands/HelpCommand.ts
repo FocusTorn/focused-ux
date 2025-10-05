@@ -36,16 +36,14 @@ export class HelpCommand {
             }
             
             // Show available targets
-            if (helpConfig.nxTargets && Object.keys(helpConfig.nxTargets).length > 0) {
-                const desc = helpConfig.nxTargets.desc || 'Target shortcuts'
+            if (helpConfig.targets?.['nx-targets'] && Object.keys(helpConfig.targets['nx-targets']).length > 0) {
+                const desc = 'Target shortcuts'
                 const dimmed = '\x1b[2m'
                 const reset = '\x1b[0m'
 
                 console.log(`Available Targets: ${dimmed}${desc}${reset}`)
-                Object.entries(helpConfig.nxTargets).forEach(([shortcut, target]) => {
-                    if (shortcut !== 'desc') {
-                        console.log(`  ${shortcut.padEnd(8)} → ${target}`)
-                    }
+                Object.entries(helpConfig.targets['nx-targets']).forEach(([shortcut, target]) => {
+                    console.log(`  ${shortcut.padEnd(8)} → ${target}`)
                 })
                 console.log('')
             }
@@ -112,17 +110,15 @@ export class HelpCommand {
                 console.log('')
             }
             
-            // Show commands
-            if (helpConfig.commands && Object.keys(helpConfig.commands).length > 0) {
-                const desc = helpConfig.commands.desc || 'PAE commands'
+            // Show expandable commands
+            if (helpConfig['expandable-commands'] && Object.keys(helpConfig['expandable-commands']).length > 0) {
+                const desc = 'Command expansions'
                 const dimmed = '\x1b[2m'
                 const reset = '\x1b[0m'
 
-                console.log(`Commands: ${dimmed}${desc}${reset}`)
-                Object.entries(helpConfig.commands).forEach(([command, description]) => {
-                    if (command !== 'desc') {
-                        console.log(`  ${command.padEnd(25)} ${description}`)
-                    }
+                console.log(`expandable Commands: ${dimmed}${desc}${reset}`)
+                Object.entries(helpConfig['expandable-commands']).forEach(([command, execution]) => {
+                    console.log(`  ${command.padEnd(25)} ${execution}`)
                 })
                 console.log('')
             }

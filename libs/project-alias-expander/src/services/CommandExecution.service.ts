@@ -1,4 +1,4 @@
-import type { AliasConfig, AliasValue, ICommandExecutionService } from '../_types/index.js'
+import type { AliasConfig, ICommandExecutionService } from '../_types/index.js'
 import { ProcessUtils, ConfigUtils } from './CommonUtils.service.js'
 import { processPool, type ProcessResult, type ProcessMetrics } from './ProcessPool.service.js'
 
@@ -7,10 +7,6 @@ export function setChildProcessTracker(tracker: (childProcess: any) => void) {
 }
 
 export class CommandExecutionService implements ICommandExecutionService {
-
-    async runNx(argv: string[], timeoutMs?: number): Promise<number> {
-        return ProcessUtils.executeNxCommand(argv, timeoutMs)
-    }
 
     async runCommand(command: string, args: string[], timeoutMs?: number): Promise<number> {
         return ProcessUtils.executeCommand(command, args, { timeout: timeoutMs })
@@ -52,12 +48,21 @@ export class CommandExecutionService implements ICommandExecutionService {
 
         for (const key of Object.keys(config['nxPackages'])) {
             const v = config['nxPackages'][key]
-            const { project } = ConfigUtils.resolveProjectForAlias(v)
-
-            if (runType === 'all') {
-                projects.push(project)
-            } else if (typeof v === 'object' && v.suffix === runType) {
-                projects.push(project)
+            
+            // Handle new package definition format
+            if (typeof v === 'object' && 'aliases' in v) {
+                const packageDef = v as any
+                if (runType === 'all') {
+                    // Add all variants
+                    Object.values(packageDef.variants).forEach((variant: any) => {
+                        projects.push(`@fux/${packageDef.aliases[0]}-${variant}`)
+                    })
+                } else if (packageDef.variants[runType]) {
+                    projects.push(`@fux/${packageDef.aliases[0]}-${runType}`)
+                }
+            } else if (typeof v === 'string') {
+                // Direct string reference (tools)
+                projects.push(v)
             }
         }
 
@@ -80,7 +85,7 @@ export class CommandExecutionService implements ICommandExecutionService {
         for (const project of projects) {
             for (const target of targets) {
                 const args = [target, project, ...flags]
-                const code = await this.runNx(args)
+                const code = await this.runCommand('nx', args)
 
                 if (code !== 0) {
                     exitCode = code

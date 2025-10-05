@@ -29,8 +29,7 @@ import foldingBracketsRule from './tools/eslint-rules/fux-format/folding-bracket
 // RULE COMPOSITION --------------------------------------->>
 
 // Base rules that apply everywhere (no plugin-specific rules)
-const baseRules = {
-    //>
+const baseRules = { //>
     'license-header/header': 'off',
     'license/unknown': 'off',
     'no-console': 'off',
@@ -48,8 +47,7 @@ const baseRules = {
 } //<
 
 // Plugin-specific rules for JS/TS files
-const pluginRules = {
-    //>
+const pluginRules = { //>
     'unused-imports/no-unused-vars': [
         'warn',
         {
@@ -69,8 +67,7 @@ const pluginRules = {
 } //<
 
 // Stylistic rules for code files
-const stylisticRules = {
-    //>
+const stylisticRules = { //>
     'style/indent': ['warn', 4],
     'style/no-mixed-spaces-and-tabs': ['warn', 'smart-tabs'],
     'style/no-multiple-empty-lines': ['warn', { max: 1, maxBOF: 0, maxEOF: 0 }],
@@ -78,7 +75,7 @@ const stylisticRules = {
     'style/semi': ['warn', 'never'],
     'style/padded-blocks': [
         'warn',
-        { blocks: 'never', classes: 'always' },
+        { blocks: 'always', classes: 'always' },
         { allowSingleLineBlocks: true },
     ],
     'style/padding-line-between-statements': [
@@ -106,8 +103,7 @@ const stylisticRules = {
 } //<
 
 // Main JS-TS specific overrides (rules that were turned off in the original main block)
-const mainJsTsOverrides = {
-    //>
+const mainJsTsOverrides = { //>
     'style/brace-style': 'off',
     'style/function-call-argument-newline': 'off',
     'style/function-paren-newline': 'off',
@@ -116,22 +112,19 @@ const mainJsTsOverrides = {
 } //<
 
 // JSON-specific stylistic overrides
-const jsonStylisticOverrides = {
-    //>
+const jsonStylisticOverrides = { //>
     'style/no-multiple-empty-lines': ['warn', { max: 2, maxBOF: 0, maxEOF: 0 }], // More lenient for JSON
     'style/object-property-newline': 'off', // Allow properties on same line for JSON
 } //<
 
 // TypeScript-specific rules
-const tsRules = {
-    //>
+const tsRules = { //>
     'ts/no-explicit-any': 'error',
     'ts/explicit-function-return-type': 'off',
 } //<
 
 // Test-specific overrides
-const testOverrides = {
-    //>
+const testOverrides = { //>
     'import/no-cycle': 'off',
     'import/extensions': 'off',
     'ts/no-explicit-any': 'off',
@@ -148,8 +141,7 @@ const testOverrides = {
 } //<
 
 // Config file overrides
-const configOverrides = {
-    //>
+const configOverrides = { //>
     'ts/explicit-function-return-type': 'off',
     'ts/no-use-before-define': 'off',
     'import/no-unresolved': 'off',
@@ -158,10 +150,11 @@ const configOverrides = {
 } //<
 
 // Function to merge rules with overrides (optimized for performance)
-function mergeRules(baseRules, overrides = {}) {
-    //>
+function mergeRules(baseRules, overrides = {}) { //>
+
     if (Object.keys(overrides).length === 0) return baseRules
     return { ...baseRules, ...overrides }
+
 } //<
 
 //----------------------------------------------------------------------------<<

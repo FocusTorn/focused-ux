@@ -29,7 +29,6 @@ export interface IPAEManagerService {
     refreshAliasesDirect(): Promise<void>
     
     // Command execution operations
-    runNx(argv: string[]): Promise<number>
     runCommand(command: string, args: string[]): Promise<number>
     runMany(runType: 'ext' | 'core' | 'all', targets: string[], flags: string[], config: AliasConfig): Promise<number>
     

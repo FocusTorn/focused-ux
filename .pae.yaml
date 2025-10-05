@@ -1,6 +1,11 @@
 # Project Alias Expander (PAE) Configuration
 # YAML version of .pae.json for improved readability
 
+# Universal command aliases
+expandable-commands:
+    build: nx build @fux/project-alias-expander -s
+    globalize: nx install @fux/project-alias-expander -s
+
 # Feature-specific Nx targets with run context
 feature-nxTargets:
     b:
@@ -22,54 +27,38 @@ feature-nxTargets:
         run-from: ext
         run-target: check-types:deps --output-style=stream
 
-# Standard Nx targets
-nxTargets:
-    b: build
-    p: package
-    pd: package:dev
-    pub: publish
-    ct: check-types
-    ctd: check-types:deps
-    l: lint
-    lf: lint:deps
-    v: validate
-    vf: validate:deps
-    a: audit
-    aa: audit:all
-    at: audit:test
-    ac: audit:code
-    t: test
-    tc: test:coverage-tests
-    td: test:deps
-    tdc: test:deps:coverage-tests
-    ti: test:integration
-    tf: test:file
-    c: clean
-    cc: clean:cache
-    cd: clean:dist
-    s: status
-    o: optimize
-    m: monitor
+targets:
+    nx-targets:
+        b: build
+        p: package
+        pd: package:dev
+        pub: publish
+        ct: check-types
+        ctd: check-types:deps
+        l: lint
+        lf: lint:deps
+        v: validate
+        vf: validate:deps
+        a: audit
+        aa: audit:all
+        at: audit:test
+        ac: audit:code
+        t: test
+        tc: test:coverage-tests
+        td: test:deps
+        tdc: test:deps:coverage-tests
+        ti: test:integration
+        tf: test:file
+        c: clean
+        cc: clean:cache
+        cd: clean:dist
 
-# Non-Nx targets (external commands)
-not-nxTargets:
-    esv: npx esbuild-visualizer --metadata
-
-# Expandable commands
-expandable-commands:
-    build: nx build @fux/project-alias-expander -s
-    globalize: nx install @fux/project-alias-expander -s
-
-# Command descriptions
-commands:
-    install: 'Install PAE scripts to native modules directory (use --local for dist-based install)'
-    load: 'Load PAE module into active PowerShell session'
-    help: 'Show this help with all available aliases and flags (deprecated)'
+    not-nx-target:
+        esv: npx esbuild-visualizer --metadata
 
 # Expandable flags with templates
 expandable-flags:
-    # Simple flags (direct expansion)
-    s: --skip-nx-cache
+    q: --skip-nx-cache
     f: --fix
     c: --coverage
     watch: --watch
@@ -77,27 +66,25 @@ expandable-flags:
     # Complex flags (with templates and defaults)
     os:
         default: stream
-        template: '--output-style={{style}}'
+        template: '--output-style={{value}}'
     bail:
         default: '1'
-        template: '--bail {{bailOn}}'
+        template: '--bail {{value}}'
 
 # Context-aware flags for file operations
 context-aware-flags:
     file:
         l:
             default: ''
-            template: '--lintFilePatterns=={{value}}'
+            template: '--lintFilePatterns={{value}}'
         t:
             default: ''
-            template: '--testFile=={{value}}'
-
-# Expandable templates (currently empty)
-expandable-templates: {}
+            template: '--testFile={{value}}'
 
 # Internal flags (processed by PAE, not passed to commands)
 internal-flags:
     h: --help
+
     sto:
         default: '10'
         mutation: "{{value}} >= 100 ? {{value}} : parseInt({{value}}.toString() + '000')"
@@ -110,16 +97,16 @@ env-setting-flags:
 
     echo:
         defaults: ''
-        mutation: "{{echoVariant}} -replace '^si$', 'short-in' -replace '^so$', 'short-out' -replace '^gi$', 'global-in' -replace '^go$', 'global-out'"
-        template: '--pae-echo={{echoVariant}}'
+        mutation: "{{value}} -replace '^si$', 'short-in' -replace '^so$', 'short-out' -replace '^gi$', 'global-in' -replace '^go$', 'global-out'"
+        template: '--pae-echo={{value}}'
+
     echoX:
         defaults: ''
-        mutation: "{{echoVariant}} -replace '^si$', 'short-in' -replace '^so$', 'short-out' -replace '^gi$', 'global-in' -replace '^go$', 'global-out'"
-        template: '--pae-echoX={{echoVariant}}'
+        mutation: "{{value}} -replace '^si$', 'short-in' -replace '^so$', 'short-out' -replace '^gi$', 'global-in' -replace '^go$', 'global-out'"
+        template: '--pae-echoX={{value}}'
 
-# Nx package aliases - Simplified structure
+# Nx package aliases
 nxPackages:
-    # Feature packages with variants
     context-cherry-picker:
         aliases: [ccp]
         variants:
@@ -130,6 +117,7 @@ nxPackages:
     dynamicons:
         aliases: [dc]
         variants:
+            assets: dca
             core: dcc
             ext: dce
         default: ext
@@ -154,24 +142,12 @@ nxPackages:
             core: nhc
             ext: nhe
 
-    # Tool packages (direct references)
-    tools:
-        vp: '@fux/vsix-packager'
-        vsct: '@fux/vscode-test-cli-config'
-        aka: '@fux/project-alias-expander'
-        ms: '@fux/mock-strategy'
-        audit: '@fux/structure-auditor'
-        cmo: '@fux/cursor-memory-optimizer'
-        vpack: '@fux/vpack'
-        vscte: '@fux/vscode-test-executor'
-        fttc: '@fux/ft-typescript'
-        reco: '@fux/recommended'
-# Commented out examples (from original JSON)
-# tn:
-#   defaults:
-#     namePattern: ""
-#   template: "--testNamePattern='{namePattern}'"
-# tf:
-#   defaults:
-#     fileName: ""
-#   template: "--testfile='{fileName}'"
+    vp: '@fux/vsix-packager'
+    vsct: '@fux/vscode-test-cli-config'
+    aka: '@fux/project-alias-expander'
+    ms: '@fux/mock-strategy'
+    audit: '@fux/structure-auditor'
+    vpack: '@fux/vpack'
+    vscte: '@fux/vscode-test-executor'
+    fttc: '@fux/ft-typescript'
+    reco: '@fux/recommended'

@@ -114,12 +114,23 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
     }
 
     parseExpandableFlag(arg: string): { key: string, value: string | undefined } {
-        const match = arg.match(/^-([^=:]+)[=:](.+)$/)
+        // Support: -{flag} or -{flag}=value (quotes are handled by shell)
+        // Flags must be single characters or single words, no combo flags allowed
+        
+        // Check for value format first: -flag=value
+        const valueMatch = arg.match(/^-([a-zA-Z0-9_-]+)=(.*)$/)
 
-        if (match) {
-            return { key: match[1], value: match[2] }
+        if (valueMatch) {
+            return { key: valueMatch[1], value: valueMatch[2] }
         }
-        return { key: arg.slice(1), value: undefined }
+        
+        // Check if it's a simple flag (no value) - must be single word, no special chars except underscore/hyphen
+        if (arg.match(/^-[a-zA-Z0-9_-]+$/)) {
+            return { key: arg.slice(1), value: undefined }
+        }
+        
+        // Invalid format - return special error indicator
+        return { key: '__INVALID_FLAG__', value: arg }
     }
 
     expandFlags(args: string[], expandables: Record<string, ExpandableValue> = {}): FlagExpansion {
@@ -130,7 +141,9 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
         const end: string[] = []
         const remainingArgs: string[] = []
 
-        for (const arg of args) {
+        for (let i = 0; i < args.length; i++) {
+            const arg = args[i]
+            
             if (arg.startsWith('--')) {
                 remainingArgs.push(arg)
                 continue
@@ -141,31 +154,38 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
                 
                 // Internal flags are handled dynamically - no hardcoded checks needed
                 
+                // Check for invalid flag format first
+                if (key === '__INVALID_FLAG__') {
+                    throw new Error(`Invalid flag format: ${value}. Expected -{flag} or -{flag}=value`)
+                }
+                
                 // Check if this is an expandable
                 if (expandables[key]) {
                     const expandable = expandables[key]
-                    const baseVariables = typeof expandable === 'object' ? expandable.defaults || {} : {}
-                    const variables = { ...baseVariables }
-
-                    if (value !== undefined) {
-                        // If there's a custom value, use it to override the first default variable
-                        // or use the flag key if no defaults exist
-                        const defaultKeys = Object.keys(baseVariables)
-
-                        if (defaultKeys.length > 0) {
-                            variables[defaultKeys[0]] = value
-                        } else {
-                            variables[key] = value
-                        }
+                    
+                    // Check for space-separated value if no value was found in the flag itself
+                    let finalValue = value
+                    if (finalValue === undefined && i + 1 < args.length && !args[i + 1].startsWith('-')) {
+                        // Next argument exists and doesn't start with dash - treat it as the value
+                        finalValue = args[i + 1]
+                        i++ // Skip the next argument since we consumed it
+                    }
+                    
+                    // Initialize variables - use custom value if provided, otherwise use default
+                    const variables: Record<string, string> = {}
+                    
+                    if (finalValue !== undefined) {
+                        // Custom value provided - use it instead of default
+                        variables.value = finalValue
                         
-                        // Apply mutation if it exists and we have a custom value
+                        // Apply mutation if it exists
                         if (typeof expandable === 'object' && expandable.mutation) {
-                            const firstKey = defaultKeys.length > 0 ? defaultKeys[0] : key
-                            const originalValue = variables[firstKey]
-                            const mutatedValue = this.applyMutation(originalValue, expandable.mutation)
-
-                            variables[firstKey] = mutatedValue.toString()
+                            const mutatedValue = this.applyMutation(finalValue, expandable.mutation)
+                            variables.value = mutatedValue.toString()
                         }
+                    } else {
+                        // No custom value - use default
+                        variables.value = typeof expandable === 'object' ? (expandable.default || '') : ''
                     }
                     
                     if (typeof expandable === 'string') {
@@ -243,7 +263,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
                             
                             if (hasShellSpecificTemplate) {
                                 // Use new shell-specific template processing for short flags too
-                                const { start: templateStart, end: templateEnd } = this.processShellSpecificTemplate(expandable, expandable.defaults || {})
+                                const { start: templateStart, end: templateEnd } = this.processShellSpecificTemplate(expandable, { value: expandable.default || '' })
                                 
                                 // Add start templates
                                 start.push(...templateStart)
@@ -253,7 +273,7 @@ export class ExpandableProcessorService implements IExpandableProcessorService {
                             } else {
                                 // Handle legacy template processing for backward compatibility
                                 if (expandable.template) {
-                                    const expanded = this.expandTemplate(expandable.template, expandable.defaults || {})
+                                    const expanded = this.expandTemplate(expandable.template, { value: expandable.default || '' })
                                     const position = expandable.position || 'suffix'
                                     
                                     switch (position) {

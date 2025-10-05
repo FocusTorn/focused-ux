@@ -1,12 +1,13 @@
-import { readFileSync, existsSync } from 'fs'
+import { readFileSync, existsSync, watch, statSync } from 'fs'
 import { join, resolve } from 'path'
-import stripJsonComments from 'strip-json-comments'
+import * as yaml from 'js-yaml'
 import type { AliasConfig } from '../_types/index.js'
 import { ConfigUtils } from './CommonUtils.service.js'
+import { ConfigurationValidator } from './ConfigurationValidator.js'
 
 /**
- * Configuration loader with lazy loading and validation
- * Supports both JSON and TypeScript config sources
+ * Configuration loader with dynamic loading, intelligent caching, and file watching
+ * Supports YAML config sources with hot reloading
  */
 export class ConfigLoader {
 
@@ -15,8 +16,15 @@ export class ConfigLoader {
     private configPath: string | null = null
     private lastModified: number | null = null
     private validationErrors: string[] = []
+    private watcher: any = null
+    private validator: ConfigurationValidator
+    private configDependencies: Map<string, number> = new Map() // Track dependency files
+    private cacheKey: string | null = null
+    private reloadCallbacks: Set<() => void> = new Set()
 
-    private constructor() {}
+    private constructor() {
+        this.validator = new ConfigurationValidator()
+    }
 
     static getInstance(): ConfigLoader {
         if (!ConfigLoader.instance) {
@@ -26,10 +34,11 @@ export class ConfigLoader {
     }
 
     /**
-     * Lazy load configuration with caching and validation
+     * Lazy load configuration with intelligent caching and validation
      */
     async loadConfig(): Promise<AliasConfig> {
-        if (this.config && this.isConfigValid()) {
+        // Check if cache is still valid
+        if (this.config && this.isCacheValid()) {
             return this.config
         }
 
@@ -40,9 +49,7 @@ export class ConfigLoader {
      * Force reload configuration (clears cache)
      */
     async reloadConfig(): Promise<AliasConfig> {
-        this.config = null
-        this.lastModified = null
-        this.validationErrors = []
+        this.clearCache()
         return this.loadConfigFromSource()
     }
 
@@ -60,6 +67,8 @@ export class ConfigLoader {
         this.config = null
         this.lastModified = null
         this.validationErrors = []
+        this.cacheKey = null
+        this.configDependencies.clear()
     }
 
     /**
@@ -109,7 +118,7 @@ export class ConfigLoader {
             }
         }
 
-        throw new Error('No configuration file found. Please ensure .pae.json exists in the project root.')
+        throw new Error('No configuration file found. Please ensure .pae.yaml exists in the project root.')
     }
 
     /**
@@ -119,7 +128,8 @@ export class ConfigLoader {
         const cwd = process.cwd()
 
         return [
-            join(cwd, '.pae.json')  // Only root level JSON config
+            join(cwd, '.pae.yaml'),  // YAML config
+            join(cwd, '.pae.yml')    // Alternative YAML extension
         ]
     }
 
@@ -127,81 +137,41 @@ export class ConfigLoader {
      * Load configuration from a specific path
      */
     private async loadFromPath(path: string): Promise<AliasConfig> {
-        if (path.endsWith('.json')) {
-            return this.loadJsonConfig(path)
+        if (path.endsWith('.yaml') || path.endsWith('.yml')) {
+            return this.loadYamlConfig(path)
         }
         
-        throw new Error(`Unsupported config file format: ${path}`)
+        throw new Error(`Unsupported config file format: ${path}. Only YAML files are supported.`)
     }
 
     /**
-     * Load JSON configuration with validation
+     * Load YAML configuration with validation
      */
-    private loadJsonConfig(path: string): AliasConfig {
+    private loadYamlConfig(path: string): AliasConfig {
         try {
             const content = readFileSync(path, 'utf-8')
-            const config = JSON.parse(stripJsonComments(content))
+            const config = yaml.load(content) as any
             
-            // Validate configuration
-            this.validateConfig(config, path)
+            // Validate configuration using the validator
+            this.validateConfigWithValidator(config, path)
             
             return config as AliasConfig
         } catch (error) {
-            throw new Error(`Failed to parse JSON config from ${path}: ${error}`)
+            throw new Error(`Failed to parse YAML config from ${path}: ${error}`)
         }
     }
 
     /**
-     * Validate configuration structure
+     * Validate configuration using the ConfigurationValidator
      */
-    private validateConfig(config: any, path: string): void {
+    private validateConfigWithValidator(config: any, path: string): void {
         this.validationErrors = []
 
-        // Basic structure validation
-        if (!config || typeof config !== 'object') {
-            this.validationErrors.push('Configuration must be an object')
-            return
-        }
-
-        // Required fields
-        if (!config.nxPackages) {
-            this.validationErrors.push('Missing required field: nxPackages')
-        }
-
-        // Validate nxPackages structure
-        if (config.nxPackages && typeof config.nxPackages === 'object') {
-            for (const [alias, value] of Object.entries(config.nxPackages)) {
-                if (typeof value === 'string') {
-                    // String value is valid
-                    continue
-                } else if (typeof value === 'object' && value !== null) {
-                    // Object value should have name property
-                    if (!(value as any).name) {
-                        this.validationErrors.push(`Package alias '${alias}' missing required 'name' property`)
-                    }
-                } else {
-                    this.validationErrors.push(`Package alias '${alias}' has invalid value type`)
-                }
-            }
-        }
-
-        // Validate other sections are objects if present
-        const objectSections = [
-            'feature-nxTargets', 'nxTargets', 'not-nxTargets',
-            'expandable-commands', 'commands', 'expandable-flags',
-            'context-aware-flags', 'expandable-templates', 'internal-flags',
-            'env-setting-flags'
-        ]
-
-        for (const section of objectSections) {
-            if (config[section] && typeof config[section] !== 'object') {
-                this.validationErrors.push(`Section '${section}' must be an object`)
-            }
-        }
-
-        if (this.validationErrors.length > 0) {
-            console.warn(`Configuration validation warnings for ${path}:`)
-            this.validationErrors.forEach(error => console.warn(`  - ${error}`))
+        // Use the validator for all configurations
+        const validationResult = this.validator.validate(config)
+        if (!validationResult.isValid) {
+            this.validationErrors = validationResult.errors
+            throw new Error(`Configuration validation failed: ${validationResult.errors.join(', ')}`)
         }
     }
 
@@ -210,12 +180,146 @@ export class ConfigLoader {
      */
     private getFileModifiedTime(path: string): number {
         try {
-            const stats = require('fs').statSync(path)
-
+            const stats = statSync(path)
             return stats.mtime.getTime()
         } catch {
             return Date.now()
         }
+    }
+
+    /**
+     * Start watching config file for changes (hot reload)
+     */
+    startWatching(): void {
+        if (this.watcher || !this.configPath) {
+            return
+        }
+
+        try {
+            this.watcher = watch(this.configPath, (eventType) => {
+                if (eventType === 'change') {
+                    console.log('🔄 Configuration file changed, reloading...')
+                    this.handleConfigChange()
+                }
+            })
+            console.log(`👀 Watching configuration file: ${this.configPath}`)
+        } catch (error) {
+            console.warn(`Failed to start file watcher: ${error}`)
+        }
+    }
+
+    /**
+     * Stop watching config file
+     */
+    stopWatching(): void {
+        if (this.watcher) {
+            this.watcher.close()
+            this.watcher = null
+            console.log('👀 Stopped watching configuration file')
+        }
+    }
+
+    /**
+     * Handle configuration file change
+     */
+    private async handleConfigChange(): Promise<void> {
+        try {
+            // Clear cache and reload
+            this.clearCache()
+            await this.loadConfigFromSource()
+            
+            // Notify callbacks
+            this.reloadCallbacks.forEach(callback => {
+                try {
+                    callback()
+                } catch (error) {
+                    console.warn('Error in reload callback:', error)
+                }
+            })
+            
+            console.log('✅ Configuration reloaded successfully')
+        } catch (error) {
+            console.error('❌ Failed to reload configuration:', error)
+        }
+    }
+
+    /**
+     * Add callback for config reload events
+     */
+    onConfigReload(callback: () => void): () => void {
+        this.reloadCallbacks.add(callback)
+        
+        // Return unsubscribe function
+        return () => {
+            this.reloadCallbacks.delete(callback)
+        }
+    }
+
+    /**
+     * Generate cache key based on file dependencies
+     */
+    private generateCacheKey(): string {
+        if (!this.configPath) {
+            return 'no-config'
+        }
+
+        const dependencies = Array.from(this.configDependencies.entries())
+            .map(([path, mtime]) => `${path}:${mtime}`)
+            .join('|')
+        
+        return `${this.configPath}:${this.lastModified}:${dependencies}`
+    }
+
+    /**
+     * Check if cache is still valid based on dependencies
+     */
+    private isCacheValid(): boolean {
+        if (!this.config || !this.configPath || !this.lastModified) {
+            return false
+        }
+
+        // Check main config file
+        try {
+            const stats = statSync(this.configPath)
+            if (stats.mtime.getTime() !== this.lastModified) {
+                return false
+            }
+        } catch {
+            return false
+        }
+
+        // Check dependency files
+        for (const [path, lastMtime] of this.configDependencies.entries()) {
+            try {
+                const stats = statSync(path)
+                if (stats.mtime.getTime() !== lastMtime) {
+                    return false
+                }
+            } catch {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    /**
+     * Track dependency file for cache invalidation
+     */
+    addDependency(path: string): void {
+        try {
+            const stats = statSync(path)
+            this.configDependencies.set(path, stats.mtime.getTime())
+        } catch (error) {
+            console.warn(`Failed to track dependency ${path}:`, error)
+        }
+    }
+
+    /**
+     * Clear dependency tracking
+     */
+    clearDependencies(): void {
+        this.configDependencies.clear()
     }
 
 }

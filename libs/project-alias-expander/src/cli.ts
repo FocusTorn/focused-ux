@@ -24,7 +24,14 @@ function debug(message: string, ...args: unknown[]) { //>
 } //<
 
 function error(message: string, ...args: unknown[]) { //>
-    console.error(`[PAE ERROR] ${message}`, ...args)
+    // Use red color for error messages
+    console.error('\x1b[31m[PAE ERROR]\x1b[0m', message, ...args)
+    
+    // Only show stack trace in debug mode
+    if (DEBUG && args.length > 0 && args[0] instanceof Error) {
+        console.error('\x1b[31mStack trace:\x1b[0m')
+        console.error(args[0].stack)
+    }
 } //<
 
 // Helper function to get context-aware flags based on target

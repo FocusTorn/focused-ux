@@ -158,7 +158,8 @@ export class ProcessUtils {
 export class TemplateUtils {
 
     static expandTemplate(template: string, variables: Record<string, string>): string {
-        return template.replace(/\{(\w+)\}/g, (match, varName) => {
+        // Support both old {variable} and new {{variable}} syntax
+        return template.replace(/\{\{?(\w+)\}?\}/g, (match, varName) => {
             const value = variables[varName]
 
             // If value is undefined, null, or empty string, keep the original placeholder
@@ -171,13 +172,18 @@ export class TemplateUtils {
 
     static applyMutation(value: any, mutation: string): any {
         try {
+            // Process {{variable}} syntax in mutations
+            const processedMutation = mutation.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
+                return String(value) // Replace {{variable}} with the actual value
+            })
+            
             // Handle PowerShell-style -replace operations
-            if (mutation.includes('-replace')) {
-                return this.applyPowerShellReplacements(value, mutation)
+            if (processedMutation.includes('-replace')) {
+                return this.applyPowerShellReplacements(value, processedMutation)
             }
             
             // Handle common JavaScript expressions without eval()
-            return this.evaluateExpression(value, mutation)
+            return this.evaluateExpression(value, processedMutation)
         } catch (error) {
             console.warn(`Mutation failed for value "${value}" with expression "${mutation}":`, error)
             return value // Return original value if mutation fails
@@ -276,7 +282,6 @@ export class ConfigUtils {
     static resolveProjectForAlias(aliasValue: string | { name: string, suffix?: 'core' | 'ext', full?: boolean }): { project: string, isFull: boolean } {
         if (typeof aliasValue === 'string') {
             const project = aliasValue.startsWith('@fux/') ? aliasValue : `@fux/${aliasValue}`
-
             return { project, isFull: false }
         }
         
@@ -286,7 +291,6 @@ export class ConfigUtils {
             // When full is true, we still need to consider the suffix
             const projectName = suffix ? `${name}-${suffix}` : name
             const project = projectName.startsWith('@fux/') ? projectName : `@fux/${projectName}`
-
             return { project, isFull: true }
         }
         
@@ -294,6 +298,37 @@ export class ConfigUtils {
         const project = projectName.startsWith('@fux/') ? projectName : `@fux/${projectName}`
 
         return { project, isFull: false }
+    }
+
+    /**
+     * New method to resolve project using PackageResolutionService
+     * This method supports both old and new package formats
+     */
+    static resolveProjectForAliasV2(aliasValue: string | { name: string, suffix?: 'core' | 'ext', full?: boolean } | { aliases: string[], variants: Record<string, string>, default?: string }, config: any): { project: string, isFull: boolean } {
+        // Handle legacy string format
+        if (typeof aliasValue === 'string') {
+            const project = aliasValue.startsWith('@fux/') ? aliasValue : `@fux/${aliasValue}`
+            return { project, isFull: false }
+        }
+
+        // Handle legacy object format
+        if ('name' in aliasValue && 'suffix' in aliasValue) {
+            return this.resolveProjectForAlias(aliasValue)
+        }
+
+        // Handle new package definition format
+        if ('aliases' in aliasValue && 'variants' in aliasValue) {
+            const packageDef = aliasValue as { aliases: string[], variants: Record<string, string>, default?: string }
+            const defaultVariant = packageDef.default || Object.keys(packageDef.variants)[0]
+            
+            if (defaultVariant) {
+                const project = `@fux/${packageDef.aliases[0]}-${defaultVariant}`
+                return { project, isFull: true }
+            }
+        }
+
+        // Fallback
+        return { project: '@fux/unknown', isFull: false }
     }
 
 }

@@ -368,9 +368,9 @@
     "nxCloudId": "685c28f2a5df05525dfa937b",
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
     "defaultBase": "master",
-    "defaultRunner": "nx/tasks-runners/default",
+    "defaultRunner": "nx/tasks-runners/default"
     
-    "tui": {
-        "enabled": false
-    }
+    // "tui": {
+    //     "enabled": false
+    // }
 }

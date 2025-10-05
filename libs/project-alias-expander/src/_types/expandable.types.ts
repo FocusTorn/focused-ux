@@ -1,7 +1,7 @@
 // Expandable system types
 export type ExpandableValue = string | {
     position?: 'start' | 'prefix' | 'pre-args' | 'suffix' | 'end'
-    defaults?: Record<string, string>
+    default?: string  // Changed from defaults object to direct value
     template?: string
     mutation?: string
     'pwsh-template'?: string | TemplateObject | TemplateObject[]

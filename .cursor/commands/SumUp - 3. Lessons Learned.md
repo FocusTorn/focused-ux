@@ -4,6 +4,27 @@
 
 Extract key learning patterns, solutions, and insights from the current conversation and format them as actionable lessons for future reference.
 
+## Usage Description
+
+When you receive the output from this command, the **Response** lines indicate how you should interact with each lesson. The AI Agent will use these exact icons and descriptions:
+
+### Response Icon Meanings
+
+**✏️ {My description}**
+This icon represents that I made the proposed changes, and that the AI should peer review the changes made to ensure it is done so the best way possible and there are no other issues.
+
+**❓ {My question}**
+This is a direct question, any other item is not to be addressed, and all questions should be answered one at a time. If there are more than one question in the document, the AI is to fully answer the first question only. I will state something along the lines of, "ok next question", etc. when it is time to move on to the next question.
+
+**❌ {My redirection}**
+This is when the AI's understanding is wrong, and I am providing the corrected understanding. The AI is then to re-evaluate what was implemented/changed in regards to this lesson, and ensure that changes are correct according to the new understanding.
+
+**⚠️ {Directive for AI to address}**
+AI is to implement the changes described - execute the specific implementation instructions provided.
+
+**✅ No action required**
+The AI is to do nothing and there is no action that is to be taken for this item.
+
 ## Execution Instructions
 
 ### When to Use
@@ -16,7 +37,7 @@ Extract key learning patterns, solutions, and insights from the current conversa
 ### Command Format
 
 ```
-/extract-lessons
+/SumUp - 3. Lessons Learned
 ```
 
 ### What to Extract
@@ -25,11 +46,13 @@ Extract key learning patterns, solutions, and insights from the current conversa
 
 For each significant discovery, extract:
 
-- **Learning**: What was discovered or learned
-- **Pattern**: The specific technique, approach, or solution
-- **Implementation**: How it was implemented (if applicable)
-- **Benefit**: Why this approach is better
-- **Not documented**: What gaps exist in current documentation
+- **Learning**: [What was discovered or learned] Note: MANDATORY - Describe the key insight or discovery made during the work session
+- **Pattern**: [The specific technique, approach, or solution] Note: MANDATORY - Document the exact method, strategy, or approach that was used to solve the problem
+- **Implementation**: [How it was implemented (if applicable else "None")] Note: Include this section when specific implementation details are relevant to the lesson
+- **Benefit**: [Why this approach is better] Note: MANDATORY - Explain the specific advantages, improvements, or positive outcomes achieved
+- **Mistake/Assumption**: [What was wrong or incorrectly assumed] _Note: MANDATORY - Include this section for every lesson where the AI made errors, wrong assumptions, or incorrect implementations during the work session_
+- **Correction**: [How it was fixed] _Note: MANDATORY - Include this section whenever Mistake/Assumption is included - describe exactly how the mistake was corrected_
+- **Not documented**: [What gaps exist in current documentation (if applicable else "None")] Note: MANDATORY - Identify what knowledge, patterns, or processes are missing from current documentation
 
 #### 2. **Categories to Focus On**
 
@@ -38,16 +61,32 @@ For each significant discovery, extract:
 - **Troubleshooting Solutions**: Error resolution, debugging techniques, common pitfalls
 - **Documentation Gaps**: Missing patterns, undocumented behaviors, knowledge gaps
 - **Tool Integration**: New tool usage patterns, configuration discoveries
+- **Migration Strategies**: Legacy code removal, format transitions, architectural refactoring patterns
+- **Error Correction Patterns**: Mistakes made, incorrect assumptions, failed approaches, and how they were corrected
 
 #### 3. **Format Template**
 
-```
-**Category Name**
+```markdown
+## [Lesson Category Name]
+
 Learning: [What was discovered]
 Pattern: [The specific technique or approach]
-Implementation: [How it was implemented] (if applicable)
+Implementation: [How it was implemented]
+
 Benefit: [Why this approach is better]
-Not documented: [What gaps exist in current documentation]
+
+**Not Documented**: [What gaps exist in current documentation]
+
+**Mistake/Assumption**: [What was wrong or incorrectly assumed]
+**Correction**: [How it was fixed] (if mistake/assumption exists)
+
+- **Recommendation**:
+    - [First recommended action to be taken to prevent this issue in the future]
+    - [Second recommended action to be taken to prevent this issue in the future]
+
+- **Response**: ✏️❓❌⚠️✅ No action required
+
+---
 ```
 
 #### 4. **Context Requirements**
@@ -61,26 +100,7 @@ Not documented: [What gaps exist in current documentation]
 
 - Each lesson should be actionable and reusable
 - Focus on patterns that could apply to similar situations
-- Prioritize discoveries that aren't already documented
 - Include both the "what" and the "why"
-
-### Example Output Format
-
-```
-## Lessons Learned from [Context/Conversation]
-
-### Global Mock Placement for Node.js Built-ins
-Learning: Moving node:child_process mock to global setup (globals.ts) resolves ESLint errors and provides better consistency
-Pattern: Global mocks in globals.ts for Node.js built-ins that multiple tests need
-Benefit: Eliminates require() statements in tests that cause ESLint violations
-Not documented: While the docs mention global mocks, they don't specifically address this ESLint issue with require() statements
-
-### Environment Variable Control for Shell Output
-Learning: PowerShell and Bash scripts can be controlled via environment variables to suppress output during tests
-Pattern: Wrap shell script output commands with conditional checks based on ENABLE_TEST_CONSOLE environment variable
-Implementation: Both PowerShell (Write-Host) and Bash (echo) commands need conditional wrapping
-Not documented: The docs don't mention controlling shell script output during tests
-```
 
 ### Execution Notes
 
@@ -99,16 +119,44 @@ Not documented: The docs don't mention controlling shell script output during te
 
 ### Final Display Format
 
-After saving to file, display a markdown code block with the lessons formatted as:
+After saving to file, display the lessons in a markdown code block. The AI should output the entire summary wrapped in ```markdown code block tags with the content formatted as:
 
-```markdown
+<!-- MANDATORY: Always start with this usage section -->
+
+## Usage - Response Icon Meanings
+
+**✏️ {My description}**
+This icon represents that I made the proposed changes, and that the AI should peer review the changes made to ensure it is done so the best way possible and there are no other issues.
+
+**❓ {My question}**
+This is a direct question, any other item is not to be addressed, and all questions should be answered one at a time. If there are more than one question in the document, the AI is to fully answer the first question only. I will state something along the lines of, "ok next question", etc. when it is time to move on to the next question.
+
+**❌ {My redirection}**
+This is when the AI's understanding is wrong, and I am providing the corrected understanding. The AI is then to re-evaluate what was implemented/changed in regards to this lesson, and ensure that changes are correct according to the new understanding.
+
+**⚠️ {Directive for AI to address}**
+AI is to implement the changes described - execute the specific implementation instructions provided.
+
+**✅ No action required**
+The AI is to do nothing and there is no action that is to be taken for this item.
+
+---
+
 # [Lesson Category Name]
 
 - Learning: [What was discovered]
 - Pattern: [The specific technique or approach]
 - Implementation: [How it was implemented] (if applicable)
 - Benefit: [Why this approach is better]
-- Not documented: [What gaps exist in current documentation]
+
+- **Not documented**: [What gaps exist in current documentation]
+
+- **Mistake/Assumption**: [What was wrong or incorrectly assumed]
+- **Correction**: [How it was fixed] _Note: Only if Mistake/Assumption is displayed_
+
+- **Recommendation**:
+    - [AI Agent provides specific remediation recommendations to prevent this pitfall in the future]
+    - [AI Agent provides specific remediation recommendations to prevent this pitfall in the future]
 
 - **Response**: ✏️❓❌⚠️✅ No action required
 
@@ -120,14 +168,31 @@ After saving to file, display a markdown code block with the lessons formatted a
 - Pattern: [The specific technique or approach]
 - Implementation: [How it was implemented] (if applicable)
 - Benefit: [Why this approach is better]
-- Not documented: [What gaps exist in current documentation]
+  
+- **Not documented**: [What gaps exist in current documentation]
+
+- **Mistake/Assumption**: [What was wrong or incorrectly assumed]
+- **Correction**: [How it was fixed] _Note: Only if Mistake/Assumption is displayed_
+
+- **Recommendation**:
+    - [AI Agent provides specific remediation recommendations to prevent this pitfall in the future]
+    - [AI Agent provides specific remediation recommendations to prevent this pitfall in the future]
 
 - **Response**: ✏️❓❌⚠️✅ No action required
 
 ---
-```
+
+````
+
+**CRITICAL OUTPUT REQUIREMENT**: The AI must wrap the entire output above in ```markdown code block tags so it can be copy-pasted directly. The output should start with ```markdown and end with ```.
 
 **Note**: The response lines with icons are only for the summary display block, NOT for the saved markdown file. The saved file should contain only the lesson content without response lines.
+
+**CRITICAL**: The **Response** line MUST be EXACTLY `- **Response**: ✏️❓❌⚠️✅ No action required`
+
+### Recommendation Section
+
+The **Recommendation** section is provided by the AI Agent executing the command and should contain specific remediation recommendations to prevent the documented pitfall from occurring in the future. This is where the AI Agent suggests proactive measures, process improvements, or documentation updates.
 
 ### Response Icon System
 
@@ -139,8 +204,6 @@ Each lesson in the summary display block includes a response line with icons tha
 - ⚠️ **Action required by AI Agent**: Specific action that needs to be taken by the AI agent
 - ❌ **Problem with implementation**: Description of problem with correction implementation that needs to be reviewed
 
-**Usage**: When providing feedback on lessons in the summary display block, replace "No action required" with the appropriate icon and description. This allows the AI agent to understand what type of response is needed for each lesson. The saved markdown file should NOT contain these response lines.
-
 ### Execution Steps
 
 1. **Clear existing file**: Delete `.cursor/ADHOC/_Extracted-Lessons.md` file
@@ -148,4 +211,6 @@ Each lesson in the summary display block includes a response line with icons tha
 3. **Format lessons**: Use the template format for each lesson
 4. **Save to file**: Write to `.cursor/ADHOC/_Extracted-Lessons.md`
 5. **Display summary**: Show formatted lessons in markdown code block
+
+````
 

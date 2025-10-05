@@ -17,7 +17,10 @@
     "files": [
         "dist"
     ],
-    "dependencies": {},
+    "dependencies": {
+        "@types/js-yaml": "^4.0.9",
+        "js-yaml": "^4.1.0"
+    },
     "devDependencies": {
         "@fux/mock-strategy": "workspace:*",
         "@types/node": "^24.6.1",

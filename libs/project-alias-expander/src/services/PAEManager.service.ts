@@ -29,11 +29,6 @@ export class PAEManagerService implements IPAEManagerService {
         return this.dependencies.aliasManager.refreshAliasesDirect()
     }
 
-    // Command execution operations - delegated to CommandExecutionService
-    async runNx(argv: string[]): Promise<number> {
-        return this.dependencies.commandExecution.runNx(argv)
-    }
-
     async runCommand(command: string, args: string[]): Promise<number> {
         return this.dependencies.commandExecution.runCommand(command, args)
     }

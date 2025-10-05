@@ -1,5 +1,5 @@
 // Configuration interfaces - consolidated config and expandable interfaces
-import type { AliasConfig, AliasValue } from '../_types/index.js'
+import type { AliasConfig } from '../_types/index.js'
 import type { ExpandableValue, FlagExpansion, TemplateProcessingResult } from '../_types/index.js'
 
 // Configuration interfaces
@@ -8,7 +8,7 @@ export interface IConfigLoader {
 }
 
 export interface IProjectResolver {
-    resolveProjectForAlias(aliasValue: AliasValue): { project: string, isFull: boolean }
+    resolveProjectForAlias(aliasValue: string | import('../_types/config.types.js').PackageDefinition): { project: string, isFull: boolean }
 }
 
 // Expandable processing service interfaces
