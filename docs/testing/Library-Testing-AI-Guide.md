@@ -28,6 +28,25 @@
 - **Framework**: Vitest only (no VSCode integration tests)
 - **Focus**: Pure functions, utility logic, external dependency integration
 - **Mock Strategy**: Use `@fux/mock-strategy/lib` functions
+- **⚠️ IMPORTANT**: Always check **MOCK_STRATEGY_GENERAL** for the current list of available mock strategy functions, as they evolve based on multi-package mocking needs
+
+### **ESM Import Path Pattern**
+
+- **Pattern**: `{relative-pathing}/__mocks__/helpers.js` where `{relative-pathing}` accounts for directory depth
+- **Example**: From `__tests__/functional-tests/utils/` use `../../__mocks__/helpers.js`
+- **Rule**: Always use `.js` extension for ESM imports, count directory levels from test file to `__mocks__/`
+
+### **ESM TypeScript Compliance**
+
+- **❌ ANTI-PATTERN**: Never use dynamic imports (`await import()`) in test functions
+- **✅ CORRECT**: Use static ESM imports with `vi.mock()` at module level for external dependencies
+- **Benefit**: Maintains type safety, ESM compliance, and prevents async complexity in tests
+
+### **Mock State Management**
+
+- **⚠️ IMPORTANT**: See **TESTING_STRATEGY** for complete mock state management patterns
+- **Key Rule**: Use `vi.clearAllMocks()` before specific assertions when testing constructor behavior or call count verification
+- **Anti-Pattern**: Don't assume mock call counts are isolated per test when using shared beforeEach setup
 
 ---
 
@@ -209,15 +228,15 @@ export default mergeConfig(
 
 ```typescript
 import { vi, beforeAll, afterAll, afterEach } from 'vitest'
-import { setupLibraryTestEnvironment, resetLibraryMocks } from '@fux/mock-strategy/lib'
+import { setupLibTestEnvironment, resetLibMocks } from '@fux/mock-strategy/lib'
 
 // Setup library-specific test environment
 beforeAll(() => {
-    setupLibraryTestEnvironment()
+    setupLibTestEnvironment()
 })
 
 afterAll(() => {
-    resetLibraryMocks()
+    resetLibMocks()
 })
 
 afterEach(() => {
@@ -372,15 +391,15 @@ export function createPackageMockBuilder(mocks?: PackageTestMocks): PackageMockB
 **MANDATORY**: In ESM-based library packages, all relative imports in test files MUST include the `.js` extension:
 
 ```typescript
-// ✅ CORRECT - ESM imports with .js extension
-import { setupPackageTestEnvironment, resetPackageMocks } from '../__mocks__/helpers.js'
-import { createPackageMockBuilder } from '../__mocks__/mock-scenario-builder.js'
-import { MyUtility } from '../../src/utils/MyUtility.js'
+// ✅ CORRECT - ESM imports with .js extension and correct relative pathing
+import { setupPackageTestEnvironment, resetPackageMocks } from '../../__mocks__/helpers.js'
+import { createPackageMockBuilder } from '../../__mocks__/mock-scenario-builder.js'
+import { MyUtility } from '../../../src/utils/MyUtility.js'
 
 // ❌ INCORRECT - Missing .js extension causes module resolution errors
-import { setupPackageTestEnvironment, resetPackageMocks } from '../__mocks__/helpers.js'
-import { createPackageMockBuilder } from '../__mocks__/mock-scenario-builder.js'
-import { MyUtility } from '../../src/utils/MyUtility'
+import { setupPackageTestEnvironment, resetPackageMocks } from '../../__mocks__/helpers'
+import { createPackageMockBuilder } from '../../__mocks__/mock-scenario-builder'
+import { MyUtility } from '../../../src/utils/MyUtility'
 ```
 
 **Why**: ESM requires explicit file extensions for relative imports. Without `.js` extensions, tests will fail with "Cannot find module" errors.
@@ -390,9 +409,9 @@ import { MyUtility } from '../../src/utils/MyUtility'
 ```typescript
 // __tests__/functional-tests/utils/MyUtility.test.ts
 import { describe, it, expect, beforeEach } from 'vitest'
-import { setupPackageTestEnvironment, resetPackageMocks } from '../__mocks__/helpers.js'
-import { createPackageMockBuilder } from '../__mocks__/mock-scenario-builder.js'
-import { MyUtility } from '../../src/utils/MyUtility.js'
+import { setupPackageTestEnvironment, resetPackageMocks } from '../../__mocks__/helpers.js'
+import { createPackageMockBuilder } from '../../__mocks__/mock-scenario-builder.js'
+import { MyUtility } from '../../../src/utils/MyUtility.js'
 
 describe('MyUtility', () => {
     let mocks: ReturnType<typeof setupPackageTestEnvironment>
@@ -433,8 +452,8 @@ describe('MyUtility', () => {
 ```typescript
 // __tests__/functional-tests/cli/CLI.test.ts
 import { describe, it, expect, beforeEach } from 'vitest'
-import { setupPackageTestEnvironment, resetPackageMocks } from '../__mocks__/helpers.js'
-import { createPackageMockBuilder } from '../__mocks__/mock-scenario-builder.js'
+import { setupPackageTestEnvironment, resetPackageMocks } from '../../__mocks__/helpers.js'
+import { createPackageMockBuilder } from '../../__mocks__/mock-scenario-builder.js'
 
 describe('CLI Tool', () => {
     let mocks: ReturnType<typeof setupPackageTestEnvironment>

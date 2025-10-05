@@ -16,7 +16,7 @@
 - **MOCK_STRATEGY_LIB**: `docs/testing/Mock-Strategy-Lib.md`
 - **MOCK_STRATEGY_TOOL**: `docs/testing/Mock-Strategy-Tool.md`
 - **MOCK_STRATEGY_PLUGIN**: `docs/testing/Mock-Strategy-Plugin.md`
-- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General__v2.md`
+- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General.md`
 - **TROUBLESHOOTING_TESTS**: `docs/testing/Troubleshooting - Tests.md`
 
 ### **Command References**
@@ -54,12 +54,33 @@
 - **Mock Normalization**: Mock normalization logic must match real implementation exactly
 - **ESM Import Requirements**: Use ESM imports in test helpers, not require() statements
 - **Cache Clearing Strategy**: Test isolation requires both cache clearing AND proper mock integration
+- **Mock State Management**: Use `vi.clearAllMocks()` for isolated test assertions when testing constructor behavior or call count verification
 - **Global Mock Analysis**: Complex mocking scenarios should start with global mock analysis before local approaches
 - **Shell Detection Mocking** → Always use scenario builder, never manual mocking
 - **Complex Multi-Step Setups** → Use scenario builder pattern
 - **Simple Single Function Mocks** → Use standard vi.mocked() approach
 - **Node.js Built-ins** → Use globals.ts for consistent mocking
 - **Rule of Thumb**: If you need more than 2 mocks working together, use scenario builder
+
+### Mock State Management Patterns
+
+#### **When to Use `vi.clearAllMocks()`**
+
+- **Constructor Testing**: When testing constructor behavior that should be called exactly once
+- **Call Count Verification**: When verifying specific mock call counts are critical
+- **Isolated Test Assertions**: When shared beforeEach setup affects test isolation
+- **Before Specific Assertions**: Use immediately before the assertion that needs clean state
+
+#### **When to Rely on beforeEach Cleanup**
+
+- **Standard Test Cases**: Most tests can rely on beforeEach mock reset
+- **Functional Testing**: When testing behavior rather than implementation details
+- **Integration Testing**: When testing component interactions
+
+#### **Anti-Pattern: Assuming Mock Isolation**
+
+- **❌ WRONG**: Expecting mock call counts to be isolated per test when using shared beforeEach
+- **✅ CORRECT**: Explicitly clear mocks when call count verification is critical
 
 ### Anti-Patterns (NEVER DO)
 
@@ -1780,4 +1801,3 @@ it('should handle CLI arguments correctly', () => {
 - **Coverage Tests**: `{module-name}.test-cov.ts` in `coverage-tests/` directory
 - **Integration Tests**: `{module-name}.integration.test.ts` in `integration-tests/` directory
 - **Dependencies**: Core package + VSCode APIs
-

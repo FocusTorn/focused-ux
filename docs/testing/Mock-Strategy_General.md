@@ -17,11 +17,14 @@
 - **MOCK_STRATEGY_LIB**: `docs/testing/Mock-Strategy-Lib.md`
 - **MOCK_STRATEGY_TOOL**: `docs/testing/Mock-Strategy-Tool.md`
 - **MOCK_STRATEGY_PLUGIN**: `docs/testing/Mock-Strategy-Plugin.md`
+- **LIBRARY_TESTING_GUIDE**: `docs/testing/Library-Testing-AI-Guide.md`
 - **TROUBLESHOOTING_TESTS**: `docs/testing/Troubleshooting - Tests.md`
 
 ---
 
 ## 🚀 Quick Start: Which Mocking Approach?
+
+**⚠️ AUTHORITATIVE SOURCE**: This document contains the definitive decision matrix and function availability for all mock strategy implementations across the FocusedUX monorepo.
 
 **For ANY mocking scenario, follow this order:**
 
@@ -30,6 +33,12 @@
 3. **Use Global Mocks** - Only for Node.js built-ins
 
 **Rule of Thumb**: If you need more than 2 mocks working together → Use Scenario Builder
+
+### **ESM Import Path Pattern**
+
+- **Pattern**: `{relative-pathing}/__mocks__/helpers.js` where `{relative-pathing}` accounts for directory depth
+- **Example**: From `__tests__/functional-tests/utils/` use `../../__mocks__/helpers.js`
+- **Rule**: Always use `.js` extension for ESM imports, count directory levels from test file to `__mocks__/`
 
 ## Primary Approach: Scenario Builders
 
@@ -55,7 +64,7 @@
 - **When**: **ANY complex mocking scenario** (3+ mocks, related behavior, stateful interactions)
 - **What**: Composable mock scenarios, business logic testing, realistic test conditions
 - **Examples**: Shell detection, file operations, command execution, cross-platform scenarios
-- **Reference**: Import from `../__mocks__/mock-scenario-builder`
+- **Reference**: Import from `{relative-pathing}/__mocks__/mock-scenario-builder.js`
 - **MANDATORY**: Use scenario builders for any mocking that involves multiple related mocks
 
 ### 2. **Global Mock Strategy** (`libs/mock-strategy/`)
@@ -64,6 +73,7 @@
 - **What**: Common Node.js APIs, standard patterns, cross-package functionality
 - **Examples**: `fs`, `path`, `process`, `child_process`, common file operations
 - **Reference**: Import from `@fux/mock-strategy/lib`
+- **Library Package Note**: For library packages (`libs/{name}/`), use `setupLibTestEnvironment()`, `resetLibMocks()`, and `LibTestMocks` interface from `@fux/mock-strategy/lib`
 
 ### 2.1. **Package-Level Global Mocks** (`packages/{package}/__tests__/__mocks__/globals.ts`)
 
@@ -72,7 +82,7 @@
 - **Examples**: `node:child_process`, `node:fs`, `node:path`, `node:os`
 - **MANDATORY**: All native Node.js packages that are mocked must be added to `globals.ts`
 - **Purpose**: Prevents ESLint errors from `require()` statements and provides consistent mocking across all tests in the package
-- **Reference**: Import from `../__mocks__/globals`
+- **Reference**: Import from `{relative-pathing}/__mocks__/globals.js`
 
 ### 3. **Package-Level Mocks** (`packages/{package}/__tests__/__mocks__/`)
 
@@ -82,7 +92,7 @@
     - **Mocks**: Package-specific CLI functions, custom file operations
     - **Helpers**: Setup functions, test utilities, mock builders
     - **Scenarios**: Package-specific test scenarios, mock configurations
-- **Reference**: Import from `../__mocks__/helpers`, `../__mocks__/scenarios`, or `../__mocks__/mock-scenario-builder`
+- **Reference**: Import from `{relative-pathing}/__mocks__/helpers.js`, `{relative-pathing}/__mocks__/scenarios.js`, or `{relative-pathing}/__mocks__/mock-scenario-builder.js`
 
 ### 4. **File-Level Mocks** (Within individual test files)
 
@@ -1198,4 +1208,3 @@ After implementing proper mock strategies:
 - ✅ **Fewer Bugs**: Centralized mocks reduce setup errors
 - ✅ **Better Debugging**: Consistent mock behavior across tests
 - ✅ **Easier Onboarding**: Clear patterns for new developers
-
