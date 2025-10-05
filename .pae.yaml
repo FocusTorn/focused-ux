@@ -151,3 +151,4 @@ nxPackages:
     vscte: '@fux/vscode-test-executor'
     fttc: '@fux/ft-typescript'
     reco: '@fux/recommended'
+

@@ -1,0 +1,29 @@
+{
+    "name": "@fux/a-trial-lib",
+    "description": "A trial library package for testing comprehensive testing strategies",
+    "version": "0.0.1",
+    "license": "MIT",
+    "keywords": [
+        "trial",
+        "library",
+        "testing",
+        "utilities"
+    ],
+    "type": "module",
+    "main": "dist/index.js",
+    "files": [
+        "dist"
+    ],
+    "dependencies": {
+        "js-yaml": "^4.1.0"
+    },
+    "devDependencies": {
+        "@fux/mock-strategy": "workspace:*",
+        "@types/js-yaml": "^4.0.9",
+        "@types/node": "^24.0.10",
+        "@vitest/coverage-v8": "^3.2.4",
+        "typescript": "^5.8.3",
+        "vitest": "^3.2.4"
+    },
+    "author": "FocusedUX"
+}

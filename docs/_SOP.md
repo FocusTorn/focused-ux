@@ -1182,6 +1182,47 @@ nx show projects --graph
 3. **Update Strategies**: Enhance documentation with new learnings
 4. **Pattern Recognition**: Identify new patterns for future use
 
+### **Local Development Testing Patterns**
+
+**Tool Selection Criteria**:
+
+1. **Direct TypeScript Execution**: Use `tsx` for faster development cycles
+2. **Avoid Build Steps**: Execute source directly rather than building to dist
+3. **Immediate Feedback**: Get instant results without compilation delays
+4. **Easier Debugging**: Work with source code directly
+
+**Implementation Pattern**:
+
+```bash
+# ✅ Preferred approach for local testing
+tsx libs/project-alias-expander/src/cli.ts [command]
+
+# ❌ Avoid these slower approaches
+npm run build && node dist/cli.js [command]
+npm install @fux/project-alias-expander && pae [command]
+```
+
+**Benefits**:
+
+- **Faster iteration**: No build step required
+- **Immediate feedback**: Changes reflected instantly
+- **Easier debugging**: Work with TypeScript source directly
+- **No installation**: No need to install packages globally
+
+**When to Use**:
+
+- Local development and testing
+- Quick validation of changes
+- Debugging and troubleshooting
+- Rapid prototyping
+
+**When NOT to Use**:
+
+- Production deployments
+- CI/CD pipelines
+- End-to-end testing
+- Performance testing
+
 ### **Documentation Sources**
 
 **Documentation Priority**:
@@ -1206,3 +1247,4 @@ nx show projects --graph
 - Reference existing patterns directly in responses
 - Implement documented solutions without additional analysis
 - Acknowledge documentation as the source of the approach
+

@@ -24,14 +24,33 @@ function debug(message: string, ...args: unknown[]) { //>
 } //<
 
 function error(message: string, ...args: unknown[]) { //>
-    // Use red color for error messages
-    console.error('\x1b[31m[PAE ERROR]\x1b[0m', message, ...args)
+    // Colorize entire line red for error messages
+    const fullMessage = `[PAE ERROR] ${message}`
+    console.error('\x1b[31m' + fullMessage + '\x1b[0m', ...args)
     
     // Only show stack trace in debug mode
     if (DEBUG && args.length > 0 && args[0] instanceof Error) {
         console.error('\x1b[31mStack trace:\x1b[0m')
         console.error(args[0].stack)
     }
+} //<
+
+function warning(message: string, ...args: unknown[]) { //>
+    // Colorize entire line yellow for warning messages
+    const fullMessage = `[PAE WARNING] ${message}`
+    console.warn('\x1b[33m' + fullMessage + '\x1b[0m', ...args)
+} //<
+
+function debugInfo(message: string, ...args: unknown[]) { //>
+    // Colorize entire line blue for debug messages
+    const fullMessage = `[PAE DEBUG] ${message}`
+    console.log('\x1b[34m' + fullMessage + '\x1b[0m', ...args)
+} //<
+
+function info(message: string, ...args: unknown[]) { //>
+    // No color for info messages
+    const fullMessage = `[PAE INFO] ${message}`
+    console.log(fullMessage, ...args)
 } //<
 
 // Helper function to get context-aware flags based on target
