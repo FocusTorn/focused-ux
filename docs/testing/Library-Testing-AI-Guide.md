@@ -800,8 +800,8 @@ describe('CLI Tool', () => {
 
 #### **Folding Marker Types**
 
-- **`//>` and `//<`** - Wrap individual `it` blocks
-- **`-->>` and `--<<`** - Wrap `describe` blocks and setup sections
+- **`//>` and `//<`** - Wrap individual `it` blocks and `beforeEach`/`afterEach` functions
+- **`// SETUP ----------------->>` and `//----------------------------------------------------<<`** - Wrap main setup constants and variables
 
 #### **Folding Marker Usage**
 
@@ -812,7 +812,7 @@ import { setupPackageTestEnvironment, resetPackageMocks } from '../../__mocks__/
 import { createPackageMockBuilder } from '../../__mocks__/mock-scenario-builder.js'
 import { ConfigLoader } from '../../../src/services/ConfigLoader.service.js'
 
--->> describe('ConfigLoader', () => {
+describe('ConfigLoader', () => {
     // SETUP ----------------->>
     let mocks: ReturnType<typeof setupPackageTestEnvironment>
     let configLoader: any
@@ -820,27 +820,28 @@ import { ConfigLoader } from '../../../src/services/ConfigLoader.service.js'
     let tempConfigPath: string
 
     beforeEach(() => {
+        //>
         mocks = setupPackageTestEnvironment()
         configLoader = ConfigLoader.getInstance()
         tempDir = process.cwd()
         tempConfigPath = join(tempDir, '.pae.yaml')
-    })
+    }) //<
 
     afterEach(() => {
+        //>
         if (existsSync(tempConfigPath)) {
             unlinkSync(tempConfigPath)
         }
         configLoader.clearCache()
         clearAllCaches()
-    })
+    }) //<
     //----------------------------------------------------<<
 
-    -->> describe('loadConfig', () => {
-        // SETUP ----------------->>
-        const validConfig = { nxPackages: { 'my-app': { build: 'nx build my-app' } } }
-        //----------------------------------------------------<<
+    describe('loadConfig', () => {
+        it('should load valid configuration successfully', async () => {
+            //>
+            const validConfig = { nxPackages: { 'my-app': { build: 'nx build my-app' } } }
 
-        //> it('should load valid configuration successfully', async () => {
             const scenario = createPackageMockBuilder(mocks)
                 .configLoader()
                 .loadConfig()
@@ -849,21 +850,25 @@ import { ConfigLoader } from '../../../src/services/ConfigLoader.service.js'
 
             const result = await configLoader.loadConfig(tempConfigPath)
             expect(result).toEqual(validConfig)
-        //< })
+        }) //<
 
-        //> it('should handle file not found error', async () => {
+        it('should handle file not found error', async () => {
+            //>
             const scenario = createPackageMockBuilder(mocks)
                 .configLoader()
                 .loadConfig()
                 .withErrorHandling('file-not-found')
                 .build()
 
-            await expect(configLoader.loadConfig('/nonexistent.yaml')).rejects.toThrow('File not found')
-        //< })
-    --<< })
+            await expect(configLoader.loadConfig('/nonexistent.yaml')).rejects.toThrow(
+                'File not found'
+            )
+        }) //<
+    })
 
-    -->> describe('error handling', () => {
-        //> it('should handle YAML parsing errors', async () => {
+    describe('error handling', () => {
+        it('should handle YAML parsing errors', async () => {
+            //>
             const scenario = createPackageMockBuilder(mocks)
                 .configLoader()
                 .loadConfig()
@@ -871,28 +876,32 @@ import { ConfigLoader } from '../../../src/services/ConfigLoader.service.js'
                 .build()
 
             await expect(configLoader.loadConfig(tempConfigPath)).rejects.toThrow('Invalid YAML')
-        //< })
+        }) //<
 
-        //> it('should handle permission denied errors', async () => {
+        it('should handle permission denied errors', async () => {
+            //>
             const scenario = createPackageMockBuilder(mocks)
                 .configLoader()
                 .loadConfig()
                 .withErrorHandling('permission-denied')
                 .build()
 
-            await expect(configLoader.loadConfig('/protected/file.yaml')).rejects.toThrow('Permission denied')
-        //< })
-    --<< })
---<< })
+            await expect(configLoader.loadConfig('/protected/file.yaml')).rejects.toThrow(
+                'Permission denied'
+            )
+        }) //<
+    })
+})
 ```
 
 #### **Folding Marker Rules**
 
-- **`it` blocks**: Always wrapped with `//>` and `//<`
-- **`describe` blocks**: Always wrapped with `-->>` and `--<<`
-- **Setup sections**: Wrapped with `// SETUP ----------------->>` and `//----------------------------------------------------<<`
-- **Constants and variables**: Wrapped in setup sections when used within describe blocks
-- **beforeEach/afterEach**: Always included in setup sections
+- **`it` blocks**: Always wrapped with `//>` and `//<` at the end of the line, preceded by a space
+- **`beforeEach`/`afterEach`**: Always wrapped with `//>` and `//<` at the end of the line, preceded by a space
+- **Setup sections**: Wrapped with `// SETUP ----------------->>` and `//----------------------------------------------------<<` for main setup constants and variables only
+- **`describe` blocks**: NO folding markers - they are not wrapped
+- **Test-specific constants**: Go inside individual test cases without setup markers
+- **Space requirement**: All folding markers must be preceded by a space
 
 #### **Benefits of Folding Markers**
 
@@ -1035,7 +1044,7 @@ pae {alias} b
 - [ ] Error scenarios tested
 - [ ] CLI testing uses proper `process.argv` cleanup
 - [ ] Coverage tests target specific uncovered lines
-- [ ] **Test files use folding markers** (`//>` `//<` for it blocks, `-->>` `--<<` for describe blocks)
+- [ ] **Test files use folding markers** (`//>` `//<` for it blocks and beforeEach/afterEach, `// SETUP ----------------->>` and `//----------------------------------------------------<<` for setup sections)
 - [ ] **Setup sections properly wrapped** with `// SETUP ----------------->>` and `//----------------------------------------------------<<`
 
 ### **Quality Gates**
