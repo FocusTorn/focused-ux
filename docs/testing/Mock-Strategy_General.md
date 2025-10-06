@@ -2,22 +2,16 @@
 
 ## **REFERENCE FILES**
 
-### **Documentation References**
+### **Global Documentation References**
 
+- **SOP_DOCS**: `docs/_SOP.md`
 - **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
 - **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
-- **SOP_DOCS**: `docs/_SOP.md`
-- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **ACTIONS_LOG**: `docs/Actions-Log.md`
 
 ### **Testing Documentation References**
 
-- **MOCK_STRATEGY_CORE**: `docs/testing/Mock-Strategy-Core.md`
-- **MOCK_STRATEGY_EXT**: `docs/testing/Mock-Strategy-Ext.md`
-- **MOCK_STRATEGY_LIB**: `docs/testing/Mock-Strategy-Lib.md`
-- **MOCK_STRATEGY_TOOL**: `docs/testing/Mock-Strategy-Tool.md`
-- **MOCK_STRATEGY_PLUGIN**: `docs/testing/Mock-Strategy-Plugin.md`
-- **LIBRARY_TESTING_GUIDE**: `docs/testing/Library-Testing-AI-Guide.md`
+- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
+- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General.md`
 - **TROUBLESHOOTING_TESTS**: `docs/testing/Troubleshooting - Tests.md`
 
 ---
@@ -51,6 +45,36 @@
 - Provide consistent behavior across tests
 - Are easier to maintain and extend
 - Work seamlessly with global mocks
+
+## 🎯 **MANDATORY: When to Use Scenario Builder**
+
+### **ALWAYS Use Scenario Builder For:**
+
+- Service method testing (ConfigLoader, CommandExecution, etc.)
+- Complex multi-step mock setups (3+ mocks working together)
+- File system operation testing
+- Error scenario testing with multiple failure points
+- Concurrent access testing
+- Any test requiring more than 2 mock interactions
+
+### **Use Direct Mocking For:**
+
+- Single function mocks
+- Simple return value scenarios
+- One-off mock implementations
+
+### **Service Testing with Scenario Builder**
+
+```typescript
+// ConfigLoader service testing
+const scenario = createPackageMockBuilder(mocks)
+    .configLoader()
+    .loadConfig()
+    .withValidYaml(validConfig)
+    .withFileModificationDetection()
+    .withErrorHandling('permission-denied')
+    .build()
+```
 
 ### When to Use Other Approaches:
 

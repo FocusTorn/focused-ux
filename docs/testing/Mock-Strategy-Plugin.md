@@ -2,29 +2,17 @@
 
 ## **REFERENCE FILES**
 
-### **Documentation References**
+### **Global Documentation References**
 
+- **SOP_DOCS**: `docs/_SOP.md`
 - **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
 - **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
-- **SOP_DOCS**: `docs/_SOP.md`
-- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **ACTIONS_LOG**: `docs/Actions-Log.md`
 
 ### **Testing Documentation References**
 
-- **MOCK_STRATEGY_CORE**: `docs/testing/Mock-Strategy-Core.md`
-- **MOCK_STRATEGY_EXT**: `docs/testing/Mock-Strategy-Ext.md`
-- **MOCK_STRATEGY_LIB**: `docs/testing/Mock-Strategy-Lib.md`
-- **MOCK_STRATEGY_TOOL**: `docs/testing/Mock-Strategy-Tool.md`
-- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General__v2.md`
+- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
+- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General.md`
 - **TROUBLESHOOTING_TESTS**: `docs/testing/Troubleshooting - Tests.md`
-
-### **Command References**
-
-- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
-- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
-- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
-- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
 
 ---
 
@@ -479,3 +467,4 @@ libs/plugins/my-plugin/__tests__/
 ```
 
 This structure ensures comprehensive testing of plugin functionality while maintaining clear separation between plugin-specific and workspace integration logic.
+

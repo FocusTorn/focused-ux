@@ -2,29 +2,17 @@
 
 ## **REFERENCE FILES**
 
-### **Documentation References**
+### **Global Documentation References**
 
+- **SOP_DOCS**: `docs/_SOP.md`
 - **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
 - **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
-- **SOP_DOCS**: `docs/_SOP.md`
-- **ACTIONS_LOG**: `docs/Actions-Log.md`
 
 ### **Testing Documentation References**
 
-- **MOCK_STRATEGY_CORE**: `docs/testing/Mock-Strategy-Core.md`
-- **MOCK_STRATEGY_EXT**: `docs/testing/Mock-Strategy-Ext.md`
-- **MOCK_STRATEGY_LIB**: `docs/testing/Mock-Strategy-Lib.md`
-- **MOCK_STRATEGY_TOOL**: `docs/testing/Mock-Strategy-Tool.md`
-- **MOCK_STRATEGY_PLUGIN**: `docs/testing/Mock-Strategy-Plugin.md`
+- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
 - **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General.md`
 - **TROUBLESHOOTING_TESTS**: `docs/testing/Troubleshooting - Tests.md`
-
-### **Command References**
-
-- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
-- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
-- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
-- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
 
 ---
 
@@ -48,6 +36,7 @@
 
 ### Critical Mocking Rules
 
+- **Mock-Strategy_General First**: Always use Mock-Strategy_General library functions before manual mock creation
 - **Scenario Builders First**: Always start with scenario builders for complex mocking
 - **Global Mock Integration**: Ensure global mocks integrate with local test needs
 - **Environment Variable Control**: Use environment variables for realistic test scenarios
@@ -59,8 +48,140 @@
 - **Shell Detection Mocking** → Always use scenario builder, never manual mocking
 - **Complex Multi-Step Setups** → Use scenario builder pattern
 - **Simple Single Function Mocks** → Use standard vi.mocked() approach
-- **Node.js Built-ins** → Use globals.ts for consistent mocking
+- **Node.js Built-ins** → Use Mock-Strategy_General library functions, not manual mocks
+- **Incremental Test Development**: Implement tests incrementally, running tests after each major section
+- **Complete Node.js Module Mocking**: Ensure all mocked Node.js modules include complete export definitions
 - **Rule of Thumb**: If you need more than 2 mocks working together, use scenario builder
+
+### Mock Configuration Error Resolution
+
+**CRITICAL**: Missing exports in mocked Node.js modules can cause test failures even when the mocked module isn't directly used in the test code.
+
+#### **The Problem**
+
+- **Incomplete Node.js Module Mocks**: Only mocking exports directly used in tests
+- **Missing Standard Exports**: Node.js modules have many standard exports that may be imported indirectly
+- **Cryptic Test Failures**: Tests fail with "No 'export' is defined" errors
+
+#### **The Solution**
+
+- **Use Mock-Strategy_General Library**: The library provides complete Node.js module mocks with all standard exports
+- **Complete Export Definitions**: Ensure all mocked Node.js modules include complete export definitions
+- **Systematic Export Addition**: When manually fixing mocks, add all standard exports systematically
+
+#### **Prevention Strategy**
+
+1. **Always use Mock-Strategy_General first** - Don't manually create Node.js module mocks
+2. **Check library coverage** - Verify the library covers your Node.js module needs
+3. **Extend library patterns** - If you need custom mocks, extend library patterns rather than starting from scratch
+
+#### **Example: Complete Node.js Module Mock**
+
+```typescript
+// ❌ INCOMPLETE: Missing exports cause test failures
+vi.mock('node:os', () => ({
+    default: {
+        platform: vi.fn().mockReturnValue('win32'),
+        arch: vi.fn().mockReturnValue('x64'),
+    },
+}))
+
+// ✅ COMPLETE: All standard exports included
+vi.mock('node:os', () => ({
+    default: {
+        platform: vi.fn().mockReturnValue('win32'),
+        arch: vi.fn().mockReturnValue('x64'),
+        cpus: vi.fn().mockReturnValue([{ model: 'Intel', speed: 2400 }]),
+        freemem: vi.fn().mockReturnValue(1024 * 1024 * 1024),
+        totalmem: vi.fn().mockReturnValue(8 * 1024 * 1024 * 1024),
+        uptime: vi.fn().mockReturnValue(3600),
+        networkInterfaces: vi.fn().mockReturnValue({}),
+        hostname: vi.fn().mockReturnValue('test-host'),
+        loadavg: vi.fn().mockReturnValue([0.5, 0.3, 0.2]),
+        endianness: vi.fn().mockReturnValue('LE'),
+        EOL: '\n',
+    },
+    // Duplicate exports for named imports
+    platform: vi.fn().mockReturnValue('win32'),
+    arch: vi.fn().mockReturnValue('x64'),
+    cpus: vi.fn().mockReturnValue([{ model: 'Intel', speed: 2400 }]),
+    freemem: vi.fn().mockReturnValue(1024 * 1024 * 1024),
+    totalmem: vi.fn().mockReturnValue(8 * 1024 * 1024 * 1024),
+    uptime: vi.fn().mockReturnValue(3600),
+    networkInterfaces: vi.fn().mockReturnValue({}),
+    hostname: vi.fn().mockReturnValue('test-host'),
+    loadavg: vi.fn().mockReturnValue([0.5, 0.3, 0.2]),
+    endianness: vi.fn().mockReturnValue('LE'),
+    EOL: '\n',
+}))
+```
+
+### Test Implementation Iteration Pattern
+
+**CRITICAL**: Complex test suites require iterative development with continuous testing to identify and fix issues early.
+
+#### **The Problem**
+
+- **Cascading Failures**: Implementing all tests at once leads to multiple failures that are difficult to debug
+- **Mock Configuration Issues**: Complex mock setups fail in ways that are hard to isolate
+- **Debugging Complexity**: Multiple issues compound, making root cause identification difficult
+
+#### **The Solution**
+
+- **Incremental Development**: Implement tests in sections, running tests after each major section
+- **Continuous Validation**: Test each describe block separately to catch issues early
+- **Isolated Debugging**: Fix issues in isolation before moving to the next section
+
+#### **Implementation Pattern**
+
+1. **Start with Basic Structure**: Set up describe blocks and basic test structure
+2. **Implement One Section**: Complete one describe block (e.g., loadConfig tests)
+3. **Run Tests**: Execute tests to verify mock configuration and test logic
+4. **Fix Issues**: Resolve any failures before proceeding
+5. **Repeat**: Move to next section and repeat the process
+
+#### **Benefits**
+
+- **Prevents Cascading Failures**: Issues are caught and fixed early
+- **Easier Debugging**: Problems are isolated to specific sections
+- **Faster Development**: Less time spent debugging complex failure chains
+- **Better Test Quality**: Each section is validated before moving forward
+
+### ESM Import Path Requirements
+
+**CRITICAL**: ESM-based library packages require explicit .js extensions in relative imports for proper module resolution in test files.
+
+#### **The Problem**
+
+- **Module Resolution Failures**: Missing .js extensions cause "Cannot find module" errors
+- **ESM Compliance Issues**: Test environments require explicit file extensions
+- **Import Path Errors**: Incorrect relative pathing causes resolution failures
+
+#### **The Solution**
+
+- **Always Use .js Extensions**: All relative imports in test files must include .js extension
+- **Correct Relative Pathing**: Count directory levels correctly from test file to target module
+- **ESM Compliance**: Follow ESM import requirements strictly
+
+#### **Implementation Pattern**
+
+```typescript
+// ✅ CORRECT - ESM imports with .js extension and correct relative pathing
+import { setupPackageTestEnvironment, resetPackageMocks } from '../../__mocks__/helpers.js'
+import { createPackageMockBuilder } from '../../__mocks__/mock-scenario-builder.js'
+import { MyUtility } from '../../../src/utils/MyUtility.js'
+
+// ❌ INCORRECT - Missing .js extension causes module resolution errors
+import { setupPackageTestEnvironment, resetPackageMocks } from '../../__mocks__/helpers'
+import { createPackageMockBuilder } from '../../__mocks__/mock-scenario-builder'
+import { MyUtility } from '../../../src/utils/MyUtility'
+```
+
+#### **Why This Matters**
+
+- **ESM Requirements**: ESM requires explicit file extensions for relative imports
+- **Test Environment Consistency**: Ensures consistent module resolution across test environments
+- **Prevents Runtime Errors**: Avoids "Cannot find module" errors during test execution
 
 ### Mock State Management Patterns
 

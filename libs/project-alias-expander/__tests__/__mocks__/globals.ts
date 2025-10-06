@@ -138,6 +138,15 @@ vi.mock('node:os', () => ({
         homedir: vi.fn().mockReturnValue('C:\\Users\\user'),
         tmpdir: vi.fn().mockReturnValue('C:\\Temp'),
         userInfo: vi.fn().mockReturnValue({ username: 'user' }),
+        cpus: vi.fn().mockReturnValue([{ model: 'Intel', speed: 2400 }]),
+        freemem: vi.fn().mockReturnValue(1024 * 1024 * 1024),
+        totalmem: vi.fn().mockReturnValue(8 * 1024 * 1024 * 1024),
+        uptime: vi.fn().mockReturnValue(3600),
+        networkInterfaces: vi.fn().mockReturnValue({}),
+        hostname: vi.fn().mockReturnValue('test-host'),
+        loadavg: vi.fn().mockReturnValue([0.5, 0.3, 0.2]),
+        endianness: vi.fn().mockReturnValue('LE'),
+        EOL: '\n'
     },
     platform: vi.fn().mockReturnValue('win32'),
     type: vi.fn().mockReturnValue('Windows_NT'),
@@ -145,6 +154,15 @@ vi.mock('node:os', () => ({
     homedir: vi.fn().mockReturnValue('C:\\Users\\user'),
     tmpdir: vi.fn().mockReturnValue('C:\\Temp'),
     userInfo: vi.fn().mockReturnValue({ username: 'user' }),
+    cpus: vi.fn().mockReturnValue([{ model: 'Intel', speed: 2400 }]),
+    freemem: vi.fn().mockReturnValue(1024 * 1024 * 1024),
+    totalmem: vi.fn().mockReturnValue(8 * 1024 * 1024 * 1024),
+    uptime: vi.fn().mockReturnValue(3600),
+    networkInterfaces: vi.fn().mockReturnValue({}),
+    hostname: vi.fn().mockReturnValue('test-host'),
+    loadavg: vi.fn().mockReturnValue([0.5, 0.3, 0.2]),
+    endianness: vi.fn().mockReturnValue('LE'),
+    EOL: '\n'
 }))
 
 // Mock path module
@@ -242,6 +260,15 @@ vi.mock('node:os', () => ({
         homedir: vi.fn().mockReturnValue('C:\\Users\\user'),
         tmpdir: vi.fn().mockReturnValue('C:\\Temp'),
         userInfo: vi.fn().mockReturnValue({ username: 'user' }),
+        cpus: vi.fn().mockReturnValue([{ model: 'Intel', speed: 2400 }]),
+        freemem: vi.fn().mockReturnValue(1024 * 1024 * 1024),
+        totalmem: vi.fn().mockReturnValue(8 * 1024 * 1024 * 1024),
+        uptime: vi.fn().mockReturnValue(3600),
+        networkInterfaces: vi.fn().mockReturnValue({}),
+        hostname: vi.fn().mockReturnValue('test-host'),
+        loadavg: vi.fn().mockReturnValue([0.5, 0.3, 0.2]),
+        endianness: vi.fn().mockReturnValue('LE'),
+        EOL: '\n'
     },
     platform: vi.fn().mockReturnValue('win32'),
     type: vi.fn().mockReturnValue('Windows_NT'),
@@ -249,6 +276,15 @@ vi.mock('node:os', () => ({
     homedir: vi.fn().mockReturnValue('C:\\Users\\user'),
     tmpdir: vi.fn().mockReturnValue('C:\\Temp'),
     userInfo: vi.fn().mockReturnValue({ username: 'user' }),
+    cpus: vi.fn().mockReturnValue([{ model: 'Intel', speed: 2400 }]),
+    freemem: vi.fn().mockReturnValue(1024 * 1024 * 1024),
+    totalmem: vi.fn().mockReturnValue(8 * 1024 * 1024 * 1024),
+    uptime: vi.fn().mockReturnValue(3600),
+    networkInterfaces: vi.fn().mockReturnValue({}),
+    hostname: vi.fn().mockReturnValue('test-host'),
+    loadavg: vi.fn().mockReturnValue([0.5, 0.3, 0.2]),
+    endianness: vi.fn().mockReturnValue('LE'),
+    EOL: '\n'
 }))
 
 vi.mock('node:url', () => ({

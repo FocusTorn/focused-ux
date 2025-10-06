@@ -2,14 +2,52 @@
 
 ## **REFERENCE FILES**
 
-### **Documentation References**
+### **Global Documentation References**
 
+- **SOP_DOCS**: `docs/_SOP.md`
 - **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
 - **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
-- **SOP_DOCS**: `docs/_SOP.md`
+
+### **Testing Documentation References**
+
 - **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **MOCK_STRATEGY_LIB**: `docs/testing/Mock-Strategy-Lib.md`
 - **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General.md`
+- **TROUBLESHOOTING_TESTS**: `docs/testing/Troubleshooting - Tests.md`
+
+---
+
+## 🚀 **QUICK REFERENCE**
+
+**Service Testing**: Always use `createPackageMockBuilder(mocks).serviceMethod().build()`
+**Complex Scenarios**: Always use scenario builder for 3+ mock interactions
+**File Operations**: Use scenario builder for file system testing
+**Error Handling**: Use scenario builder for multi-step error scenarios
+
+## 🎯 **CRITICAL: Mock Strategy Foundation**
+
+**⚠️ MANDATORY FIRST STEP**: Before implementing ANY mocking, read **MOCK_STRATEGY_GENERAL** (`docs/testing/Mock-Strategy_General.md`)
+
+**This document is the FOUNDATION for accurate, consistent, and repeatable mocking across the entire project.**
+
+### **Why Mock-Strategy_General is Critical:**
+
+- **Prevents Manual Mock Creation** - Use library functions instead of reinventing mocks
+- **Ensures Complete Node.js Module Coverage** - All standard exports included
+- **Provides Consistent Patterns** - Same approach across all packages
+- **Avoids Common Pitfalls** - Pre-tested implementations prevent errors
+- **Saves Development Time** - No need to debug incomplete mocks
+
+### **Mock Strategy Decision Tree:**
+
+```
+Need to mock something?
+├─ Is it a Node.js built-in module? → Use Mock-Strategy_General library functions
+├─ Is it a complex multi-step scenario? → Use scenario builders from Mock-Strategy_General
+├─ Is it a simple single function? → Use standard vi.mocked() approach
+└─ Is it package-specific? → Extend Mock-Strategy_General patterns
+```
+
+**Rule of Thumb**: If you're manually creating mocks for Node.js modules, you're doing it wrong. Use Mock-Strategy_General first.
 
 ---
 
@@ -29,6 +67,49 @@
 - **Focus**: Pure functions, utility logic, external dependency integration
 - **Mock Strategy**: Use `@fux/mock-strategy/lib` functions
 - **⚠️ IMPORTANT**: Always check **MOCK_STRATEGY_GENERAL** for the current list of available mock strategy functions, as they evolve based on multi-package mocking needs
+
+### **Mock Configuration Error Resolution**
+
+**Quick Reference**: See **TESTING_STRATEGY** for complete guidance on preventing missing export errors in Node.js module mocks.
+
+**Key Points**:
+
+- Use Mock-Strategy_General library functions instead of manual mock creation
+- Ensure all mocked Node.js modules include complete export definitions
+- Always use library functions first, extend patterns rather than starting from scratch
+
+### **Test Implementation Iteration Pattern**
+
+**Quick Reference**: See **TESTING_STRATEGY** for detailed incremental test development methodology.
+
+**Key Points**:
+
+- Implement tests in sections, running tests after each major section
+- Use continuous validation to catch issues early
+- Fix issues in isolation before moving to the next section
+
+### **ESM Import Path Requirements**
+
+**Quick Reference**: See **TESTING_STRATEGY** for complete ESM import patterns and **TROUBLESHOOTING_TESTS** for error resolution.
+
+**Key Points**:
+
+- Always use .js extensions for relative imports in test files
+- Count directory levels correctly from test file to target module
+- Follow ESM import requirements strictly
+
+## 🎯 **MANDATORY: Mock Strategy Decision Matrix**
+
+| Scenario Type                 | Use Approach                        | Example                                                       |
+| ----------------------------- | ----------------------------------- | ------------------------------------------------------------- |
+| **Node.js Built-in Modules**  | ✅ **ALWAYS Mock-Strategy_General** | `setupLibTestEnvironment()` from `@fux/mock-strategy/lib`     |
+| **Service Method Testing**    | ✅ **ALWAYS scenario builder**      | `createPackageMockBuilder(mocks).serviceMethod().build()`     |
+| **Complex Multi-Step Setups** | ✅ **ALWAYS scenario builder**      | Multiple chained scenario builder calls                       |
+| **File System Operations**    | ✅ **RECOMMENDED scenario builder** | `createPackageMockBuilder(mocks).fileExists('/path').build()` |
+| **Single Function Mock**      | ✅ **Standard mock**                | `mocks.customService.mockReturnValue('value')`                |
+
+**Rule of Thumb**: If you need more than 2 mocks working together → Use Scenario Builder
+**Critical Rule**: If you're mocking Node.js built-ins → Use Mock-Strategy_General library functions
 
 ### **ESM Import Path Pattern**
 
@@ -447,6 +528,236 @@ describe('MyUtility', () => {
 })
 ```
 
+### **Service Testing Pattern**
+
+```typescript
+// ✅ CORRECT - Use scenario builder for service testing
+import { createPackageMockBuilder } from '../../__mocks__/mock-scenario-builder.js'
+
+it('should handle complex service scenarios', async () => {
+    const scenario = createPackageMockBuilder(mocks)
+        .serviceMethod('loadConfig')
+        .withSuccessResponse(validConfig)
+        .withErrorHandling('file-not-found')
+        .build()
+
+    // Test implementation
+})
+
+// ❌ INCORRECT - Direct mocking for complex scenarios
+it('should handle complex service scenarios', async () => {
+    configLoader.loadConfig.mockResolvedValue(validConfig)
+    configLoader.loadConfig.mockRejectedValueOnce(error)
+    // Complex setup continues...
+})
+```
+
+### **Comprehensive Service Test Coverage**
+
+**MANDATORY**: Service classes require comprehensive test coverage across all functional areas and scenarios.
+
+#### **Test Organization Structure**
+
+```typescript
+// __tests__/functional-tests/services/ConfigLoader.service.test.ts
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { setupPackageTestEnvironment, resetPackageMocks } from '../../__mocks__/helpers.js'
+import { createPackageMockBuilder } from '../../__mocks__/mock-scenario-builder.js'
+import { ConfigLoader } from '../../../src/services/ConfigLoader.service.js'
+
+describe('ConfigLoader', () => {
+    // SETUP ----------------->>
+    let mocks: ReturnType<typeof setupPackageTestEnvironment>
+    let configLoader: any
+    let tempDir: string
+    let tempConfigPath: string
+
+    beforeEach(() => {
+        mocks = setupPackageTestEnvironment()
+        configLoader = ConfigLoader.getInstance()
+        tempDir = process.cwd()
+        tempConfigPath = join(tempDir, '.pae.yaml')
+    })
+
+    afterEach(() => {
+        if (existsSync(tempConfigPath)) {
+            unlinkSync(tempConfigPath)
+        }
+        configLoader.clearCache()
+        clearAllCaches()
+    })
+    //----------------------------------------------------<<
+
+    describe('loadConfig', () => {
+        // SETUP ----------------->>
+        const validConfig = { nxPackages: { 'my-app': { build: 'nx build my-app' } } }
+        //----------------------------------------------------<<
+
+        it('should load valid configuration successfully', async () => {
+            // Use scenario builder for complex service testing
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withValidYaml(validConfig)
+                .build()
+
+            const result = await configLoader.loadConfig(tempConfigPath)
+            expect(result).toEqual(validConfig)
+        })
+
+        it('should handle file not found error', async () => {
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withErrorHandling('file-not-found')
+                .build()
+
+            await expect(configLoader.loadConfig('/nonexistent.yaml')).rejects.toThrow(
+                'File not found'
+            )
+        })
+    })
+
+    describe('reloadConfig', () => {
+        // SETUP ----------------->>
+        const initialConfig = { nxPackages: { app1: { build: 'nx build app1' } } }
+        const modifiedConfig = { nxPackages: { app1: { build: 'nx build app1 --prod' } } }
+        //----------------------------------------------------<<
+
+        it('should reload configuration when file is modified', async () => {
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .reloadConfig()
+                .withFileModificationDetection()
+                .withInitialConfig(initialConfig)
+                .withModifiedConfig(modifiedConfig)
+                .build()
+
+            const result = await configLoader.reloadConfig(tempConfigPath)
+            expect(result).toEqual(modifiedConfig)
+        })
+    })
+
+    describe('error handling', () => {
+        it('should handle YAML parsing errors', async () => {
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withErrorHandling('yaml-parse-error')
+                .build()
+
+            await expect(configLoader.loadConfig(tempConfigPath)).rejects.toThrow('Invalid YAML')
+        })
+
+        it('should handle permission denied errors', async () => {
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withErrorHandling('permission-denied')
+                .build()
+
+            await expect(configLoader.loadConfig('/protected/file.yaml')).rejects.toThrow(
+                'Permission denied'
+            )
+        })
+    })
+
+    describe('configuration validation', () => {
+        it('should validate required nxPackages section', async () => {
+            const invalidConfig = { otherSection: {} }
+
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withInvalidConfig(invalidConfig)
+                .build()
+
+            const result = await configLoader.loadConfig(tempConfigPath)
+            expect(configLoader.getValidationErrors()).toContain('nxPackages section is required')
+        })
+    })
+
+    describe('cache management', () => {
+        it('should clear cache successfully', () => {
+            configLoader.clearCache()
+            expect(configLoader.getCachedConfig()).toBeNull()
+        })
+
+        it('should clear all caches', () => {
+            clearAllCaches()
+            expect(configLoader.getCachedConfig()).toBeNull()
+        })
+    })
+
+    describe('concurrent access', () => {
+        it('should handle concurrent loads safely', async () => {
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withConcurrentAccess()
+                .build()
+
+            const promises = [
+                configLoader.loadConfig(tempConfigPath),
+                configLoader.loadConfig(tempConfigPath),
+                configLoader.loadConfig(tempConfigPath),
+            ]
+
+            const results = await Promise.all(promises)
+            expect(results).toHaveLength(3)
+            expect(results.every((result) => result !== null)).toBe(true)
+        })
+    })
+
+    describe('edge cases', () => {
+        it('should handle empty configuration file', async () => {
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withEmptyConfig()
+                .build()
+
+            const result = await configLoader.loadConfig(tempConfigPath)
+            expect(result).toEqual({})
+        })
+
+        it('should handle malformed file paths', async () => {
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withErrorHandling('invalid-path')
+                .build()
+
+            await expect(configLoader.loadConfig('invalid://path')).rejects.toThrow(
+                'Invalid file path'
+            )
+        })
+    })
+})
+```
+
+#### **Test Scenario Categories**
+
+**MANDATORY**: Every service test suite must include these categories:
+
+1. **Success Scenarios** - Normal operation with valid inputs
+2. **Error Scenarios** - File system errors, parsing errors, validation errors
+3. **Edge Cases** - Empty files, malformed data, boundary conditions
+4. **Concurrent Access** - Multiple simultaneous operations
+5. **Cache Management** - Cache clearing, invalidation, persistence
+6. **Configuration Validation** - Required fields, data types, constraints
+
+#### **Service Test Coverage Checklist**
+
+- [ ] **All public methods tested** - Every public method has at least one test
+- [ ] **Success paths covered** - Normal operation scenarios tested
+- [ ] **Error paths covered** - All error conditions tested
+- [ ] **Edge cases covered** - Boundary conditions and unusual inputs
+- [ ] **Concurrent access tested** - Multiple simultaneous operations
+- [ ] **Cache behavior tested** - Cache management and invalidation
+- [ ] **Validation tested** - Input validation and error handling
+- [ ] **Integration scenarios** - Complex multi-step workflows
+
 ### **CLI Tool Testing Pattern**
 
 ```typescript
@@ -482,6 +793,113 @@ describe('CLI Tool', () => {
     })
 })
 ```
+
+### **Test File Folding Markers**
+
+**MANDATORY**: All test files must use folding markers for better organization and readability.
+
+#### **Folding Marker Types**
+
+- **`//>` and `//<`** - Wrap individual `it` blocks
+- **`-->>` and `--<<`** - Wrap `describe` blocks and setup sections
+
+#### **Folding Marker Usage**
+
+```typescript
+// __tests__/functional-tests/services/ConfigLoader.service.test.ts
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { setupPackageTestEnvironment, resetPackageMocks } from '../../__mocks__/helpers.js'
+import { createPackageMockBuilder } from '../../__mocks__/mock-scenario-builder.js'
+import { ConfigLoader } from '../../../src/services/ConfigLoader.service.js'
+
+-->> describe('ConfigLoader', () => {
+    // SETUP ----------------->>
+    let mocks: ReturnType<typeof setupPackageTestEnvironment>
+    let configLoader: any
+    let tempDir: string
+    let tempConfigPath: string
+
+    beforeEach(() => {
+        mocks = setupPackageTestEnvironment()
+        configLoader = ConfigLoader.getInstance()
+        tempDir = process.cwd()
+        tempConfigPath = join(tempDir, '.pae.yaml')
+    })
+
+    afterEach(() => {
+        if (existsSync(tempConfigPath)) {
+            unlinkSync(tempConfigPath)
+        }
+        configLoader.clearCache()
+        clearAllCaches()
+    })
+    //----------------------------------------------------<<
+
+    -->> describe('loadConfig', () => {
+        // SETUP ----------------->>
+        const validConfig = { nxPackages: { 'my-app': { build: 'nx build my-app' } } }
+        //----------------------------------------------------<<
+
+        //> it('should load valid configuration successfully', async () => {
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withValidYaml(validConfig)
+                .build()
+
+            const result = await configLoader.loadConfig(tempConfigPath)
+            expect(result).toEqual(validConfig)
+        //< })
+
+        //> it('should handle file not found error', async () => {
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withErrorHandling('file-not-found')
+                .build()
+
+            await expect(configLoader.loadConfig('/nonexistent.yaml')).rejects.toThrow('File not found')
+        //< })
+    --<< })
+
+    -->> describe('error handling', () => {
+        //> it('should handle YAML parsing errors', async () => {
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withErrorHandling('yaml-parse-error')
+                .build()
+
+            await expect(configLoader.loadConfig(tempConfigPath)).rejects.toThrow('Invalid YAML')
+        //< })
+
+        //> it('should handle permission denied errors', async () => {
+            const scenario = createPackageMockBuilder(mocks)
+                .configLoader()
+                .loadConfig()
+                .withErrorHandling('permission-denied')
+                .build()
+
+            await expect(configLoader.loadConfig('/protected/file.yaml')).rejects.toThrow('Permission denied')
+        //< })
+    --<< })
+--<< })
+```
+
+#### **Folding Marker Rules**
+
+- **`it` blocks**: Always wrapped with `//>` and `//<`
+- **`describe` blocks**: Always wrapped with `-->>` and `--<<`
+- **Setup sections**: Wrapped with `// SETUP ----------------->>` and `//----------------------------------------------------<<`
+- **Constants and variables**: Wrapped in setup sections when used within describe blocks
+- **beforeEach/afterEach**: Always included in setup sections
+
+#### **Benefits of Folding Markers**
+
+- **Better organization** - Clear visual separation of test sections
+- **Improved readability** - Easy to navigate large test files
+- **Consistent structure** - Standardized test file organization
+- **Faster development** - Quick access to specific test sections
 
 ### **Coverage Test Pattern**
 
@@ -519,16 +937,27 @@ describe('MyModule Coverage', () => {
 - **Test external dependency behavior** - Test your package logic, not external deps
 - **Use real external APIs in tests** - Always mock external dependencies
 - **Missing .js extensions in ESM imports** - Causes "Cannot find module" errors
+- **Direct service mocking for complex scenarios** - Use scenario builder instead
+- **Multiple mockResolvedValueOnce chains** - Use scenario builder fluent API
+- **Complex mock setup without scenario builder** - Violates testing strategy
+- **Manual Node.js module mock creation** - Use Mock-Strategy_General library functions
+- **Incomplete Node.js module mocks** - Use complete library mocks with all exports
+- **Implementing all tests at once** - Use incremental test development
 
 ### **✅ ALWAYS DO:**
 
 - **Mock external dependencies** - HTTP clients, databases, file systems
 - **Test pure functions** - Focus on business logic without side effects
-- **Use scenario builders for complex setups** - 3+ mocks working together
+- **Use Mock-Strategy_General library functions** - For all Node.js built-in module mocking
+- **Use scenario builders for service testing** - Follows documented patterns
+- **Use scenario builders for 3+ mock interactions** - Maintains consistency
+- **Reference scenario builder examples** - Ensures proper implementation
 - **Reset mocks between tests** - Use `beforeEach` with `resetPackageMocks()`
 - **Use ESM imports with .js extensions** - `import * as module from './module.js'`
 - **Test error scenarios** - Both success and failure paths
 - **Use deterministic data** - Consistent mock data for predictable tests
+- **Implement tests incrementally** - Run tests after each major section
+- **Use complete Node.js module mocks** - Include all standard exports
 
 ---
 
@@ -589,11 +1018,15 @@ pae {alias} b
 
 ### **Mock Strategy**
 
-- [ ] `globals.ts` uses `@fux/mock-strategy/lib`
-- [ ] `helpers.ts` extends `LibTestMocks`
-- [ ] `mock-scenario-builder.ts` implements fluent API
+- [ ] **Mock-Strategy_General library used for Node.js built-in modules** - Never manually create Node.js module mocks
+- [ ] `globals.ts` uses `@fux/mock-strategy/lib` functions
+- [ ] `helpers.ts` extends `LibTestMocks` from Mock-Strategy_General
+- [ ] `mock-scenario-builder.ts` implements fluent API patterns from Mock-Strategy_General
+- [ ] **Service tests use scenario builder pattern**
+- [ ] **Complex scenarios use scenario builder instead of direct mocking**
 - [ ] All tests use proper mock reset patterns
 - [ ] Scenario builders used for complex setups
+- [ ] **No manual Node.js module mock creation** - All Node.js modules use library functions
 
 ### **Test Implementation**
 
@@ -602,6 +1035,8 @@ pae {alias} b
 - [ ] Error scenarios tested
 - [ ] CLI testing uses proper `process.argv` cleanup
 - [ ] Coverage tests target specific uncovered lines
+- [ ] **Test files use folding markers** (`//>` `//<` for it blocks, `-->>` `--<<` for describe blocks)
+- [ ] **Setup sections properly wrapped** with `// SETUP ----------------->>` and `//----------------------------------------------------<<`
 
 ### **Quality Gates**
 

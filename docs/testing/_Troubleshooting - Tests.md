@@ -2,35 +2,129 @@
 
 ## **REFERENCE FILES**
 
-### **Documentation References**
+### **Global Documentation References**
 
+- **SOP_DOCS**: `docs/_SOP.md`
 - **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
 - **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
-- **SOP_DOCS**: `docs/_SOP.md`
-- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **ACTIONS_LOG**: `docs/Actions-Log.md`
 
 ### **Testing Documentation References**
 
-- **MOCK_STRATEGY_CORE**: `docs/testing/Mock-Strategy-Core.md`
-- **MOCK_STRATEGY_EXT**: `docs/testing/Mock-Strategy-Ext.md`
-- **MOCK_STRATEGY_LIB**: `docs/testing/Mock-Strategy-Lib.md`
-- **MOCK_STRATEGY_TOOL**: `docs/testing/Mock-Strategy-Tool.md`
-- **MOCK_STRATEGY_PLUGIN**: `docs/testing/Mock-Strategy-Plugin.md`
-- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General__v2.md`
-
-### **Command References**
-
-- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
-- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
-- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
-- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
+- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
+- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General.md`
+- **TROUBLESHOOTING_TESTS**: `docs/testing/Troubleshooting - Tests.md`
 
 ---
 
 This document provides solutions to common test failures and issues encountered in the FocusedUX project.
 
 ## 🚨 Common Test Failures
+
+### Mock Configuration Error Resolution
+
+**Problem**: Missing exports in mocked Node.js modules cause test failures even when the mocked module isn't directly used in the test code.
+
+**Symptoms:**
+
+- Tests fail with "No 'export' is defined on the 'node:module' mock" errors
+- Mocked modules work in some tests but fail in others
+- Indirect imports from mocked modules cause failures
+- Tests pass individually but fail when run together
+
+**Root Cause**: Incomplete Node.js module mocks that only include exports directly used in tests, missing standard exports that may be imported indirectly.
+
+**Solution**: Use Mock-Strategy_General library functions instead of manual mock creation.
+
+```typescript
+// ❌ PROBLEMATIC: Incomplete manual mock
+vi.mock('node:os', () => ({
+    default: {
+        platform: vi.fn().mockReturnValue('win32'),
+        arch: vi.fn().mockReturnValue('x64'),
+        // Missing: cpus, freemem, totalmem, uptime, networkInterfaces, hostname, loadavg, endianness, EOL
+    },
+}))
+
+// ✅ CORRECT: Use Mock-Strategy_General library
+import { setupLibTestEnvironment } from '@fux/mock-strategy/lib'
+
+beforeEach(() => {
+    const mocks = setupLibTestEnvironment()
+    // All Node.js module exports are properly mocked
+})
+```
+
+**Prevention**: Always use Mock-Strategy_General library functions for Node.js module mocking. Don't manually create Node.js module mocks.
+
+### Test Implementation Iteration Issues
+
+**Problem**: Complex test suites fail with cascading errors that are difficult to debug when implemented all at once.
+
+**Symptoms:**
+
+- Multiple test failures that seem unrelated
+- Mock configuration issues that are hard to isolate
+- Tests pass individually but fail when run together
+- Difficult to identify root cause of failures
+
+**Root Cause**: Implementing all tests at once without incremental validation leads to multiple issues compounding.
+
+**Solution**: Implement tests incrementally, running tests after each major section.
+
+```typescript
+// ✅ CORRECT: Incremental test development
+describe('ConfigLoader', () => {
+    // Step 1: Set up basic structure
+    let mocks: ReturnType<typeof setupPackageTestEnvironment>
+
+    beforeEach(() => {
+        mocks = setupPackageTestEnvironment()
+    })
+
+    // Step 2: Implement one section at a time
+    describe('loadConfig', () => {
+        it('should load valid configuration', async () => {
+            // Test implementation
+        })
+    })
+
+    // Step 3: Run tests, fix any issues, then move to next section
+    describe('reloadConfig', () => {
+        it('should reload configuration', async () => {
+            // Test implementation
+        })
+    })
+})
+```
+
+**Prevention**: Always implement tests incrementally, running tests after each describe block to catch and fix issues early.
+
+### ESM Module Resolution Errors
+
+**Problem**: ESM-based library packages fail with "Cannot find module" errors in test files.
+
+**Symptoms:**
+
+- "Cannot find module" errors for relative imports
+- Module resolution failures in test environments
+- Tests work in some environments but fail in others
+- Import statements fail to resolve correctly
+
+**Root Cause**: Missing .js extensions in relative imports and incorrect relative pathing in ESM test environments.
+
+**Solution**: Always use .js extensions for relative imports and count directory levels correctly.
+
+```typescript
+// ❌ PROBLEMATIC: Missing .js extensions
+import { setupPackageTestEnvironment } from '../../__mocks__/helpers'
+import { MyUtility } from '../../../src/utils/MyUtility'
+
+// ✅ CORRECT: ESM imports with .js extensions
+import { setupPackageTestEnvironment } from '../../__mocks__/helpers.js'
+import { MyUtility } from '../../../src/utils/MyUtility.js'
+```
+
+**Prevention**: Always use .js extensions for relative imports in test files and verify correct relative pathing.
 
 ### Process.exit() Testing Issues
 

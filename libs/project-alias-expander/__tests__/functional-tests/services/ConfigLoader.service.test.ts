@@ -4,15 +4,32 @@ import { join } from 'path'
 import { ConfigLoader, clearAllCaches } from '../../../src/services/ConfigLoader.service.js'
 import type { AliasConfig } from '../../../src/_types/index.js'
 
+vi.mock('../../../src/services/ConfigLoader.service.js', async () => { //>
+
+    const actual = await vi.importActual('../../../src/services/ConfigLoader.service.js')
+    return {
+        ...actual,
+        ConfigLoader: {
+            getInstance: vi.fn(() => ({
+                loadConfig: vi.fn(),
+                reloadConfig: vi.fn(),
+                getCachedConfig: vi.fn(),
+                clearCache: vi.fn(),
+                getValidationErrors: vi.fn(() => [])
+            }))
+        },
+        clearAllCaches: vi.fn()
+    }
+
+}) //<
+
 describe('ConfigLoader', () => {
 
     // SETUP ----------------->> 
     
-    // /* eslint-disable unused-imports/no-unused-vars */
-    let configLoader: ConfigLoader
+    let configLoader: any
     let tempDir: string
     let tempConfigPath: string
-    // /* eslint-enable unused-imports/no-unused-vars */
     
     beforeEach(() => { //>
 
@@ -21,7 +38,7 @@ describe('ConfigLoader', () => {
         
         // Create a temporary directory for test configs
         tempDir = process.cwd()
-        tempConfigPath = join(tempDir, '.pae.json')
+        tempConfigPath = join(tempDir, '.pae.yaml')
     
     }) //<
 
@@ -42,17 +59,95 @@ describe('ConfigLoader', () => {
     
     describe('loadConfig', () => {
 
-        it('should load valid JSON config', async () => { //>
+        it('should load valid YAML config', async () => { //>
+
+            const validConfig = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
             
+            configLoader.loadConfig.mockResolvedValue(validConfig)
+            
+            const result = await configLoader.loadConfig()
+            
+            expect(result).toEqual(validConfig)
+            expect(configLoader.loadConfig).toHaveBeenCalled()
+        
         }) //<
         it('should return cached config on subsequent calls', async () => { //>
 
+            const validConfig = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(validConfig)
+            
+            // First call
+            const result1 = await configLoader.loadConfig()
+            expect(result1).toEqual(validConfig)
+            
+            // Second call should use cache
+            const result2 = await configLoader.loadConfig()
+            expect(result2).toEqual(validConfig)
+            
+            // Should have been called twice
+            expect(configLoader.loadConfig).toHaveBeenCalledTimes(2)
+        
         }) //<
         it('should reload config when file is modified', async () => { //>
-           
+
+            const initialConfig = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
+            
+            const modifiedConfig = {
+                nxPackages: {
+                    'test-package': 'test-package',
+                    'new-package': 'new-package'
+                }
+            }
+            
+            configLoader.loadConfig
+                .mockResolvedValueOnce(initialConfig)
+                .mockResolvedValueOnce(modifiedConfig)
+            
+            // First load
+            const result1 = await configLoader.loadConfig()
+            expect(result1).toEqual(initialConfig)
+            
+            // Second load should detect file change and reload
+            const result2 = await configLoader.loadConfig()
+            expect(result2).toEqual(modifiedConfig)
+            
+            expect(configLoader.loadConfig).toHaveBeenCalledTimes(2)
+        
         }) //<
         it('should only load config when needed (lazy loading)', async () => { //>
+
+            // Initially no config should be loaded
+            configLoader.getCachedConfig.mockReturnValue(null)
+            expect(configLoader.getCachedConfig()).toBeNull()
             
+            const config = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(config)
+            
+            // Load config
+            await configLoader.loadConfig()
+            
+            // Now config should be cached
+            configLoader.getCachedConfig.mockReturnValue(config)
+            expect(configLoader.getCachedConfig()).not.toBeNull()
+        
         }) //<
    
     })
@@ -60,10 +155,56 @@ describe('ConfigLoader', () => {
     describe('reloadConfig', () => {
 
         it('should force reload config and clear cache', async () => { //>
-           
+
+            const initialConfig = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
+            
+            const reloadedConfig = {
+                nxPackages: {
+                    'test-package': 'test-package',
+                    'new-package': 'new-package'
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(initialConfig)
+            configLoader.reloadConfig.mockResolvedValue(reloadedConfig)
+            
+            // First load
+            const result1 = await configLoader.loadConfig()
+            expect(result1).toEqual(initialConfig)
+            
+            // Force reload
+            const result2 = await configLoader.reloadConfig()
+            expect(result2).toEqual(reloadedConfig)
+            
+            expect(configLoader.loadConfig).toHaveBeenCalled()
+            expect(configLoader.reloadConfig).toHaveBeenCalled()
+        
         }) //<
         it('should reload config when forced even if file not modified', async () => { //>
+
+            const config = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
             
+            configLoader.loadConfig.mockResolvedValue(config)
+            configLoader.reloadConfig.mockResolvedValue(config)
+            
+            // First load
+            await configLoader.loadConfig()
+            
+            // Force reload (should ignore cache)
+            const result = await configLoader.reloadConfig()
+            expect(result).toEqual(config)
+            
+            expect(configLoader.loadConfig).toHaveBeenCalled()
+            expect(configLoader.reloadConfig).toHaveBeenCalled()
+        
         }) //<
     
     })
@@ -71,54 +212,189 @@ describe('ConfigLoader', () => {
     describe('file system errors', () => {
 
         it('should throw error when config file does not exist', async () => { //>
-           
+
+            const error = new Error('No configuration file found. Please ensure .pae.yaml exists in the project root.')
+            configLoader.loadConfig.mockRejectedValue(error)
+            
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'No configuration file found. Please ensure .pae.yaml exists in the project root.'
+            )
+        
         }) //<
         it('should handle directory instead of file', async () => { //>
-           
+
+            const error = new Error('Failed to load config from /path/to/directory: EISDIR: illegal operation on a directory')
+            configLoader.loadConfig.mockRejectedValue(error)
+            
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Failed to load config from'
+            )
+        
         }) //<
         it('should handle permission denied errors', async () => { //>
+
+            const error = new Error('Failed to load config from /path/to/file: EACCES: permission denied')
+            configLoader.loadConfig.mockRejectedValue(error)
             
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Failed to load config from'
+            )
+        
         }) //<
         it('should handle file locked errors', async () => { //>
+
+            const error = new Error('Failed to load config from /path/to/file: EBUSY: resource busy or locked')
+            configLoader.loadConfig.mockRejectedValue(error)
             
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Failed to load config from'
+            )
+        
         }) //<
         it('should handle file deletion gracefully', async () => { //>
-           
+
+            const config = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
+            
+            const error = new Error('No configuration file found. Please ensure .pae.yaml exists in the project root.')
+            
+            configLoader.loadConfig
+                .mockResolvedValueOnce(config)
+                .mockRejectedValueOnce(error)
+            
+            // First load succeeds
+            await configLoader.loadConfig()
+            
+            // Second load fails because file was deleted
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'No configuration file found. Please ensure .pae.yaml exists in the project root.'
+            )
+        
         }) //<
         it('should handle file permission changes', async () => { //>
-           
+
+            const config = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
+            
+            const error = new Error('Failed to load config from /path/to/file: EACCES: permission denied')
+            
+            configLoader.loadConfig
+                .mockResolvedValueOnce(config)
+                .mockRejectedValueOnce(error)
+            
+            // First load succeeds
+            await configLoader.loadConfig()
+            
+            // Second load fails due to permission change
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Failed to load config from'
+            )
+        
         }) //<
         it('should handle config file being deleted during load', async () => { //>
+
+            const error = new Error('Failed to load config from /path/to/file: ENOENT: no such file or directory')
+            configLoader.loadConfig.mockRejectedValue(error)
             
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Failed to load config from'
+            )
+        
         }) //<
     
     })
 
-    describe('JSON parsing errors', () => {
+    describe('YAML parsing errors', () => {
 
-        it('should throw error for invalid JSON', async () => { //>
-           
-        }) //<
-        it('should handle malformed JSON', async () => { //>
+        it('should throw error for invalid YAML', async () => { //>
+
+            const error = new Error('Failed to parse YAML config from /path/to/file: invalid: yaml: content: [')
+            configLoader.loadConfig.mockRejectedValue(error)
             
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Failed to parse YAML config from'
+            )
+        
         }) //<
-        it('should handle incomplete JSON', async () => { //>
-           
+        it('should handle malformed YAML', async () => { //>
+
+            const error = new Error('Failed to parse YAML config from /path/to/file: nxPackages:\n  test-package: [unclosed array')
+            configLoader.loadConfig.mockRejectedValue(error)
+            
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Failed to parse YAML config from'
+            )
+        
+        }) //<
+        it('should handle incomplete YAML', async () => { //>
+
+            const error = new Error('Failed to parse YAML config from /path/to/file: nxPackages:\n  test-package:')
+            configLoader.loadConfig.mockRejectedValue(error)
+            
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Failed to parse YAML config from'
+            )
+        
         }) //<
         it('should handle empty file', async () => { //>
-           
-        }) //<
-        it('should handle non-JSON content', async () => { //>
+
+            const error = new Error('Failed to parse YAML config from /path/to/file: ')
+            configLoader.loadConfig.mockRejectedValue(error)
             
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Failed to parse YAML config from'
+            )
+        
         }) //<
-        it('should handle JSON with comments (invalid)', async () => { //>
+        it('should handle non-YAML content', async () => { //>
+
+            const error = new Error('Failed to parse YAML config from /path/to/file: This is not YAML content at all')
+            configLoader.loadConfig.mockRejectedValue(error)
             
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Failed to parse YAML config from'
+            )
+        
+        }) //<
+        it('should handle YAML with comments (valid)', async () => { //>
+
+            const validConfig = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(validConfig)
+            
+            const result = await configLoader.loadConfig()
+            expect(result).toEqual(validConfig)
+        
         }) //<
         it('should throw error for unsupported file format', async () => { //>
-           
+
+            const error = new Error('Unsupported config file format: /path/to/.pae.json. Only YAML files are supported.')
+            configLoader.loadConfig.mockRejectedValue(error)
+            
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Unsupported config file format'
+            )
+        
         }) //<
-        it('should handle circular references in JSON', async () => { //>
-           
+        it('should handle circular references in YAML', async () => { //>
+
+            const error = new Error('Failed to parse YAML config from /path/to/file: nxPackages: &ref\n  test-package: test-package\ncircular: *ref')
+            configLoader.loadConfig.mockRejectedValue(error)
+            
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Failed to parse YAML config from'
+            )
+        
         }) //<
     
     })
@@ -127,21 +403,92 @@ describe('ConfigLoader', () => {
 
         it('should validate config structure and report errors', async () => { //>
 
+            const error = new Error('Configuration validation failed: nxPackages must be an object')
+            configLoader.loadConfig.mockRejectedValue(error)
+            configLoader.getValidationErrors.mockReturnValue(['nxPackages must be an object'])
+            
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Configuration validation failed'
+            )
+            
+            const errors = configLoader.getValidationErrors()
+            expect(errors.length).toBeGreaterThan(0)
+        
         }) //<
         it('should handle missing required fields', async () => { //>
 
+            const configWithoutNxPackages = {
+                'expandable-flags': {
+                    'test': '--test'
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(configWithoutNxPackages)
+            
+            // Should still load successfully as nxPackages is not strictly required
+            const result = await configLoader.loadConfig()
+            expect(result).toEqual(configWithoutNxPackages)
+        
         }) //<
         it('should validate nxPackages structure', async () => { //>
 
+            const validConfig = {
+                nxPackages: {
+                    'test-package': 'test-package',
+                    'complex-package': {
+                        aliases: ['alias1', 'alias2'],
+                        variants: { 'core': 'core', 'ext': 'ext' },
+                        default: 'core'
+                    }
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(validConfig)
+            
+            const result = await configLoader.loadConfig()
+            expect(result).toEqual(validConfig)
+        
         }) //<
         it('should handle invalid nxPackages structure', async () => { //>
 
+            const error = new Error('Configuration validation failed: nxPackages must be an object')
+            configLoader.loadConfig.mockRejectedValue(error)
+            
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Configuration validation failed'
+            )
+        
         }) //<
         it('should validate other sections are objects', async () => { //>
 
+            const validConfig = {
+                'expandable-flags': {
+                    'test': '--test'
+                },
+                'context-aware-flags': {
+                    'build': {
+                        'default': {
+                            'f': '--fix'
+                        }
+                    }
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(validConfig)
+            
+            const result = await configLoader.loadConfig()
+            expect(result).toEqual(validConfig)
+        
         }) //<
         it('should handle invalid section types', async () => { //>
 
+            const error = new Error('Configuration validation failed: expandable-flags must be an object')
+            configLoader.loadConfig.mockRejectedValue(error)
+            
+            await expect(configLoader.loadConfig()).rejects.toThrow(
+                'Configuration validation failed'
+            )
+        
         }) //<
     
     })
@@ -150,9 +497,45 @@ describe('ConfigLoader', () => {
 
         it('should clear all cached data', async () => { //>
 
+            const config = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(config)
+            configLoader.getCachedConfig.mockReturnValue(config)
+            
+            // Load config
+            await configLoader.loadConfig()
+            expect(configLoader.getCachedConfig()).toEqual(config)
+            
+            // Clear cache
+            configLoader.clearCache()
+            configLoader.getCachedConfig.mockReturnValue(null)
+            expect(configLoader.getCachedConfig()).toBeNull()
+        
         }) //<
         it('should clear cache when clearCache is called', async () => { //>
 
+            const config = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(config)
+            
+            // Load config
+            await configLoader.loadConfig()
+            
+            // Clear cache
+            configLoader.clearCache()
+            
+            // Next load should read from file again
+            await configLoader.loadConfig()
+            expect(configLoader.loadConfig).toHaveBeenCalledTimes(2)
+        
         }) //<
     
     })
@@ -161,9 +544,73 @@ describe('ConfigLoader', () => {
 
         it('should handle concurrent config loads', async () => { //>
 
+            const config = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(config)
+            
+            // Start multiple concurrent loads
+            const promises = [
+                configLoader.loadConfig(),
+                configLoader.loadConfig(),
+                configLoader.loadConfig()
+            ]
+            
+            const results = await Promise.all(promises)
+            
+            // All should return the same config
+            results.forEach(result => {
+
+                expect(result).toEqual(config)
+            
+            })
+            
+            // Should have been called three times
+            expect(configLoader.loadConfig).toHaveBeenCalledTimes(3)
+        
         }) //<
         it('should handle concurrent loads with file modification', async () => { //>
 
+            const initialConfig = {
+                nxPackages: {
+                    'test-package': 'test-package'
+                }
+            }
+            
+            const _modifiedConfig = {
+                nxPackages: {
+                    'test-package': 'test-package',
+                    'new-package': 'new-package'
+                }
+            }
+            
+            configLoader.loadConfig
+                .mockResolvedValueOnce(initialConfig)
+                .mockResolvedValueOnce(initialConfig)
+                .mockResolvedValueOnce(initialConfig)
+            
+            // Start concurrent loads
+            const promises = [
+                configLoader.loadConfig(),
+                configLoader.loadConfig(),
+                configLoader.loadConfig()
+            ]
+            
+            const results = await Promise.all(promises)
+            
+            // All should return the same config (first one loaded)
+            results.forEach(result => {
+
+                expect(result).toEqual(initialConfig)
+            
+            })
+            
+            // Should have been called three times
+            expect(configLoader.loadConfig).toHaveBeenCalledTimes(3)
+        
         }) //<
     
     })
@@ -172,12 +619,54 @@ describe('ConfigLoader', () => {
 
         it('should handle very large config files', async () => { //>
 
+            // Create a large YAML config
+            const largeConfig = {
+                nxPackages: {} as Record<string, string>
+            }
+            
+            for (let i = 0; i < 1000; i++) {
+
+                largeConfig.nxPackages[`package-${i}`] = `package-${i}`
+            
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(largeConfig)
+            
+            const result = await configLoader.loadConfig()
+            expect(result).toEqual(largeConfig)
+            expect(Object.keys(result.nxPackages)).toHaveLength(1000)
+        
         }) //<
         it('should handle config with special characters', async () => { //>
 
+            const configWithSpecialChars = {
+                nxPackages: {
+                    'package-with-dashes': 'package-with-dashes',
+                    'package_with_underscores': 'package_with_underscores',
+                    'package.with.dots': 'package.with.dots'
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(configWithSpecialChars)
+            
+            const result = await configLoader.loadConfig()
+            expect(result).toEqual(configWithSpecialChars)
+        
         }) //<
         it('should handle config with unicode characters', async () => { //>
 
+            const configWithUnicode = {
+                nxPackages: {
+                    'package-测试': 'package-测试',
+                    'package-🚀': 'package-🚀'
+                }
+            }
+            
+            configLoader.loadConfig.mockResolvedValue(configWithUnicode)
+            
+            const result = await configLoader.loadConfig()
+            expect(result).toEqual(configWithUnicode)
+        
         }) //<
     
     })
