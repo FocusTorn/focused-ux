@@ -291,12 +291,106 @@ export class PaeMockBuilder {
     
     }
 
+    // ConfigLoader-specific scenarios
+    configLoaderSuccess(options: ConfigLoaderScenarioOptions = {}): PaeMockBuilder {
+        setupConfigLoaderSuccessScenario(this.mocks, options)
+        return this
+    }
+
+    configLoaderError(options: ConfigLoaderErrorScenarioOptions): PaeMockBuilder {
+        setupConfigLoaderErrorScenario(this.mocks, options)
+        return this
+    }
+
+    configLoaderCaching(options: ConfigLoaderCachingScenarioOptions): PaeMockBuilder {
+        setupConfigLoaderCachingScenario(this.mocks, options)
+        return this
+    }
+
     build(): PaeTestMocks {
 
         return this.mocks
     
     }
 
+}
+
+// ConfigLoader-specific scenario functions
+export function setupConfigLoaderSuccessScenario(
+    mocks: PaeTestMocks,
+    options: ConfigLoaderScenarioOptions
+): void {
+    const configContent = options.configContent || {
+        nxPackages: {
+            'test-package': 'test-package'
+        }
+    }
+    
+    mocks.fs.existsSync.mockReturnValue(true)
+    mocks.fs.readFileSync.mockReturnValue(JSON.stringify(configContent))
+    mocks.fs.statSync.mockReturnValue({ mtime: new Date() })
+}
+
+export function setupConfigLoaderErrorScenario(
+    mocks: PaeTestMocks,
+    options: ConfigLoaderErrorScenarioOptions
+): void {
+    const { errorType, errorMessage } = options
+    
+    switch (errorType) {
+        case 'file-not-found':
+            mocks.fs.existsSync.mockReturnValue(false)
+            break
+        case 'permission-denied':
+            mocks.fs.existsSync.mockReturnValue(true)
+            mocks.fs.readFileSync.mockImplementation(() => {
+                throw new Error(errorMessage || 'EACCES: permission denied')
+            })
+            break
+        case 'yaml-parse-error':
+            mocks.fs.existsSync.mockReturnValue(true)
+            mocks.fs.readFileSync.mockReturnValue('invalid: yaml: content: [')
+            break
+        case 'validation-error':
+            mocks.fs.existsSync.mockReturnValue(true)
+            mocks.fs.readFileSync.mockReturnValue('invalid: config: structure')
+            break
+        case 'directory-instead-of-file':
+            mocks.fs.existsSync.mockReturnValue(true)
+            mocks.fs.statSync.mockReturnValue({ isDirectory: () => true })
+            break
+        case 'file-locked':
+            mocks.fs.existsSync.mockReturnValue(true)
+            mocks.fs.readFileSync.mockImplementation(() => {
+                throw new Error(errorMessage || 'EBUSY: resource busy or locked')
+            })
+            break
+        case 'file-deleted-during-load':
+            mocks.fs.existsSync.mockReturnValue(true)
+            mocks.fs.readFileSync.mockImplementation(() => {
+                throw new Error(errorMessage || 'ENOENT: no such file or directory')
+            })
+            break
+    }
+}
+
+export function setupConfigLoaderCachingScenario(
+    mocks: PaeTestMocks,
+    options: ConfigLoaderCachingScenarioOptions
+): void {
+    const { initialConfig, modifiedConfig, useCache = false } = options
+    
+    if (useCache) {
+        // Simulate cached config
+        mocks.fs.existsSync.mockReturnValue(true)
+        mocks.fs.readFileSync.mockReturnValue(JSON.stringify(initialConfig))
+    } else {
+        // Simulate file modification
+        mocks.fs.existsSync.mockReturnValue(true)
+        mocks.fs.readFileSync
+            .mockReturnValueOnce(JSON.stringify(initialConfig))
+            .mockReturnValueOnce(JSON.stringify(modifiedConfig || initialConfig))
+    }
 }
 
 export function createPaeMockBuilder(mocks?: PaeTestMocks): PaeMockBuilder {

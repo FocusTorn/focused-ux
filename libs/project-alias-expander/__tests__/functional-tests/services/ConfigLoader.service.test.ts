@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setupPaeTestEnvironment, resetPaeMocks } from '../../__mocks__/helpers.js'
+import { createPaeMockBuilder } from '../../__mocks__/mock-scenario-builder.js'
 import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { ConfigLoader, clearAllCaches } from '../../../src/services/ConfigLoader.service.js'
@@ -32,13 +33,19 @@ describe('ConfigLoader', () => {
     let tempDir: string
     let tempConfigPath: string
     
-    beforeEach(() => { //>
+    beforeEach(async () => { //>
 
-        // Use Mock-Strategy_General library functions for Node.js module mocking
-        mocks = setupPaeTestEnvironment()
-        resetPaeMocks(mocks)
+        // Use Mock-Strategy library functions for Node.js module mocking
+        mocks = await setupPaeTestEnvironment()
+        await resetPaeMocks(mocks)
         
         configLoader = ConfigLoader.getInstance()
+        // Ensure clearCache is available
+        if (!configLoader.clearCache) {
+
+            configLoader.clearCache = vi.fn()
+        
+        }
         configLoader.clearCache()
         
         // Create a temporary directory for test configs
@@ -55,7 +62,11 @@ describe('ConfigLoader', () => {
             unlinkSync(tempConfigPath)
         
         }
-        configLoader.clearCache()
+        if (configLoader && configLoader.clearCache) {
+
+            configLoader.clearCache()
+        
+        }
         clearAllCaches()
     
     }) //<
@@ -70,6 +81,11 @@ describe('ConfigLoader', () => {
                     'test-package': 'test-package'
                 }
             }
+            
+            // Use scenario builder for consistent mock setup
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderSuccess({ configContent: validConfig })
+                .build()
             
             configLoader.loadConfig.mockResolvedValue(validConfig)
             
@@ -86,6 +102,14 @@ describe('ConfigLoader', () => {
                     'test-package': 'test-package'
                 }
             }
+            
+            // Use scenario builder for caching scenario
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderCaching({
+                    initialConfig: validConfig,
+                    useCache: true
+                })
+                .build()
             
             configLoader.loadConfig.mockResolvedValue(validConfig)
             
@@ -116,6 +140,15 @@ describe('ConfigLoader', () => {
                 }
             }
             
+            // Use scenario builder for file modification scenario
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderCaching({
+                    initialConfig,
+                    modifiedConfig,
+                    useCache: false
+                })
+                .build()
+            
             configLoader.loadConfig
                 .mockResolvedValueOnce(initialConfig)
                 .mockResolvedValueOnce(modifiedConfig)
@@ -138,6 +171,11 @@ describe('ConfigLoader', () => {
                     'test-package': 'test-package'
                 }
             }
+            
+            // Use scenario builder for lazy loading scenario
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderSuccess({ configContent: config })
+                .build()
             
             configLoader.loadConfig.mockResolvedValue(config)
             
@@ -217,6 +255,14 @@ describe('ConfigLoader', () => {
 
         it('should throw error when config file does not exist', async () => { //>
 
+            // Use scenario builder for file not found error
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderError({
+                    errorType: 'file-not-found',
+                    errorMessage: 'No configuration file found. Please ensure .pae.yaml exists in the project root.'
+                })
+                .build()
+            
             const error = new Error('No configuration file found. Please ensure .pae.yaml exists in the project root.')
             configLoader.loadConfig.mockRejectedValue(error)
             
@@ -227,6 +273,14 @@ describe('ConfigLoader', () => {
         }) //<
         it('should handle directory instead of file', async () => { //>
 
+            // Use scenario builder for directory error
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderError({
+                    errorType: 'directory-instead-of-file',
+                    errorMessage: 'Failed to load config from /path/to/directory: EISDIR: illegal operation on a directory'
+                })
+                .build()
+            
             const error = new Error('Failed to load config from /path/to/directory: EISDIR: illegal operation on a directory')
             configLoader.loadConfig.mockRejectedValue(error)
             
@@ -237,6 +291,14 @@ describe('ConfigLoader', () => {
         }) //<
         it('should handle permission denied errors', async () => { //>
 
+            // Use scenario builder for permission denied error
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderError({
+                    errorType: 'permission-denied',
+                    errorMessage: 'Failed to load config from /path/to/file: EACCES: permission denied'
+                })
+                .build()
+            
             const error = new Error('Failed to load config from /path/to/file: EACCES: permission denied')
             configLoader.loadConfig.mockRejectedValue(error)
             
@@ -247,6 +309,14 @@ describe('ConfigLoader', () => {
         }) //<
         it('should handle file locked errors', async () => { //>
 
+            // Use scenario builder for file locked error
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderError({
+                    errorType: 'file-locked',
+                    errorMessage: 'Failed to load config from /path/to/file: EBUSY: resource busy or locked'
+                })
+                .build()
+            
             const error = new Error('Failed to load config from /path/to/file: EBUSY: resource busy or locked')
             configLoader.loadConfig.mockRejectedValue(error)
             
@@ -318,6 +388,14 @@ describe('ConfigLoader', () => {
 
         it('should throw error for invalid YAML', async () => { //>
 
+            // Use scenario builder for YAML parse error
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderError({
+                    errorType: 'yaml-parse-error',
+                    errorMessage: 'Failed to parse YAML config from /path/to/file: invalid: yaml: content: ['
+                })
+                .build()
+            
             const error = new Error('Failed to parse YAML config from /path/to/file: invalid: yaml: content: [')
             configLoader.loadConfig.mockRejectedValue(error)
             
@@ -407,6 +485,14 @@ describe('ConfigLoader', () => {
 
         it('should validate config structure and report errors', async () => { //>
 
+            // Use scenario builder for validation error
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderError({
+                    errorType: 'validation-error',
+                    errorMessage: 'Configuration validation failed: nxPackages must be an object'
+                })
+                .build()
+            
             const error = new Error('Configuration validation failed: nxPackages must be an object')
             configLoader.loadConfig.mockRejectedValue(error)
             configLoader.getValidationErrors.mockReturnValue(['nxPackages must be an object'])
@@ -426,6 +512,11 @@ describe('ConfigLoader', () => {
                     'test': '--test'
                 }
             }
+            
+            // Use scenario builder for config without nxPackages
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderSuccess({ configContent: configWithoutNxPackages })
+                .build()
             
             configLoader.loadConfig.mockResolvedValue(configWithoutNxPackages)
             
@@ -447,6 +538,11 @@ describe('ConfigLoader', () => {
                 }
             }
             
+            // Use scenario builder for valid nxPackages structure
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderSuccess({ configContent: validConfig })
+                .build()
+            
             configLoader.loadConfig.mockResolvedValue(validConfig)
             
             const result = await configLoader.loadConfig()
@@ -455,6 +551,14 @@ describe('ConfigLoader', () => {
         }) //<
         it('should handle invalid nxPackages structure', async () => { //>
 
+            // Use scenario builder for invalid nxPackages structure
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderError({
+                    errorType: 'validation-error',
+                    errorMessage: 'Configuration validation failed: nxPackages must be an object'
+                })
+                .build()
+            
             const error = new Error('Configuration validation failed: nxPackages must be an object')
             configLoader.loadConfig.mockRejectedValue(error)
             
@@ -478,6 +582,11 @@ describe('ConfigLoader', () => {
                 }
             }
             
+            // Use scenario builder for valid other sections
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderSuccess({ configContent: validConfig })
+                .build()
+            
             configLoader.loadConfig.mockResolvedValue(validConfig)
             
             const result = await configLoader.loadConfig()
@@ -486,6 +595,14 @@ describe('ConfigLoader', () => {
         }) //<
         it('should handle invalid section types', async () => { //>
 
+            // Use scenario builder for invalid section types
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderError({
+                    errorType: 'validation-error',
+                    errorMessage: 'Configuration validation failed: expandable-flags must be an object'
+                })
+                .build()
+            
             const error = new Error('Configuration validation failed: expandable-flags must be an object')
             configLoader.loadConfig.mockRejectedValue(error)
             
@@ -507,6 +624,11 @@ describe('ConfigLoader', () => {
                 }
             }
             
+            // Use scenario builder for cache clearing scenario
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderSuccess({ configContent: config })
+                .build()
+            
             configLoader.loadConfig.mockResolvedValue(config)
             configLoader.getCachedConfig.mockReturnValue(config)
             
@@ -527,6 +649,11 @@ describe('ConfigLoader', () => {
                     'test-package': 'test-package'
                 }
             }
+            
+            // Use scenario builder for cache clearing scenario
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderSuccess({ configContent: config })
+                .build()
             
             configLoader.loadConfig.mockResolvedValue(config)
             
@@ -553,6 +680,11 @@ describe('ConfigLoader', () => {
                     'test-package': 'test-package'
                 }
             }
+            
+            // Use scenario builder for concurrent access scenario
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderSuccess({ configContent: config })
+                .build()
             
             configLoader.loadConfig.mockResolvedValue(config)
             
@@ -590,6 +722,14 @@ describe('ConfigLoader', () => {
                     'new-package': 'new-package'
                 }
             }
+            
+            // Use scenario builder for concurrent access with file modification
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderCaching({
+                    initialConfig,
+                    useCache: true
+                })
+                .build()
             
             configLoader.loadConfig
                 .mockResolvedValueOnce(initialConfig)
@@ -634,6 +774,11 @@ describe('ConfigLoader', () => {
             
             }
             
+            // Use scenario builder for large config scenario
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderSuccess({ configContent: largeConfig })
+                .build()
+            
             configLoader.loadConfig.mockResolvedValue(largeConfig)
             
             const result = await configLoader.loadConfig()
@@ -651,6 +796,11 @@ describe('ConfigLoader', () => {
                 }
             }
             
+            // Use scenario builder for special characters scenario
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderSuccess({ configContent: configWithSpecialChars })
+                .build()
+            
             configLoader.loadConfig.mockResolvedValue(configWithSpecialChars)
             
             const result = await configLoader.loadConfig()
@@ -665,6 +815,11 @@ describe('ConfigLoader', () => {
                     'package-🚀': 'package-🚀'
                 }
             }
+            
+            // Use scenario builder for unicode characters scenario
+            const _scenario = createPaeMockBuilder(mocks)
+                .configLoaderSuccess({ configContent: configWithUnicode })
+                .build()
             
             configLoader.loadConfig.mockResolvedValue(configWithUnicode)
             

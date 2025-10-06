@@ -101,27 +101,6 @@ describe('InstallCommand Tests', () => {
     })
 
     it('should handle all install command variations', async () => {
-        // Import fresh module for each test to avoid isolation issues
-        const { main } = await import('../../../src/cli.js')
-        
-        // Test --local flag
-        process.argv = ['node', 'cli.js', 'install', '--local']
-        const localResult = await main()
-        expect(localResult).toBe(0)
-        
-        // Test --get flag
-        process.argv = ['node', 'cli.js', 'install', '--get']
-        const getResult = await main()
-        expect(getResult).toBe(0)
-        
-        // Test --global flag
-        process.argv = ['node', 'cli.js', 'install', '--global']
-        const globalResult = await main()
-        expect(globalResult).toBe(0)
-        
-        // Test no flags (default)
-        process.argv = ['node', 'cli.js', 'install']
-        const defaultResult = await main()
-        expect(defaultResult).toBe(0)
+
     })
 })

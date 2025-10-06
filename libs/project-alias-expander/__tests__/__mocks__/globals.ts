@@ -146,7 +146,7 @@ vi.mock('node:os', () => ({
         hostname: vi.fn().mockReturnValue('test-host'),
         loadavg: vi.fn().mockReturnValue([0.5, 0.3, 0.2]),
         endianness: vi.fn().mockReturnValue('LE'),
-        EOL: '\n'
+        release: vi.fn().mockReturnValue('10.0.26100'),
     },
     platform: vi.fn().mockReturnValue('win32'),
     type: vi.fn().mockReturnValue('Windows_NT'),
@@ -268,7 +268,7 @@ vi.mock('node:os', () => ({
         hostname: vi.fn().mockReturnValue('test-host'),
         loadavg: vi.fn().mockReturnValue([0.5, 0.3, 0.2]),
         endianness: vi.fn().mockReturnValue('LE'),
-        EOL: '\n'
+        release: vi.fn().mockReturnValue('10.0.26100'),
     },
     platform: vi.fn().mockReturnValue('win32'),
     type: vi.fn().mockReturnValue('Windows_NT'),
@@ -289,13 +289,25 @@ vi.mock('node:os', () => ({
 
 vi.mock('node:url', () => ({
     default: {
+        parse: vi.fn(),
+        format: vi.fn(),
+        resolve: vi.fn(),
         fileURLToPath: vi.fn(),
         pathToFileURL: vi.fn(),
         URL: vi.fn(),
+        URLSearchParams: vi.fn(),
+        domainToASCII: vi.fn(),
+        domainToUnicode: vi.fn(),
     },
+    parse: vi.fn(),
+    format: vi.fn(),
+    resolve: vi.fn(),
     fileURLToPath: vi.fn(),
     pathToFileURL: vi.fn(),
     URL: vi.fn(),
+    URLSearchParams: vi.fn(),
+    domainToASCII: vi.fn(),
+    domainToUnicode: vi.fn(),
 }))
 
 vi.mock('strip-json-comments', () => ({

@@ -134,7 +134,7 @@ export function setupPaeTestEnvironment(): PaeTestMocks {
             uptime: mockedOs.uptime,
             userInfo: mockedOs.userInfo,
             type: mockedOs.type,
-            release: mockedOs.release,
+            release: vi.fn().mockReturnValue('10.0.26100'),
             networkInterfaces: mockedOs.networkInterfaces,
             hostname: mockedOs.hostname,
             loadavg: mockedOs.loadavg,
