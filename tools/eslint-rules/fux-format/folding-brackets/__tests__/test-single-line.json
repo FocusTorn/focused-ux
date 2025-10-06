@@ -1,5 +1,0 @@
-{ "plugin": "@nx/vite/plugin",
-    "options": {
-        "buildTargetName": "build"
-    }
-}

@@ -7,14 +7,6 @@
 - **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
 - **SOP_DOCS**: `docs/_SOP.md`
 - **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **ACTIONS_LOG**: `docs/Actions-Log.md`
-
-### **Command References**
-
-- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
-- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
-- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
-- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
 
 ---
 
@@ -131,7 +123,7 @@ libs/{utility-name}/
 
 ---
 
-#### 3. **Consumable Package: Feature Utility** (`packages/{feature}/`)
+#### 3. **Consumable Package: Feature Utility** (`packages/{feature-name}/{utility-name}`)
 
 **Purpose**: Feature-specific utilities and processing logic
 **Architecture**: Feature-specific processing, specialized functionality
@@ -285,35 +277,37 @@ packages/{feature-name}/ext/
 
 ### **When to Create Each Package Type**
 
-1. **Direct TSX Executed** (`libs/tools/`)
-    - ✅ Standalone development tools
-    - ✅ CLI utilities
-    - ✅ Automation scripts
-    - ❌ Don't use for shared business logic
-
-2. **Consumable Package: Shared Utility** (`libs/`)
+1. **Consumable Package: Shared Utility** (`libs/`)
     - ✅ Utilities used by multiple features
     - ✅ Common abstractions and helpers
     - ✅ Testing utilities (see [Testing Strategy](../testing/_Testing-Strategy.md))
     - ❌ Don't use for feature-specific logic
 
-3. **Consumable Package: Feature Utility** (`packages/{feature}/`)
-    - ✅ Feature-specific processing logic
-    - ✅ Asset processing and generation
-    - ✅ Feature-specific utilities
-    - ❌ Don't use for shared utilities
 
-4. **Consumable Package: Core Extension Feature Logic** (`packages/{feature-name}/core`)
+
+
+
+
+3. **Consumable Package: Core Extension Feature Logic** (`packages/{feature-name}/core`)
     - ✅ Business logic for VSCode extensions
     - ✅ Pure functionality without VSCode dependencies
     - ✅ Self-contained feature implementation
     - ❌ Don't use for VSCode-specific code
 
+4. **Consumable Package: Feature Utility** (`packages/{feature-name}/{utility-name}`)
+    - ✅ Feature-specific processing logic
+    - ✅ Asset processing and generation
+    - ✅ Feature-specific utilities
+    - ❌ Don't use for shared utilities
+    - 
 5. **Pre-Packaged Extension: Single Feature** (`packages/{feature-name}/ext`)
     - ✅ VSCode extension implementations
     - ✅ VSCode API integration
     - ✅ Extension-specific configuration
     - ❌ Don't use for business logic
+
+
+
 
 ## Naming Conventions
 

@@ -1,9 +1,0 @@
-{
-    "generators": {
-        "tests": {
-            "factory": "./dist/plugins/recommended/src/generators/tests/tests",
-            "schema": "./dist/plugins/recommended/src/generators/tests/schema.json",
-            "description": "tests generator"
-        }
-    }
-}
