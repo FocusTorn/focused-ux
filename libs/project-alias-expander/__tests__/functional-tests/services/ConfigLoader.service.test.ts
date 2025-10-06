@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { setupPaeTestEnvironment, resetPaeMocks } from '../../__mocks__/helpers.js'
 import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { ConfigLoader, clearAllCaches } from '../../../src/services/ConfigLoader.service.js'
@@ -25,14 +26,18 @@ vi.mock('../../../src/services/ConfigLoader.service.js', async () => { //>
 
 describe('ConfigLoader', () => {
 
-    // SETUP ----------------->> 
-    
+    // SETUP ----------------->>
+    let mocks: ReturnType<typeof setupPaeTestEnvironment>
     let configLoader: any
     let tempDir: string
     let tempConfigPath: string
     
     beforeEach(() => { //>
 
+        // Use Mock-Strategy_General library functions for Node.js module mocking
+        mocks = setupPaeTestEnvironment()
+        resetPaeMocks(mocks)
+        
         configLoader = ConfigLoader.getInstance()
         configLoader.clearCache()
         
@@ -54,7 +59,6 @@ describe('ConfigLoader', () => {
         clearAllCaches()
     
     }) //<
-
     //----------------------------------------------------<<
     
     describe('loadConfig', () => {
@@ -129,10 +133,6 @@ describe('ConfigLoader', () => {
         }) //<
         it('should only load config when needed (lazy loading)', async () => { //>
 
-            // Initially no config should be loaded
-            configLoader.getCachedConfig.mockReturnValue(null)
-            expect(configLoader.getCachedConfig()).toBeNull()
-            
             const config = {
                 nxPackages: {
                     'test-package': 'test-package'
@@ -140,6 +140,10 @@ describe('ConfigLoader', () => {
             }
             
             configLoader.loadConfig.mockResolvedValue(config)
+            
+            // Initially no config should be loaded
+            configLoader.getCachedConfig.mockReturnValue(null)
+            expect(configLoader.getCachedConfig()).toBeNull()
             
             // Load config
             await configLoader.loadConfig()

@@ -31,6 +31,26 @@ export interface PaeCliConfigScenarioOptions {
     configPath?: string
 }
 
+// ConfigLoader-specific scenario interfaces
+export interface ConfigLoaderScenarioOptions {
+    configPath?: string
+    configContent?: any
+    shouldExist?: boolean
+    errorType?: 'file-not-found' | 'permission-denied' | 'yaml-parse-error' | 'validation-error'
+    errorMessage?: string
+}
+
+export interface ConfigLoaderCachingScenarioOptions {
+    initialConfig: any
+    modifiedConfig?: any
+    useCache?: boolean
+}
+
+export interface ConfigLoaderErrorScenarioOptions {
+    errorType: 'file-not-found' | 'permission-denied' | 'yaml-parse-error' | 'validation-error' | 'directory-instead-of-file' | 'file-locked' | 'file-deleted-during-load'
+    errorMessage?: string
+}
+
 // PAE-specific scenario functions
 export function setupPaeConfigExistsScenario(
     mocks: PaeTestMocks,
