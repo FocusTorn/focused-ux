@@ -86,6 +86,9 @@ Thumbs.db
 # # Remove tracked bt ignored
 # git rm --cached $(git ls-files -ci --exclude-standard)
 
+# Remove tracked bt deleted
+# git rm --cached $(git ls-files --deleted) --dry-run
+
 
 
 

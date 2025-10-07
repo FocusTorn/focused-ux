@@ -57,7 +57,16 @@ targets:
         cd: clean:dist
 
     not-nx-target:
-        esv: npx esbuild-visualizer --metadata
+        # {{value}} = what to add, EG @vitest/ui or 
+        # {{nxPackages}} = the expanded alias, EG pbc = @fux/project-butler-core
+        # pae pbc pad @vitest/ui would execute
+        # pnpm add -D @vitest/ui --filter @fux/project-butler-core
+
+        pad: pnpm add -D {{value}} --filter {{nxPackages}}
+
+        # esv: npx esbuild-visualizer --metadata
+        
+        
 
 # Expandable flags with templates
 expandable-flags:
