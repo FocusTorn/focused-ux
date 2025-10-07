@@ -21,6 +21,10 @@
     ],
     "dependencies": {
         "@nx/devkit": "21.6.2",
+        "archiver": "^7.0.1",
+        "glob": "^11.0.0",
+        "strip-json-comments": "^5.0.1",
+        "temp": "^0.9.4",
         "tslib": "^2.8.1"
     }
 }
