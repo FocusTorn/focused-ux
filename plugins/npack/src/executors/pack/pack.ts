@@ -3,9 +3,20 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, unlinkSync,
 import { rm } from 'node:fs/promises'
 import { join, resolve, isAbsolute, relative } from 'node:path'
 import { execSync } from 'node:child_process'
+// ora will be imported dynamically to avoid conflicts
 import type { PackExecutorSchema } from './schema'
 
 interface Result { success: boolean }
+
+function debugLog(message: string, debug: boolean): void {
+
+    if (debug) {
+
+        logger.info(`[DEBUG] ${message}`)
+    
+    }
+
+}
 
 function resolvePackageDir(options: PackExecutorSchema, context: ExecutorContext): string { //>
 
@@ -106,7 +117,10 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
 
     try {
 
+        const debug = options.debug ?? false
         const packageDir = resolvePackageDir(options, context)
+        
+        debugLog(`Resolved package directory: ${packageDir}`, debug)
         
         const packageJsonPath = join(packageDir, 'package.json')
 
@@ -227,17 +241,27 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         // Create tarball
         const tarballPath = join(finalOutputDir, tarballFilename)
         
+        // Import ora dynamically to avoid conflicts
+        const ora = (await import('ora')).default
+        const spinner = ora({
+            text: 'Creating tarball...',
+            spinner: 'dots'
+        }).start()
+        
         try {
 
             // Create proper tar.gz file using npm pack
             const packageDir = join(tempDir, 'package')
 
             // Use npm pack to create proper tar.gz file
-            execSync(`npm pack "${packageDir}" --pack-destination "${finalOutputDir}"`, {
+            const npmCommand = `npm pack "${packageDir}" --pack-destination "${finalOutputDir}"`
+            
+            execSync(npmCommand, {
                 encoding: 'utf-8',
                 timeout: 60000,
-                stdio: 'pipe',
-                cwd: tempDir
+                stdio: debug ? 'inherit' : 'pipe',
+                cwd: tempDir,
+                shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh'
             })
             
             // npm pack creates a file with the package name and version
@@ -259,31 +283,40 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
             
             }
             
-            logger.info(`✅ Created tarball: ${tarballPath}`)
-            
-            // Show tarball contents
-            logger.info('Tarball contents:')
-            try {
+            // Create shortened path for display
+            const shortenedPath = relative(workspaceRoot, tarballPath).replace(/\\/g, '\\')
 
-                execSync(`tar -tzf "${tarballPath}"`, {
-                    encoding: 'utf-8',
-                    stdio: 'inherit'
-                })
+            // Show success message using ora's built-in method
+            spinner.succeed(`Created tarball: ${shortenedPath}`)
             
-            } catch {
+            // Show tarball contents only in debug mode
+            if (debug) {
 
-                // Fallback to npm pack inspection
-                logger.info('Using npm pack inspection:')
-                execSync(`npm pack --dry-run "${packageDir}"`, {
-                    encoding: 'utf-8',
-                    stdio: 'inherit',
-                    cwd: tempDir
-                })
+                logger.info('Tarball contents:')
+                try {
+
+                    execSync(`tar -tzf "${tarballPath}"`, {
+                        encoding: 'utf-8',
+                        stdio: 'inherit'
+                    })
+                
+                } catch {
+
+                    // Fallback to npm pack inspection
+                    logger.info('Using npm pack inspection:')
+                    execSync(`npm pack --dry-run "${packageDir}"`, {
+                        encoding: 'utf-8',
+                        stdio: 'inherit',
+                        cwd: tempDir
+                    })
+                
+                }
             
             }
         
         } catch (error) {
 
+            spinner.fail(`Failed to create tarball: ${error instanceof Error ? error.message : String(error)}`)
             throw new Error(`Failed to create tarball: ${error instanceof Error ? error.message : String(error)}`)
         
         }
@@ -293,9 +326,9 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
 
             try {
 
-                logger.info(`Cleaning up temp directory: ${tempDir}`)
+                debugLog(`Cleaning up temp directory: ${tempDir}`, debug)
                 await rm(tempDir, { recursive: true, force: true })
-                logger.info(`Successfully cleaned up temp directory: ${tempDir}`)
+                debugLog(`Successfully cleaned up temp directory: ${tempDir}`, debug)
             
             } catch (err) {
 
@@ -305,26 +338,32 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         
         }
         
-        logger.info(`Final tarball: ${tarballPath}`)
+        debugLog(`Final tarball: ${tarballPath}`, debug)
         
         // Install globally if requested (defaults to true)
         if (options.install !== false) {
 
+            const installSpinner = ora({
+                text: 'Installing tarball globally...',
+                spinner: 'dots'
+            }).start()
+            
             try {
 
-                logger.info(`Installing tarball globally with pnpm...`)
+                debugLog(`Installing tarball globally with pnpm...`, debug)
                 
                 execSync(`pnpm add -g "${tarballPath}"`, {
                     encoding: 'utf-8',
                     timeout: 60000,
-                    stdio: 'inherit'
+                    stdio: debug ? 'inherit' : 'pipe'
                 })
                 
-                logger.info(`✅ Successfully installed ${packageName} globally`)
+                // Show success message using ora's built-in method
+                installSpinner.succeed(`Successfully installed ${packageName} globally`)
             
             } catch (error) {
 
-                logger.error(`Failed to install globally: ${error instanceof Error ? error.message : String(error)}`)
+                installSpinner.fail(`Failed to install globally: ${error instanceof Error ? error.message : String(error)}`)
                 return { success: false }
             
             }

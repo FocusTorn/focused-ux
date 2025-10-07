@@ -47,6 +47,11 @@
             "type": "boolean",
             "description": "Install the tarball globally with pnpm after creation (defaults to true).",
             "default": true
+        },
+        "debug": {
+            "type": "boolean",
+            "description": "Enable debug logging and verbose output (defaults to false).",
+            "default": false
         }
     },
     "additionalProperties": false

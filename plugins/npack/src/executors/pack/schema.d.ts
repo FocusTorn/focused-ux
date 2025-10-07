@@ -9,4 +9,5 @@ export interface PackExecutorSchema {
     excludeFiles?: string[]
     dev?: boolean
     install?: boolean
+    debug?: boolean
 }

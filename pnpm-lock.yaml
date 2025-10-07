@@ -501,9 +501,15 @@ importers:
       archiver:
         specifier: ^7.0.1
         version: 7.0.1
+      execa:
+        specifier: ^9.6.0
+        version: 9.6.0
       glob:
         specifier: ^11.0.0
         version: 11.0.3
+      ora:
+        specifier: ^9.0.0
+        version: 9.0.0
       strip-json-comments:
         specifier: ^5.0.1
         version: 5.0.3

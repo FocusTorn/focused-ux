@@ -90,7 +90,8 @@
             "options": {
                 // "install": true // default is true
                 "keepTemp": false,
-                "freshTemp": true
+                "freshTemp": true,
+                "debug": false
                 
             }
         }, //<
