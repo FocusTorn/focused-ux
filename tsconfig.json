@@ -49,9 +49,6 @@
             "path": "./libs/mock-strategy"
         },
         {
-            "path": "./libs/tools/structure-auditor"
-        },
-        {
             "path": "./plugins/recommended"
         },
         {

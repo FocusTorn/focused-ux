@@ -1,20 +1,20 @@
 
-packages/dynamicons/ext/assets-staging
-dc-assets-backup
 
-.agentic
+packages/dynamicons/ext/assets-staging
+libs/vscode-test-cli-config/.vscode-test
+
+**/*removed
+**/*inactive
+*.bak*
+
 
 #= COMPILED OUTPUT ==========================================
 dist
 tmp
-
 out-tsc/
 _out-tsc/
-
-
 *.tsbuildinfo
 vsix_packages
-
 coverage
 
 #= DEPENDENCIES =============================================
@@ -32,13 +32,14 @@ node_modules
 .settings/
 *.sublime-workspace
 
-.cursor/conversation-memories
-
 #= IDE - VSCODE =============================================
 !.vscode/*
 mockly-vsc
 
-libs/vscode-test-cli-config/.vscode-test
+#= Nx =======================================================
+.nx
+.nx/cache
+.nx/workspace-data
 
 #= MISC =====================================================
 /.sass-cache
@@ -53,44 +54,31 @@ stats
 #= SYSTEM FILES =============================================
 .DS_Store
 *.pem
-
-**/*.notesHub*
-**/*removed
-
-
-*.bak*
-
 Thumbs.db
 
-.nx
-.nx/cache
-.nx/workspace-data
-
-
-# Ignored by F-UX Notes Hub
-/.fux_note-hub/
 
 
 
-vite.config.*.timestamp*
-vitest.config.*.timestamp*
-.cursor/rules/nx-rules.mdc
+
+
+
+
+
+
 .github/instructions/nx.instructions.md
 
-.vpack
+.cursor/rules/nx-rules.mdc
+.cursor/ADHOC
+.cursor/conversation-memories
+
+
 
 # git ls-files -ci --exclude-standard
 # git rm -r --cached _reports/coverage
 # git rm -r --cached -- ':(glob)**/_reports/coverage/**'
-
-
-
 # $ git rm --cached .cursor/ADHOC/Summary.md
-.cursor/ADHOC/Summary.md
-
-.cursor/ADHOC/fluency-output-staging.md
-.cursor/ADHOC/_Extracted-Lessons.md
 
 
+git rm -r --cached _inactive
 
-test-output
+
