@@ -20,7 +20,7 @@
         "executors.json"
     ],
     "dependencies": {
-        "@nx/devkit": "21.6.2",
+        "@nx/devkit": "21.6.3",
         "adm-zip": "^0.5.16",
         "rimraf": "^6.0.1"
     }

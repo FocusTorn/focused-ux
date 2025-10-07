@@ -1,10 +1,12 @@
-import { ExecutorContext, logger, workspaceRoot } from '@nx/devkit'
-import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, unlinkSync, readdirSync, statSync } from 'node:fs'
-import { rm } from 'node:fs/promises'
-import { join, resolve, isAbsolute, relative } from 'node:path'
-import { execSync } from 'node:child_process'
-// ora will be imported dynamically to avoid conflicts
+import { ExecutorContext, logger } from '@nx/devkit'
+import { join } from 'node:path'
 import type { PackExecutorSchema } from './schema'
+import {
+    FileOperationsService,
+    PackageResolverService,
+    TarballCreatorService,
+    GlobalInstallerService
+} from '../../services/index'
 
 interface Result { success: boolean }
 
@@ -18,360 +20,190 @@ function debugLog(message: string, debug: boolean): void {
 
 }
 
-function resolvePackageDir(options: PackExecutorSchema, context: ExecutorContext): string { //>
-
-    if (options.targetPath) {
-
-        return isAbsolute(options.targetPath) ? options.targetPath : join(workspaceRoot, options.targetPath)
-    
-    }
-    if (options.targetName) {
-
-        const proj = context.projectGraph?.nodes?.[options.targetName]
-
-        if (!proj) throw new Error(`Project not found: ${options.targetName}`)
-        return join(workspaceRoot, proj.data.root)
-    
-    }
-    if (context.projectName) {
-
-        const proj = context.projectGraph?.nodes?.[context.projectName]
-
-        if (!proj) throw new Error(`Project not found in context: ${context.projectName}`)
-        return join(workspaceRoot, proj.data.root)
-    
-    }
-    throw new Error('Either options.targetPath, options.targetName or context.projectName must be provided')
-
-} //<
-
-function _shouldIncludeFile(filePath: string, packageDir: string, includeFiles: string[], excludeFiles: string[]): boolean { //>
-
-    const relativePath = relative(packageDir, filePath)
-    
-    // Check exclusions first
-    for (const exclude of excludeFiles) {
-
-        if (relativePath === exclude || relativePath.startsWith(exclude + '/')) {
-
-            return false
-        
-        }
-    
-    }
-    
-    // Check inclusions
-    for (const include of includeFiles) {
-
-        if (relativePath === include || relativePath.startsWith(include + '/')) {
-
-            return true
-        
-        }
-    
-    }
-    
-    return false
-
-} //<
-
-function getFilesFromPackageJson(packageJson: Record<string, unknown>, packageDir: string): string[] {
-
-    const files: string[] = []
-
-    // Always include package.json
-    files.push('package.json')
-    
-    // Include files specified in package.json "files" field
-    if (packageJson.files && Array.isArray(packageJson.files)) {
-
-        files.push(...packageJson.files)
-    
-    }
-    
-    // Include README.md if it exists
-    if (existsSync(join(packageDir, 'README.md'))) {
-
-        files.push('README.md')
-    
-    }
-    
-    // Include LICENSE files if they exist
-    const licenseFiles = ['LICENSE', 'LICENSE.txt', 'LICENSE.md']
-
-    for (const licenseFile of licenseFiles) {
-
-        if (existsSync(join(packageDir, licenseFile))) {
-
-            files.push(licenseFile)
-        
-        }
-    
-    }
-    
-    return files
-
-}
-
 export default async function runExecutor(options: PackExecutorSchema, context: ExecutorContext): Promise<Result> {
 
     try {
 
-        const debug = options.debug ?? false
-        const packageDir = resolvePackageDir(options, context)
-        
-        debugLog(`Resolved package directory: ${packageDir}`, debug)
-        
-        const packageJsonPath = join(packageDir, 'package.json')
+        // Initialize services
+        const fileOps = new FileOperationsService()
+        const packageResolver = new PackageResolverService()
+        const tarballCreator = new TarballCreatorService()
+        const globalInstaller = new GlobalInstallerService()
 
-        if (!existsSync(packageJsonPath)) {
+        // Test ora functionality
+        await tarballCreator.testOra()
+
+        // Resolve configuration
+        const config = packageResolver.resolveConfiguration(options, context)
+
+        debugLog(`Resolved package directory: ${config.packageDir}`, config.debug)
+
+        // Validate package.json exists
+        const packageJsonPath = join(config.packageDir, 'package.json')
+
+        if (!fileOps.exists(packageJsonPath)) {
 
             throw new Error(`package.json not found at: ${packageJsonPath}`)
         
         }
-        
-        const originalPackageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
-        const originalVersion: string = originalPackageJson.version
-        const packageName: string = originalPackageJson.name
-        const tarballBaseName = packageName.replace('@fux/', 'fux-')
-        
-        const baseHash = process.env.NX_TASK_HASH ? process.env.NX_TASK_HASH.slice(0, 9) : 'local'
-        const uniqueId = `${baseHash}-${process.pid}-${Math.floor(Math.random() * 1_000_000)}`
-        
-        // Configuration
-        const _pluginRoot = join(__dirname, '../../..') // Go up from executors/pack/pack.ts to plugins/npack
-        const tempBase = options.tempPath || join(packageDir, '.npack')
-        const overwrite = options.freshTemp ?? true
-        const keepTemp = options.keepTemp ?? false
-        const finalOutputDir = options.outputPath ? join(workspaceRoot, options.outputPath) : packageDir
-        
-        const tempDirName = overwrite ? `${tarballBaseName}-local` : `${tarballBaseName}-${uniqueId}`
-        const tempDir = join(tempBase, tempDirName)
-        
-        let tarballFilename = `${tarballBaseName}-${originalVersion}.tgz`
+
+        // Read and parse package.json
+        const packageJsonContent = fileOps.readFile(packageJsonPath)
+        const originalPackageJson = JSON.parse(packageJsonContent)
+        const metadata = packageResolver.getPackageMetadata(config.packageDir, packageJsonContent)
+    
+        // Update configuration with package metadata
+        const finalConfig = packageResolver.updateConfigurationWithMetadata(config, metadata)
+    
+        debugLog(`Package: ${metadata.name} v${metadata.version}`, finalConfig.debug)
+        debugLog(`Tarball: ${finalConfig.tarballFilename}`, finalConfig.debug)
+
+        // Prepare final package.json with dev version if needed
         const finalPackageJson = { ...originalPackageJson }
-        
-        if (options.dev) {
+
+        if (finalConfig.dev) {
 
             const taskHash = process.env.NX_TASK_HASH
 
-            if (!taskHash) throw new Error('NX_TASK_HASH environment variable not found for dev build.')
+            if (!taskHash) {
+
+                throw new Error('NX_TASK_HASH environment variable not found for dev build.')
             
+            }
+
             const shortHash = taskHash.slice(0, 9)
-            const finalVersion = `${originalVersion}-dev.${shortHash}`
-            
-            tarballFilename = `${tarballBaseName}-dev.tgz`
-            ;(finalPackageJson as Record<string, unknown>).version = finalVersion
+            const finalVersion = `${metadata.version}-dev.${shortHash}`
+
+      ;(finalPackageJson as Record<string, unknown>).version = finalVersion
         
         }
-        
-        // Prepare directories
-        if (overwrite) {
 
-            try {
+        // Clean up old temp directories if requested
+        if (finalConfig.freshTemp) {
 
-                const { sync: rimrafSync } = await import('rimraf')
-                const tempRoot = tempBase
-                
-                if (existsSync(tempRoot)) {
+            const cleanupResult = await fileOps.cleanupOldTempDirs(finalConfig.tempBase, metadata.tarballBaseName)
 
-                    const entries = readdirSync(tempRoot, { withFileTypes: true })
-                    
-                    for (const entry of entries) {
+            if (!cleanupResult.success) {
 
-                        if (entry.isDirectory() && entry.name.startsWith(`${tarballBaseName}-`)) {
-
-                            try { rimrafSync(join(tempRoot, entry.name)) } catch {}
-                        
-                        }
-                    
-                    }
-                
-                }
+                debugLog(`Warning: Failed to cleanup old temp directories: ${cleanupResult.error}`, finalConfig.debug)
             
-            } catch {}
+            }
         
         }
+
+        // Create directories
+        const dirsToCreate = [finalConfig.tempDir, finalConfig.finalOutputDir]
+        const createResult = fileOps.createDirectories(dirsToCreate)
+
+        if (!createResult.success) {
+
+            throw new Error(`Failed to create directories: ${createResult.error}`)
         
-        mkdirSync(tempDir, { recursive: true })
-        mkdirSync(finalOutputDir, { recursive: true })
-        
+        }
+
         // Create package subdirectory (npm pack structure)
-        const packageSubDir = join(tempDir, 'package')
+        const packageSubDir = join(finalConfig.tempDir, 'package')
+        const packageDirResult = fileOps.createDirectories([packageSubDir])
 
-        mkdirSync(packageSubDir, { recursive: true })
+        if (!packageDirResult.success) {
+
+            throw new Error(`Failed to create package directory: ${packageDirResult.error}`)
         
-        // Write package.json
-        writeFileSync(join(packageSubDir, 'package.json'), JSON.stringify(finalPackageJson, null, 4))
+        }
+
+        // Write package.json to temp directory
+        const packageJsonWriteResult = fileOps.writeFile(
+            join(packageSubDir, 'package.json'),
+            JSON.stringify(finalPackageJson, null, 4)
+        )
+
+        if (!packageJsonWriteResult.success) {
+
+            throw new Error(`Failed to write package.json: ${packageJsonWriteResult.error}`)
         
-        // Get files to include
-        const includeFiles = getFilesFromPackageJson(originalPackageJson, packageDir)
+        }
+
+        // Get files to include and copy them
+        const includeFiles = fileOps.getFilesFromPackageJson(originalPackageJson, config.packageDir)
         const additionalIncludeFiles = options.includeFiles || []
-        const _excludeFiles = options.excludeFiles || []
-        
         const allIncludeFiles = [...includeFiles, ...additionalIncludeFiles]
-        
-        // Copy files
-        for (const filePattern of allIncludeFiles) {
 
-            const sourcePath = join(packageDir, filePattern)
-            const destPath = join(packageSubDir, filePattern)
-            
-            if (existsSync(sourcePath)) {
+        debugLog(`Copying ${allIncludeFiles.length} files/directories`, finalConfig.debug)
 
-                const stat = statSync(sourcePath)
+        const copyResult = fileOps.copyFiles(config.packageDir, packageSubDir, allIncludeFiles)
 
-                if (stat.isDirectory()) {
+        if (!copyResult.success) {
 
-                    // Copy directory recursively
-                    cpSync(sourcePath, destPath, { recursive: true, errorOnExist: false, force: true })
-                
-                } else {
-
-                    // Copy file
-                    mkdirSync(join(destPath, '..'), { recursive: true })
-                    cpSync(sourcePath, destPath, { force: true })
-                
-                }
-            
-            }
+            throw new Error(`Failed to copy files: ${copyResult.error}`)
         
         }
-        
+
         // Create tarball
-        const tarballPath = join(finalOutputDir, tarballFilename)
-        
-        // Import ora dynamically to avoid conflicts
-        const ora = (await import('ora')).default
-        const spinner = ora({
-            text: 'Creating tarball...',
-            spinner: 'dots'
-        }).start()
-        
-        try {
+        const tarballOptions = {
+            packageDir: packageSubDir,
+            outputDir: finalConfig.finalOutputDir,
+            tarballFilename: finalConfig.tarballFilename,
+            debug: finalConfig.debug
+        }
 
-            // Create proper tar.gz file using npm pack
-            const packageDir = join(tempDir, 'package')
+        const tarballResult = await tarballCreator.createTarball(tarballOptions)
 
-            // Use npm pack to create proper tar.gz file
-            const npmCommand = `npm pack "${packageDir}" --pack-destination "${finalOutputDir}"`
-            
-            execSync(npmCommand, {
-                encoding: 'utf-8',
-                timeout: 60000,
-                stdio: debug ? 'inherit' : 'pipe',
-                cwd: tempDir,
-                shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh'
-            })
-            
-            // npm pack creates a file with the package name and version
-            // We need to rename it to our desired filename
-            const npmPackFilename = `${originalPackageJson.name.replace('@fux/', 'fux-')}-${originalPackageJson.version}.tgz`
-            const npmPackPath = join(finalOutputDir, npmPackFilename)
-            
-            if (existsSync(npmPackPath) && npmPackPath !== tarballPath) {
+        if (!tarballResult.success) {
 
-                // Move the npm pack file to our desired location
-                cpSync(npmPackPath, tarballPath)
-                unlinkSync(npmPackPath)
-            
-            }
-            
-            if (!existsSync(tarballPath)) {
-
-                throw new Error(`Tarball was not created at: ${tarballPath}`)
-            
-            }
-            
-            // Create shortened path for display
-            const shortenedPath = relative(workspaceRoot, tarballPath).replace(/\\/g, '\\')
-
-            // Show success message using ora's built-in method
-            spinner.succeed(`Created tarball: ${shortenedPath}`)
-            
-            // Show tarball contents only in debug mode
-            if (debug) {
-
-                logger.info('Tarball contents:')
-                try {
-
-                    execSync(`tar -tzf "${tarballPath}"`, {
-                        encoding: 'utf-8',
-                        stdio: 'inherit'
-                    })
-                
-                } catch {
-
-                    // Fallback to npm pack inspection
-                    logger.info('Using npm pack inspection:')
-                    execSync(`npm pack --dry-run "${packageDir}"`, {
-                        encoding: 'utf-8',
-                        stdio: 'inherit',
-                        cwd: tempDir
-                    })
-                
-                }
-            
-            }
-        
-        } catch (error) {
-
-            spinner.fail(`Failed to create tarball: ${error instanceof Error ? error.message : String(error)}`)
-            throw new Error(`Failed to create tarball: ${error instanceof Error ? error.message : String(error)}`)
+            throw new Error(`Failed to create tarball: ${tarballResult.error}`)
         
         }
+
+        // Show tarball contents in debug mode
+        if (finalConfig.debug && tarballResult.tarballPath) {
+
+            await tarballCreator.showTarballContents(tarballResult.tarballPath, packageSubDir, finalConfig.debug)
         
-        // Cleanup based on configuration
-        if (!keepTemp) {
+        }
 
-            try {
+        // Cleanup temp directory if not keeping it
+        if (!finalConfig.keepTemp) {
 
-                debugLog(`Cleaning up temp directory: ${tempDir}`, debug)
-                await rm(tempDir, { recursive: true, force: true })
-                debugLog(`Successfully cleaned up temp directory: ${tempDir}`, debug)
+            debugLog(`Cleaning up temp directory: ${finalConfig.tempDir}`, finalConfig.debug)
+
+            const cleanupResult = await fileOps.cleanupDirectory(finalConfig.tempDir)
+
+            if (!cleanupResult.success) {
+
+                logger.error(`Failed to clean up temp directory: ${cleanupResult.error}`)
             
-            } catch (err) {
+            } else {
 
-                logger.error(`Failed to clean up temp directory: ${err}`)
+                debugLog(`Successfully cleaned up temp directory: ${finalConfig.tempDir}`, finalConfig.debug)
             
             }
         
         }
-        
-        debugLog(`Final tarball: ${tarballPath}`, debug)
-        
+
+        debugLog(`Final tarball: ${tarballResult.tarballPath}`, finalConfig.debug)
+
         // Install globally if requested (defaults to true)
-        if (options.install !== false) {
+        if (finalConfig.install && tarballResult.tarballPath) {
 
-            const installSpinner = ora({
-                text: 'Installing tarball globally...',
-                spinner: 'dots'
-            }).start()
-            
-            try {
+            const installOptions = {
+                tarballPath: tarballResult.tarballPath,
+                packageName: metadata.name,
+                debug: finalConfig.debug
+            }
 
-                debugLog(`Installing tarball globally with pnpm...`, debug)
-                
-                execSync(`pnpm add -g "${tarballPath}"`, {
-                    encoding: 'utf-8',
-                    timeout: 60000,
-                    stdio: debug ? 'inherit' : 'pipe'
-                })
-                
-                // Show success message using ora's built-in method
-                installSpinner.succeed(`Successfully installed ${packageName} globally`)
-            
-            } catch (error) {
+            const installResult = await globalInstaller.installGlobally(installOptions)
 
-                installSpinner.fail(`Failed to install globally: ${error instanceof Error ? error.message : String(error)}`)
+            if (!installResult.success) {
+
+                logger.error(`Global installation failed: ${installResult.error}`)
                 return { success: false }
             
             }
         
         }
-        
+
         return { success: true }
-    
+
     } catch (err) {
 
         logger.error(`Packaging failed: ${err instanceof Error ? err.message : String(err)}`)

@@ -9,7 +9,7 @@
         "@fux/ghost-writer-core": "workspace:*"
     },
     "devDependencies": {
-        "@types/node": "^24.6.1",
+        "@types/node": "^24.7.0",
         "@types/vscode": "^1.104.0",
         "typescript": "^5.9.3",
         "vitest": "^3.2.4"

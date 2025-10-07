@@ -70,7 +70,7 @@ targets:
 
 # Expandable flags with templates
 expandable-flags:
-    q: --skip-nx-cache
+    s: --skip-nx-cache
     f: --fix
     c: --coverage
     watch: --watch
@@ -159,6 +159,7 @@ nxPackages:
     ms: '@fux/mock-strategy'
     audit: '@fux/structure-auditor'
     vpack: '@fux/vpack'
+    npack: '@fux/npack'
     vscte: '@fux/vscode-test-executor'
     fttc: '@fux/ft-typescript'
     reco: '@fux/recommended'
