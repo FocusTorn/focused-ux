@@ -43,7 +43,7 @@
             "type": "boolean",
             "description": "Build a dev tarball (adds -dev suffix and version with NX_TASK_HASH)."
         },
-        "installGlobal": {
+        "install": {
             "type": "boolean",
             "description": "Install the tarball globally with pnpm after creation (defaults to true).",
             "default": true

@@ -8,5 +8,5 @@ export interface PackExecutorSchema {
     includeFiles?: string[]
     excludeFiles?: string[]
     dev?: boolean
-    installGlobal?: boolean
+    install?: boolean
 }

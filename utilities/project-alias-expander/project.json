@@ -88,9 +88,10 @@
                 "{projectRoot}/dist/**/*"
             ],
             "options": {
+                // "install": true // default is true
                 "keepTemp": false,
-                "freshTemp": true,
-                "installGlobal": true
+                "freshTemp": true
+                
             }
         }, //<
         
