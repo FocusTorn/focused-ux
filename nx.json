@@ -1,6 +1,6 @@
 {
     "targetDefaults": {
-        "@nx/esbuild:esbuild": {
+        "@nx/esbuild:esbuild": { //>
             "cache": true,
             "inputs": ["production", "^production"],
             "options": {
@@ -17,19 +17,19 @@
                 "sourcemap": true,
                 "deleteOutputPath": true
             }
-        },
-        "@nx/js:tsc": {
+        }, //<
+        "@nx/js:tsc": { //>
             "cache": true,
             "dependsOn": ["^build"],
             "inputs": ["production", "^production"]
-        },
-        "build": {
+        }, //<
+        "build": { //>
             "dependsOn": ["^build"],
             "outputs": ["{options.outputPath}"],
             "inputs": ["production", "^production"],
             "cache": true,
             "syncGenerators": ["@nx/js:typescript-sync"]
-        },
+        }, //<
         "build:lib": {
             "executor": "@nx/esbuild:esbuild"
         },
@@ -45,6 +45,8 @@
                 "metafile": true
             }
         },
+        
+        
         "package": {
             "executor": "@fux/vpack:pack",
             "outputs": ["{options.outputPath}"],

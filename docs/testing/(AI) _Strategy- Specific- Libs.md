@@ -37,7 +37,7 @@
 
 ### **Library Package Definition**
 
-- **Location**: `libs/{name}/` or `libs/shared/` or `libs/tools/{name}/`
+- **Location**: `libs/{name}/` or `libs/tools/{name}/`
 - **Purpose**: In-repo utilities, cross-package functionality, standalone tools
 - **Format**: ESM modules
 - **Dependencies**: No VSCode dependencies
@@ -50,6 +50,17 @@
 - **Mock Strategy**: Use `@fux/mock-strategy/lib` functions
 - **Coverage**: 100% coverage for public methods
 
+## **MANDATORY: FOLDING MARKERS**
+
+**CRITICAL**: All library test files must use folding markers. See **AI_TESTING_BASE** for complete folding marker documentation and examples.
+
+### **Quick Reference**
+
+- **Setup variables**: Wrap with `// SETUP ----------------->>` and `//----------------------------------------------------<<`
+- **`beforeEach`/`afterEach`**: Wrap with `//>` and `//<`
+- **`it` blocks**: Wrap with `//>` and `//<`
+- **Space requirement**: All folding markers must be preceded by a space
+
 ## **LIBRARY TESTING PATTERNS**
 
 ### **Service Testing Pattern**
@@ -58,16 +69,20 @@
 import { setupLibTestEnvironment, resetLibMocks } from '@fux/mock-strategy/lib'
 
 describe('ServiceName', () => {
+    // SETUP ----------------->>
     let mocks: Awaited<ReturnType<typeof setupLibTestEnvironment>>
+    //----------------------------------------------------<<
 
     beforeEach(async () => {
+        //>
         mocks = await setupLibTestEnvironment()
         await resetLibMocks(mocks)
-    })
+    }) //<
 
     it('should perform expected action', async () => {
+        //>
         // Test implementation
-    })
+    }) //<
 })
 ```
 
@@ -77,16 +92,20 @@ describe('ServiceName', () => {
 import { setupLibTestEnvironment, resetLibMocks } from '@fux/mock-strategy/lib'
 
 describe('UtilityFunction', () => {
+    // SETUP ----------------->>
     let mocks: Awaited<ReturnType<typeof setupLibTestEnvironment>>
+    //----------------------------------------------------<<
 
     beforeEach(async () => {
+        //>
         mocks = await setupLibTestEnvironment()
         await resetLibMocks(mocks)
-    })
+    }) //<
 
     it('should process input correctly', () => {
+        //>
         // Test utility function
-    })
+    }) //<
 })
 ```
 
@@ -96,20 +115,25 @@ describe('UtilityFunction', () => {
 import { setupLibTestEnvironment, resetLibMocks } from '@fux/mock-strategy/lib'
 
 describe('Configuration Loading', () => {
+    // SETUP ----------------->>
     let mocks: Awaited<ReturnType<typeof setupLibTestEnvironment>>
+    //----------------------------------------------------<<
 
     beforeEach(async () => {
+        //>
         mocks = await setupLibTestEnvironment()
         await resetLibMocks(mocks)
-    })
+    }) //<
 
     it('should load valid configuration', () => {
+        //>
         // Test configuration loading
-    })
+    }) //<
 
     it('should handle invalid configuration', () => {
+        //>
         // Test error handling
-    })
+    }) //<
 })
 ```
 
@@ -278,6 +302,8 @@ describe('Data Processing', () => {
 - ❌ Non-deterministic test data
 - ❌ Incomplete mock coverage
 - ❌ Skipping error scenario testing
+- ❌ **Missing folding markers** in test files
+- ❌ **Inconsistent test file organization** without proper folding structure
 
 ### **Library Mock Violations**
 
@@ -286,6 +312,29 @@ describe('Data Processing', () => {
 - ❌ Hardcoded mock values
 - ❌ Missing mock cleanup
 - ❌ Over-mocking library functionality
+
+## **LIBRARY TESTING QUALITY GATES**
+
+### **Quality Gates Checklist**
+
+- [ ] All public service methods tested
+- [ ] Configuration loading and validation tested
+- [ ] Error handling scenarios tested
+- [ ] Edge cases and boundary conditions tested
+- [ ] External dependency integration tested
+- [ ] Mock strategy follows documented approach
+- [ ] Test isolation maintained (no test interference)
+- [ ] Coverage tests target specific uncovered lines
+- [ ] **Test files use folding markers** (`//>` `//<` for it blocks and beforeEach/afterEach, `// SETUP ----------------->>` and `//----------------------------------------------------<<` for setup sections)
+- [ ] **Setup sections properly wrapped** with `// SETUP ----------------->>` and `//----------------------------------------------------<<`
+
+### **Quality Gates**
+
+- [ ] All tests pass
+- [ ] No anti-patterns detected
+- [ ] Mock strategy follows documented approach
+- [ ] Test organization follows established patterns
+- [ ] Documentation alignment verified
 
 ## **LIBRARY TESTING SUCCESS METRICS**
 
@@ -308,6 +357,7 @@ After implementing proper library testing strategies:
 - **MANDATORY**: Test failures → "Check if build is clean first"
 - **MANDATORY**: Documentation questions → "Check docs/ before creating"
 - **MANDATORY**: Package confusion → "Check package type and path"
+- **MANDATORY**: Missing folding markers → "Add folding markers for test organization"
 
 ### **Pattern Recognition**
 

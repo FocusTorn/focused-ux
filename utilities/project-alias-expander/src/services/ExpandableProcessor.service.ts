@@ -1,0 +1,356 @@
+import type {
+    ExpandableValue,
+    TemplateObject,
+    ShellType,
+    FlagExpansion,
+    TemplateProcessingResult,
+    ShellDetectionResult,
+    IExpandableProcessorService,
+} from '../_types/index.js'
+import { detectShellTypeCached } from '../shell.js'
+import { TemplateUtils } from './CommonUtils.service.js'
+
+export class ExpandableProcessorService implements IExpandableProcessorService {
+    expandTemplate(template: string, variables: Record<string, string>): string {
+        return TemplateUtils.expandTemplate(template, variables)
+    }
+
+    applyMutation(value: any, mutation: string): any {
+        return TemplateUtils.applyMutation(value, mutation)
+    }
+
+    detectShellType(): ShellType {
+        const shell = detectShellTypeCached()
+        const s = shell as unknown as string
+
+        // Normalize common variants, accepting wider mock values in tests
+        if (shell === 'powershell' || s === 'pwsh') {
+            return 'pwsh'
+        }
+        if (shell === 'gitbash' || s === 'linux') {
+            return 'linux'
+        }
+        if (s === 'cmd') {
+            return 'cmd'
+        }
+
+        // Default to cmd for unknown shells on Windows, linux for others
+        return process.platform === 'win32' ? 'cmd' : 'linux'
+    }
+
+    processTemplateArray(
+        templates: TemplateObject[],
+        variables: Record<string, string>
+    ): TemplateProcessingResult {
+        const start: string[] = []
+        const end: string[] = []
+        let endCount = 0
+
+        for (const templateObj of templates) {
+            // Merge template-level defaults with top-level variables
+            const templateVariables = TemplateUtils.mergeTemplateVariables(
+                variables,
+                templateObj.defaults
+            )
+
+            const expanded = this.expandTemplate(templateObj.template, templateVariables)
+
+            if (templateObj.position === 'end') {
+                endCount++
+                if (endCount > 1) {
+                    throw new Error('Only one "end" position template is allowed per expandable')
+                }
+                end.push(expanded)
+            } else {
+                start.push(expanded)
+            }
+        }
+
+        return { start, end }
+    }
+
+    processShellSpecificTemplate(
+        expandable: ExpandableValue,
+        variables: Record<string, string>
+    ): TemplateProcessingResult {
+        if (typeof expandable === 'string') {
+            return { start: [], end: [] }
+        }
+
+        const shellType = this.detectShellType()
+        const shellTemplateKey = `${shellType}-template` as keyof typeof expandable
+
+        // Check if shell-specific template exists
+        if (shellTemplateKey in expandable) {
+            const shellTemplate = expandable[shellTemplateKey]
+
+            if (Array.isArray(shellTemplate)) {
+                // Handle array templates (like pwsh-template)
+                return this.processTemplateArray(shellTemplate, variables)
+            } else if (typeof shellTemplate === 'object' && shellTemplate !== null) {
+                // Handle single object template
+                const templateVariables = TemplateUtils.mergeTemplateVariables(
+                    variables,
+                    shellTemplate.defaults as Record<string, string> | undefined
+                )
+
+                const expanded = this.expandTemplate(shellTemplate.template, templateVariables)
+
+                if (shellTemplate.position === 'end') {
+                    return { start: [], end: [expanded] }
+                } else {
+                    return { start: [expanded], end: [] }
+                }
+            } else if (typeof shellTemplate === 'string') {
+                // Handle string template
+                const expanded = this.expandTemplate(shellTemplate, variables)
+
+                return { start: [expanded], end: [] }
+            }
+        }
+
+        // Fallback to generic template if no shell-specific template found
+        if (expandable.template) {
+            const expanded = this.expandTemplate(expandable.template, variables)
+            const position = expandable.position || 'suffix'
+
+            if (position === 'end') {
+                return { start: [], end: [expanded] }
+            } else {
+                return { start: [expanded], end: [] }
+            }
+        }
+
+        return { start: [], end: [] }
+    }
+
+    parseExpandableFlag(arg: string): { key: string; value: string | undefined } {
+        // Support: -{flag} or -{flag}=value (quotes are handled by shell)
+        // Flags must be single characters or single words, no combo flags allowed
+
+        // Check for value format first: -flag=value
+        const valueMatch = arg.match(/^-([a-zA-Z0-9_-]+)=(.*)$/)
+
+        if (valueMatch) {
+            return { key: valueMatch[1], value: valueMatch[2] }
+        }
+
+        // Check if it's a simple flag (no value) - must be single word, no special chars except underscore/hyphen
+        if (arg.match(/^-[a-zA-Z0-9_-]+$/)) {
+            return { key: arg.slice(1), value: undefined }
+        }
+
+        // Invalid format - return special error indicator
+        return { key: '__INVALID_FLAG__', value: arg }
+    }
+
+    expandFlags(args: string[], expandables: Record<string, ExpandableValue> = {}): FlagExpansion {
+        const start: string[] = []
+        const prefix: string[] = []
+        const preArgs: string[] = []
+        const suffix: string[] = []
+        const end: string[] = []
+        const remainingArgs: string[] = []
+
+        for (let i = 0; i < args.length; i++) {
+            const arg = args[i]
+
+            if (arg.startsWith('--')) {
+                remainingArgs.push(arg)
+                continue
+            }
+
+            if (arg.startsWith('-') && arg.length > 1) {
+                const { key, value } = this.parseExpandableFlag(arg)
+
+                // Internal flags are handled dynamically - no hardcoded checks needed
+
+                // Check for invalid flag format first
+                if (key === '__INVALID_FLAG__') {
+                    throw new Error(
+                        `Invalid flag format: ${value}. Expected -{flag} or -{flag}=value`
+                    )
+                }
+
+                // Check if this is an expandable
+                if (expandables[key]) {
+                    const expandable = expandables[key]
+
+                    // Check for space-separated value if no value was found in the flag itself
+                    let finalValue = value
+                    if (
+                        finalValue === undefined &&
+                        i + 1 < args.length &&
+                        !args[i + 1].startsWith('-')
+                    ) {
+                        // Next argument exists and doesn't start with dash - treat it as the value
+                        finalValue = args[i + 1]
+                        i++ // Skip the next argument since we consumed it
+                    }
+
+                    // Initialize variables - use custom value if provided, otherwise use default
+                    const variables: Record<string, string> = {}
+
+                    if (finalValue !== undefined) {
+                        // Custom value provided - use it instead of default
+                        variables.value = finalValue
+
+                        // Apply mutation if it exists
+                        if (typeof expandable === 'object' && expandable.mutation) {
+                            const mutatedValue = this.applyMutation(finalValue, expandable.mutation)
+                            variables.value = mutatedValue.toString()
+                        }
+                    } else {
+                        // No custom value - use default
+                        variables.value =
+                            typeof expandable === 'object' ? expandable.default || '' : ''
+                    }
+
+                    if (typeof expandable === 'string') {
+                        // Simple string expansion - default to suffix position
+                        suffix.push(expandable)
+                    } else {
+                        // Check if this expandable has shell-specific templates
+                        const hasShellSpecificTemplate =
+                            expandable['pwsh-template'] ||
+                            expandable['linux-template'] ||
+                            expandable['cmd-template']
+
+                        if (hasShellSpecificTemplate) {
+                            // Use new shell-specific template processing
+                            const { start: templateStart, end: templateEnd } =
+                                this.processShellSpecificTemplate(expandable, variables)
+
+                            // Add start templates
+                            start.push(...templateStart)
+
+                            // Add end templates
+                            end.push(...templateEnd)
+                        } else {
+                            // Handle legacy template processing
+                            if (expandable.template) {
+                                const expanded = this.expandTemplate(expandable.template, variables)
+                                const position = expandable.position || 'suffix'
+
+                                switch (position) {
+                                    case 'start':
+                                        start.push(expanded)
+                                        break
+                                    case 'prefix':
+                                        prefix.push(expanded)
+                                        break
+                                    case 'pre-args':
+                                        preArgs.push(expanded)
+                                        break
+                                    case 'suffix':
+                                    default:
+                                        suffix.push(expanded)
+                                        break
+                                }
+                            }
+                        }
+                    }
+                    continue
+                }
+
+                // Handle short bundle flags like -fs or -sf
+                // Only split into individual characters if the entire key is not an expandable
+                const shorts = key.split('')
+                let hasExpandable = false
+
+                // Check if any of the individual characters are expandables
+                for (const s of shorts) {
+                    if (expandables[s]) {
+                        hasExpandable = true
+                        break
+                    }
+                }
+
+                // If no individual characters are expandables, treat the entire key as a single flag
+                if (!hasExpandable) {
+                    remainingArgs.push(arg)
+                    continue
+                }
+
+                // Process individual characters
+                for (const s of shorts) {
+                    if (expandables[s]) {
+                        const expandable = expandables[s]
+
+                        if (typeof expandable === 'string') {
+                            suffix.push(expandable)
+                        } else {
+                            // Check if this expandable has shell-specific templates
+                            const hasShellSpecificTemplate =
+                                expandable['pwsh-template'] ||
+                                expandable['linux-template'] ||
+                                expandable['cmd-template']
+
+                            if (hasShellSpecificTemplate) {
+                                // Use new shell-specific template processing for short flags too
+                                const { start: templateStart, end: templateEnd } =
+                                    this.processShellSpecificTemplate(expandable, {
+                                        value: expandable.default || '',
+                                    })
+
+                                // Add start templates
+                                start.push(...templateStart)
+
+                                // Add end templates
+                                end.push(...templateEnd)
+                            } else {
+                                // Handle legacy template processing for backward compatibility
+                                if (expandable.template) {
+                                    const expanded = this.expandTemplate(expandable.template, {
+                                        value: expandable.default || '',
+                                    })
+                                    const position = expandable.position || 'suffix'
+
+                                    switch (position) {
+                                        case 'prefix':
+                                            prefix.push(expanded)
+                                            break
+                                        case 'pre-args':
+                                            preArgs.push(expanded)
+                                            break
+                                        case 'suffix':
+                                        default:
+                                            suffix.push(expanded)
+                                            break
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        remainingArgs.push(`-${s}`)
+                    }
+                }
+                continue
+            }
+
+            remainingArgs.push(arg)
+        }
+
+        return { start, prefix, preArgs, suffix, end, remainingArgs }
+    }
+
+    constructWrappedCommand(
+        baseCommand: string[],
+        startTemplates: string[],
+        endTemplates: string[]
+    ): string[] {
+        // If we have start templates, we need to wrap the command
+        if (startTemplates.length > 0) {
+            // For now, just prepend start templates and append end templates
+            // This is a simplified approach - in a real implementation, you might need
+            // more sophisticated command wrapping logic
+            return [...startTemplates, ...baseCommand, ...endTemplates]
+        }
+
+        // No wrapping needed, just append end templates
+        return [...baseCommand, ...endTemplates]
+    }
+}
+
+// Export a singleton instance for convenience
+export const expandableProcessor = new ExpandableProcessorService()

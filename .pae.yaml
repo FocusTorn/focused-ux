@@ -13,7 +13,8 @@ feature-nxTargets:
         run-target: build
     t:
         run-from: ext
-        run-target: test:deps --output-style=stream
+        run-target: test:deps
+        flags: --output-style=stream
     ti:
         run-from: ext
         run-target: test:integration
@@ -22,10 +23,12 @@ feature-nxTargets:
         run-target: type-check
     l:
         run-from: ext
-        run-target: lint:deps --output-style=stream
+        run-target: lint:deps
+        flags: --output-style=stream
     ct:
         run-from: ext
-        run-target: check-types:deps --output-style=stream
+        run-target: check-types:deps
+        flags: --output-style=stream
 
 targets:
     nx-targets:
@@ -134,7 +137,6 @@ nxPackages:
         variants:
             core: pbc
             ext: pbe
-        default: ext
 
     note-hub:
         aliases: [nh]

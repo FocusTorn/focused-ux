@@ -8,17 +8,11 @@
 - **ARCHITECTURE_DOCS**: `docs/_Architecture.md`
 - **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
 
-### **Testing Documentation References**
-
-- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General.md`
-- **TROUBLESHOOTING_TESTS**: `docs/testing/_Troubleshooting - Tests.md`
-
 ### **AI Testing Documentation References**
 
 - **AI_TESTING_BASE**: `docs/testing/(AI) _Strategy- Base- Testing.md`
 - **AI_MOCKING_BASE**: `docs/testing/(AI) _Strategy- Base- Mocking.md`
-- **AI_TROUBLESHOOTING**: `docs/testing/(AI) _Troubleshooting- Tests.md`
+- **AI_TROUBLESHOOTING**: `docs/testing/(AI) _Troubleshooting- Base.md`
 
 ---
 
@@ -37,145 +31,173 @@
 
 ### **Utility Package Definition**
 
-- **Location**: `libs/tools/{name}/` or `utilities/{name}/`
-- **Purpose**: Standalone utility functions, command-line tools, helper functions
+- **Location**: `utilities/{name}/`
+- **Purpose**: In-repo utilities, cross-package functionality, standalone tools
 - **Format**: ESM modules
-- **Dependencies**: Minimal external dependencies
-- **Testing Focus**: Utility function testing, command-line interface testing, helper function testing
+- **Dependencies**: No VSCode dependencies
+- **Testing Focus**: Pure functions, utility logic, external dependency integration
 
 ### **Utility Testing Framework**
 
 - **Framework**: Vitest (mandatory)
-- **Test Location**: `libs/tools/{name}/__tests__/functional-tests/` or `utilities/{name}/__tests__/functional-tests/`
-- **Mock Strategy**: Use utility-specific mock patterns
+- **Test Location**: `utilities/{name}/__tests__/functional-tests/`
+- **Mock Strategy**: Use `@fux/mock-strategy/lib` functions
 - **Coverage**: 100% coverage for public methods
 
+## **MANDATORY: FOLDING MARKERS**
+
+**CRITICAL**: All utility test files must use folding markers. See **AI_TESTING_BASE** for complete folding marker documentation and examples.
+
+### **Quick Reference**
+
+- **Setup variables**: Wrap with `// SETUP ----------------->>` and `//----------------------------------------------------<<`
+- **`beforeEach`/`afterEach`**: Wrap with `//>` and `//<`
+- **`it` blocks**: Wrap with `//>` and `//<`
+- **Space requirement**: All folding markers must be preceded by a space
+
 ## **UTILITY TESTING PATTERNS**
+
+### **Service Testing Pattern**
+
+```typescript
+import { setupLibTestEnvironment, resetLibMocks } from '@fux/mock-strategy/lib'
+
+describe('ServiceName', () => {
+    // SETUP ----------------->>
+    let mocks: Awaited<ReturnType<typeof setupLibTestEnvironment>>
+    //----------------------------------------------------<<
+
+    beforeEach(async () => {
+        //>
+        mocks = await setupLibTestEnvironment()
+        await resetLibMocks(mocks)
+    }) //<
+
+    it('should perform expected action', async () => {
+        //>
+        // Test implementation
+    }) //<
+})
+```
 
 ### **Utility Function Testing Pattern**
 
 ```typescript
-import { setupUtilityTestEnvironment, resetUtilityMocks } from '../../__mocks__/helpers.js'
+import { setupLibTestEnvironment, resetLibMocks } from '@fux/mock-strategy/lib'
 
-describe('Utility Function', () => {
-    let mocks: Awaited<ReturnType<typeof setupUtilityTestEnvironment>>
+describe('UtilityFunction', () => {
+    // SETUP ----------------->>
+    let mocks: Awaited<ReturnType<typeof setupLibTestEnvironment>>
+    //----------------------------------------------------<<
 
     beforeEach(async () => {
-        mocks = await setupUtilityTestEnvironment()
-        await resetUtilityMocks(mocks)
-    })
+        //>
+        mocks = await setupLibTestEnvironment()
+        await resetLibMocks(mocks)
+    }) //<
 
-    it('should execute utility function correctly', () => {
+    it('should process input correctly', () => {
+        //>
         // Test utility function
-    })
+    }) //<
 })
 ```
 
-### **Command-Line Interface Testing Pattern**
+### **Configuration Testing Pattern**
 
 ```typescript
-import { setupUtilityTestEnvironment, resetUtilityMocks } from '../../__mocks__/helpers.js'
+import { setupLibTestEnvironment, resetLibMocks } from '@fux/mock-strategy/lib'
 
-describe('Command-Line Interface', () => {
-    let mocks: Awaited<ReturnType<typeof setupUtilityTestEnvironment>>
-
-    beforeEach(async () => {
-        mocks = await setupUtilityTestEnvironment()
-        await resetUtilityMocks(mocks)
-    })
-
-    it('should execute CLI command correctly', () => {
-        // Test CLI functionality
-    })
-})
-```
-
-### **Helper Function Testing Pattern**
-
-```typescript
-import { setupUtilityTestEnvironment, resetUtilityMocks } from '../../__mocks__/helpers.js'
-
-describe('Helper Function', () => {
-    let mocks: Awaited<ReturnType<typeof setupUtilityTestEnvironment>>
+describe('Configuration Loading', () => {
+    // SETUP ----------------->>
+    let mocks: Awaited<ReturnType<typeof setupLibTestEnvironment>>
+    //----------------------------------------------------<<
 
     beforeEach(async () => {
-        mocks = await setupUtilityTestEnvironment()
-        await resetUtilityMocks(mocks)
-    })
+        //>
+        mocks = await setupLibTestEnvironment()
+        await resetLibMocks(mocks)
+    }) //<
 
-    it('should execute helper function correctly', () => {
-        // Test helper function
-    })
+    it('should load valid configuration', () => {
+        //>
+        // Test configuration loading
+    }) //<
+
+    it('should handle invalid configuration', () => {
+        //>
+        // Test error handling
+    }) //<
 })
 ```
 
 ## **UTILITY-SPECIFIC MOCKING REQUIREMENTS**
 
-### **Utility Mocking**
+### **UTILITY Mock Strategy**
 
-- **Use**: Utility-specific mock patterns
-- **Scope**: Utility function mocking patterns
-- **Integration**: Works with utility mocks
-- **Focus**: Utility behavior simulation
+- **Use**: `setupLibTestEnvironment()` and `resetLibMocks()` from `@fux/mock-strategy/lib`
+- **Interface**: `LibTestMocks` interface
+- **Scope**: Utility-specific mocking patterns
+- **Integration**: Works with global mocks
 
-### **Utility Mock Patterns**
+### **UTILITY Mock Patterns**
 
 ```typescript
-// Utility mock setup
-const mocks = await setupUtilityTestEnvironment()
+// Utility-specific mock setup
+const mocks = await setupLibTestEnvironment()
 
-// Utility mock reset
-await resetUtilityMocks(mocks)
+// Utility-specific mock reset
+await resetLibMocks(mocks)
 
-// Utility mock usage
-mocks.utility.processData.mockReturnValue(processedData)
-mocks.utility.executeCommand.mockResolvedValue(commandResult)
+// Utility-specific mock usage
+mocks.fileSystem.readFile.mockResolvedValue('content')
+mocks.process.spawn.mockReturnValue({ status: 0 })
 ```
 
 ## **UTILITY TESTING COVERAGE REQUIREMENTS**
 
 ### **Mandatory Coverage Areas**
 
-1. **Utility Functions**: Test all utility functions
-2. **Command-Line Interface**: Test CLI functionality and argument parsing
-3. **Helper Functions**: Test helper functions and utilities
-4. **Error Handling**: Test utility-specific error scenarios
-5. **Configuration**: Test utility configuration handling
-6. **Output Generation**: Test utility output generation
+1. **Public Service Methods**: All public methods must be tested
+2. **Configuration Loading**: Test configuration loading and validation
+3. **Error Handling**: Test all error scenarios and edge cases
+4. **External Dependencies**: Test integration with external dependencies
+5. **Utility Functions**: Test all utility functions and helpers
+6. **Edge Cases**: Test boundary conditions and edge cases
 
 ### **Coverage Organization**
 
 ```typescript
-describe('UtilityName', () => {
-    describe('Utility Functions', () => {
-        it('should execute utility function correctly', () => {
-            // Test utility function
+describe('ServiceName', () => {
+    describe('Public Methods', () => {
+        it('should execute method successfully', () => {
+            // Test successful execution
+        })
+
+        it('should handle method errors', () => {
+            // Test error handling
         })
     })
 
-    describe('Command-Line Interface', () => {
-        it('should execute CLI command correctly', () => {
-            // Test CLI functionality
+    describe('Configuration', () => {
+        it('should load valid configuration', () => {
+            // Test configuration loading
         })
 
-        it('should handle CLI errors', () => {
-            // Test CLI error handling
-        })
-    })
-
-    describe('Helper Functions', () => {
-        it('should execute helper function correctly', () => {
-            // Test helper function
-        })
-
-        it('should handle helper function errors', () => {
-            // Test helper function error handling
+        it('should validate configuration', () => {
+            // Test configuration validation
         })
     })
 
     describe('Error Handling', () => {
-        it('should handle utility-specific errors', () => {
-            // Test error scenarios
+        it('should handle specific error condition', () => {
+            // Test error scenario
+        })
+    })
+
+    describe('Edge Cases', () => {
+        it('should handle boundary conditions', () => {
+            // Test edge cases
         })
     })
 })
@@ -183,85 +205,82 @@ describe('UtilityName', () => {
 
 ## **UTILITY-SPECIFIC TESTING SCENARIOS**
 
-### **Utility Functions**
+### **File System Operations**
 
 ```typescript
-describe('Utility Functions', () => {
-    it('should execute utility function successfully', () => {
-        mocks.utility.processData.mockReturnValue(processedData)
+describe('File System Operations', () => {
+    it('should read file successfully', async () => {
+        mocks.fileSystem.readFile.mockResolvedValue('file content')
 
-        const result = utility.processData(inputData)
+        const result = await service.readFile('path/to/file')
 
-        expect(result).toEqual(processedData)
-        expect(mocks.utility.processData).toHaveBeenCalledWith(inputData)
+        expect(result).toBe('file content')
+        expect(mocks.fileSystem.readFile).toHaveBeenCalledWith('path/to/file')
     })
 
-    it('should handle utility function errors', () => {
-        mocks.utility.processData.mockImplementation(() => {
-            throw new Error('Utility error')
-        })
+    it('should handle file read errors', async () => {
+        mocks.fileSystem.readFile.mockRejectedValue(new Error('File not found'))
 
-        expect(() => utility.processData(inputData)).toThrow('Utility error')
+        await expect(service.readFile('nonexistent/file')).rejects.toThrow('File not found')
     })
 })
 ```
 
-### **Command-Line Interface**
+### **Process Execution**
 
 ```typescript
-describe('Command-Line Interface', () => {
-    it('should execute CLI command correctly', () => {
-        mocks.utility.executeCommand.mockResolvedValue(commandResult)
+describe('Process Execution', () => {
+    it('should execute command successfully', async () => {
+        mocks.process.spawn.mockReturnValue({ status: 0, output: 'success' })
 
-        const result = utility.executeCommand(command, args)
+        const result = await service.executeCommand('test-command')
 
-        expect(result).toEqual(commandResult)
-        expect(mocks.utility.executeCommand).toHaveBeenCalledWith(command, args)
+        expect(result.status).toBe(0)
+        expect(mocks.process.spawn).toHaveBeenCalledWith('test-command')
     })
 
-    it('should handle CLI command errors', () => {
-        mocks.utility.executeCommand.mockRejectedValue(new Error('CLI error'))
+    it('should handle command failures', async () => {
+        mocks.process.spawn.mockReturnValue({ status: 1, error: 'Command failed' })
 
-        expect(() => utility.executeCommand(command, args)).rejects.toThrow('CLI error')
+        const result = await service.executeCommand('failing-command')
+
+        expect(result.status).toBe(1)
+        expect(result.error).toBe('Command failed')
     })
 })
 ```
 
-### **Helper Functions**
+### **Data Processing**
 
 ```typescript
-describe('Helper Functions', () => {
-    it('should execute helper function correctly', () => {
-        mocks.utility.helperFunction.mockReturnValue(helperResult)
+describe('Data Processing', () => {
+    it('should process data correctly', () => {
+        const input = { data: 'test' }
+        const expected = { processed: 'test' }
 
-        const result = utility.helperFunction(input)
+        const result = service.processData(input)
 
-        expect(result).toEqual(helperResult)
-        expect(mocks.utility.helperFunction).toHaveBeenCalledWith(input)
+        expect(result).toEqual(expected)
     })
 
-    it('should handle helper function errors', () => {
-        mocks.utility.helperFunction.mockImplementation(() => {
-            throw new Error('Helper error')
-        })
-
-        expect(() => utility.helperFunction(input)).toThrow('Helper error')
+    it('should handle invalid data', () => {
+        expect(() => service.processData(null)).toThrow('Invalid input')
     })
 })
 ```
 
 ## **UTILITY TESTING COMMAND EXECUTION**
 
-### **PAE Aliases for Utilities**
+### **PAE Aliases for Libraries**
 
-- **MANDATORY**: `pae {utility-name} b` → Build utility
-- **MANDATORY**: `pae {utility-name} t` → Test utility (fast)
-- **MANDATORY**: `pae {utility-name} tc` → Test utility with coverage
-- **MANDATORY**: `pae {utility-name} tcw` → Test utility with coverage (watch)
+- **MANDATORY**: `pae {lib-name} b` → Build utility
+- **MANDATORY**: `pae {lib-name} t` → Test utility (fast)
+- **MANDATORY**: `pae {lib-name} tc` → Test utility with coverage
+- **MANDATORY**: `pae {lib-name} tcw` → Test utility with coverage (watch)
 
-### **Utility Testing Workflow**
+### **UTILITY Testing Workflow**
 
-1. **Setup**: Use `setupUtilityTestEnvironment()` and `resetUtilityMocks()`
+1. **Setup**: Use `setupLibTestEnvironment()` and `resetLibMocks()`
 2. **Mock**: Use utility-specific mock patterns
 3. **Test**: Implement comprehensive test coverage
 4. **Execute**: Use PAE aliases for testing
@@ -271,20 +290,45 @@ describe('Helper Functions', () => {
 
 ### **Utility Testing Violations**
 
-- ❌ Testing utility logic without mocking
-- ❌ Not mocking utility function calls
-- ❌ Using real utility calls in tests
+- ❌ VSCode mocking in utility tests
+- ❌ Testing implementation details instead of behavior
+- ❌ Using real external APIs in tests
 - ❌ Non-deterministic test data
-- ❌ Incomplete utility mock coverage
-- ❌ Skipping utility function testing
+- ❌ Incomplete mock coverage
+- ❌ Skipping error scenario testing
+- ❌ **Missing folding markers** in test files
+- ❌ **Inconsistent test file organization** without proper folding structure
 
-### **Utility Mock Violations**
+### **UTILITY Mock Violations**
 
-- ❌ Not using utility-specific mock patterns
+- ❌ Not using `@fux/mock-strategy/lib` functions
 - ❌ Inconsistent mock patterns across utility tests
-- ❌ Hardcoded utility responses
-- ❌ Missing utility mock cleanup
+- ❌ Hardcoded mock values
+- ❌ Missing mock cleanup
 - ❌ Over-mocking utility functionality
+
+## **UTILITY TESTING QUALITY GATES**
+
+### **Quality Gates Checklist**
+
+- [ ] All public service methods tested
+- [ ] Configuration loading and validation tested
+- [ ] Error handling scenarios tested
+- [ ] Edge cases and boundary conditions tested
+- [ ] External dependency integration tested
+- [ ] Mock strategy follows documented approach
+- [ ] Test isolation maintained (no test interference)
+- [ ] Coverage tests target specific uncovered lines
+- [ ] **Test files use folding markers** (`//>` `//<` for it blocks and beforeEach/afterEach, `// SETUP ----------------->>` and `//----------------------------------------------------<<` for setup sections)
+- [ ] **Setup sections properly wrapped** with `// SETUP ----------------->>` and `//----------------------------------------------------<<`
+
+### **Quality Gates**
+
+- [ ] All tests pass
+- [ ] No anti-patterns detected
+- [ ] Mock strategy follows documented approach
+- [ ] Test organization follows established patterns
+- [ ] Documentation alignment verified
 
 ## **UTILITY TESTING SUCCESS METRICS**
 
@@ -301,12 +345,13 @@ After implementing proper utility testing strategies:
 
 ### **Natural Stops**
 
-- **MANDATORY**: Utility logic not mocked → "Mock utility function calls"
-- **MANDATORY**: Utility functionality not tested → "Test utility functionality"
+- **MANDATORY**: VSCode imports in utility → "This belongs in extension"
+- **MANDATORY**: Business logic in utility → "This belongs in core"
 - **MANDATORY**: Direct nx commands → "Use PAE aliases"
 - **MANDATORY**: Test failures → "Check if build is clean first"
 - **MANDATORY**: Documentation questions → "Check docs/ before creating"
 - **MANDATORY**: Package confusion → "Check package type and path"
+- **MANDATORY**: Missing folding markers → "Add folding markers for test organization"
 
 ### **Pattern Recognition**
 
@@ -322,7 +367,7 @@ After implementing proper utility testing strategies:
 ### **CRITICAL PRIORITY (Execute immediately)**
 
 - Utility package type verification
-- Utility mock compliance verification
+- Mock strategy compliance verification
 - Test coverage validation
 - Anti-pattern violation detection
 

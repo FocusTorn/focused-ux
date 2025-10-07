@@ -229,6 +229,94 @@ describe('Error Handling', () => {
 - **MANDATORY**: Wait for "Module loaded: PAE aliases"
 - **MANDATORY**: Retry if `pae help` shows minimal output
 
+## **MANDATORY: TEST FILE FOLDING MARKERS**
+
+**CRITICAL**: All test files must use folding markers for better organization and readability.
+
+### **Folding Marker Types**
+
+- **`//>` and `//<`** - Wrap individual `it` blocks and `beforeEach`/`afterEach` functions
+- **`// SETUP ----------------->>` and `//----------------------------------------------------<<`** - Wrap main setup constants and variables
+
+### **Folding Marker Usage**
+
+```typescript
+// __tests__/functional-tests/services/ConfigLoader.service.test.ts
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { setupLibTestEnvironment, resetLibMocks } from '@fux/mock-strategy/lib'
+
+describe('ConfigLoader', () => {
+    // SETUP ----------------->>
+    let mocks: LibTestMocks
+    let configLoader: any
+    let tempDir: string
+    let tempConfigPath: string
+    //----------------------------------------------------<<
+
+    beforeEach(async () => {
+        //>
+        mocks = await setupLibTestEnvironment()
+        await resetLibMocks(mocks)
+
+        configLoader = ConfigLoader.getInstance()
+        tempDir = process.cwd()
+        tempConfigPath = join(tempDir, '.config.yaml')
+    }) //<
+
+    afterEach(() => {
+        //>
+        // Clean up test files
+        if (existsSync(tempConfigPath)) {
+            unlinkSync(tempConfigPath)
+        }
+        clearAllCaches()
+    }) //<
+
+    it('should load valid configuration', async () => {
+        //>
+        const scenario = createMockBuilder(mocks)
+            .configLoader()
+            .loadConfig()
+            .withValidConfig()
+            .build()
+
+        const result = await configLoader.loadConfig('/path/to/config.yaml')
+
+        expect(result).toBeDefined()
+    }) //<
+
+    it('should handle permission denied errors', async () => {
+        //>
+        const scenario = createMockBuilder(mocks)
+            .configLoader()
+            .loadConfig()
+            .withErrorHandling('permission-denied')
+            .build()
+
+        await expect(configLoader.loadConfig('/protected/file.yaml')).rejects.toThrow(
+            'Permission denied'
+        )
+    }) //<
+})
+```
+
+### **Folding Marker Rules**
+
+- **`it` blocks**: Always wrapped with `//>` on the SAME LINE as the opening `it(` and `//<` on the SAME LINE as the closing `})`
+- **`beforeEach`/`afterEach`**: Always wrapped with `//>` on the SAME LINE as the opening `beforeEach(` and `//<` on the SAME LINE as the closing `})`
+- **Setup sections**: Wrapped with `// SETUP ----------------->>` and `//----------------------------------------------------<<` for main setup constants and variables only
+- **`describe` blocks**: NO folding markers - they are not wrapped
+- **Test-specific constants**: Go inside individual test cases without setup markers
+- **Space requirement**: All folding markers must be preceded by a space
+- **CRITICAL**: Folding markers must be on the SAME LINE as the statement they wrap, NOT on separate lines
+
+### **Benefits of Folding Markers**
+
+- **Better organization** - Clear visual separation of test sections
+- **Improved readability** - Easy to navigate large test files
+- **Consistent structure** - Standardized test file organization
+- **Faster development** - Quick access to specific test sections
+
 ## **TESTING WORKFLOW**
 
 ### **Pre-Testing Checklist**

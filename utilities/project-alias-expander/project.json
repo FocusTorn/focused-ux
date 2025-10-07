@@ -1,0 +1,142 @@
+{
+    "name": "@fux/project-alias-expander",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "utilities/project-alias-expander/src",
+    "projectType": "library",
+    "tags": ["tool"],
+    "targets": {
+        "build:dev": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "inputs": ["production", "^production", "{projectRoot}/src/**/*"],
+            "options": {
+                "main": "{projectRoot}/src/cli.ts",
+                "outputPath": "{projectRoot}/dist",
+                "outputFileName": "cli.js",
+                "tsConfig": "{projectRoot}/tsconfig.json",
+                "declarationRootDir": "{projectRoot}/src",
+                "external": ["vscode"],
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "declaration": true,
+                "minify": false,
+                "treeShaking": false,
+                "metafile": false
+            }
+        },
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": ["{options.outputPath}"],
+            "inputs": ["production", "^production", "{projectRoot}/src/**/*"],
+            "options": {
+                "main": "{projectRoot}/src/cli.ts",
+                "outputPath": "{projectRoot}/dist",
+                "outputFileName": "cli.js",
+                "tsConfig": "{projectRoot}/tsconfig.json",
+                "declarationRootDir": "{projectRoot}/src",
+                "format": ["esm"],
+                "external": ["vscode"],
+                "bundle": true,
+                "sourcemap": false,
+                "declaration": false,
+                "minify": true,
+                "treeShaking": true,
+                "metafile": true
+            }
+        },
+        "build:install": {
+            "executor": "@fux/npack:pack",
+            "dependsOn": ["build:bundle"],
+            "outputs": ["{projectRoot}/*.tgz"],
+            "inputs": [
+                "production",
+                "^production",
+                "{projectRoot}/package.json",
+                "{projectRoot}/README.md",
+                "{projectRoot}/dist/**/*"
+            ],
+            "options": {
+                "keepTemp": false,
+                "freshTemp": true,
+                "installGlobal": true
+            }
+        },
+        "install": {
+            "executor": "nx:run-commands",
+            "dependsOn": ["build", "build:install"],
+            "outputs": ["{projectRoot}/dist"],
+            "inputs": ["production", "^production"],
+            "options": {
+                "commands": [],
+                "parallel": false
+            }
+        },
+        "use": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "tsx utilities/project-alias-expander/src/cli.ts {args}"
+            }
+        },
+        "check-types": {
+            "extends": "check-types"
+        },
+        "check-types:deps": {
+            "extends": "check-types:deps"
+        },
+        "lint": {
+            "extends": "lint"
+        },
+        "lint:deps": {
+            "extends": "lint:deps"
+        },
+        "lint:file": {
+            "executor": "@nx/eslint:lint",
+            "cache": true,
+            "dependsOn": ["build"],
+            "options": {
+                "lintFilePatterns": ["{projectRoot}/src/*.ts"]
+            }
+        },
+        "audit": {
+            "extends": "audit"
+        },
+        "audit:code": {
+            "extends": "audit:code"
+        },
+        "audit:test": {
+            "extends": "audit:test"
+        },
+        "audit:all": {
+            "extends": "audit:all"
+        },
+        "clean": {
+            "extends": "clean"
+        },
+        "clean:dist": {
+            "extends": "clean:dist"
+        },
+        "clean:cache": {
+            "extends": "clean:cache"
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "dependsOn": ["build:dev"],
+            "options": {
+                "configFile": "{projectRoot}/vitest.config.ts",
+                "reportsDirectory": "__tests__/_reports/functional",
+                "passWithNoTests": true
+            }
+        },
+        "test:coverage-tests": {
+            "executor": "@nx/vite:test",
+            "outputs": ["{options.reportsDirectory}"],
+            "options": {
+                "configFile": "{projectRoot}/vitest.coverage.config.ts",
+                "reportsDirectory": "__tests__/_reports/coverage",
+                "passWithNoTests": true
+            }
+        }
+    }
+}

@@ -43,7 +43,7 @@
             "path": "./libs/vscode-test-cli-config"
         },
         {
-            "path": "./libs/project-alias-expander"
+            "path": "./utilities/project-alias-expander"
         },
         {
             "path": "./libs/mock-strategy"
@@ -54,7 +54,6 @@
         {
             "path": "./plugins/recommended"
         },
-
         {
             "path": "./plugins/vscode-test-executor"
         },

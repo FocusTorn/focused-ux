@@ -1,6 +1,7 @@
 packages:
     - 'packages/*/*'
     - 'libs/*'
+    - 'utilities/*'
     - 'plugins/*'
     - '!_inactive/**'
 onlyBuiltDependencies:
@@ -12,3 +13,4 @@ onlyBuiltDependencies:
     - 'oxc-resolver'
     - 'puppeteer'
     - 'sharp'
+
