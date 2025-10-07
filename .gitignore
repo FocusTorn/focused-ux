@@ -8,6 +8,7 @@ libs/vscode-test-cli-config/.vscode-test
 *.bak*
 
 
+
 #= COMPILED OUTPUT ==========================================
 dist
 tmp
@@ -16,6 +17,11 @@ _out-tsc/
 *.tsbuildinfo
 vsix_packages
 coverage
+
+__tests__/coverage
+**/_reports
+
+
 
 #= DEPENDENCIES =============================================
 node_modules
@@ -44,7 +50,6 @@ mockly-vsc
 #= MISC =====================================================
 /.sass-cache
 /connect.lock
-**/_reports
 /libpeerconnection.log
 npm-debug.log
 testem.log
@@ -74,11 +79,14 @@ Thumbs.db
 
 
 # git ls-files -ci --exclude-standard
-# git rm -r --cached _reports/coverage
-# git rm -r --cached -- ':(glob)**/_reports/coverage/**'
-# $ git rm --cached .cursor/ADHOC/Summary.md
+# git ls-files "**/.nx/**"
+
+# git rm -r --cached "**/dynamicons/core/coverage/**"
+
+# # Remove tracked bt ignored
+# git rm --cached $(git ls-files -ci --exclude-standard)
 
 
-git rm -r --cached _inactive
+
 
 
