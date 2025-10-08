@@ -1,14 +1,13 @@
 import { ExecutorContext, logger } from '@nx/devkit'
 import { join } from 'node:path'
+import { mkdirSync, existsSync } from 'node:fs'
 import type { PackExecutorSchema } from './schema.js'
 import {
-    FileOperationsService,
-    PackageResolverService,
-    TarballCreatorService,
-    GlobalInstallerService
+    StagingService,
+    PackagingService,
+    InstallationService,
+    PackageResolverService
 } from '../../services/index.js'
-import * as temp from 'temp'
-import ora from 'ora'
 
 interface Result { success: boolean }
 
@@ -24,46 +23,43 @@ function debugLog(message: string, debug: boolean): void {
 
 export default async function runExecutor(options: PackExecutorSchema, context: ExecutorContext): Promise<Result> {
 
+    let stagingDir: string | undefined
+    const keepTemp = options.keepTemp ?? false
+
     try {
 
         // Initialize services
-        const fileOps = new FileOperationsService()
-        const packageResolver = new PackageResolverService()
-        const tarballCreator = new TarballCreatorService()
-        const globalInstaller = new GlobalInstallerService()
-
-        // Test ora functionality (disabled - causes issues in Nx build context)
-        // await tarballCreator.testOra()
+        const staging = new StagingService()
+        const packaging = new PackagingService()
+        const installation = new InstallationService()
+        const resolver = new PackageResolverService()
 
         // Resolve configuration
-        const config = packageResolver.resolveConfiguration(options, context)
+        const config = resolver.resolveConfiguration(options, context)
 
-        debugLog(`Resolved package directory: ${config.packageDir}`, config.debug)
+        debugLog(`Package directory: ${config.packageDir}`, config.debug)
 
         // Validate package.json exists
         const packageJsonPath = join(config.packageDir, 'package.json')
 
-        if (!fileOps.exists(packageJsonPath)) {
+        if (!existsSync(packageJsonPath)) {
 
             throw new Error(`package.json not found at: ${packageJsonPath}`)
         
         }
 
         // Read and parse package.json
-        const packageJsonContent = fileOps.readFile(packageJsonPath)
+        const { readFileSync } = await import('node:fs')
+        const packageJsonContent = readFileSync(packageJsonPath, 'utf-8')
         const originalPackageJson = JSON.parse(packageJsonContent)
-        const metadata = packageResolver.getPackageMetadata(config.packageDir, packageJsonContent)
-    
-        // Update configuration with package metadata
-        const finalConfig = packageResolver.updateConfigurationWithMetadata(config, metadata)
-    
-        debugLog(`Package: ${metadata.name} v${metadata.version}`, finalConfig.debug)
-        debugLog(`Tarball: ${finalConfig.tarballFilename}`, finalConfig.debug)
+        const metadata = resolver.getPackageMetadata(config.packageDir, packageJsonContent)
 
-        // Prepare final package.json with dev version if needed
+        debugLog(`Package: ${metadata.name} v${metadata.version}`, config.debug)
+
+        // Prepare package.json with dev version if needed
         const finalPackageJson = { ...originalPackageJson }
 
-        if (finalConfig.dev) {
+        if (config.dev) {
 
             const taskHash = process.env.NX_TASK_HASH
 
@@ -76,153 +72,90 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
             const shortHash = taskHash.slice(0, 9)
             const finalVersion = `${metadata.version}-dev.${shortHash}`
 
-      ;(finalPackageJson as Record<string, unknown>).version = finalVersion
+            ;(finalPackageJson as Record<string, unknown>).version = finalVersion
+
+        }
+
+        // Clean up old staging directories if requested
+        if (config.freshTemp) {
+
+            staging.cleanupOldStaging(config.tempBase, metadata.tarballBaseName, config.debug)
         
         }
 
-        // Clean up old temp directories if requested
-        if (finalConfig.freshTemp) {
+        // Create staging directory and populate with files
+        const stagingResult = staging.createStaging({
+            packageDir: config.packageDir,
+            packageJson: finalPackageJson,
+            includeFiles: options.includeFiles,
+            tempBasePath: config.tempBase,
+            debug: config.debug
+        })
 
-            const cleanupResult = await fileOps.cleanupOldTempDirs(finalConfig.tempBase, metadata.tarballBaseName)
+        if (!stagingResult.success || !stagingResult.stagingDir) {
 
-            if (!cleanupResult.success) {
-
-                debugLog(`Warning: Failed to cleanup old temp directories: ${cleanupResult.error}`, finalConfig.debug)
-            
-            }
+            throw new Error(`Failed to create staging directory: ${stagingResult.error}`)
         
         }
 
-        // Ensure TERM for Windows terminals so ora can render
-        if (!process.env.TERM) {
+        stagingDir = stagingResult.stagingDir
+        debugLog(`Staging directory: ${stagingDir}`, config.debug)
 
-            process.env.TERM = 'xterm-256color'
+        // Create output directory
+        if (!existsSync(config.finalOutputDir)) {
+
+            mkdirSync(config.finalOutputDir, { recursive: true })
         
         }
 
-        // Create temp directory with spinner
-        const tempSpinner = ora({
-            text: 'Creating temp directory...',
-            spinner: 'dots',
-            color: 'blue',
-            isEnabled: Boolean(process.stderr.isTTY) && !process.env.CI,
-            isSilent: false,
-            stream: process.stderr,
-            hideCursor: true,
-            discardStdin: false
-        }).start()
+        // Update tarball filename with actual package name and version
+        let tarballFilename = `${metadata.tarballBaseName}-${metadata.version}.tgz`
 
-        const tempCreateResult = fileOps.createDirectories([finalConfig.tempDir])
+        if (config.dev) {
 
-        if (!tempCreateResult.success) {
-
-            tempSpinner.fail(`Failed to create temp directory: ${tempCreateResult.error}`)
-            throw new Error(`Failed to create temp directory: ${tempCreateResult.error}`)
-        
-        }
-
-        tempSpinner.succeed(`Created temp directory: ${finalConfig.tempDir}`)
-
-        // Create final output directory (no spinner)
-        const outDirResult = fileOps.createDirectories([finalConfig.finalOutputDir])
-
-        if (!outDirResult.success) {
-
-            throw new Error(`Failed to create output directory: ${outDirResult.error}`)
-        
-        }
-
-        // Create package subdirectory (npm pack structure)
-        const packageSubDir = join(finalConfig.tempDir, 'package')
-        const packageDirResult = fileOps.createDirectories([packageSubDir])
-
-        if (!packageDirResult.success) {
-
-            throw new Error(`Failed to create package directory: ${packageDirResult.error}`)
-        
-        }
-
-        // Write package.json to temp directory
-        const packageJsonWriteResult = fileOps.writeFile(
-            join(packageSubDir, 'package.json'),
-            JSON.stringify(finalPackageJson, null, 4)
-        )
-
-        if (!packageJsonWriteResult.success) {
-
-            throw new Error(`Failed to write package.json: ${packageJsonWriteResult.error}`)
-        
-        }
-
-        // Get files to include and copy them
-        const includeFiles = fileOps.getFilesFromPackageJson(originalPackageJson, config.packageDir)
-        const additionalIncludeFiles = options.includeFiles || []
-        const allIncludeFiles = [...includeFiles, ...additionalIncludeFiles]
-
-        debugLog(`Copying ${allIncludeFiles.length} files/directories`, finalConfig.debug)
-
-        const copyResult = fileOps.copyFiles(config.packageDir, packageSubDir, allIncludeFiles)
-
-        if (!copyResult.success) {
-
-            throw new Error(`Failed to copy files: ${copyResult.error}`)
+            tarballFilename = `${metadata.tarballBaseName}-dev.tgz`
         
         }
 
         // Create tarball
-        const tarballOptions = {
-            packageDir: packageSubDir,
-            outputDir: finalConfig.finalOutputDir,
-            tarballFilename: finalConfig.tarballFilename,
-            debug: finalConfig.debug
-        }
+        const packagingResult = await packaging.createTarball({
+            stagingDir,
+            outputDir: config.finalOutputDir,
+            tarballFilename,
+            debug: config.debug
+        })
 
-        const tarballResult = await tarballCreator.createTarball(tarballOptions)
+        if (!packagingResult.success || !packagingResult.tarballPath) {
 
-        if (!tarballResult.success) {
-
-            throw new Error(`Failed to create tarball: ${tarballResult.error}`)
+            throw new Error(`Failed to create tarball: ${packagingResult.error}`)
         
         }
+
+        debugLog(`Tarball: ${packagingResult.tarballPath}`, config.debug)
 
         // Show tarball contents in debug mode
-        if (finalConfig.debug && tarballResult.tarballPath) {
+        if (config.debug) {
 
-            await tarballCreator.showTarballContents(tarballResult.tarballPath, packageSubDir, finalConfig.debug)
+            await packaging.showTarballContents(packagingResult.tarballPath, config.debug)
         
         }
-
-        // Cleanup temp directory if not keeping it
-        if (!finalConfig.keepTemp) {
-
-            debugLog(`Cleaning up temp directory: ${finalConfig.tempDir}`, finalConfig.debug)
-
-            // Use temp package cleanup - no fallbacks
-            temp.cleanupSync()
-            debugLog(`Successfully cleaned up temp directory using temp package: ${finalConfig.tempDir}`, finalConfig.debug)
-        
-        }
-
-        debugLog(`Final tarball: ${tarballResult.tarballPath}`, finalConfig.debug)
 
         // Install globally if requested (defaults to true)
-        if (finalConfig.install && tarballResult.tarballPath) {
+        if (config.install) {
 
-            const installOptions = {
-                tarballPath: tarballResult.tarballPath,
+            const installResult = await installation.installGlobally({
+                tarballPath: packagingResult.tarballPath,
                 packageName: metadata.name,
-                debug: finalConfig.debug
-            }
-
-            const installResult = await globalInstaller.installGlobally(installOptions)
+                debug: config.debug
+            })
 
             if (!installResult.success) {
 
-                logger.error(`Global installation failed: ${installResult.error}`)
+                logger.error(`Installation failed: ${installResult.error}`)
                 return { success: false }
             
             }
-        
+
         }
 
         return { success: true }
@@ -231,7 +164,18 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
 
         logger.error(`Packaging failed: ${err instanceof Error ? err.message : String(err)}`)
         return { success: false }
-    
+
+    } finally {
+
+        // Cleanup staging directory if not keeping it
+        if (!keepTemp && stagingDir) {
+
+            const staging = new StagingService()
+            
+            staging.cleanupStaging(stagingDir)
+        
+        }
+
     }
 
 }
