@@ -46,7 +46,6 @@
             }
         },
         
-        
         "package": {
             "executor": "@fux/vpack:pack",
             "outputs": ["{options.outputPath}"],
@@ -243,7 +242,6 @@
                 "cwd": "{workspaceRoot}"
             }
         },
-        
         
         "test": { //>
             "executor": "@nx/vite:test",

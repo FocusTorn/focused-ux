@@ -1,7 +1,8 @@
 import { join, isAbsolute } from 'node:path'
 import { workspaceRoot } from '@nx/devkit'
 import type { ExecutorContext } from '@nx/devkit'
-import type { PackExecutorSchema } from '../executors/pack/schema'
+import type { PackExecutorSchema } from '../executors/pack/schema.js'
+import * as temp from 'temp'
 
 export interface PackageMetadata {
     name: string
@@ -120,8 +121,8 @@ export class PackageResolverService {
     }
 
     /**
-   * Resolve complete configuration from options and context
-   */
+     * Resolve complete configuration from options and context
+     */
     resolveConfiguration(options: PackExecutorSchema, context: ExecutorContext): ResolvedConfiguration {
 
         const packageDir = this.resolvePackageDir(options, context)
@@ -136,10 +137,16 @@ export class PackageResolverService {
         const dev = options.dev ?? false
         const install = options.install !== false // defaults to true
 
-        // Generate temporary directory name
+        // Use temp package to create temporary directory
         const tarballBaseName = 'temp' // Will be updated with actual package name
         const tempDirName = overwrite ? `${tarballBaseName}-local` : `${tarballBaseName}-${uniqueId}`
-        const tempDir = join(tempBase, tempDirName)
+        
+        // Create temp directory using temp package - no fallbacks
+        const tempDir = temp.mkdirSync({
+            dir: tempBase,
+            prefix: tempDirName,
+            suffix: ''
+        })
 
         // Generate tarball filename
         const tarballFilename = dev ? 'temp-dev.tgz' : 'temp.tgz' // Will be updated with actual package name
@@ -160,15 +167,21 @@ export class PackageResolverService {
     }
 
     /**
-   * Update configuration with package metadata
-   */
+     * Update configuration with package metadata
+     */
     updateConfigurationWithMetadata(config: ResolvedConfiguration, metadata: PackageMetadata): ResolvedConfiguration {
 
         const { tarballBaseName, version } = metadata
     
         // Update temp directory name with actual package name
         const tempDirName = config.freshTemp ? `${tarballBaseName}-local` : `${tarballBaseName}-${config.tempDir.split('-').pop()}`
-        const tempDir = join(config.tempBase, tempDirName)
+        
+        // Create new temp directory using temp package with updated name - no fallbacks
+        const tempDir = temp.mkdirSync({
+            dir: config.tempBase,
+            prefix: tempDirName,
+            suffix: ''
+        })
 
         // Update tarball filename with actual package name and version
         let tarballFilename = `${tarballBaseName}-${version}.tgz`

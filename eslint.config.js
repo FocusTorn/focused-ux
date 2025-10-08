@@ -22,7 +22,7 @@ import tomlPlugin from 'eslint-plugin-toml'
 import tomlParser from 'toml-eslint-parser'
 import unusedImportsPlugin from 'eslint-plugin-unused-imports'
 
-import foldingBracketsRule from './tools/eslint-rules/fux-format/folding-brackets/index.js'
+// import foldingBracketsRule from './tools/eslint-rules/fux-format/folding-brackets/index.js'
 
 //----------------------------------------------------------------------------<<
 
@@ -112,10 +112,10 @@ const mainJsTsOverrides = { //>
 } //<
 
 // JSON-specific stylistic overrides
-const jsonStylisticOverrides = { //>
-    'style/no-multiple-empty-lines': ['warn', { max: 2, maxBOF: 0, maxEOF: 0 }], // More lenient for JSON
-    'style/object-property-newline': 'off', // Allow properties on same line for JSON
-} //<
+// const jsonStylisticOverrides = { //>
+//     'style/no-multiple-empty-lines': ['warn', { max: 2, maxBOF: 0, maxEOF: 0 }], // More lenient for JSON
+//     'style/object-property-newline': 'off', // Allow properties on same line for JSON
+// } //<
 
 // TypeScript-specific rules
 const tsRules = { //>
@@ -150,18 +150,18 @@ const configOverrides = { //>
 } //<
 
 // Function to merge rules with overrides (optimized for performance)
-function mergeRules(baseRules, overrides = {}) { //>
+// function mergeRules(baseRules, overrides = {}) { //>
 
-    if (Object.keys(overrides).length === 0) return baseRules
-    return { ...baseRules, ...overrides }
+//     if (Object.keys(overrides).length === 0) return baseRules
+//     return { ...baseRules, ...overrides }
 
-} //<
+// } //<
 
 //----------------------------------------------------------------------------<<
 
 export default [
-    {
-        ignores: [
+    {   ignores: //>
+        [
             '**/dist/**',
             '**/.nx/cache/**',
             '**/.eslintcache',
@@ -204,8 +204,7 @@ export default [
         ],
     }, //<
 
-    {
-        name: 'fux/performance-settings', //>
+    {   name: 'fux/performance-settings', //>
         settings: {
             cache: true,
             cacheLocation: '.eslintcache',
@@ -216,8 +215,7 @@ export default [
         },
     }, //<
 
-    {
-        name: 'fux/JS-TS', //>
+    {   name: 'fux/JS-TS', //>
         files: ['**/*.{js,jsx,ts,tsx}'],
         plugins: {
             style: stylisticPlugin,
@@ -242,8 +240,7 @@ export default [
             'import/no-commonjs': 'error',
             'unicorn/prefer-module': 'error',
         },
-        languageOptions: {
-            //>
+        languageOptions: { //>
             parser: tsParser,
             parserOptions: {
                 ecmaVersion: 'latest',
@@ -252,8 +249,7 @@ export default [
         }, //<
     }, //<
 
-    {
-        name: 'fux/custom-formatting-tweaks', //>
+    {   name: 'fux/custom-formatting-tweaks', //>
         files: ['**/*.{js,jsx,ts,tsx}'],
         plugins: {
             style: stylisticPlugin,
@@ -265,8 +261,7 @@ export default [
         },
     }, //<
 
-    {
-        name: 'fux/test-rules', //>
+    {   name: 'fux/test-rules', //>
         files: ['**/*.test.ts', '**/*.spec.ts', '**/test/**/*.ts', '**/__tests__/**/*.ts'],
         plugins: {
             style: stylisticPlugin,
@@ -280,8 +275,7 @@ export default [
             ...mainJsTsOverrides,
             ...testOverrides,
         },
-        languageOptions: {
-            //>
+        languageOptions: { //>
             globals: {
                 describe: 'readonly',
                 it: 'readonly',
@@ -298,8 +292,7 @@ export default [
         }, //<
     }, //<
 
-    {
-        name: 'fux/shared-library', //>
+    {   name: 'fux/shared-library', //>
         files: ['libs/shared/**/*.ts', 'libs/shared/**/*.tsx'],
         plugins: {
             ts: tsPlugin,
@@ -314,8 +307,7 @@ export default [
             ...mainJsTsOverrides,
             'ts/no-use-before-define': 'off',
         },
-        languageOptions: {
-            //>
+        languageOptions: { //>
             parser: tsParser,
             parserOptions: {
                 ecmaVersion: 'latest',
@@ -324,8 +316,7 @@ export default [
         }, //<
     }, //<
 
-    {
-        name: 'fux/markdown', //>
+    {   name: 'fux/markdown', //>
         files: ['**/*.md', '**/*.markdown'],
         plugins: {
             markdown: markdownPlugin,
@@ -336,19 +327,16 @@ export default [
         },
     }, //<
 
-    {
-        name: 'fux/yaml', //>
+    {   name: 'fux/yaml', //>
         files: ['**/*.{yml,yaml}'],
         plugins: { yml: ymlPlugin },
         rules: {},
-        languageOptions: {
-            //>
+        languageOptions: { //>
             parser: yamlParser,
         }, //<
     }, //<
 
-    {
-        name: 'fux/toml', //>
+    {   name: 'fux/toml', //>
         files: ['**/*.toml'],
         plugins: {
             toml: tomlPlugin,
@@ -356,47 +344,33 @@ export default [
         rules: {
             'toml/indent': ['warn', 4],
         },
-        languageOptions: {
-            //>
+        languageOptions: { //>
             parser: tomlParser,
         }, //<
     }, //<
 
-    {
-        name: 'fux/json', //>
+    {   name: 'fux/json', //>
         files: ['**/*.json', '**/*.jsonc'],
         plugins: {
             jsonc: jsoncPlugin,
             style: stylisticPlugin,
-            'fux-format': {
-                rules: {
-                    'folding-brackets': foldingBracketsRule,
-                },
-            },
         },
         rules: {
             ...baseRules,
-            ...mergeRules(stylisticRules, jsonStylisticOverrides),
+            ...stylisticRules,
             'jsonc/indent': ['warn', 4],
             'jsonc/comma-dangle': ['warn', 'never'],
-
-            // 'style/object-curly-newline': ['warn', {
-            //     ObjectExpression: 'always',
-            //     ObjectPattern: 'always',
-            //     ImportDeclaration: 'always',
-            //     ExportDeclaration: 'always'
-            // }]
-
-            // 'fux-format/folding-brackets': 'warn',
+            'jsonc/quotes': ['warn', 'double'],
+            'jsonc/no-dupe-keys': 'error',
+            'jsonc/valid-json-number': 'error',
+            'jsonc/no-comments': 'off', // Allow comments in JSONC files
         },
-        languageOptions: {
-            //>
+        languageOptions: { //>
             parser: jsoncParser,
         }, //<
     }, //<
-
-    {
-        name: 'fux/config-files', //>
+    
+    {   name: 'fux/config-files', //>
         files: ['**/*.config.{js,ts,cjs,mjs}', '**/*.rc.{js,ts,cjs,mjs}'],
         plugins: {
             style: stylisticPlugin,
@@ -416,8 +390,7 @@ export default [
             'ts/no-var-requires': 'error',
             'import/no-commonjs': 'error',
         },
-        languageOptions: {
-            //>
+        languageOptions: { //>
             parser: tsParser,
         }, //<
     }, //<

@@ -1,12 +1,14 @@
 import { ExecutorContext, logger } from '@nx/devkit'
 import { join } from 'node:path'
-import type { PackExecutorSchema } from './schema'
+import type { PackExecutorSchema } from './schema.js'
 import {
     FileOperationsService,
     PackageResolverService,
     TarballCreatorService,
     GlobalInstallerService
-} from '../../services/index'
+} from '../../services/index.js'
+import * as temp from 'temp'
+import ora from 'ora'
 
 interface Result { success: boolean }
 
@@ -30,8 +32,8 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         const tarballCreator = new TarballCreatorService()
         const globalInstaller = new GlobalInstallerService()
 
-        // Test ora functionality
-        await tarballCreator.testOra()
+        // Test ora functionality (disabled - causes issues in Nx build context)
+        // await tarballCreator.testOra()
 
         // Resolve configuration
         const config = packageResolver.resolveConfiguration(options, context)
@@ -91,13 +93,42 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         
         }
 
-        // Create directories
-        const dirsToCreate = [finalConfig.tempDir, finalConfig.finalOutputDir]
-        const createResult = fileOps.createDirectories(dirsToCreate)
+        // Ensure TERM for Windows terminals so ora can render
+        if (!process.env.TERM) {
 
-        if (!createResult.success) {
+            process.env.TERM = 'xterm-256color'
+        
+        }
 
-            throw new Error(`Failed to create directories: ${createResult.error}`)
+        // Create temp directory with spinner
+        const tempSpinner = ora({
+            text: 'Creating temp directory...',
+            spinner: 'dots',
+            color: 'blue',
+            isEnabled: Boolean(process.stderr.isTTY) && !process.env.CI,
+            isSilent: false,
+            stream: process.stderr,
+            hideCursor: true,
+            discardStdin: false
+        }).start()
+
+        const tempCreateResult = fileOps.createDirectories([finalConfig.tempDir])
+
+        if (!tempCreateResult.success) {
+
+            tempSpinner.fail(`Failed to create temp directory: ${tempCreateResult.error}`)
+            throw new Error(`Failed to create temp directory: ${tempCreateResult.error}`)
+        
+        }
+
+        tempSpinner.succeed(`Created temp directory: ${finalConfig.tempDir}`)
+
+        // Create final output directory (no spinner)
+        const outDirResult = fileOps.createDirectories([finalConfig.finalOutputDir])
+
+        if (!outDirResult.success) {
+
+            throw new Error(`Failed to create output directory: ${outDirResult.error}`)
         
         }
 
@@ -166,17 +197,9 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
 
             debugLog(`Cleaning up temp directory: ${finalConfig.tempDir}`, finalConfig.debug)
 
-            const cleanupResult = await fileOps.cleanupDirectory(finalConfig.tempDir)
-
-            if (!cleanupResult.success) {
-
-                logger.error(`Failed to clean up temp directory: ${cleanupResult.error}`)
-            
-            } else {
-
-                debugLog(`Successfully cleaned up temp directory: ${finalConfig.tempDir}`, finalConfig.debug)
-            
-            }
+            // Use temp package cleanup - no fallbacks
+            temp.cleanupSync()
+            debugLog(`Successfully cleaned up temp directory using temp package: ${finalConfig.tempDir}`, finalConfig.debug)
         
         }
 

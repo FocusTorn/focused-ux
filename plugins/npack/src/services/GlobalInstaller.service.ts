@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process'
+import { execaCommand } from 'execa'
 import { logger } from '@nx/devkit'
 import ora from 'ora'
 
@@ -23,6 +24,19 @@ export interface InstallationOptions {
 }
 
 export class GlobalInstallerService {
+
+    private async runCommand(command: string, debug: boolean, timeoutMs: number, cwd?: string): Promise<void> {
+
+        await execaCommand(command, {
+            shell: true,
+            cwd,
+            windowsHide: true,
+            timeout: timeoutMs,
+            stdio: debug ? 'inherit' : 'ignore',
+            reject: true
+        })
+    
+    }
     
     /**
    * Install tarball globally using pnpm
@@ -33,13 +47,22 @@ export class GlobalInstallerService {
         
         try {
 
+            const installSpinner = ora({
+                text: 'Installing tarball globally...',
+                spinner: 'dots',
+                color: 'green',
+                isEnabled: Boolean(process.stderr.isTTY) && !process.env.CI,
+                isSilent: false,
+                hideCursor: true,
+                discardStdin: false,
+                stream: process.stderr
+            }).start()
+
             try {
 
-                execSync(`pnpm add -g "${tarballPath}"`, {
-                    encoding: 'utf-8',
-                    timeout,
-                    stdio: debug ? 'inherit' : 'pipe'
-                })
+                await this.runCommand(`pnpm add -g "${tarballPath}"`, debug, timeout)
+
+                installSpinner.succeed(`Successfully installed ${packageName}`)
 
                 return {
                     success: true,
@@ -49,6 +72,8 @@ export class GlobalInstallerService {
             } catch (error) {
 
                 const errorMessage = error instanceof Error ? error.message : String(error)
+
+                installSpinner.fail(`Failed to install globally: ${errorMessage}`)
 
                 return {
                     success: false,
@@ -319,11 +344,7 @@ export class GlobalInstallerService {
                 
                 }
 
-                execSync(command, {
-                    encoding: 'utf-8',
-                    timeout: options.timeout || 60000,
-                    stdio: options.debug ? 'inherit' : 'pipe'
-                })
+                await this.runCommand(command, options.debug, options.timeout || 60000)
 
                 // Clear the spinner line and show success message with checkmark
                 installSpinner.clear()

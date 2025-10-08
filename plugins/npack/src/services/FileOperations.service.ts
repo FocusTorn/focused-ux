@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync, statSync, r
 import { rm } from 'node:fs/promises'
 import { join, relative } from 'node:path'
 import { logger } from '@nx/devkit'
+import * as temp from 'temp'
 
 export interface FileOperationsResult {
     success: boolean
@@ -51,15 +52,25 @@ export class FileOperationsService {
     }
 
     /**
-   * Create directories recursively
-   */
+     * Create directories recursively
+     */
     createDirectories(paths: string[]): FileOperationsResult {
 
         try {
 
             for (const path of paths) {
 
-                mkdirSync(path, { recursive: true })
+                // Use temp package for temporary directories, regular mkdirSync for others
+                if (path.includes('.npack') || path.includes('temp-')) {
+
+                    // This is a temporary directory, use temp package - no fallbacks
+                    temp.mkdirSync({ dir: path })
+
+                } else {
+
+                    mkdirSync(path, { recursive: true })
+
+                }
             
             }
             return { success: true }
@@ -276,15 +287,25 @@ export class FileOperationsService {
     }
 
     /**
-   * Clean up directory recursively
-   */
+     * Clean up directory recursively
+     */
     async cleanupDirectory(path: string): Promise<FileOperationsResult> {
 
         try {
 
             if (this.exists(path)) {
 
-                await rm(path, { recursive: true, force: true })
+                // Use temp package cleanup for temp directories, regular rm for others
+                if (path.includes('.npack') || path.includes('temp-')) {
+
+                    // This is a temporary directory, use temp package cleanup - no fallbacks
+                    temp.cleanupSync()
+
+                } else {
+
+                    await rm(path, { recursive: true, force: true })
+
+                }
             
             }
             return { success: true }
@@ -301,8 +322,8 @@ export class FileOperationsService {
     }
 
     /**
-   * Clean up old temporary directories for a package
-   */
+     * Clean up old temporary directories for a package
+     */
     async cleanupOldTempDirs(tempBase: string, tarballBaseName: string): Promise<FileOperationsResult> {
 
         try {
@@ -312,6 +333,9 @@ export class FileOperationsService {
                 return { success: true }
             
             }
+
+            // Use temp package cleanup - no fallbacks
+            temp.cleanupSync()
 
             const entries = readdirSync(tempBase, { withFileTypes: true })
       

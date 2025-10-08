@@ -68,7 +68,39 @@
         "typescript.tsdk": "node_modules\\typescript\\lib",
         "workbench.settings.openDefaultSettings": false,
 
+        
+        //= Terminal copy/paste behavior ======================================== 
+        "terminal.integrated.copyOnSelection": false,
+        "terminal.integrated.rightClickBehavior": "default",
+        "terminal.integrated.middleClickBehavior": "paste",
+       
+        "terminal.integrated.sendKeybindingsToShell": false,
+        "terminal.integrated.altClickMovesCursor": false,
+        "terminal.integrated.macOptionIsMeta": false,
+
+        "terminal.integrated.allowChords": false,
+        
+
+        "terminal.integrated.commandsToSkipShell": [
+            "workbench.action.terminal.copySelection",
+            "workbench.action.terminal.copySelectionToClipboard"
+        ],
+        
+        
     },
+    "keybindings": [
+        {
+            "key": "ctrl+c",
+            "command": "workbench.action.terminal.copySelection",
+            "when": "terminalFocus && terminalTextSelected"
+        },
+        {
+            "key": "ctrl+c",
+            "command": "workbench.action.terminal.sendSequence",
+            "args": { "text": "\u0003" },
+            "when": "terminalFocus && !terminalTextSelected"
+        }
+    ]
 }
 
 

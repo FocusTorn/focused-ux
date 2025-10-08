@@ -1,7 +1,7 @@
 import { ExecutorContext } from '@nx/devkit'
 
-import { PackExecutorSchema } from './schema'
-import executor from './pack'
+import { PackExecutorSchema } from './schema.js'
+import executor from './pack.js'
 
 const options: PackExecutorSchema = {}
 const context: ExecutorContext = {
@@ -20,8 +20,12 @@ const context: ExecutorContext = {
 }
 
 describe('Pack Executor', () => {
+
     it('can run', async () => {
+
         const output = await executor(options, context)
         expect(output.success).toBe(true)
+    
     })
+
 })

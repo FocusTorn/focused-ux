@@ -1,8 +1,9 @@
-import { existsSync, cpSync, unlinkSync } from 'node:fs'
+import { existsSync, cpSync, unlinkSync, statSync, readdirSync, readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { execSync } from 'node:child_process'
+import { execaCommand } from 'execa'
 import { logger, workspaceRoot } from '@nx/devkit'
-import ora from 'ora'
+import ora, { oraPromise } from 'ora'
 
 export interface TarballCreationResult {
     success: boolean
@@ -25,21 +26,52 @@ export interface TarballOptions {
 
 export class TarballCreatorService {
 
+    private async runCommand(command: string, debug: boolean, timeoutMs: number, cwd?: string): Promise<void> {
+
+        await execaCommand(command, {
+            shell: true,
+            cwd,
+            windowsHide: true,
+            timeout: timeoutMs,
+            stdio: debug ? 'inherit' : 'ignore',
+            reject: true
+        })
+
+    }
+
     /**
-   * Test ora functionality
-   */
+     * Test ora functionality
+     */
     async testOra(): Promise<void> {
 
-        const spinner = ora('Loading unicorns').start()
-    
+        // Set TERM environment variable for Windows compatibility
+        if (!process.env.TERM) {
+
+            process.env.TERM = 'xterm-256color'
+        
+        }
+
+        const spinner = ora({
+            text: 'Testing ora functionality...',
+            spinner: 'dots',
+            color: 'blue',
+            isEnabled: true,
+            isSilent: false,
+            stream: process.stdout
+        })
+
+        spinner.start()
+
         await new Promise(resolve => setTimeout(resolve, 1000))
-    
+        
         spinner.color = 'yellow'
-        spinner.text = 'Loading rainbows'
-    
+        spinner.text = 'Loading unicorns'
         await new Promise(resolve => setTimeout(resolve, 1000))
-    
-        spinner.succeed('Is good')
+        
+        spinner.text = 'Loading rainbows'
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        spinner.succeed('Ora test completed successfully!')
     
     }
 
@@ -53,30 +85,31 @@ export class TarballCreatorService {
 
         try {
 
-            const spinner = ora({
-                text: 'Creating tarball...',
-                spinner: 'dots',
-                color: 'blue',
-                isEnabled: true,
-                isSilent: false,
-                hideCursor: true,
-                discardStdin: false
-            }).start()
+            // Set TERM environment variable for Windows compatibility
+            if (!process.env.TERM) {
 
-            try {
+                process.env.TERM = 'xterm-256color'
+            
+            }
+
+            const canAnimate = Boolean(process.stderr.isTTY) && !process.env.CI && !process.env.NX_TASK_HASH
+
+            if (!canAnimate) {
+
+                logger.info('Creating tarball...')
+            
+            }
+
+            // Use oraPromise for better terminal handling
+            await oraPromise(async (_spinner) => {
 
                 const startTime = Date.now()
         
                 // Use npm pack to create proper tar.gz file
                 const npmCommand = `npm pack "${packageDir}" --pack-destination "${outputDir}"`
-        
-                execSync(npmCommand, {
-                    encoding: 'utf-8',
-                    timeout: 60000,
-                    stdio: debug ? 'inherit' : 'pipe',
-                    cwd: join(packageDir, '..'), // Run from parent directory
-                    shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh'
-                })
+
+                // Run without blocking to allow spinner animation
+                await this.runCommand(npmCommand, debug, 60000, join(packageDir, '..'))
         
                 // npm pack creates a file with the package name and version
                 // We need to find and rename it to our desired filename
@@ -84,7 +117,7 @@ export class TarballCreatorService {
 
                 if (existsSync(packageJsonPath)) {
 
-                    const packageJsonContent = require(packageJsonPath)
+                    const packageJsonContent = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
                     const npmPackFilename = `${packageJsonContent.name.replace('@fux/', 'fux-')}-${packageJsonContent.version}.tgz`
                     const npmPackPath = join(outputDir, npmPackFilename)
           
@@ -112,24 +145,33 @@ export class TarballCreatorService {
                     await new Promise(resolve => setTimeout(resolve, 500 - elapsed))
                 
                 }
-        
+
                 // Create shortened path for display (use backslashes on Windows for consistency)
                 const shortenedPath = relative(workspaceRoot, tarballPath).replace(/\//g, '\\')
-        
-                // Clear the spinner line and show success message with checkmark
-                spinner.clear()
-                spinner.succeed(`Created tarball: ${shortenedPath}`)
-        
-                return {
-                    success: true,
-                    tarballPath
-                }
-        
-            } catch (error) {
+                
+                if (!canAnimate) {
 
-                spinner.fail(`Failed to create tarball: ${error instanceof Error ? error.message : String(error)}`)
-                throw error
-            
+                    logger.info(`Created tarball: ${shortenedPath}`)
+                
+                }
+
+                return `Created tarball: ${shortenedPath}`
+
+            }, {
+                text: 'Creating tarball...',
+                spinner: 'dots',
+                color: 'blue',
+                stream: process.stderr,
+                isEnabled: canAnimate,
+                isSilent: false,
+                hideCursor: true,
+                discardStdin: false,
+                successText: (result) => result
+            })
+
+            return {
+                success: true,
+                tarballPath
             }
       
         } catch (error) {
@@ -278,8 +320,7 @@ export class TarballCreatorService {
 
         try {
 
-            const fs = require('node:fs')
-            const stats = fs.statSync(tarballPath)
+            const stats = statSync(tarballPath)
 
             return {
                 size: stats.size,
@@ -302,8 +343,7 @@ export class TarballCreatorService {
         try {
 
             // Look for any .tgz files that might be leftover from failed creation
-            const fs = require('node:fs')
-            const files = fs.readdirSync(outputDir)
+            const files = readdirSync(outputDir)
       
             for (const file of files) {
 

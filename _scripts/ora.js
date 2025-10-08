@@ -14,6 +14,7 @@ const spinnerDiscardingStdin = ora({ //>
 
 setTimeout(() => {
 
+    spinnerDiscardingStdin.start()
     spinnerDiscardingStdin.succeed("Immediate Success!")
 
 }, 1000)
