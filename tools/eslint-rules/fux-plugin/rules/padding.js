@@ -158,6 +158,20 @@ export default {
                 case 'ContinueStatement':
                     return 'continue'
                 case 'ExpressionStatement':
+                    // Check if it's a custom pattern like it(), describe(), etc.
+                    const exprText = lineText
+                    for (const [type, pattern] of Object.entries(allMatchers)) {
+                        if (pattern instanceof RegExp) {
+                            if (pattern.test(exprText)) {
+                                return type
+                            }
+                        } else {
+                            const regex = new RegExp(pattern)
+                            if (regex.test(exprText)) {
+                                return type
+                            }
+                        }
+                    }
                     return 'expression'
                 default:
                     return 'other'

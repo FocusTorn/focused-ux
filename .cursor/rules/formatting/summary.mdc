@@ -131,7 +131,59 @@ alwaysApply: true
 
 <!-- Close Fold: Summary Trigger Phrases -->
 
-### 1.4. :: Additional Guidelines <!-- Start Fold -->
+### 1.4. :: Automatic High-Level Summary Detection <!-- Start Fold -->
+
+**CRITICAL ENFORCEMENT**: Apply summary format when providing ANY of these content types:
+
+- **Analysis Results**: When presenting findings from analysis tasks
+- **Issue Lists**: When listing problems, issues, or inconsistencies found
+- **Overview Content**: When giving high-level explanations of complex topics
+- **Findings Reports**: When reporting on investigations or audits
+- **Multi-Point Responses**: When providing structured information across multiple categories
+- **Comprehensive Reviews**: When reviewing documents, code, or systems
+
+**Detection Triggers**:
+
+- Presenting multiple categories of information
+- Using phrases like "issues found," "problems identified," "analysis shows"
+- Providing structured lists across different topics
+- Giving overviews of complex subjects
+- Reporting findings from investigations
+
+**Implementation**: Automatically wrap in summary format template when these patterns are detected.
+
+<!-- Close Fold: Automatic High-Level Summary Detection -->
+
+### 1.5. :: Response Type Auto-Detection <!-- Start Fold -->
+
+**When I provide structured information, I automatically apply summary format:**
+
+- **Analysis responses** → Summary format
+- **Issue identification** → Summary format
+- **Multi-category information** → Summary format
+- **Comprehensive reviews** → Summary format
+- **Findings reports** → Summary format
+- **Structured explanations** → Summary format
+
+<!-- Close Fold: Response Type Auto-Detection -->
+
+### 1.6. :: Content Structure Auto-Formatting <!-- Start Fold -->
+
+**CRITICAL**: If my response contains:
+
+- Multiple numbered/bulleted sections
+- Categorized information (issues, problems, findings)
+- Structured analysis results
+- Multi-topic explanations
+- Comprehensive reviews
+
+**THEN**: Automatically apply summary format template without user request.
+
+**Rationale**: Structured, multi-category responses benefit from consistent summary formatting for readability and organization.
+
+<!-- Close Fold: Content Structure Auto-Formatting -->
+
+### 1.7. :: Additional Guidelines <!-- Start Fold -->
 
 - **Always wrap in code block**: Use triple backticks with `markdown` language identifier
 - **Maintain placeholder format**: Keep brackets for all placeholder text

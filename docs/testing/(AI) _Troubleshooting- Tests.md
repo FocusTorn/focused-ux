@@ -11,8 +11,8 @@
 ### **Testing Documentation References**
 
 - **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General.md`
-- **TROUBLESHOOTING_TESTS**: `docs/testing/_Troubleshooting - Tests.md`
+- **MOCK_STRATEGY_GENERAL**: `docs/testing/(AI) _Strategy- Base- Mocking.md`
+- **TROUBLESHOOTING_TESTS**: `docs/testing/(AI) _Troubleshooting- Tests.md`
 
 ### **AI Testing Documentation References**
 
@@ -495,6 +495,179 @@ After implementing proper troubleshooting strategies:
 - Pattern documentation
 - Lesson sharing
 - Future planning
+
+---
+
+## **4. :: ESM Module Import Resolution Issues**
+
+### **4.1. :: Module Resolution Errors**
+
+**Error**: `Cannot find package '@ms-core' imported from...`
+
+**Root Cause**: Path aliases not configured or ESM import syntax not used
+
+**Solutions**:
+
+1. **Verify Path Aliases**: Check both `tsconfig.base.json` and `vitest.config.ts`
+
+    ```json
+    // tsconfig.base.json
+    {
+        "compilerOptions": {
+            "baseUrl": ".",
+            "paths": {
+                "@ms-core": ["libs/mock-strategy/src/core/index.ts"]
+            }
+        }
+    }
+    ```
+
+    ```typescript
+    // vitest.config.ts
+    export default defineConfig({
+        resolve: {
+            alias: {
+                '@ms-core': resolve(__dirname, '../../../libs/mock-strategy/src/core/index.ts'),
+            },
+        },
+    })
+    ```
+
+2. **Check ESM Import Syntax**: Use `import` not `require`
+    - **✅ CORRECT**: `import { setupCoreTestEnvironment } from '@ms-core'`
+    - **❌ INCORRECT**: `const { setupCoreTestEnvironment } = require('@ms-core')`
+
+3. **Verify Package Build**: Ensure mock strategy is built (`pae ms b`)
+
+### **4.2. :: Dual Configuration Requirements**
+
+**Error**: Tests pass but builds fail (or vice versa)
+
+**Root Cause**: Path aliases only configured in one location
+
+**Solution**: Configure aliases in both locations for dual resolution
+
+- **Build-time resolution**: `tsconfig.base.json`
+- **Test-time resolution**: `vitest.config.ts`
+
+---
+
+## **5. :: Function Name Matching Issues**
+
+### **5.1. :: Function Not Found Errors**
+
+**Error**: `(0, setupFileSystemMocks) is not a function`
+
+**Root Cause**: Imported function name doesn't match actual export name
+
+**Solutions**:
+
+1. **Check Exact Function Names**: Verify actual exports from global mock strategy
+
+    ```typescript
+    // Check what's actually exported
+    import * as coreStrategy from '@ms-core'
+    console.log(Object.keys(coreStrategy))
+    ```
+
+2. **Use Import Aliasing**: Resolve naming conflicts
+
+    ```typescript
+    import {
+        setupFileSystemMocks as setupGlobalFileSystemMocks,
+        setupPathMocks as setupGlobalPathMocks,
+    } from '@ms-gen'
+    ```
+
+3. **Common Name Mistakes**:
+    - **Assumed**: `setupCoreFileSystemMocks` (with prefix)
+    - **Actual**: `setupFileSystemMocks` (no prefix)
+
+### **5.2. :: Reference Documentation**
+
+Each global mock strategy provides these exact function names:
+
+- **`@ms-gen`**: `setupFileSystemMocks`, `setupPathMocks`, `setupOsMocks`, `setupProcessMocks`
+- **`@ms-core`**: `setupCoreTestEnvironment`, `resetCoreMocks`
+- **`@ms-ext`**: `setupExtensionTestEnvironment`, `resetExtensionMocks`, `setupVSCodeMocks`
+
+---
+
+## **6. :: Build Dependency Issues**
+
+### **6.1. :: Test Debugging Problems**
+
+**Error**: Tests pass but debugging is difficult or slow
+
+**Root Cause**: Wrong build dependency for test type
+
+**Solution**: Use appropriate build dependencies
+
+```json
+{
+    "targets": {
+        "test": {
+            "dependsOn": ["build:dev", "^build"] // Dev build for debugging
+        },
+        "test:integration": {
+            "dependsOn": ["build", "^build"] // Prod build for real-world testing
+        }
+    }
+}
+```
+
+### **6.2. :: Build Configuration Rationale**
+
+- **Unit Tests with `build:dev`**:
+    - Unbundled code for step-through debugging
+    - Sourcemaps for detailed error traces
+    - Faster rebuild cycles for iteration
+
+- **Integration Tests with `build`**:
+    - Bundled/minified production artifacts
+    - Real-world performance validation
+    - Actual deployment artifact testing
+
+---
+
+## **7. :: Mock Strategy Architecture Issues**
+
+### **7.1. :: Wrong Mock Strategy Selection**
+
+**Error**: Node.js built-ins in wrong strategy (e.g., `path` in `@ms-lib`)
+
+**Root Cause**: Incorrect understanding of mock strategy hierarchy
+
+**Solution**: Use proper mock strategy hierarchy
+
+- **`@ms-gen`** → Node.js built-ins (`fs/promises`, `path`, `os`, `child_process`)
+- **`@ms-core`** → Business logic packages (extends `@ms-gen`)
+- **`@ms-ext`** → VSCode extensions (extends `@ms-gen`)
+- **`@ms-lib`** → Shared/consumed libraries
+
+### **7.2. :: Mock Strategy Extension Problems**
+
+**Error**: "Cannot extend class" or "Property not accessible"
+
+**Root Cause**: Incorrect extension pattern or access modifiers
+
+**Solution**: Use proper extension pattern
+
+```typescript
+// Base class with protected mocks
+export class GeneralMockBuilder {
+    constructor(protected mocks: GeneralTestMocks) {}
+}
+
+// Extended class with override
+export class CoreMockBuilder extends GeneralMockBuilder {
+    override build(): CoreTestMocks {
+        return this.mocks as CoreTestMocks
+    }
+}
+```
+
+---
 
 ## **DYNAMIC MANAGEMENT NOTE**
 

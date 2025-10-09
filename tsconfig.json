@@ -10,9 +10,6 @@
             "path": "./packages/context-cherry-picker/core"
         },
         {
-            "path": "./packages/context-cherry-picker/ext"
-        },
-        {
             "path": "./packages/dynamicons/core"
         },
         {
@@ -62,6 +59,9 @@
         },
         {
             "path": "./plugins/vpack"
+        },
+        {
+            "path": "./tools/eslint-rules"
         }
     ]
 }

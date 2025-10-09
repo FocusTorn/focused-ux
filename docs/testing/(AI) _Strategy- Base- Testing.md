@@ -11,8 +11,8 @@
 ### **Testing Documentation References**
 
 - **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **MOCK_STRATEGY_GENERAL**: `docs/testing/Mock-Strategy_General.md`
-- **TROUBLESHOOTING_TESTS**: `docs/testing/_Troubleshooting - Tests.md`
+- **MOCK_STRATEGY_GENERAL**: `docs/testing/(AI) _Strategy- Base- Mocking.md`
+- **TROUBLESHOOTING_TESTS**: `docs/testing/(AI) _Troubleshooting- Tests.md`
 
 ---
 
@@ -32,6 +32,13 @@
 ### **CRITICAL EXECUTION CHECKLIST**
 
 **CRITICAL**: Before ANY response involving FocusedUX project testing operations, execute this validation sequence:
+
+**STEP 0: TESTING STRATEGY COMPLIANCE**
+
+- [ ] **Strategy Check**: Have I checked **TESTING_STRATEGY** for comprehensive testing patterns and mock strategy architecture?
+- [ ] **Mock Strategy Selection**: Have I verified the correct mock strategy hierarchy (@ms-gen, @ms-core, @ms-ext, @ms-lib, @ms-util, @ms-plugin, @ms-tool)?
+- [ ] **ESM Compatibility**: Have I verified ESM import syntax and dual configuration requirements?
+- [ ] **Build Dependencies**: Have I checked appropriate build dependencies for different test types?
 
 **STEP 1: PAE ALIAS COMPLIANCE**
 

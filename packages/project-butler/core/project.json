@@ -65,10 +65,7 @@
         
         // = Dependency Chain Testing ============================================ 
         "test:deps": { "extends": "test:deps" },
-        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" },
-        
-        // = Integration Testing ================================================= 
-        "test:integration": { "extends": "test:integration" }
+        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" }
         
     },
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",

@@ -31,6 +31,7 @@ export default async function vscodeTestExecutor(
     options: VscodeTestExecutorOptions,
     context: ExecutorContext
 ): Promise<{ success: boolean }> {
+
     const {
         tsConfig,
         config,
@@ -50,10 +51,13 @@ export default async function vscodeTestExecutor(
     const projectRoot = context.projectGraph?.nodes[context.projectName!]?.data?.root
 
     if (!projectRoot) {
+
         throw new Error(`Project root not found for ${context.projectName}`)
+    
     }
 
     try {
+
         // Step 1: Compile integration tests
         console.log('🔨 Compiling integration tests...')
 
@@ -62,7 +66,7 @@ export default async function vscodeTestExecutor(
             ? tsConfig.substring(projectRoot.length + 1)
             : tsConfig
         
-        const tscCommand = `tsc -p ${relativeTsConfig}`
+        const tscCommand = `npx tsc -p ${relativeTsConfig}`
 
         execSync(tscCommand, {
             stdio: 'inherit',
@@ -86,6 +90,7 @@ export default async function vscodeTestExecutor(
         ]
 
         if (filterOutput) {
+
             // Use PowerShell filtering for Windows
             const filterPattern = filterPatterns.join("', '")
             const command = `powershell -Command "& {npx vscode-test ${vscodeTestArgs.join(' ')} 2>&1 | Select-String -NotMatch '${filterPattern}'}"`
@@ -94,7 +99,9 @@ export default async function vscodeTestExecutor(
                 stdio: 'inherit',
                 cwd: projectRoot
             })
+        
         } else {
+
             // Run without filtering
             const command = `npx vscode-test ${vscodeTestArgs.join(' ')}`
 
@@ -102,33 +109,46 @@ export default async function vscodeTestExecutor(
                 stdio: 'inherit',
                 cwd: projectRoot
             })
+        
         }
 
         // Step 3: Clean up VSCode test artifacts to prevent file handle leaks
         console.log('🧹 Cleaning up VSCode test artifacts...')
         try {
+
             await cleanupVscodeTestArtifacts(projectRoot, context.projectName!)
             console.log('✅ VSCode test artifacts cleaned up successfully')
+        
         } catch (cleanupError) {
+
             console.warn('⚠️ Warning: Failed to clean up VSCode test artifacts:', cleanupError)
             // Don't fail the test run due to cleanup issues
+        
         }
 
         return { success: true }
+    
     } catch (error) {
+
         console.error('❌ VS Code integration tests failed:', error)
         
         // Clean up artifacts even on failure
         console.log('🧹 Cleaning up VSCode test artifacts after failure...')
         try {
+
             await cleanupVscodeTestArtifacts(projectRoot, context.projectName!)
             console.log('✅ VSCode test artifacts cleaned up after failure')
+        
         } catch (cleanupError) {
+
             console.warn('⚠️ Warning: Failed to clean up VSCode test artifacts after failure:', cleanupError)
+        
         }
         
         return { success: false }
+    
     }
+
 }
 
 /**
@@ -139,7 +159,9 @@ export default async function vscodeTestExecutor(
  * @param packageName - The name of the package being tested
  */
 async function cleanupVscodeTestArtifacts(projectRoot: string, packageName: string): Promise<void> {
+
     try {
+
         // Resolve paths for monorepo root and test artifacts
         const monorepoRoot = path.resolve(projectRoot, '..', '..', '..')
         const sharedCachePath = path.resolve(monorepoRoot, './libs/vscode-test-cli-config/.vscode-test')
@@ -147,65 +169,96 @@ async function cleanupVscodeTestArtifacts(projectRoot: string, packageName: stri
         
         // Clean up user data directory if it exists
         if (await pathExists(userDataDir)) {
+
             console.log(`🧹 Cleaning up VSCode test artifacts for ${packageName}...`)
             await fs.rm(userDataDir, { recursive: true, force: true })
             console.log(`✅ Cleaned up user data directory: ${userDataDir}`)
+        
         }
         
         // Also clean up any orphaned log directories
         const userDataParentDir = path.resolve(sharedCachePath, 'user-data')
+
         if (await pathExists(userDataParentDir)) {
+
             const entries = await fs.readdir(userDataParentDir, { withFileTypes: true })
+
             for (const entry of entries) {
+
                 if (entry.isDirectory()) {
+
                     const entryPath = path.resolve(userDataParentDir, entry.name)
                     // Check if directory is empty or contains only old log files
                     const subEntries = await fs.readdir(entryPath, { withFileTypes: true })
                     const hasRecentFilesResult = await hasRecentFiles(entryPath, subEntries)
                     
                     if (!hasRecentFilesResult) {
+
                         console.log(`🧹 Cleaning up orphaned test directory: ${entryPath}`)
                         await fs.rm(entryPath, { recursive: true, force: true })
+                    
                     }
+                
                 }
+            
             }
+        
         }
         
     } catch (error) {
+
         console.warn(`⚠️ Warning: Failed to clean up VSCode test artifacts for ${packageName}:`, error)
         // Don't throw - cleanup failures shouldn't break the build
+    
     }
+
 }
 
 /**
  * Checks if a path exists
  */
 async function pathExists(path: string): Promise<boolean> {
+
     try {
+
         await fs.access(path)
         return true
+    
     } catch {
+
         return false
+    
     }
+
 }
 
 /**
  * Checks if a directory contains recent files (within last hour)
  */
 async function hasRecentFiles(dirPath: string, entries: Dirent[]): Promise<boolean> {
+
     const oneHourAgo = Date.now() - (60 * 60 * 1000)
     
     for (const entry of entries) {
+
         const entryPath = path.resolve(dirPath, entry.name)
+
         try {
+
             const stats = await fs.stat(entryPath)
+
             if (stats.mtime.getTime() > oneHourAgo) {
+
                 return true
+            
             }
+        
         } catch {
             // Ignore stat errors
         }
+    
     }
     
     return false
+
 }

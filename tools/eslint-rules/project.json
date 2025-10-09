@@ -2,7 +2,6 @@
     "name": "@focused-ux/eslint-rules",
     "projectType": "library",
     "targets": {
-        
         "test": {
             "executor": "@nx/vite:test",
             "options": {
@@ -10,7 +9,6 @@
                 "passWithNoTests": true
             }
         },
-       
         "test:coverage": {
             "executor": "@nx/vite:test",
             "options": {

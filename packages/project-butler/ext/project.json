@@ -34,7 +34,8 @@
             }
         }, //<
         "build:dev": { //>
-            "extends": "build:ext:dev",
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": [ "{options.outputPath}" ],
             "dependsOn": [{
                 "projects": ["@fux/project-butler-core"],
                 "target": "build",
@@ -91,15 +92,30 @@
         "clean:cache": { "extends": "clean:cache" },
         
         //= Single Package Testing ============================================== 
-        "test": { "extends": "test" },
-        "test:coverage-tests": { "extends": "test:coverage-tests" },
+        "test": { //>
+            "extends": "test",
+            "dependsOn": ["build:dev", "^build"]
+        }, //<
+        "test:coverage-tests": { //>
+            "extends": "test:coverage-tests",
+            "dependsOn": ["build:dev", "^build"]
+        }, //<
         
         //= Dependency Chain Testing ============================================ 
-        "test:deps": { "extends": "test:deps" },
-        "test:deps:coverage-tests": { "extends": "test:deps:coverage-tests" },
+        "test:deps": { //>
+            "extends": "test:deps",
+            "dependsOn": ["build:dev", "^build"]
+        }, //<
+        "test:deps:coverage-tests": { //>
+            "extends": "test:deps:coverage-tests",
+            "dependsOn": ["build:dev", "^build"]
+        }, //<
          
         //= Integration Testing ================================================= 
-        "test:integration": { "extends": "test:integration" }
+        "test:integration": { //>
+            "extends": "test:integration",
+            "dependsOn": ["build", "^build"]
+        } //<
         
     },
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",

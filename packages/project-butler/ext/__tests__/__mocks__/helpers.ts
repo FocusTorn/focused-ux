@@ -1,129 +1,39 @@
 import { vi } from 'vitest'
 import { Buffer } from 'node:buffer'
 import * as vscode from 'vscode'
+import { 
+    setupExtensionTestEnvironment, 
+    resetExtensionMocks,
+    setupVSCodeMocks as setupGlobalVSCodeMocks,
+    type ExtensionTestMocks as GlobalExtensionTestMocks 
+} from '@ms-ext'
 
 // ============================================================================
 // TEST HELPERS
 // ============================================================================
 
-export interface ExtensionTestMocks { //>
-    vscode: {
-        commands: {
-            registerCommand: ReturnType<typeof vi.fn>
-        }
-        window: {
-            showInformationMessage: ReturnType<typeof vi.fn>
-            showWarningMessage: ReturnType<typeof vi.fn>
-            showErrorMessage: ReturnType<typeof vi.fn>
-            activeTextEditor: vscode.TextEditor | undefined
-            createTerminal: ReturnType<typeof vi.fn>
-            activeTerminal: vscode.Terminal | undefined
-        }
-        workspace: {
-            fs: {
-                readFile: ReturnType<typeof vi.fn>
-                writeFile: ReturnType<typeof vi.fn>
-                stat: ReturnType<typeof vi.fn>
-                copy: ReturnType<typeof vi.fn>
-            }
-            workspaceFolders: vscode.WorkspaceFolder[] | undefined
-        }
-        Uri: {
-            file: ReturnType<typeof vi.fn>
-        }
-        FileType: {
-            Directory: vscode.FileType.Directory
-            File: vscode.FileType.File
-        }
-    }
-    context: {
-        subscriptions: vscode.Disposable[]
-    }
+// Extended Extension test environment interface that adds project-specific mocks
+export interface ExtensionTestMocks extends GlobalExtensionTestMocks {
+    // Additional project-specific mocks can be added here if needed
 } //<
 
 export function setupTestEnvironment(): ExtensionTestMocks { //>
-    const mockTerminal = {
-        sendText: vi.fn(),
-        show: vi.fn(),
-    } as any
-
-    const mockTextEditor = {
-        document: {
-            uri: {
-                fsPath: '/test/file.txt',
-            },
-        },
-    } as any
-
-    const mockWorkspaceFolder = {
-        uri: {
-            fsPath: '/test',
-        },
-    } as any
-
-    const vscode = {
-        commands: {
-            registerCommand: vi.fn(),
-        },
-        window: {
-            showInformationMessage: vi.fn(),
-            showWarningMessage: vi.fn(),
-            showErrorMessage: vi.fn(),
-            activeTextEditor: mockTextEditor,
-            createTerminal: vi.fn().mockReturnValue(mockTerminal),
-            activeTerminal: mockTerminal,
-        },
-        workspace: {
-            fs: {
-                readFile: vi.fn(),
-                writeFile: vi.fn(),
-                stat: vi.fn(),
-                copy: vi.fn(),
-            },
-            workspaceFolders: [mockWorkspaceFolder],
-        },
-        Uri: {
-            file: vi.fn().mockImplementation((path: string) =>
-                ({ fsPath: path })),
-        },
-        FileType: {
-            Directory: 1,
-            File: 2,
-        },
-    }
-
-    const context = {
-        subscriptions: [],
-    }
-
-    return {
-        vscode,
-        context,
-    }
+    // Start with global extension test environment
+    const globalMocks = setupExtensionTestEnvironment()
+    
+    // Return the global mocks as our extended interface
+    // (no additional project-specific mocks needed for now)
+    return globalMocks as ExtensionTestMocks
 } //<
 
 export function resetAllMocks(mocks: ExtensionTestMocks): void { //>
-    Object.values(mocks.vscode.commands).forEach(mock =>
-        mock.mockReset())
-    Object.values(mocks.vscode.window).forEach((mock) => {
-        if (typeof mock === 'function') {
-            mock.mockReset()
-        }
-    })
-    Object.values(mocks.vscode.workspace.fs).forEach(mock =>
-        mock.mockReset())
-    mocks.vscode.Uri.file.mockReset()
+    // Use global extension reset function
+    resetExtensionMocks(mocks)
 } //<
 
 export function setupVSCodeMocks(mocks: ExtensionTestMocks): void { //>
-    // Default implementations
-    mocks.vscode.window.showInformationMessage.mockResolvedValue(undefined)
-    mocks.vscode.window.showWarningMessage.mockResolvedValue(undefined)
-    mocks.vscode.window.showErrorMessage.mockResolvedValue(undefined)
-    mocks.vscode.workspace.fs.readFile.mockResolvedValue(Buffer.from('file content'))
-    mocks.vscode.workspace.fs.writeFile.mockResolvedValue(undefined)
-    mocks.vscode.workspace.fs.stat.mockResolvedValue({ type: mocks.vscode.FileType.File })
-    mocks.vscode.workspace.fs.copy.mockResolvedValue(undefined)
+    // Use global extension setup function
+    setupGlobalVSCodeMocks(mocks)
 } //<
 
 export function createMockExtensionContext(): vscode.ExtensionContext { //>

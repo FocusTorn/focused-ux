@@ -64,41 +64,15 @@ const rule = {
             }
 
             // For multi-line blocks, check for folding markers
-            // Get the source code around the node to include comments
-            const startIndex = node.range[0]
-            let endIndex = node.range[1]
             const fullText = source.getText()
             
-            // Look for trailing comment after the closing brace
-            const closingBraceIndex = fullText.lastIndexOf('}', endIndex)
-
-            if (closingBraceIndex !== -1) {
-
-                // Look for //< marker after the closing brace on the same line
-                const afterClosingBrace = fullText.substring(closingBraceIndex + 1)
-                const nextLineStart = afterClosingBrace.indexOf('\n')
-
-                if (nextLineStart === -1) {
-
-                    // No newline after closing brace, check the rest of the line
-                    endIndex = fullText.length
-                
-                } else {
-
-                    // Check the line after the closing brace
-                    endIndex = closingBraceIndex + 1 + nextLineStart + 1
-                
-                }
+            // Get the line with the opening brace
+            const openingLine = source.getText().split('\n')[open.loc.start.line - 1]
+            const hasOpeningMarker = openingLine.includes('//>')
             
-            }
-            
-            const nodeText = fullText.substring(startIndex, endIndex)
-            
-            // Look for //> marker (opening marker)
-            const hasOpeningMarker = nodeText.includes('//>')
-            
-            // Look for //< marker (closing marker)
-            const hasClosingMarker = nodeText.includes('//<')
+            // Get the line with the closing brace
+            const closingLine = source.getText().split('\n')[close.loc.start.line - 1]
+            const hasClosingMarker = closingLine.includes('//<')
 
             // For multi-line blocks without folding markers, report error
             if (!hasOpeningMarker || !hasClosingMarker) {
@@ -133,7 +107,24 @@ const rule = {
                 check(node)
             
             },
-            IfStatement: check,
+            IfStatement(node) {
+
+                // Skip if statements that are children of other statements we're already checking
+                const parent = node.parent
+
+                if (parent && (
+                    parent.type === 'FunctionDeclaration'
+                    || parent.type === 'FunctionExpression'
+                    || parent.type === 'ArrowFunctionExpression'
+                    || parent.type === 'BlockStatement'
+                )) {
+
+                    return
+                
+                }
+                check(node)
+            
+            },
             FunctionDeclaration: check,
             FunctionExpression: check,
             ArrowFunctionExpression: check,

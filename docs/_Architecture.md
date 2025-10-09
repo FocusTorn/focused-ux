@@ -501,6 +501,7 @@ Extensions require careful dependency management to balance functionality with b
 {
     "dependencies": {
         "@fux/{feature}-core": "workspace:*", // ✅ Core business logic
+        // All third party run time dependencies would be listed here
         "external-dependency": "^1.0.0", // ✅ Runtime dependency
         "@types/external-dependency": "^1.0.0" // ✅ Type definitions for runtime deps
     },
@@ -561,6 +562,7 @@ import { load as loadExternal } from 'external-dependency' // Runtime import
 {
     "external": [
         "vscode", // ✅ Always externalize VSCode
+        // All third party run time dependencies would be listed here
         "external-dependency", // ✅ External runtime dependencies
         "fs-extra", // ✅ If used at runtime
         "axios" // ✅ If used at runtime
@@ -583,6 +585,7 @@ ALL packages (core, extension, shared) must follow this pattern to ensure proper
     "dependencies": {
         "gpt-tokenizer": "^3.0.1", // ✅ Runtime dependency - externalized
         "micromatch": "^4.0.8", // ✅ Runtime dependency - externalized
+        // All third party run time dependencies would be listed here
         "external-dependency": "^1.0.0" // ✅ Runtime dependency - externalized
     },
     "devDependencies": {
@@ -602,6 +605,7 @@ ALL packages (core, extension, shared) must follow this pattern to ensure proper
     "dependencies": {
         "@fux/package-name-core": "workspace:*", // ✅ Core package
         "gpt-tokenizer": "^3.0.1", // ✅ Runtime dependency - externalized
+        // All third party run time dependencies would be listed here
         "external-dependency": "^1.0.0", // ✅ Runtime dependency - externalized
         "micromatch": "^4.0.8" // ✅ Runtime dependency - externalized
     },
@@ -624,6 +628,7 @@ ALL packages (core, extension, shared) must follow this pattern to ensure proper
         "vscode", // ✅ Always externalize VSCode
         "gpt-tokenizer", // ✅ Runtime dependency
         "micromatch", // ✅ Runtime dependency
+        // All third party run time dependencies would be listed here
         "external-dependency" // ✅ Runtime dependency
     ]
 }
@@ -748,6 +753,7 @@ export * from './_config/constants.js'
 - **Clear Categorization**: Each category must be clearly separated with comments
 - **Comprehensive Coverage**: All interfaces and services must be exported
 - **Consistent Pattern**: Follow the same structure across all core packages
+- **File Extensions**: **REQUIRED** - Use `.js` extensions in export statements for ESM compliance
 
 **Benefits:**
 

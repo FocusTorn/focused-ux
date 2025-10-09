@@ -1,16 +1,22 @@
-import { defineConfig, mergeConfig } from 'vitest/config'
-import baseConfig from '../../vitest.functional.base'
+import { defineConfig } from 'vitest/config'
 
-export default mergeConfig(
-    baseConfig,
-    defineConfig({
-        test: {
-            setupFiles: ['./__tests__/__mocks__/globals.ts'],
-            include: [
-                './__tests__/functional-tests/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-                './__tests__/rule-tester/**/*.test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+export default defineConfig({
+    test: {
+        globals: true,
+        environment: 'node',
+        include: ['__tests__/**/*.test.{js,ts}'],
+        exclude: ['node_modules', 'dist'],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'json', 'html'],
+            exclude: [
+                'node_modules/',
+                'dist/',
+                '__tests__/',
+                '**/*.test.{js,ts}',
+                '**/*.spec.{js,ts}',
             ],
-            testTimeout: 10000, // Increase timeout to 10 seconds
         },
-    }),
-)
+    },
+})
+

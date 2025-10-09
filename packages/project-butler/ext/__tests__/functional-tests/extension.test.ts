@@ -10,7 +10,7 @@ import {
     setupVSCodeCommandRegistrationScenario,
     setupVSCodeWindowMessageScenario,
     setupVSCodeErrorScenario,
-    createExtensionMockBuilder
+    createProjectButlerExtensionMockBuilder
 } from '../__mocks__/mock-scenario-builder'
 
 // Mock the core package

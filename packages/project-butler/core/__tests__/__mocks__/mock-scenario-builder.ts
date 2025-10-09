@@ -2,6 +2,7 @@ import { vi } from 'vitest'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { CoreTestMocks } from './helpers'
+import { CoreMockBuilder } from '@ms-core'
 
 // ┌──────────────────────────────────────────────────────────────────────────┐
 // │                        MOCK SCENARIO BUILDER                             │
@@ -264,9 +265,11 @@ export function setupConcurrentBackupScenario(
 // │                        Mock Builder Pattern                              │
 // └──────────────────────────────────────────────────────────────────────────┘
 
-export class ProjectButlerMockBuilder {
+export class ProjectButlerMockBuilder extends CoreMockBuilder {
 
-    constructor(private mocks: CoreTestMocks) {}
+    constructor(mocks: CoreTestMocks) {
+        super(mocks)
+    }
 
     backup(options: BackupScenarioOptions): ProjectButlerMockBuilder {
         setupBackupSuccessScenario(this.mocks, options)
@@ -318,7 +321,7 @@ export class ProjectButlerMockBuilder {
     }
 
     build(): CoreTestMocks {
-        return this.mocks
+        return this.mocks as CoreTestMocks
     }
 
 }

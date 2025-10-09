@@ -1,16 +1,19 @@
 {
     "compilerOptions": {
-        
-        // PACKAGE CHANGED ==============================================
-        
         "sourceMap": true,
         "declaration": true,
         "declarationMap": true,
         "composite": true,
-        
-        // "baseUrl": ".", // not used unless with browser AMD loaders
-        
-        // LANGUAGE & ENVIRONMENT =======================================
+        "baseUrl": ".",
+        "paths": {
+            "@ms-core": ["libs/mock-strategy/src/core/index.ts"],
+            "@ms-ext": ["libs/mock-strategy/src/ext/index.ts"],
+            "@ms-gen": ["libs/mock-strategy/src/gen/index.ts"],
+            "@ms-lib": ["libs/mock-strategy/src/lib/index.ts"],
+            "@ms-main": ["libs/mock-strategy/src/index.ts"],
+            "@ms-plugin": ["libs/mock-strategy/src/plugin/index.ts"],
+            "@ms-tool": ["libs/mock-strategy/src/tool/index.ts"]
+        },
         "lib": ["ES2022", "DOM"],
         "types": ["node", "vitest", "@types/vscode", "vitest/globals", "mocha"],
         "target": "ES2022",
@@ -18,8 +21,6 @@
         "useDefineForClassFields": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-
-        // MODULES ======================================================
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
         "isolatedModules": true,
@@ -27,8 +28,6 @@
         "resolveJsonModule": true,
         "allowSyntheticDefaultImports": true,
         "forceConsistentCasingInFileNames": true,
-        
-        // TYPECHECKING =================================================
         "strict": true,
         "allowUnreachableCode": false,
         "noImplicitOverride": true,
@@ -37,13 +36,8 @@
         "noImplicitThis": true,
         "noUnusedParameters": false,
         "noFallthroughCasesInSwitch": true,
-        
-        // EMIT =========================================================
         "noEmitOnError": true,
-        "downlevelIteration": true, //iteration primitives used more accurately in ES5
-        "importHelpers": true // downlevel helper tslib imported not generated
-        // "outFile": "", // Only if module is None, System, or AMD
-        // "sourceRoot": "", //debugger finds .ts when not relative source locations
-        
+        "downlevelIteration": true,
+        "importHelpers": true
     }
 }

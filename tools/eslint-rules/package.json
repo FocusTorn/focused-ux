@@ -4,13 +4,6 @@
     "type": "module",
     "description": "Custom ESLint rules for FocusedUX project",
     "main": "index.js",
-    "scripts": {
-        "test": "nx test @focused-ux/eslint-rules",
-        "test:watch": "nx test:watch @focused-ux/eslint-rules",
-        "test:coverage": "nx test:coverage @focused-ux/eslint-rules",
-        "test:rules": "nx test:rules @focused-ux/eslint-rules",
-        "test:integration": "nx test:integration @focused-ux/eslint-rules"
-    },
     "dependencies": {
         "@nx/devkit": "21.6.3",
         "eslint": "^9.37.0"

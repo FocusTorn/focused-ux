@@ -76,7 +76,12 @@ In the `project.json` file, third-party packages are listed in the `external` ar
     "build": {
         "executor": "@nx/esbuild:esbuild",
         "options": {
-            "external": ["vscode", "dependency1", "dependency2"]
+            "external": [
+                "vscode",
+                "dependency1",
+                "dependency2",
+                "@fux/package-name-assets" // ← Accessory packages must be externalized
+            ]
         }
     }
 }
@@ -84,12 +89,14 @@ In the `project.json` file, third-party packages are listed in the `external` ar
 
 ### 2. Packaging Process
 
-The `create-vsix.js` script handles the packaging:
+The `@fux/vpack:pack` executor handles the packaging:
 
-1. **Dependency Resolution**: Uses `pnpm list --prod --json --depth=Infinity` to get the complete dependency tree
-2. **Node Modules Creation**: Creates a `node_modules` folder in the deployment directory
-3. **Dependency Copying**: Copies all production dependencies and their transitive dependencies
-4. **VSIX Packaging**: Uses `vsce` to create the final VSIX file
+1. **Dependency Resolution**: Uses workspace dependencies and production dependency tree
+2. **Asset Processing**: Handles asset copying and processing from accessory packages
+3. **Node Modules Creation**: Creates a `node_modules` folder in the deployment directory
+4. **Dependency Copying**: Copies all production dependencies and their transitive dependencies
+5. **VSIX Packaging**: Uses `vsce` to create the final VSIX file
+6. **Deployment Management**: Manages deployment paths and contents extraction
 
 ### 3. VSCodeIgnore Configuration
 
@@ -131,8 +138,53 @@ packages/package-name/
 │   ├── project.json
 │   ├── .vscodeignore  # ← Required for node_modules inclusion
 │   └── src/
-└── all/            # Combined package (optional)
+└── assets/         # Accessory package (optional)
+    ├── package.json
+    ├── project.json
+    └── src/
 ```
+
+### Accessory Packages
+
+Some packages may include additional accessory packages (e.g., `assets`, `themes`, `config`) that provide specialized functionality:
+
+- **Assets Package**: Generates and processes static assets (e.g., `@fux/dynamicons-assets`)
+- **Theme Package**: Provides theme-specific resources
+- **Config Package**: Manages configuration and settings
+
+**Key Principles:**
+
+- Accessory packages are **externalized** in extension builds
+- They must have their **runtime dependencies externalized** as well
+- Extension packages depend on accessory packages via `workspace:*` dependencies
+- All accessory packages follow the same externalization patterns as core packages
+
+### Specialized Asset Processing Packages
+
+For packages requiring complex asset generation (e.g., icon themes, preview images, dynamic content), a specialized asset processing package may be needed:
+
+**Example: `@fux/dynamicons-assets`**
+
+- **Purpose**: Generates icon themes, preview images, and processed assets
+- **Dependencies**: Specialized tools (`puppeteer`, `sharp`, `svgo`) for asset processing
+- **Build Targets**: Custom targets like `generate-assets` and `build-with-assets`
+- **Export Strategy**: Path-based exports (`./themes/*`, `./icons/*`, `./images/*`)
+- **Integration**: Core and extension packages depend on generated assets
+
+**Key Characteristics:**
+
+- **No Runtime Dependencies**: Only build-time dependencies for asset generation
+- **Custom Build Targets**: Specialized targets for asset processing workflows
+- **Path-Based Exports**: Exports specific asset paths rather than modules
+- **Externalization**: Must be externalized in extension builds
+- **Asset Generation**: Generates static assets consumed by other packages
+
+**When to Use:**
+
+- Complex asset processing workflows
+- Dynamic asset generation from templates
+- Integration with specialized tools (image processing, SVG optimization)
+- Packages requiring preview image generation
 
 ## Dependency Management
 
@@ -143,6 +195,7 @@ packages/package-name/
 ```json
 {
     "dependencies": {
+        // All third party run time dependencies would be listed here
         "essential-dependency": "^1.0.0"
     },
     "devDependencies": {
@@ -169,6 +222,7 @@ packages/package-name/
 {
     "dependencies": {
         "@fux/package-name-core": "workspace:*",
+        // All third party run time dependencies would be listed here
         "essential-dependency": "^1.0.0"
     },
     "devDependencies": {
@@ -268,6 +322,7 @@ pnpm install
 Before packaging an extension, verify:
 
 - [ ] All third-party packages are listed in `external` array in `project.json`
+- [ ] All accessory packages (e.g., assets) have their runtime dependencies externalized
 - [ ] `.vscodeignore` file exists and includes `!node_modules/**`
 - [ ] Dependencies are in `dependencies` (not `devDependencies`) in `package.json`
 - [ ] No phantom dependencies in `pnpm list`
@@ -275,19 +330,21 @@ Before packaging an extension, verify:
 - [ ] VSIX contains `node_modules` folder with all dependencies
 - [ ] Extension package follows established dependency patterns
 - [ ] Core package has minimal dependencies only
+- [ ] Accessory packages are properly externalized in extension builds
 
 ## Troubleshooting Commands
 
 ```bash
 # Check dependencies
-pnpm list --prod --json --depth=Infinity --filter <package-name>
+pnpm list --prod --json --depth=Infinity --filter @fux/<package-name>
 
-# Test packaging
-nx package:dev @fux/<package-name>
+# Test packaging (run `pae help` for current aliases)
+pae {alias} p      # Package extension
+pae {alias} pd     # Package extension (dev mode)
 
 # Clean and rebuild
-nx clean @fux/<package-name>
-nx build @fux/<package-name>
+pae {alias} clean  # Clean package
+pae {alias} b      # Build package
 
 # Check VSIX contents
 Expand-Archive -Path vsix_packages/<package-name>-dev.vsix -DestinationPath tmp/vsix-test -Force

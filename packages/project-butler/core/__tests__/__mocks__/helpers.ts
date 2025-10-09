@@ -1,71 +1,44 @@
 import { vi } from 'vitest'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
+import { 
+    setupCoreTestEnvironment, 
+    resetCoreMocks, 
+    type CoreTestMocks as GlobalCoreTestMocks 
+} from '@ms-core'
+import { 
+    setupFileSystemMocks as setupGlobalFileSystemMocks,
+    setupPathMocks as setupGlobalPathMocks
+} from '@ms-gen'
 
 // ┌──────────────────────────────────────────────────────────────────────────┐
 // │                            TEST HELPERS                                 │
 // └──────────────────────────────────────────────────────────────────────────┘
 
-// Core test environment interface
-export interface CoreTestMocks {
-    fileSystem: {
-        readFile: ReturnType<typeof vi.fn>
-        writeFile: ReturnType<typeof vi.fn>
-        stat: ReturnType<typeof vi.fn>
-        copyFile: ReturnType<typeof vi.fn>
-        access: ReturnType<typeof vi.fn>
-        readdir: ReturnType<typeof vi.fn>
-        mkdir: ReturnType<typeof vi.fn>
-        rmdir: ReturnType<typeof vi.fn>
-        unlink: ReturnType<typeof vi.fn>
-    }
-    path: {
-        dirname: ReturnType<typeof vi.fn>
-        basename: ReturnType<typeof vi.fn>
-        join: ReturnType<typeof vi.fn>
-        resolve: ReturnType<typeof vi.fn>
-        extname: ReturnType<typeof vi.fn>
-    }
-    yaml: {
-        load: ReturnType<typeof vi.fn>
-    }
+// Extended Core test environment interface that adds project-specific mocks
+export interface CoreTestMocks extends GlobalCoreTestMocks {
+    // Additional project-specific mocks can be added here if needed
 }
 
-// Environment setup
+// Environment setup - extends global CoreTestMocks
 export function setupTestEnvironment(): CoreTestMocks {
-    const fileSystem = {
-        readFile: vi.fn(),
-        writeFile: vi.fn(),
-        stat: vi.fn(),
-        copyFile: vi.fn(),
-        access: vi.fn(),
-        readdir: vi.fn(),
-        mkdir: vi.fn(),
-        rmdir: vi.fn(),
-        unlink: vi.fn(),
-    }
-
-    const path = {
-        dirname: vi.fn(),
-        basename: vi.fn(),
-        join: vi.fn(),
-        resolve: vi.fn(),
-        extname: vi.fn(),
-    }
-
+    // Start with global core test environment
+    const globalMocks = setupCoreTestEnvironment()
+    
+    // Add project-specific yaml mocking
     const yaml = {
         load: vi.fn(),
     }
 
     return {
-        fileSystem,
-        path,
+        ...globalMocks,
         yaml,
     }
 }
 
 // Mock object creators
 export function createMockFileSystem(): CoreTestMocks['fileSystem'] {
+
     return {
         readFile: vi.fn(),
         writeFile: vi.fn(),
@@ -77,9 +50,11 @@ export function createMockFileSystem(): CoreTestMocks['fileSystem'] {
         rmdir: vi.fn(),
         unlink: vi.fn(),
     }
+
 }
 
 export function createMockPathUtils(): CoreTestMocks['path'] {
+
     return {
         dirname: vi.fn(),
         basename: vi.fn(),
@@ -87,54 +62,44 @@ export function createMockPathUtils(): CoreTestMocks['path'] {
         resolve: vi.fn(),
         extname: vi.fn(),
     }
+
 }
 
 export function createMockYaml(): CoreTestMocks['yaml'] {
+
     return {
         load: vi.fn(),
     }
+
 }
 
-// Mock reset utilities
+// Mock reset utilities - extends global resetCoreMocks
 export function resetAllMocks(mocks: CoreTestMocks): void {
-    Object.values(mocks.fileSystem).forEach(mock => mock.mockReset())
-    Object.values(mocks.path).forEach(mock => mock.mockReset())
-    Object.values(mocks.yaml).forEach(mock => mock.mockReset())
+    // Use global core reset function
+    resetCoreMocks(mocks)
+    // Reset project-specific yaml mocks
+    if (mocks.yaml) {
+        Object.values(mocks.yaml).forEach(mock => mock.mockReset())
+    }
 }
 
 export function setupFileSystemMocks(mocks: CoreTestMocks): void {
-    // Default implementations
-    mocks.fileSystem.readFile.mockResolvedValue('file content')
-    mocks.fileSystem.writeFile.mockResolvedValue(undefined)
-    mocks.fileSystem.stat.mockResolvedValue({ type: 'file' as const })
-    mocks.fileSystem.copyFile.mockResolvedValue(undefined)
-    mocks.fileSystem.access.mockResolvedValue(undefined)
-    mocks.fileSystem.readdir.mockResolvedValue([])
-    mocks.fileSystem.mkdir.mockResolvedValue(undefined)
-    mocks.fileSystem.rmdir.mockResolvedValue(undefined)
-    mocks.fileSystem.unlink.mockResolvedValue(undefined)
+    // Use global core file system setup
+    setupGlobalFileSystemMocks(mocks)
 }
 
 export function setupPathMocks(mocks: CoreTestMocks): void {
-    // Default implementations
-    mocks.path.dirname.mockImplementation((path: string) =>
-        path.split('/').slice(0, -1).join('/') || '.')
-    mocks.path.basename.mockImplementation((path: string) =>
-        path.split('/').pop() || '')
-    mocks.path.join.mockImplementation((...paths: string[]) =>
-        paths.join('/'))
-    mocks.path.resolve.mockImplementation((path: string) => path)
-    mocks.path.extname.mockImplementation((path: string) => {
-        const lastDot = path.lastIndexOf('.')
-        return lastDot === -1 ? '' : path.slice(lastDot)
-    })
+    // Use global core path setup
+    setupGlobalPathMocks(mocks)
 }
 
 export function setupYamlMocks(mocks: CoreTestMocks): void {
+
     // Default implementations
     mocks.yaml.load.mockReturnValue({
         ProjectButler: {
             'packageJson-order': ['name', 'version', 'description', 'main', 'scripts', 'dependencies'],
         },
     })
+
 }

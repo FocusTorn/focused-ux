@@ -1,23 +1,23 @@
 // Service Interfaces
-export * from './_interfaces/IPackageJsonFormattingService'
-export * from './_interfaces/ITerminalManagementService'
-export * from './_interfaces/IBackupManagementService'
-export * from './_interfaces/IPoetryShellService'
-export * from './_interfaces/IProjectButlerManagerService'
+export * from './_interfaces/IPackageJsonFormattingService.js'
+export * from './_interfaces/ITerminalManagementService.js'
+export * from './_interfaces/IBackupManagementService.js'
+export * from './_interfaces/IPoetryShellService.js'
+export * from './_interfaces/IProjectButlerManagerService.js'
 
 // Adapter Interfaces
-export * from './_interfaces/IFileSystemAdapter'
-export * from './_interfaces/IPathAdapter'
-export * from './_interfaces/IYamlAdapter'
+export * from './_interfaces/IFileSystemAdapter.js'
+export * from './_interfaces/IPathAdapter.js'
+export * from './_interfaces/IYamlAdapter.js'
 
 // Services
-export * from './services/PackageJsonFormatting.service'
-export * from './services/TerminalManagement.service'
-export * from './services/BackupManagement.service'
-export * from './services/PoetryShell.service'
-export * from './services/ProjectButlerManager.service'
+export * from './services/PackageJsonFormatting.service.js'
+export * from './services/TerminalManagement.service.js'
+export * from './services/BackupManagement.service.js'
+export * from './services/PoetryShell.service.js'
+export * from './services/ProjectButlerManager.service.js'
 
 // Constants
-export * from './_config/constants'
+export * from './_config/constants.js'
 
 // Core package exports all services and interfaces for use by the extension

@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 import * as vscode from 'vscode'
 import { ExtensionTestMocks } from './helpers'
+import { ExtensionMockBuilder } from '@ms-ext'
 
 // ┌────────────────────────────────────────────────────────────────────────────┐
 // │                 VSCode Mock Scenarios for Extension Tests                  │
@@ -214,64 +215,66 @@ export function setupVSCodeErrorScenario( //>
 // │                          Extension Mock Builder                          │
 // └──────────────────────────────────────────────────────────────────────────┘
 
-export class ExtensionMockBuilder { //>
+export class ProjectButlerExtensionMockBuilder extends ExtensionMockBuilder { //>
 
-    constructor(private mocks: ExtensionTestMocks) {}
+    constructor(mocks: ExtensionTestMocks) {
+        super(mocks)
+    }
 
     fileRead( //> setupVSCodeFileReadScenario
         options: VSCodeFileScenarioOptions
-    ): ExtensionMockBuilder {
+    ): ProjectButlerExtensionMockBuilder {
         setupVSCodeFileReadScenario(this.mocks, options)
         return this
     } //<
     fileWrite( //> setupVSCodeFileWriteScenario
         options: VSCodeFileScenarioOptions
-    ): ExtensionMockBuilder {
+    ): ProjectButlerExtensionMockBuilder {
         setupVSCodeFileWriteScenario(this.mocks, options)
         return this
     } //<
     fileStat( //> setupVSCodeFileStatScenario
         options: VSCodeFileScenarioOptions
-    ): ExtensionMockBuilder {
+    ): ProjectButlerExtensionMockBuilder {
         setupVSCodeFileStatScenario(this.mocks, options)
         return this
     } //<
     fileCopy( //> setupVSCodeFileCopyScenario
         sourcePath: string,
         destinationPath: string
-    ): ExtensionMockBuilder {
+    ): ProjectButlerExtensionMockBuilder {
         setupVSCodeFileCopyScenario(this.mocks, sourcePath, destinationPath)
         return this
     } //<
     commandRegistration( //> setupVSCodeCommandRegistrationScenario
         options: VSCodeCommandScenarioOptions
-    ): ExtensionMockBuilder {
+    ): ProjectButlerExtensionMockBuilder {
         setupVSCodeCommandRegistrationScenario(this.mocks, options)
         return this
     } //<
     windowMessage( //> setupVSCodeWindowMessageScenario
         messageType: 'info' | 'warning' | 'error',
         message: string
-    ): ExtensionMockBuilder {
+    ): ProjectButlerExtensionMockBuilder {
         setupVSCodeWindowMessageScenario(this.mocks, messageType, message)
         return this
     } //<
     workspace( //> setupVSCodeWorkspaceScenario
         options: VSCodeWorkspaceScenarioOptions
-    ): ExtensionMockBuilder {
+    ): ProjectButlerExtensionMockBuilder {
         setupVSCodeWorkspaceScenario(this.mocks, options)
         return this
     } //<
     terminal( //> setupVSCodeTerminalScenario
         terminalName?: string
-    ): ExtensionMockBuilder {
+    ): ProjectButlerExtensionMockBuilder {
         setupVSCodeTerminalScenario(this.mocks, terminalName)
         return this
     } //<
     error( //> setupVSCodeErrorScenario
         errorType: 'fileSystem' | 'command' | 'workspace',
         errorMessage: string
-    ): ExtensionMockBuilder {
+    ): ProjectButlerExtensionMockBuilder {
         setupVSCodeErrorScenario(this.mocks, errorType, errorMessage)
         return this
     } //<
@@ -280,8 +283,8 @@ export class ExtensionMockBuilder { //>
 
 } //<
 
-export function createExtensionMockBuilder( //>
+export function createProjectButlerExtensionMockBuilder( //>
     mocks: ExtensionTestMocks
-): ExtensionMockBuilder {
-    return new ExtensionMockBuilder(mocks)
+): ProjectButlerExtensionMockBuilder {
+    return new ProjectButlerExtensionMockBuilder(mocks)
 } //<

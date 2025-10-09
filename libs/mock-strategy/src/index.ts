@@ -3,6 +3,9 @@
 
 // Note: expect is imported in individual test files to avoid circular dependencies
 
+// General Mock Strategy Exports
+export * from './gen/index.js'
+
 // Core Package Exports
 export * from './core/index.js'
 
