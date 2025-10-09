@@ -85,6 +85,21 @@ export class PackageResolverService {
     }
 
     /**
+     * Read and parse package.json in one operation
+     */
+    async readPackageJson(packageDir: string): Promise<{ content: string; json: Record<string, unknown>; metadata: PackageMetadata }> {
+
+        const { readFile } = await import('node:fs/promises')
+        const packageJsonPath = join(packageDir, 'package.json')
+        const content = await readFile(packageJsonPath, 'utf-8')
+        const json = JSON.parse(content)
+        const metadata = this.getPackageMetadata(packageDir, content)
+
+        return { content, json, metadata }
+    
+    }
+
+    /**
    * Validate package.json exists and is readable
    */
     validatePackageJson(packageDir: string): { valid: boolean; error?: string } {

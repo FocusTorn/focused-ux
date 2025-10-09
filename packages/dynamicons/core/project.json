@@ -13,6 +13,8 @@
                 "main": "packages/dynamicons/core/src/index.ts",
                 "outputPath": "packages/dynamicons/core/dist",
                 "tsConfig": "packages/dynamicons/core/tsconfig.lib.json",
+                "declarationRootDir": "packages/dynamicons/core/src",
+                
                 "platform": "node",
                 "format": [
                     "esm"
@@ -21,7 +23,6 @@
                 "sourcemap": true,
                 "target": "es2022",
                 "keepNames": true,
-                "declarationRootDir": "packages/dynamicons/core/src",
                 "thirdParty": false,
                 "deleteOutputPath": true,
                 "external": [

@@ -4,13 +4,13 @@
 
 ### **Documentation References**
 
-- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
-- **ARCHITECTURE_DOCS**: `docs/Architecture.md`
+- **SOP_DOCS**: `docs/_SOP.md`
+- **ARCH_DOCS**: `docs/_Architecture.md`
 - **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
 
 ### **Output File References**
 
-- **STAGING_FILE**: `.cursor/ADHOC/fluency-output-staging.md`
+- **STAGING_FILE**: `.cursor/command-phases/fluency-output-staging.md`
 - **FINAL_OUTPUT**: `.cursor/ADHOC/fluency-output-{package-name}.md`
 
 ### **Phase Command References**
@@ -21,6 +21,7 @@
 - **PHASE_4_CMD**: `@fluency-phase4-Implementation.md`
 - **PHASE_5_CMD**: `@fluency-phase5-Integration.md`
 - **PHASE_6_CMD**: `@fluency-phase6-Synthesis.md`
+- **PHASE_7_CMD**: `@fluency-phase7-Optimization.md`
 
 ---
 
@@ -91,6 +92,11 @@
     - Result: Creates **FINAL_OUTPUT**
     - Status: Ready to synthesize available phase data
 
+7. **Phase 7: Optimization Analysis** ✅ IMPLEMENTED
+    - Execute: **PHASE_7_CMD**
+    - Result: Appends optimization insights to **FINAL_OUTPUT**
+    - Status: Complete optimization analysis available
+
 ### **STEP 3: EXECUTION VALIDATION**
 
 **AI TASK**: Validate that all phases executed successfully
@@ -102,6 +108,7 @@
 - [ ] Verify Phase 3 is marked as complete (✅)
 - [ ] Verify Phase 4 is marked as complete (✅)
 - [ ] Verify Phase 5 is marked as complete (✅)
+- [ ] Verify Phase 7 is marked as complete (✅)
 
 ## **OUTPUT FORMAT**
 
@@ -117,6 +124,7 @@
 - Phase 4: Implementation Analysis ✅ IMPLEMENTED
 - Phase 5: Integration Understanding ✅ IMPLEMENTED
 - Phase 6: Final Synthesis ✅ IMPLEMENTED
+- Phase 7: Optimization Analysis ✅ IMPLEMENTED
 
 **Usage**: Each phase appends its analysis to this document, creating a comprehensive package understanding over time.
 
@@ -130,6 +138,7 @@
 - [ ] Phase 4: Implementation analysis complete and validated ✅ IMPLEMENTED
 - [ ] Phase 5: Integration understanding complete and validated ✅ IMPLEMENTED
 - [ ] Phase 6: Final synthesis complete and validated ✅ IMPLEMENTED
+- [ ] Phase 7: Optimization analysis complete and validated ✅ IMPLEMENTED
 
 ### **KNOWLEDGE INTEGRATION**
 
@@ -146,6 +155,7 @@
 - [ ] Can map functionality flows and interactions
 - [ ] Can analyze implementation quality and structure
 - [ ] Can assess integration complexity and dependencies
+- [ ] Can identify optimization opportunities and improvement areas
 
 ## **ERROR HANDLING AND RECOVERY**
 

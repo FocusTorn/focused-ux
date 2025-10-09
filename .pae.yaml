@@ -11,6 +11,7 @@ feature-nxTargets:
     b:
         run-from: ext
         run-target: build
+        flags: --output-style=stream
     t:
         run-from: ext
         run-target: test:deps
@@ -33,6 +34,7 @@ feature-nxTargets:
 targets:
     nx-targets:
         b: build
+        bd: build:dev
         p: package
         pd: package:dev
         pub: publish
@@ -163,4 +165,3 @@ nxPackages:
     vscte: '@fux/vscode-test-executor'
     fttc: '@fux/ft-typescript'
     reco: '@fux/recommended'
-

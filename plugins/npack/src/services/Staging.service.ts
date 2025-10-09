@@ -1,4 +1,5 @@
-import { mkdtempSync, mkdirSync, existsSync, rmSync, readdirSync, statSync, cpSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, existsSync, rmSync, readdirSync, statSync, readFileSync, writeFileSync } from 'node:fs'
+import { cp } from 'node:fs/promises'
 import { join, basename } from 'node:path'
 import { logger } from '@nx/devkit'
 
@@ -22,7 +23,7 @@ export class StagingService {
     /**
      * Create a staging directory and populate it with package files
      */
-    createStaging(options: StagingOptions): StagingResult {
+    async createStaging(options: StagingOptions): Promise<StagingResult> {
 
         const { packageDir, packageJson, includeFiles = [], tempBasePath, debug = false } = options
 
@@ -61,34 +62,36 @@ export class StagingService {
             const allFiles = [...filesFromPackageJson, ...includeFiles]
 
             if (debug) {
-                logger.info(`[STAGING] Copying ${allFiles.length} files/directories`)
+                logger.info(`[STAGING] Copying ${allFiles.length} files/directories in parallel`)
             }
 
-            // Copy files to staging directory
-            for (const file of allFiles) {
-                const sourcePath = join(packageDir, file)
-                const destPath = join(stagingDir, file)
+            // Copy files in parallel for speed
+            await Promise.all(
+                allFiles.map(async (file) => {
+                    const sourcePath = join(packageDir, file)
+                    const destPath = join(stagingDir, file)
 
-                if (!existsSync(sourcePath)) {
-                    if (debug) {
-                        logger.warn(`[STAGING] Skipping missing file: ${file}`)
+                    if (!existsSync(sourcePath)) {
+                        if (debug) {
+                            logger.warn(`[STAGING] Skipping missing file: ${file}`)
+                        }
+                        return
                     }
-                    continue
-                }
 
-                // Create parent directory if needed
-                const destDir = join(destPath, '..')
-                if (!existsSync(destDir)) {
-                    mkdirSync(destDir, { recursive: true })
-                }
+                    // Create parent directory if needed
+                    const destDir = join(destPath, '..')
+                    if (!existsSync(destDir)) {
+                        mkdirSync(destDir, { recursive: true })
+                    }
 
-                // Copy file or directory
-                cpSync(sourcePath, destPath, { recursive: true })
+                    // Copy file or directory asynchronously
+                    await cp(sourcePath, destPath, { recursive: true })
 
-                if (debug) {
-                    logger.info(`[STAGING] Copied: ${file}`)
-                }
-            }
+                    if (debug) {
+                        logger.info(`[STAGING] Copied: ${file}`)
+                    }
+                })
+            )
 
             return {
                 success: true,
@@ -118,10 +121,29 @@ export class StagingService {
 
             if (existsSync(stagingDir)) {
 
+                const parentDir = join(stagingDir, '..')
+
                 rmSync(stagingDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
 
                 if (debug) {
                     logger.info(`[STAGING] Cleaned up staging directory: ${stagingDir}`)
+                }
+
+                // Remove parent .npack directory if it's empty
+                if (existsSync(parentDir) && basename(parentDir) === '.npack') {
+
+                    const entries = readdirSync(parentDir)
+
+                    if (entries.length === 0) {
+
+                        rmSync(parentDir, { recursive: true, force: true })
+
+                        if (debug) {
+                            logger.info(`[STAGING] Removed empty .npack directory: ${parentDir}`)
+                        }
+
+                    }
+
                 }
 
             }
@@ -163,6 +185,23 @@ export class StagingService {
                             logger.info(`[STAGING] Cleaned up old staging: ${entry}`)
                         }
 
+                    }
+
+                }
+
+            }
+
+            // After cleanup, remove .npack directory if it's empty
+            if (existsSync(tempBasePath) && basename(tempBasePath) === '.npack') {
+
+                const remainingEntries = readdirSync(tempBasePath)
+
+                if (remainingEntries.length === 0) {
+
+                    rmSync(tempBasePath, { recursive: true, force: true })
+
+                    if (debug) {
+                        logger.info(`[STAGING] Removed empty .npack directory: ${tempBasePath}`)
                     }
 
                 }

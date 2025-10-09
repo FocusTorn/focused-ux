@@ -41,24 +41,6 @@
             }
         }, //<
         
-        // Original script-based packaging (commented out in favor of tool-based approach)
-        // "package": { //>
-        //     "executor": "nx:run-commands",
-        //     "dependsOn": ["build"],
-        //     "options": {
-        //         "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages"
-        //     }
-        // }, //<
-        "package:devog": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
-            "options": {
-                "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages --dev",
-                "outputPath": "vsix_packages"
-            }
-        }, //<
-        
-        // New library-based packaging targets (build CLI then run)
         "package": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["build"],
@@ -162,3 +144,20 @@
     },
     "tags": ["ext"]
 }
+
+// Original script-based packaging (commented out in favor of tool-based approach)
+// "package": { //>
+//     "executor": "nx:run-commands",
+//     "dependsOn": ["build"],
+//     "options": {
+//         "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages"
+//     }
+// }, //<
+// "package:devog": { //>
+//     "executor": "nx:run-commands",
+//     "dependsOn": ["build"],
+//     "options": {
+//         "command": "node scripts/create-vsix.js packages/dynamicons/ext vsix_packages --dev",
+//         "outputPath": "vsix_packages"
+//     }
+// }, //<

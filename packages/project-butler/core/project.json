@@ -4,12 +4,40 @@
     "targets": {
         
         //= Prepare ============================================================= 
+        // "build": { //>
+        //     "extends": "build:core",
+        //     "options": {
+        //         "main": "{projectRoot}/src/index.ts",
+        //         "outputPath": "{projectRoot}/dist",
+        //         "tsConfig": "{projectRoot}/tsconfig.json",
+        //         "declarationRootDir": "{projectRoot}/src",
+        //         "external": [
+        //             "vscode",
+        //             "js-yaml"
+        //         ]
+        //     }
+        // }, //<
+        
         "build": { //>
-            "extends": "build:core",
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": [ "{options.outputPath}" ],
             "options": {
+                "main": "{projectRoot}/src/index.ts",
+                "outputPath": "{projectRoot}/dist",
+                "tsConfig": "{projectRoot}/tsconfig.json",
+                "declarationRootDir": "{projectRoot}/src",
+
+                "format": ["esm"],
+                "bundle": false,
+                "sourcemap": true,
+                "declaration": true,
+                "minify": false,
+                "treeShaking": false,
+                "metafile": false,
+            
                 "external": [
                     "vscode",
-                    "js-yaml"
+                    "typescript"
                 ]
             }
         }, //<
@@ -32,9 +60,7 @@
         "clean:cache": { "extends": "clean:cache" },
         
         // = Single Package Testing ============================================== 
-        
         "test": { "extends": "test" },
-        
         "test:coverage-tests": { "extends": "test:coverage-tests" },
         
         // = Dependency Chain Testing ============================================ 

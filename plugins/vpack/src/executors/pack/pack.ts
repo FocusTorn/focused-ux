@@ -9,26 +9,36 @@ import type { PackExecutorSchema } from './schema'
 interface Result { success: boolean }
 
 function resolveExtensionDir(options: PackExecutorSchema, context: ExecutorContext): string { //>
+
     if (options.targetPath) {
+
         return isAbsolute(options.targetPath) ? options.targetPath : join(workspaceRoot, options.targetPath)
+    
     }
     if (options.targetName) {
+
         const proj = context.projectGraph?.nodes?.[options.targetName]
 
         if (!proj) throw new Error(`Project not found: ${options.targetName}`)
         return join(workspaceRoot, proj.data.root)
+    
     }
     if (context.projectName) {
+
         const proj = context.projectGraph?.nodes?.[context.projectName]
 
         if (!proj) throw new Error(`Project not found in context: ${context.projectName}`)
         return join(workspaceRoot, proj.data.root)
+    
     }
     throw new Error('Either options.targetPath, options.targetName or context.projectName must be provided')
+
 } //<
 
 export default async function runExecutor(options: PackExecutorSchema, context: ExecutorContext): Promise<Result> {
+
     try {
+
         const extensionDir = resolveExtensionDir(options, context)
 
         const packageJsonPath = join(extensionDir, 'package.json')
@@ -49,7 +59,9 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         const keepDeploy = options.keepDeploy ?? true
         const extract = options.extractContents ?? true
         const extractBase = options.contentsPath || join(pluginRoot, 'output/contents')
-        const finalOutputDir = options.outputPath ? join(workspaceRoot, options.outputPath) : join(pluginRoot, 'vsix_packages')
+        
+        // const finalOutputDir = options.outputPath ? join(workspaceRoot, options.outputPath) : join(pluginRoot, 'vsix_packages')
+        const finalOutputDir = options.outputPath ? join(workspaceRoot, options.outputPath) : join(workspaceRoot, 'vsix_packages')
 
         const deployDirName = overwrite ? `${vsixBaseName}-local` : `${vsixBaseName}-${uniqueId}`
         const deployDir = join(deployBase, deployDirName)
@@ -58,6 +70,7 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         const finalPackageJson = { ...originalPackageJson }
 
         if (options.dev) {
+
             const taskHash = process.env.NX_TASK_HASH
 
             if (!taskHash) throw new Error('NX_TASK_HASH environment variable not found for dev build.')
@@ -67,26 +80,37 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
 
             vsixFilename = `${outputVsixName}-dev.vsix`
             ;(finalPackageJson as Record<string, unknown>).version = finalVersion
+        
         }
         try { delete (finalPackageJson as Record<string, unknown>).dependencies } catch {}
         try { delete (finalPackageJson as Record<string, unknown>).devDependencies } catch {}
 
         // Prepare dirs
         if (overwrite) {
+
             try {
+
                 const { sync: rimrafSync } = await import('rimraf')
                 const deployRoot = deployBase
 
                 if (existsSync(deployRoot)) {
+
                     const entries = readdirSync(deployRoot, { withFileTypes: true })
 
                     for (const entry of entries) {
+
                         if (entry.isDirectory() && entry.name.startsWith(`${vsixBaseName}-`)) {
+
                             try { rimrafSync(join(deployRoot, entry.name)) } catch {}
+                        
                         }
+                    
                     }
+                
                 }
+            
             } catch {}
+        
         }
         mkdirSync(deployDir, { recursive: true })
         mkdirSync(finalOutputDir, { recursive: true })
@@ -96,12 +120,16 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
 
         // Copy assets
         for (const asset of ['dist', 'assets', 'README.md', 'LICENSE.txt', 'CHANGELOG.md', '.vscodeignore']) {
+
             const source = join(extensionDir, asset)
             const dest = join(deployDir, asset)
 
             if (existsSync(source)) {
+
                 cpSync(source, dest, { recursive: true, errorOnExist: false, force: true })
+            
             }
+        
         }
 
         // Resolve deps and construct node_modules
@@ -118,25 +146,35 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         const projectDeps = pnpmList.length > 0 ? pnpmList[0].dependencies : undefined
 
         function copyDependencyTree(dependencies: Record<string, unknown>, processed = new Set<string>()) {
+
             if (!dependencies) return
             for (const depName in dependencies) {
+
                 const depInfo = dependencies[depName] as Record<string, unknown>
 
                 if (processed.has(depName)) continue
                 processed.add(depName)
                 if ((depInfo?.version as string)?.startsWith('link:')) continue
                 if (depInfo?.path) {
+
                     const destPath = join(deployNodeModules, depName)
 
                     if (!existsSync(destPath)) {
+
                         mkdirSync(join(destPath, '..'), { recursive: true })
                         try { cpSync(depInfo.path as string, destPath, { recursive: true }) } catch (err: unknown) {
+
                             if ((err as { code?: string })?.code !== 'ENOENT' && (err as { code?: string })?.code !== 'ENOTDIR') throw err
+                        
                         }
+                    
                     }
                     if (depInfo.dependencies) copyDependencyTree(depInfo.dependencies as Record<string, unknown>, processed)
+                
                 }
+            
             }
+        
         }
         copyDependencyTree(projectDeps)
 
@@ -146,21 +184,27 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         const originalVscodeignore = existsSync(vscodeignorePath) ? readFileSync(vscodeignorePath, 'utf-8') : ''
 
         if (originalVscodeignore !== '') {
+
             const lines = originalVscodeignore.split(/\r?\n/)
             const kept = lines.filter((line) => {
+
                 const trimmed = line.trim()
 
                 if (trimmed === '' || trimmed.startsWith('#')) return true
                 if (/^dist\/?(\*\*)?$/.test(trimmed)) return false
                 if (/^node_modules\/?(\*\*)?$/.test(trimmed)) return false
                 return true
+            
             })
             const ensure = ['!dist/**', '!node_modules/**']
             const merged = [...kept, ...ensure]
 
             writeFileSync(vscodeignorePath, merged.join('\n'))
+        
         } else {
+
             writeFileSync(vscodeignorePath, ['!dist/**', '!node_modules/**'].join('\n'))
+        
         }
 
         // Package
@@ -173,90 +217,134 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         })
 
         if (result.error || result.status !== 0) {
+
             const vsceCommand = `vsce package -o "${vsixOutputPath}" 2>&1`
 
             try {
+
                 execSync(vsceCommand, { cwd: deployDir, encoding: 'utf-8', timeout: 300000, env: { ...process.env, NODE_NO_WARNINGS: '1', NODE_OPTIONS: '--no-warnings' } })
+            
             } catch (err) {
+
                 throw err
+            
             }
+        
         }
 
         if (!existsSync(vsixOutputPath)) {
+
             throw new Error(`vsce completed but VSIX was not created at: ${vsixOutputPath}`)
+        
         }
 
         // Restore .vscodeignore
         if (originalVscodeignore !== '') {
+
             writeFileSync(vscodeignorePath, originalVscodeignore)
+        
         } else if (existsSync(vscodeignorePath)) {
+
             try { unlinkSync(vscodeignorePath) } catch {}
+        
         }
 
         // Optional extraction
         if (extract) {
+
             try {
+
                 const AdmZip = await import('adm-zip')
                 const zip = new AdmZip.default(vsixOutputPath)
                 const extractDir = join(workspaceRoot, extractBase, `${outputVsixName}`)
 
                 mkdirSync(extractDir, { recursive: true })
                 zip.extractAllTo(extractDir, true)
+            
             } catch {}
+        
         }
 
         // Cleanup based on configuration
         if (!keepDeploy) {
+
             try {
+
                 logger.info(`Attempting to clean up deploy directory: ${deployDir}`)
                 await rm(deployDir, { recursive: true, force: true })
                 logger.info(`Successfully cleaned up deploy directory: ${deployDir}`)
+            
             } catch (err) {
+
                 logger.error(`Failed to clean up deploy directory: ${err}`)
+            
             }
+        
         }
 
         if (!extract) {
+
             try {
+
                 const contentsDir = join(workspaceRoot, extractBase, `${outputVsixName}`)
 
                 if (existsSync(contentsDir)) {
+
                     logger.info(`Attempting to clean up contents directory: ${contentsDir}`)
                     await rm(contentsDir, { recursive: true, force: true })
                     logger.info(`Successfully cleaned up contents directory: ${contentsDir}`)
+                
                 }
+            
             } catch (err) {
+
                 logger.error(`Failed to clean up contents directory: ${err}`)
+            
             }
+        
         }
 
         // If both keepDeploy and extract are false, clean up the entire .vpack directory
         if (!keepDeploy && !extract) {
+
             try {
+
                 const vpackDir = join(extensionDir, '.vpack')
 
                 if (existsSync(vpackDir)) {
+
                     logger.info(`Attempting to clean up .vpack directory: ${vpackDir}`)
                     await rm(vpackDir, { recursive: true, force: true })
                     logger.info(`Successfully cleaned up .vpack directory: ${vpackDir}`)
+                
                 }
+            
             } catch (err) {
+
                 logger.error(`Failed to clean up .vpack directory: ${err}`)
+            
             }
+        
         }
 
         // Log staging output paths
         logger.info(`Staging deploy directory: ${deployDir}`)
         logger.info(`Staging output directory: ${finalOutputDir}`)
         if (extract) {
+
             const extractDir = join(workspaceRoot, extractBase, `${outputVsixName}`)
 
             logger.info(`Staging contents directory: ${extractDir}`)
+        
         }
         logger.info(`Final VSIX: ${vsixOutputPath}`)
         return { success: true }
+    
     } catch (err) {
+
         logger.error(`Packaging failed: ${err instanceof Error ? err.message : String(err)}`)
         return { success: false }
+    
     }
+
 }

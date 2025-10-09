@@ -196,13 +196,21 @@ export class AliasCommand {
             
             }
 
-            // Determine if this is a feature-level alias (package has variants defined)
+            // Determine if this is a feature-level alias (package has variants defined AND no variant is set)
             const packageDef = config.nxPackages?.[packageResolution.packageName]
             const isFeatureLevel = !!(
                 packageDef
                 && typeof packageDef === 'object'
                 && packageDef.variants
+                && !packageResolution.variant  // Only apply feature targets to base aliases, not variant aliases
             )
+            
+            this.debug('Feature level determination', {
+                packageName: packageResolution.packageName,
+                packageDef,
+                isFeatureLevel,
+                hasVariants: !!(packageDef && typeof packageDef === 'object' && packageDef.variants)
+            })
 
             // Resolve target using new target resolution
             const targetResolution = this.targetResolver.resolveTarget(
@@ -223,16 +231,37 @@ export class AliasCommand {
 
                 if (featureTarget) {
 
-                    // Package has variants - use the run-from variant
-                    packageResolution.variant = featureTarget['run-from']
+                    this.debug('Feature target processing', { 
+                        target, 
+                        featureTarget, 
+                        currentVariant: packageResolution.variant,
+                        currentFullName: packageResolution.fullName 
+                    })
 
-                    // Extract package name without @fux/ prefix for string references
-                    const basePackageName
-                        = packageResolution.packageName.startsWith('@fux/')
-                            ? packageResolution.packageName.substring(5) // Remove '@fux/' prefix
-                            :   packageResolution.packageName
+                    // Only override variant if the package resolution doesn't already have a specific variant
+                    // This allows variant aliases (like pbc) to work correctly with feature targets
+                    if (!packageResolution.variant) {
+                        // Package has variants - use the run-from variant
+                        packageResolution.variant = featureTarget['run-from']
 
-                    packageResolution.fullName = `@fux/${basePackageName}-${featureTarget['run-from']}`
+                        // Extract package name without @fux/ prefix for string references
+                        const basePackageName
+                            = packageResolution.packageName.startsWith('@fux/')
+                                ? packageResolution.packageName.substring(5) // Remove '@fux/' prefix
+                                :   packageResolution.packageName
+
+                        packageResolution.fullName = `@fux/${basePackageName}-${featureTarget['run-from']}`
+                        
+                        this.debug('Variant override applied', { 
+                            newVariant: packageResolution.variant,
+                            newFullName: packageResolution.fullName 
+                        })
+                    } else {
+                        this.debug('Variant override skipped - variant already set', { 
+                            existingVariant: packageResolution.variant,
+                            existingFullName: packageResolution.fullName 
+                        })
+                    }
                 
                 }
             
@@ -346,6 +375,8 @@ export class AliasCommand {
 
         // Combine all arguments: expanded flags + target flags + remaining args
         const finalArgs = [...expandedFlags, ...targetFlags, ...processedArgs]
+        
+        // Debug output removed - flags are being assembled correctly
 
         // Determine if this is a tool (direct string reference) or a package with variants
         const isTool = !packageResolution.variant // Tools don't have variants
@@ -392,6 +423,8 @@ export class AliasCommand {
             // For packages with variants, use nx target @fux/package-variant
             command = `nx ${target} ${packageResolution.fullName} ${finalArgs.join(' ')}`.trim()
             commandArgs = [target, packageResolution.fullName, ...finalArgs]
+            
+            // Debug output removed - command construction is working correctly
         
         }
 

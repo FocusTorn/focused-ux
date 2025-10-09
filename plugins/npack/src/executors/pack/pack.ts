@@ -1,12 +1,13 @@
 import { ExecutorContext, logger } from '@nx/devkit'
 import { join } from 'node:path'
-import { mkdirSync, existsSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
 import type { PackExecutorSchema } from './schema.js'
 import {
     StagingService,
     PackagingService,
     InstallationService,
-    PackageResolverService
+    PackageResolverService,
+    OutputManager
 } from '../../services/index.js'
 
 interface Result { success: boolean }
@@ -23,16 +24,20 @@ function debugLog(message: string, debug: boolean): void {
 
 export default async function runExecutor(options: PackExecutorSchema, context: ExecutorContext): Promise<Result> {
 
-    let stagingDir: string | undefined
     const keepTemp = options.keepTemp ?? false
 
-    try {
+    // Shared output manager for all services
+    const output = new OutputManager()
+    
+    // Initialize services with shared output manager
+    const staging = new StagingService()
+    const packaging = new PackagingService(output)
+    const installation = new InstallationService(output)
+    const resolver = new PackageResolverService()
 
-        // Initialize services
-        const staging = new StagingService()
-        const packaging = new PackagingService()
-        const installation = new InstallationService()
-        const resolver = new PackageResolverService()
+    let stagingDir: string | undefined
+
+    try {
 
         // Resolve configuration
         const config = resolver.resolveConfiguration(options, context)
@@ -48,11 +53,8 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         
         }
 
-        // Read and parse package.json
-        const { readFileSync } = await import('node:fs')
-        const packageJsonContent = readFileSync(packageJsonPath, 'utf-8')
-        const originalPackageJson = JSON.parse(packageJsonContent)
-        const metadata = resolver.getPackageMetadata(config.packageDir, packageJsonContent)
+        // Read and parse package.json in one operation (optimized)
+        const { json: originalPackageJson, metadata } = await resolver.readPackageJson(config.packageDir)
 
         debugLog(`Package: ${metadata.name} v${metadata.version}`, config.debug)
 
@@ -83,8 +85,8 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         
         }
 
-        // Create staging directory and populate with files
-        const stagingResult = staging.createStaging({
+        // Create staging directory and populate with files (parallel copying)
+        const stagingResult = await staging.createStaging({
             packageDir: config.packageDir,
             packageJson: finalPackageJson,
             includeFiles: options.includeFiles,
@@ -101,14 +103,14 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
         stagingDir = stagingResult.stagingDir
         debugLog(`Staging directory: ${stagingDir}`, config.debug)
 
-        // Create output directory
+        // Create output directory if needed
         if (!existsSync(config.finalOutputDir)) {
 
             mkdirSync(config.finalOutputDir, { recursive: true })
         
         }
 
-        // Update tarball filename with actual package name and version
+        // Determine tarball filename
         let tarballFilename = `${metadata.tarballBaseName}-${metadata.version}.tgz`
 
         if (config.dev) {
@@ -133,15 +135,23 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
 
         debugLog(`Tarball: ${packagingResult.tarballPath}`, config.debug)
 
+        // OPTIMIZATION: Clean up staging IMMEDIATELY after tarball creation
+        if (!keepTemp && stagingDir) {
+
+            staging.cleanupStaging(stagingDir, config.debug)
+            stagingDir = undefined // Mark as cleaned
+        
+        }
+
         // Show tarball contents in debug mode
-        if (config.debug) {
+        if (config.debug && packagingResult.tarballPath) {
 
             await packaging.showTarballContents(packagingResult.tarballPath, config.debug)
         
         }
 
         // Install globally if requested (defaults to true)
-        if (config.install) {
+        if (config.install && packagingResult.tarballPath) {
 
             const installResult = await installation.installGlobally({
                 tarballPath: packagingResult.tarballPath,
@@ -167,11 +177,9 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
 
     } finally {
 
-        // Cleanup staging directory if not keeping it
+        // Final cleanup (only if not already cleaned)
         if (!keepTemp && stagingDir) {
 
-            const staging = new StagingService()
-            
             staging.cleanupStaging(stagingDir)
         
         }

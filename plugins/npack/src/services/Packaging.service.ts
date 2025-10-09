@@ -2,7 +2,7 @@ import { existsSync, cpSync, unlinkSync, readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { execaCommand } from 'execa'
 import { logger, workspaceRoot } from '@nx/devkit'
-import { OutputManager } from './OutputManager.service.js'
+import type { OutputManager } from './OutputManager.service.js'
 
 export interface PackagingOptions {
     stagingDir: string
@@ -25,7 +25,24 @@ export interface ValidationResult {
 
 export class PackagingService {
 
-    private output = new OutputManager()
+    constructor(private output: OutputManager) {}
+
+    /**
+     * Centralized command runner
+     */
+    private async runCommand(command: string, options: { debug?: boolean; timeout?: number } = {}): Promise<void> {
+
+        const { debug = false, timeout = 60000 } = options
+
+        await execaCommand(command, {
+            shell: true,
+            windowsHide: true,
+            timeout,
+            stdio: debug ? 'inherit' : 'ignore',
+            reject: true
+        })
+
+    }
 
     /**
      * Create tarball from staging directory
@@ -42,14 +59,7 @@ export class PackagingService {
                 // Use npm pack to create proper tar.gz file
                 const npmCommand = `npm pack "${stagingDir}" --pack-destination "${outputDir}"`
 
-                await execaCommand(npmCommand, {
-                    shell: true,
-                    cwd: join(stagingDir, '..'),
-                    windowsHide: true,
-                    timeout: 60000,
-                    stdio: debug ? 'inherit' : 'ignore',
-                    reject: true
-                })
+                await this.runCommand(npmCommand, { debug })
 
                 // npm pack creates a file with package name and version
                 // Find and rename it to our desired filename

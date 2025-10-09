@@ -54,11 +54,13 @@ pnpm run build --filter=@fux/package-name
 
 #### **Package-Specific Aliases**
 
-- **Dynamicons**: `dc`, `dcc`, `dce`
-- **Ghost Writer**: `gw`, `gwc`, `gwe`
-- **Project Butler**: `pb`, `pbc`, `pbe`
-- **Note Hub**: `nh`, `nhc`, `nhe`
-- **Context Cherry Picker**: `ccp`, `ccpc`, `ccpe`
+**CRITICAL**: Always run `pae help` to discover current package aliases. Aliases may change as packages evolve.
+
+**Example Pattern**:
+
+- **Package Name**: `{alias}`, `{alias}c`, `{alias}e`
+- **Core Package**: `{alias}c` (e.g., `{alias}c b` for build)
+- **Extension Package**: `{alias}e` (e.g., `{alias}e b` for build)
 
 #### **Target Aliases**
 
@@ -75,6 +77,8 @@ pnpm run build --filter=@fux/package-name
 - [ ] **Package-specific aliases identified** for target package
 - [ ] **Command patterns verified** before execution
 - [ ] **No raw nx commands used** unless explicitly required
+
+**CRITICAL**: Always run `pae help` first to discover current aliases. Package aliases may change as the workspace evolves.
 
 ### **Workspace Analysis Protocol**
 
@@ -98,7 +102,7 @@ nx_workspace
 ### **Core Package (`@fux/package-name-core`)**
 
 - **Purpose**: Pure business logic, no VSCode dependencies
-- **Dependencies**: Minimal external dependencies (e.g., `js-yaml` for YAML parsing)
+- **Dependencies**: Minimal external dependencies (e.g., `external-dependency` for specific functionality)
 - **No DI Container**: Services are directly instantiated with dependencies
 - **No Shared Dependencies**: Self-contained "guinea pig" packages
 - **Complete Interface Implementation**: All service interface methods must be implemented
@@ -297,13 +301,12 @@ All packages use minimal `project.json` configurations:
         }
     },
     "dependencies": {
-        "js-yaml": "^4.1.0"
+        "external-dependency": "^1.0.0"
     },
     "devDependencies": {
-        "@types/js-yaml": "^4.0.9",
         "@types/node": "^20.0.0",
         "typescript": "^5.0.0",
-        "vitest": "^3.2.4" // ✅ Testing framework (see [Testing Strategy](../testing/_Testing-Strategy.md))
+        "vitest": "^3.2.4"
     }
 }
 ```
@@ -330,7 +333,7 @@ All packages use minimal `project.json` configurations:
                 "declarationRootDir": "packages/package-name/core/src",
                 "thirdParty": false,
                 "deleteOutputPath": true,
-                "external": ["vscode", "js-yaml"]
+                "external": ["vscode", "external-dependency"]
             }
         },
         "test": {
@@ -432,12 +435,12 @@ All packages use minimal `project.json` configurations:
     "main": "./dist/extension.cjs",
     "dependencies": {
         "@fux/package-name-core": "workspace:*",
-        "js-yaml": "^4.1.0"
+        "external-dependency": "^1.0.0"
     },
     "devDependencies": {
         "@types/node": "^24.0.10",
         "@types/vscode": "^1.99.3",
-        "@types/js-yaml": "^4.0.9",
+        "@types/external-dependency": "^1.0.0",
         "typescript": "^5.8.3",
         "vitest": "^3.2.4" // ✅ Testing framework (see [Testing Strategy](../testing/_Testing-Strategy.md)),
         "@vitest/coverage-v8": "^3.2.4"
@@ -475,7 +478,7 @@ All packages use minimal `project.json` configurations:
                 "metafile": true,
                 "platform": "node",
                 "bundle": true,
-                "external": ["vscode", "js-yaml"],
+                "external": ["vscode", "external-dependency"],
                 "sourcemap": true,
                 "main": "packages/package-name/ext/src/extension.ts",
                 "tsConfig": "packages/package-name/ext/tsconfig.json",
@@ -609,10 +612,10 @@ pae {alias} p
 # Development packaging
 pae {alias} pd
 
-# Examples
-pae pb p      # Package Project Butler
-pae gw pd     # Package Ghost Writer (dev mode)
-pae dc p      # Package Dynamicons
+# Examples (run `pae help` for current aliases)
+pae {alias} p      # Package extension
+pae {alias} pd     # Package extension (dev mode)
+pae {alias} b      # Build package
 ```
 
 ## **Implementation Patterns**
@@ -875,7 +878,7 @@ export function deactivate(): void {}
 ### **2. No Shared Dependencies in Core**
 
 - Core packages are self-contained "guinea pig" packages
-- Only external dependencies are minimal utilities (e.g., `js-yaml`)
+- Only external dependencies are minimal utilities (e.g., `external-dependency`)
 - No `@fux/shared` or `@fux/mockly` dependencies
 - Enables independent validation (see [Testing Strategy](../testing/_Testing-Strategy.md))
 
@@ -1078,7 +1081,7 @@ The confirmed implementations in Ghost Writer and Project Butler demonstrate tha
 **Target Dependencies**:
 
 - Core package: `build` → `process-assets`
-- Extension package: `copy-assets` → `@fux/dynamicons-core:process-assets` → `build`
+- Extension package: `copy-assets` → `@fux/package-name-core:process-assets` → `build`
 
 **Critical Rules**:
 

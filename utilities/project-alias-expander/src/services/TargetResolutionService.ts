@@ -16,7 +16,11 @@ export class TargetResolutionService {
         if (isFeatureLevel && config['feature-nxTargets']?.[target]) {
             const featureTarget = config['feature-nxTargets'][target]
             resolvedTarget = featureTarget['run-target']
-            flags = featureTarget['flags'] || []
+            // Ensure flags is always an array of strings
+            const rawFlags = featureTarget['flags'] || []
+            flags = Array.isArray(rawFlags) ? rawFlags : [rawFlags]
+            
+            // Debug output removed - flags are being processed correctly
         } else if (config.targets?.['nx-targets']?.[target]) {
             // Check new nested targets structure
             resolvedTarget = config.targets['nx-targets'][target]

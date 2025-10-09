@@ -6,19 +6,64 @@
 
         //= Finalize ============================================================ 
         "build": { //>
-            "extends": "build:ext",
+            "executor": "@nx/esbuild:esbuild",
+            "outputs": [ "{options.outputPath}" ],
             "dependsOn": [{
                 "projects": ["@fux/project-butler-core"],
                 "target": "build",
                 "params": "ignore"
             }],
             "options": {
+                "main": "{projectRoot}/src/extension.ts",
+                "outputPath": "{projectRoot}/dist",
+                "tsConfig": "{projectRoot}/tsconfig.json",
+                "declarationRootDir": "{projectRoot}/src",
+                
+                "format": ["cjs"],
+                "bundle": true,
+                "sourcemap": false,
+                "declaration": false,
+                "minify": true,
+                "treeShaking": true,
+                "metafile": true,
+               
                 "external": [
                     "vscode",
                     "js-yaml"
                 ]
             }
         }, //<
+        "build:dev": { //>
+            "extends": "build:ext:dev",
+            "dependsOn": [{
+                "projects": ["@fux/project-butler-core"],
+                "target": "build",
+                "params": "ignore"
+            }],
+            "options": {
+                "main": "{projectRoot}/src/extension.ts",
+                "outputPath": "{projectRoot}/dist",
+                "tsConfig": "{projectRoot}/tsconfig.json",
+                "declarationRootDir": "{projectRoot}/src",
+                
+                "format": ["cjs"],
+                "bundle": false,
+                "sourcemap": true,
+                "declaration": true,
+                "minify": false,
+                "treeShaking": false,
+                "metafile": true,
+               
+                "external": [
+                    "vscode",
+                    "js-yaml"
+                ]
+            }
+        }, //<
+        
+        "package": { "extends": "package" },
+        "package:dev": { "extends": "package:dev" },
+        
         "publish": { //>
             "executor": "nx:run-commands",
             "dependsOn": ["package"],
@@ -27,8 +72,6 @@
                 "cwd": "{projectRoot}"
             }
         }, //<
-        "package": { "extends": "package" },
-        "package:dev": { "extends": "package:dev" },
         
         ///= Quality ============================================================= 
         "check-types": { "extends": "check-types" },

@@ -1,6 +1,6 @@
 import { execaCommand } from 'execa'
 import { logger } from '@nx/devkit'
-import { OutputManager } from './OutputManager.service.js'
+import type { OutputManager } from './OutputManager.service.js'
 
 export interface InstallationOptions {
     tarballPath: string
@@ -24,7 +24,24 @@ export interface ValidationResult {
 
 export class InstallationService {
 
-    private output = new OutputManager()
+    constructor(private output: OutputManager) {}
+
+    /**
+     * Centralized command runner
+     */
+    private async runCommand(command: string, options: { debug?: boolean; timeout?: number } = {}): Promise<void> {
+
+        const { debug = false, timeout = 60000 } = options
+
+        await execaCommand(command, {
+            shell: true,
+            windowsHide: true,
+            timeout,
+            stdio: debug ? 'inherit' : 'pipe',
+            reject: true
+        })
+
+    }
 
     /**
      * Install package globally
@@ -37,13 +54,7 @@ export class InstallationService {
 
             const installCore = async (): Promise<string> => {
 
-                await execaCommand(`pnpm add -g "${tarballPath}"`, {
-                    shell: true,
-                    windowsHide: true,
-                    timeout,
-                    stdio: debug ? 'inherit' : 'pipe',
-                    reject: true
-                })
+                await this.runCommand(`pnpm add -g "${tarballPath}"`, { debug, timeout })
 
                 return `Successfully installed ${packageName}`
 
@@ -86,8 +97,7 @@ export class InstallationService {
             const { stdout } = await execaCommand(`pnpm list -g ${packageName} --depth=0`, {
                 shell: true,
                 windowsHide: true,
-                timeout: 30000,
-                reject: true
+                timeout: 30000
             })
 
             // Parse output to extract version
@@ -177,13 +187,7 @@ export class InstallationService {
                 logger.info(`[INSTALLATION] Uninstalling ${packageName} globally`)
             }
 
-            await execaCommand(`pnpm remove -g ${packageName}`, {
-                shell: true,
-                windowsHide: true,
-                timeout: 60000,
-                stdio: debug ? 'inherit' : 'pipe',
-                reject: true
-            })
+            await this.runCommand(`pnpm remove -g ${packageName}`, { debug })
 
             return {
                 success: true,
@@ -195,13 +199,7 @@ export class InstallationService {
             // Try npm as fallback
             try {
 
-                await execaCommand(`npm uninstall -g ${packageName}`, {
-                    shell: true,
-                    windowsHide: true,
-                    timeout: 60000,
-                    stdio: debug ? 'inherit' : 'pipe',
-                    reject: true
-                })
+                await this.runCommand(`npm uninstall -g ${packageName}`, { debug })
 
                 return {
                     success: true,
