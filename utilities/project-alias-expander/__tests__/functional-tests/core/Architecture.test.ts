@@ -2,12 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 describe('Service Architecture - PAEManagerService', () => {
 
-    beforeEach(() => {
-        //>
+    beforeEach(() => { //>
     }) //<
 
-    afterEach(() => {
-        //>
+    afterEach(() => { //>
     }) //<
 
     describe('Service Orchestration Patterns', () => {

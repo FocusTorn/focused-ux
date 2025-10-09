@@ -1,13 +1,11 @@
 - [High‑impact, non‑ESLint project graph optimizations](#highimpact-noneslint-project-graph-optimizations)
 - [Dependency Graph Hygiene – Findings and Recommendations](#dependency-graph-hygiene--findings-and-recommendations)
-  - [Boundary Enforcement (Proposed depConstraints – warn)](#boundary-enforcement-proposed-depconstraints--warn)
-  - [Tags and Constraints](#tags-and-constraints)
-  - [Release Config Noise (Non‑blocking)](#release-config-noise-nonblocking)
-  - [Target/Outputs Hygiene](#targetoutputs-hygiene)
+    - [Boundary Enforcement (Proposed depConstraints – warn)](#boundary-enforcement-proposed-depconstraints--warn)
+    - [Tags and Constraints](#tags-and-constraints)
+    - [Release Config Noise (Non‑blocking)](#release-config-noise-nonblocking)
+    - [Target/Outputs Hygiene](#targetoutputs-hygiene)
 - [Tooling/Plugin Footprint – Findings and Recommendations](#toolingplugin-footprint--findings-and-recommendations)
-  - [Expected Impact](#expected-impact)
-
-
+    - [Expected Impact](#expected-impact)
 
 ## High‑impact, non‑ESLint project graph optimizations
 
@@ -45,7 +43,7 @@ Report and explain the findings from:
     - Expand `.gitignore`/`.nxignore` to exclude screenshots/recordings/datasets.
     - Exclude generated artifacts from `namedInputs.default`.
 
-<!-- [✔] Tooling/plugin footprint  
+<!-- [✔] Tooling/plugin footprint
     - Remove unused Nx plugins.
     - Avoid project‑graph plugins that scan non‑code files.
     - Consolidate custom executors; reuse built‑ins. -->
@@ -65,7 +63,8 @@ Report and explain the findings from:
 ---
 
 ## Dependency Graph Hygiene – Findings and Recommendations
-<!-- 
+
+<!--
 1. Deprecated/Unused Projects
     - **@fux/source**
         - Root is workspace root (`.`) and exposes no targets.
@@ -101,6 +100,3 @@ Report and explain the findings from:
 
 - Ensure each custom/heavy target defines `outputs` to maximize cache effectiveness.
 - Keep target menus focused; split very heavy “meta” targets to avoid graph fan‑out during planning.
-
----
-

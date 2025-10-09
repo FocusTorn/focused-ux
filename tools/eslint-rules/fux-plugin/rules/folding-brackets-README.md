@@ -57,7 +57,7 @@ npm test
 Add to your ESLint configuration:
 
 ```javascript
-import foldingBracketsRule from './tools/eslint-rules/fux-format/folding-brackets'
+import fuxPlugin from './tools/eslint-rules/fux-plugin/index.js'
 
 export default {
     rules: {

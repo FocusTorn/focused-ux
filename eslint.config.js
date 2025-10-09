@@ -22,7 +22,7 @@ import tomlPlugin from 'eslint-plugin-toml'
 import tomlParser from 'toml-eslint-parser'
 import unusedImportsPlugin from 'eslint-plugin-unused-imports'
 
-// import foldingBracketsRule from './tools/eslint-rules/fux-format/folding-brackets/index.js'
+import fuxPlugin from './tools/eslint-rules/fux-plugin/index.js'
 
 //----------------------------------------------------------------------------<<
 
@@ -135,9 +135,12 @@ const testOverrides = { //>
     'no-magic-numbers': 'off',
     'max-lines-per-function': 'off',
     'max-statements-per-line': 'off',
-    'style/padding-line-between-statements': 'off',
     'style/no-multiple-empty-lines': 'off',
     'style/brace-style': 'off',
+    
+    // Disable built-in padding rules - use universal padding rule instead
+    'style/padding-line-between-statements': 'off',
+    
 } //<
 
 // Config file overrides
@@ -227,6 +230,7 @@ export default [
             '@nx': nxPlugin,
             eslintComments,
             node: nPlugin,
+            '@fux': fuxPlugin,
         },
         rules: {
             ...baseRules,
@@ -267,6 +271,7 @@ export default [
             style: stylisticPlugin,
             ts: tsPlugin,
             import: importPlugin,
+            '@fux': fuxPlugin,
         },
         rules: {
             ...baseRules,
@@ -274,6 +279,9 @@ export default [
             ...stylisticRules,
             ...mainJsTsOverrides,
             ...testOverrides,
+            
+            // Use the fux plugin's test-files config
+            ...fuxPlugin.configs['test-files'].rules,
         },
         languageOptions: { //>
             globals: {

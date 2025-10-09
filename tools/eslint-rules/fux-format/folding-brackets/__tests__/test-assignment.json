@@ -1,9 +1,0 @@
-{   "plugins": [ { "plugin": "@nx/vite/plugin", //>
-        "options": {
-            "buildTargetName": "build",
-            "buildDepsTargetName": "build-deps",
-            "watchDepsTargetName": "watch-deps"
-        }
-    } ], //>
-,
-}

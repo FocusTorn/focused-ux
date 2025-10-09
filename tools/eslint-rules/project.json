@@ -2,41 +2,40 @@
     "name": "@focused-ux/eslint-rules",
     "projectType": "library",
     "targets": {
-        "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "options": {
-                "main": "tools/eslint-rules/index.ts",
-                "outputPath": "tools/eslint-rules/dist",
-                "bundle": false,
-                "format": ["esm"],
-                "external": ["eslint", "@typescript-eslint/parser"]
-            }
-        },
+        
         "test": {
             "executor": "@nx/vite:test",
-            "dependsOn": ["^build"],
             "options": {
+                "config": "./tools/eslint-rules/vitest.config.ts",
                 "passWithNoTests": true
             }
         },
-        "test:watch": {
-            "executor": "@nx/vite:test",
-            "dependsOn": ["^build"],
-            "options": {
-                "watch": true,
-                "passWithNoTests": true
-            }
-        },
+       
         "test:coverage": {
             "executor": "@nx/vite:test",
-            "dependsOn": ["^build"],
             "options": {
+                "config": "./tools/eslint-rules/vitest.coverage.config.ts",
                 "coverage": {
                     "reporter": ["text", "html", "lcov"]
                 },
                 "passWithNoTests": true
             }
+        },
+        "test:rules": {
+            "executor": "@nx/vite:test",
+            "options": {
+                "config": "./tools/eslint-rules/vitest.config.ts",
+                "testPathPattern": "__tests__/rule-tester",
+                "passWithNoTests": true
+            }
+        },
+        "test:integration": {
+            "executor": "@nx/vite:test",
+            "options": {
+                "config": "./tools/eslint-rules/vitest.config.ts",
+                "testPathPattern": "__tests__/functional-tests",
+                "passWithNoTests": true
+            }
         }
     }
 }
-

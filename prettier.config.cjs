@@ -1,7 +1,7 @@
 /**
  * @see https://prettier.io/docs/configuration
  * @type {import("prettier").Config}
-//  */
+ */
 const config = {
 	semi: false,
 	trailingComma: 'es5',
@@ -14,11 +14,22 @@ const config = {
 	tabWidth: 4,
 	singleQuote: true,
     
-    markdown: {
-        codeFences: "~~~",
-        useTabs: false,
-	    tabWidth: 4,
-    },
+    overrides: [
+        {
+            files: "*.md",
+            options: {
+                tabWidth: 4,
+                proseWrap: 'preserve',
+                codeFences: "~~~"
+            }
+        }
+    ]
+    
+    // markdown: {
+    //     codeFences: "~~~",
+    //     useTabs: false,
+	//     tabWidth: 4,
+    // },
     
 	// plugins: ['./.prettier/plugin.cjs'],
     

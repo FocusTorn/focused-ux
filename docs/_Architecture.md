@@ -199,7 +199,7 @@ The FocusedUX monorepo uses a **target inheritance system** in `nx.json` to prov
         "build": {
             "extends": "build:core",
             "options": {
-                "external": ["vscode", "js-yaml"]
+                "external": ["vscode", "external-dependency"]
             }
         }
     }
@@ -215,7 +215,7 @@ The FocusedUX monorepo uses a **target inheritance system** in `nx.json` to prov
             "extends": "build:ext",
             "dependsOn": [{ "projects": ["@fux/package-core"], "target": "build" }],
             "options": {
-                "external": ["vscode", "js-yaml"]
+                "external": ["vscode", "external-dependency"]
             }
         }
     }
@@ -228,15 +228,15 @@ While the architecture follows consistent patterns, some packages have legitimat
 
 #### **Runtime Dependencies**
 
-- **Ghost Writer Core**: Uses TypeScript as a runtime dependency for AST parsing and code generation
-    - **Rationale**: ConsoleLoggerService requires TypeScript's compiler API for parsing and analyzing code structure
-    - **Implementation**: `import * as ts from 'typescript'` in ConsoleLogger.service.ts
-    - **Externalization**: TypeScript is externalized in build configuration
-    - **Pattern**: This is the only package requiring TypeScript at runtime
+- **Runtime TypeScript Usage**: Some packages may use TypeScript as a runtime dependency for AST parsing and code generation
+    - **Rationale**: Services requiring TypeScript's compiler API for parsing and analyzing code structure
+    - **Implementation**: `import * as ts from 'typescript'` in service files
+    - **Externalization**: TypeScript must be externalized in build configuration
+    - **Pattern**: Only packages requiring TypeScript at runtime should include it
 
 #### **Package Structure Variations**
 
-- **Flat Structure (Preferred)**: Project Butler Core uses a flat structure with all interfaces in `_interfaces/` and services in `services/`
+- **Flat Structure (Preferred)**: Core packages use a flat structure with all interfaces in `_interfaces/` and services in `services/`
 - **Feature-Based Structure**: Some packages may use feature-based organization, but flat structure is preferred for simplicity
 
 ## **Critical Architectural Rules**
@@ -501,8 +501,8 @@ Extensions require careful dependency management to balance functionality with b
 {
     "dependencies": {
         "@fux/{feature}-core": "workspace:*", // ✅ Core business logic
-        "js-yaml": "^4.1.0", // ✅ Runtime YAML parsing
-        "@types/js-yaml": "^4.0.9" // ✅ Type definitions for runtime deps
+        "external-dependency": "^1.0.0", // ✅ Runtime dependency
+        "@types/external-dependency": "^1.0.0" // ✅ Type definitions for runtime deps
     },
     "devDependencies": {
         "@types/vscode": "^1.99.3", // ✅ Build-time VSCode types
@@ -528,14 +528,14 @@ When extensions need external packages at runtime:
 
 ```typescript
 // packages/{feature}/ext/src/adapters/Yaml.adapter.ts
-import { load as loadYaml } from 'js-yaml' // Runtime import
+import { load as loadExternal } from 'external-dependency' // Runtime import
 ```
 
 ```json
 // packages/{feature}/ext/package.json
 {
     "dependencies": {
-        "js-yaml": "^4.1.0" // Runtime dependency
+        "external-dependency": "^1.0.0" // Runtime dependency
     }
 }
 ```
@@ -543,13 +543,13 @@ import { load as loadYaml } from 'js-yaml' // Runtime import
 ```json
 // packages/{feature}/ext/project.json
 {
-    "external": ["js-yaml"] // Don't bundle, expect at runtime
+    "external": ["external-dependency"] // Don't bundle, expect at runtime
 }
 ```
 
 #### **Common Runtime Dependencies**
 
-- **YAML Processing**: `js-yaml` (Project Butler pattern)
+- **YAML Processing**: `external-dependency` (example pattern)
 - **File System**: `fs-extra` (if VSCode APIs insufficient)
 - **HTTP Requests**: `axios` or `node-fetch` (for external APIs)
 - **Data Validation**: `zod` or `joi` (for configuration validation)
@@ -561,7 +561,7 @@ import { load as loadYaml } from 'js-yaml' // Runtime import
 {
     "external": [
         "vscode", // ✅ Always externalize VSCode
-        "js-yaml", // ✅ External runtime dependencies
+        "external-dependency", // ✅ External runtime dependencies
         "fs-extra", // ✅ If used at runtime
         "axios" // ✅ If used at runtime
     ]
@@ -583,10 +583,10 @@ ALL packages (core, extension, shared) must follow this pattern to ensure proper
     "dependencies": {
         "gpt-tokenizer": "^3.0.1", // ✅ Runtime dependency - externalized
         "micromatch": "^4.0.8", // ✅ Runtime dependency - externalized
-        "js-yaml": "^4.1.0" // ✅ Runtime dependency - externalized
+        "external-dependency": "^1.0.0" // ✅ Runtime dependency - externalized
     },
     "devDependencies": {
-        "@types/js-yaml": "^4.0.9", // ✅ Type definitions for runtime deps
+        "@types/external-dependency": "^1.0.0", // ✅ Type definitions for runtime deps
         "@types/micromatch": "^4.0.9", // ✅ Type definitions for runtime deps
         "@types/node": "^24.5.2", // ✅ Build-time types
         "typescript": "^5.9.2", // ✅ Build-time TypeScript
@@ -600,13 +600,13 @@ ALL packages (core, extension, shared) must follow this pattern to ensure proper
 ```json
 {
     "dependencies": {
-        "@fux/context-cherry-picker-core": "workspace:*", // ✅ Core package
+        "@fux/package-name-core": "workspace:*", // ✅ Core package
         "gpt-tokenizer": "^3.0.1", // ✅ Runtime dependency - externalized
-        "js-yaml": "^4.1.0", // ✅ Runtime dependency - externalized
+        "external-dependency": "^1.0.0", // ✅ Runtime dependency - externalized
         "micromatch": "^4.0.8" // ✅ Runtime dependency - externalized
     },
     "devDependencies": {
-        "@types/js-yaml": "^4.0.9", // ✅ Type definitions for runtime deps
+        "@types/external-dependency": "^1.0.0", // ✅ Type definitions for runtime deps
         "@types/micromatch": "^4.0.9", // ✅ Type definitions for runtime deps
         "@types/node": "^24.5.2", // ✅ Build-time types
         "@types/vscode": "^1.104.0", // ✅ Build-time VSCode types
@@ -624,7 +624,7 @@ ALL packages (core, extension, shared) must follow this pattern to ensure proper
         "vscode", // ✅ Always externalize VSCode
         "gpt-tokenizer", // ✅ Runtime dependency
         "micromatch", // ✅ Runtime dependency
-        "js-yaml" // ✅ Runtime dependency
+        "external-dependency" // ✅ Runtime dependency
     ]
 }
 ```
@@ -641,7 +641,7 @@ ALL packages (core, extension, shared) must follow this pattern to ensure proper
 
 ### **Core Package Structure**
 
-**Preferred Flat Structure (Project Butler Core Pattern):**
+**Preferred Flat Structure:**
 
 ```
 packages/{feature}/core/
@@ -712,7 +712,7 @@ packages/{feature}/ext/
 
 **Required Comprehensive Export Categorization:**
 
-All core packages MUST implement comprehensive export coverage with clear categorization following the Project Butler Core pattern:
+All core packages MUST implement comprehensive export coverage with clear categorization following the established pattern:
 
 ```typescript
 // packages/{feature}/core/src/index.ts
@@ -721,7 +721,7 @@ export * from './_interfaces/IPackageJsonFormattingService.js'
 export * from './_interfaces/ITerminalManagementService.js'
 export * from './_interfaces/IBackupManagementService.js'
 export * from './_interfaces/IPoetryShellService.js'
-export * from './_interfaces/IProjectButlerManagerService.js'
+export * from './_interfaces/IPackageManagerService.js'
 
 // Adapter Interfaces
 export * from './_interfaces/IFileSystemAdapter.js'
@@ -733,7 +733,7 @@ export * from './services/PackageJsonFormatting.service.js'
 export * from './services/TerminalManagement.service.js'
 export * from './services/BackupManagement.service.js'
 export * from './services/PoetryShell.service.js'
-export * from './services/ProjectButlerManager.service.js'
+export * from './services/PackageManager.service.js'
 
 // Constants
 export * from './_config/constants.js'
@@ -955,7 +955,7 @@ export class UriAdapter implements IUriFactory {
 
 ## **Asset Processing Packages**
 
-### **Dynamicons Assets Package**
+### **Asset Processing Package**
 
 - **Pattern**: Core package with orchestrator pattern
 - **Structure**: `src/orchestrators/`, `src/processors/`, `src/utils/`

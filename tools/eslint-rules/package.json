@@ -5,9 +5,11 @@
     "description": "Custom ESLint rules for FocusedUX project",
     "main": "index.js",
     "scripts": {
-        "test": "vitest run",
-        "test:watch": "vitest",
-        "test:coverage": "vitest run --coverage"
+        "test": "nx test @focused-ux/eslint-rules",
+        "test:watch": "nx test:watch @focused-ux/eslint-rules",
+        "test:coverage": "nx test:coverage @focused-ux/eslint-rules",
+        "test:rules": "nx test:rules @focused-ux/eslint-rules",
+        "test:integration": "nx test:integration @focused-ux/eslint-rules"
     },
     "dependencies": {
         "@nx/devkit": "21.6.3",
@@ -20,7 +22,6 @@
         "typescript": "^5.9.3",
         "vitest": "^3.2.4"
     },
-    "generators": "./generators.json",
     "files": [
         "dist",
         "!**/*.tsbuildinfo",

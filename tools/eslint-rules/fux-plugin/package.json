@@ -1,0 +1,14 @@
+{
+    "name": "@fux/eslint-plugin",
+    "version": "1.0.0",
+    "description": "FocusedUX custom ESLint rules plugin",
+    "main": "index.js",
+    "type": "module",
+    "keywords": ["eslint", "plugin", "rules", "focusedux", "fux"],
+    "author": "FocusedUX",
+    "license": "MIT",
+    "exports": {
+        ".": "./index.js",
+        "./rules/*": "./rules/*.js"
+    }
+}

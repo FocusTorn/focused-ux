@@ -1250,4 +1250,3 @@ npm install @fux/project-alias-expander && pae [command]
 - Reference existing patterns directly in responses
 - Implement documented solutions without additional analysis
 - Acknowledge documentation as the source of the approach
-

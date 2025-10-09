@@ -6,6 +6,15 @@
     ],
     "settings": {
         
+            
+        "prettier.requireConfig": true,
+        "prettier.configPath": "prettier.config.cjs",
+        "editor.formatOnSave": true,
+        "prettier.useEditorConfig": false,
+        
+        
+        
+        
         
         
         "terminal.integrated.automationProfile.windows": {
@@ -49,15 +58,6 @@
         
         
         
-        
-        "search.exclude": {
-            "**/node_modules": true,
-            "**/.turbo": true,
-            "**/.nx": true,
-            "**/dist": true,
-            "**/coverage": true,
-        },
-
         "workbench.colorCustomizations": {
             "titleBar.activeBackground": "#5a0000",
             "titleBar.border": "#ff0000",
@@ -88,19 +88,10 @@
         
         
     },
-    "keybindings": [
-        {
-            "key": "ctrl+c",
-            "command": "workbench.action.terminal.copySelection",
-            "when": "terminalFocus && terminalTextSelected"
-        },
-        {
-            "key": "ctrl+c",
-            "command": "workbench.action.terminal.sendSequence",
-            "args": { "text": "\u0003" },
-            "when": "terminalFocus && !terminalTextSelected"
-        }
-    ]
+    
+    
+    
+    
 }
 
 
