@@ -48,9 +48,9 @@
                 "declarationRootDir": "{projectRoot}/src",
                 
                 "format": ["cjs"],
-                "bundle": false,
+                "bundle": true,
                 "sourcemap": true,
-                "declaration": true,
+                "declaration": false,
                 "minify": false,
                 "treeShaking": false,
                 "metafile": true,
