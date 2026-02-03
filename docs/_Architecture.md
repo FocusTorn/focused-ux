@@ -1,40 +1,147 @@
 # FocusedUX Architecture
 
-## **REFERENCE FILES**
+## REFERENCE FILES <!-- Start Fold -->
 
-### **Documentation References**
+### Global Documentation
 
-- **PACKAGE_ARCHETYPES**: `docs/_Package-Archetypes.md`
 - **SOP_DOCS**: `docs/_SOP.md`
-- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-- **ACTIONS_LOG**: `docs/Actions-Log.md`
+- **ARCH_DOCS**: `docs/_Architecture.md`
+- **PACKAGE_TYPES**: `docs/_Package-Archetypes.md`
 
-### **Command References**
+### General Testing Documentation
 
-- **FLUENCY_CMD**: `@Deep Dive - Fluency of a package.md`
-- **FLUENCY_PHASE_1**: `@fluency-phase1-Identity.md`
-- **FLUENCY_PHASE_2**: `@fluency-phase2-Architecture.md`
-- **FLUENCY_PHASE_6**: `@fluency-phase6-Synthesis.md`
+- **TEST_STRAT**: `docs/testing/(AI) _Strategy- Base- Testing.md`
+- **MOCK_STRAT**: `docs/testing/(AI) _Strategy- Base- Mocking.md`
+- **TEST_BUGS**: `docs/testing/(AI) _Troubleshooting- Tests.md`
+
+### Targeted Testing Documentation
+
+- **UTIL_TESTS**: `docs/testing/(AI) _Strategy- Specific- Utilities.md`
+
+### Incomplete
+
+- **EXT_TESTS**: `docs/testing/(AI) _Strategy- Specific- Ext.md`
+- **EACC_TESTS**: `docs/testing/(AI) _Strategy- Specific- ExtAcc.md`
+- **LIBS_TESTS**: `docs/testing/(AI) _Strategy- Specific- Libs.md`
+- **PLUG_TESTS**: `docs/testing/(AI) _Strategy- Specific- Plugins.md`
 
 ---
 
-## Package Classification
+<!-- Close Fold: REFERENCE FILES -->
+
+## Package Classification <!-- Start Fold -->
 
 The FocusedUX monorepo follows a **standardized package classification system** that determines architectural patterns, build configurations, and testing strategies.
 
-**📋 Reference**: See **PACKAGE_ARCHETYPES** for the complete single source of truth on package classification, including detailed architectural patterns, examples, and implementation guidelines.
+**📋 Reference**: See **PACKAGE_TYPES** for the complete single source of truth on package classification, including detailed architectural patterns, examples, and implementation guidelines.
 
-### **Quick Reference**
+### Quick Reference
 
-- **Direct TSX Executed** (`libs/tools/`) - Standalone utilities
-- **Consumable Package: Shared Utility** (`libs/`) - Shared utilities
-- **Consumable Package: Feature Utility** (`packages/{feature}/`) - Feature-specific utilities
-- **Consumable Package: Core Extension Feature Logic** (`packages/{feature-name}/core`) - Business logic
-- **Pre-Packaged Extension: Single Feature** (`packages/{feature-name}/ext`) - VSCode extensions
-- **Nx Alignment Generators** (`plugins/`) - 🚧 In Development
-- **Monolithic Orchestrator** - 📋 Planned
+#### Terms
 
-## **Project Architecture**
+- `Singularity`: Single feature VSCode extension
+- `Monolith`: Orchestrator extension containing the core logic of all singularities in a single extension.
+
+#### Package Archetypes
+
+For more granular details refer to: **PACKAGE_TYPES**
+
+- **Consumable Package:**:
+    - **Shared Libraries**: `libs/` - Shared/consumed libraries
+
+- **VSCode Extension:**:
+    - **Core Package**: `packages/{feature-name}/core`: Feature-specific business logic
+    - **Accessory Packages**: `packages/{feature-name}/{utility-name}`: Feature-specific utilities
+    - **Extension Package**: `packages/{feature-name}/ext`: Feature-specific wrapper for VSCode extensions
+    - **Monolithic Orchestrator**: `packages/focused-ux/`: (not implemented) Feature-specific wrapper for VSCode extensions
+
+- **Repository Utilities**
+    - **Plugins**: `plugins/` - Nx workspace plugins
+    - **Utilities**: `utilities/` - Reposity utilities and tools
+
+---
+
+<!-- Close Fold: Package Classification -->
+
+## **Project.json Configuration Patterns** <!-- Start Fold -->
+
+### **Core Package Project.json**
+
+```json
+{
+    "name": "@fux/{feature}-core",
+    "projectType": "library",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "options": {
+                "main": "packages/{feature}/core/src/index.ts",
+                "outputPath": "packages/{feature}/core/dist",
+                "tsConfig": "packages/{feature}/core/tsconfig.lib.json",
+                "format": ["esm"],
+                "bundle": false,
+                "external": ["vscode", "dependency1", "dependency2"]
+            }
+        },
+        "test": {
+            "executor": "@nx/vite:test",
+            "dependsOn": ["^build"]
+        }
+    },
+    "tags": ["core"]
+}
+```
+
+### **Extension Package Project.json**
+
+```json
+{
+    "name": "@fux/{feature}-ext",
+    "projectType": "application",
+    "targets": {
+        "build": {
+            "executor": "@nx/esbuild:esbuild",
+            "dependsOn": ["^build"],
+            "options": {
+                "entryPoints": ["packages/{feature}/ext/src/extension.ts"],
+                "outputPath": "packages/{feature}/ext/dist",
+                "format": ["cjs"],
+                "bundle": true,
+                "external": ["vscode"],
+                "assets": [
+                    {
+                        "glob": "**/*",
+                        "input": "packages/{feature}/ext/assets/",
+                        "output": "./assets/"
+                    }
+                ]
+            }
+        },
+        "package": {
+            "executor": "@fux/vpack:pack",
+            "dependsOn": ["build", "@fux/vsix-packager:build"],
+            "options": {
+                "targetPath": "{projectRoot}"
+            }
+        },
+        "package:dev": {
+            "executor": "@fux/vpack:pack",
+            "dependsOn": ["build", "@fux/vsix-packager:build"],
+            "options": {
+                "targetPath": "{projectRoot}",
+                "dev": true
+            }
+        }
+    },
+    "tags": ["ext"]
+}
+```
+
+---
+
+<!-- Close Fold: Project.json Configuration Patterns -->
+
+## Project Architecture <!-- Start Fold --> **REVIEW REQUIRED**
 
 ### **File Organization**
 
@@ -45,10 +152,9 @@ The FocusedUX monorepo follows a **standardized package classification system** 
 
 ### **Package Archetypes**
 
-- **`shared` (Library)**: Located in `libs/shared/`, contains shared services and abstractions for runtime use by other packages
+- **`shared` (Library)**: Located in `libs/shared/`, contains shared libraries for utilities and abstractions for runtime use by other packages
 - **`core` (Library)**: Located in `packages/{feature}/core/`, contains feature's abstract business logic, built to be tree-shakeable
 - **`ext` (Application)**: Located in `packages/{feature}/ext/`, contains VSCode extension implementation, depends on core package
-- **`tool` (Utility)**: Located in `libs/tools/{tool-name}/`, contains standalone utilities that run directly with tsx (no build step)
 
 ### **Package Structure Decision Tree**
 
@@ -73,52 +179,11 @@ Is the package intended to be a VS Code extension?
 │       └─ NO → Reconsider package purpose or consult team
 ```
 
-## **VSCode Import Patterns**
+---
 
-### **Core Packages**
+<!-- Close Fold: Project Architecture -->
 
-- **Pattern**: Use type imports only
-- **Implementation**: `import type { Uri } from 'vscode'`
-- **Rationale**: Core packages remain pure business logic without VSCode dependencies
-- **Testing**: See **TESTING_STRATEGY** for comprehensive testing patterns
-- **Local Interface Pattern**: Define local interfaces (e.g., `IUri`, `IUriFactory`) to replace VSCode value usage
-
-**Important Distinction**:
-
-- ✅ **Type imports are fine**: `import type { Uri } from 'vscode'` - These don't violate decoupling
-- ❌ **Value imports are forbidden**: `import { Uri } from 'vscode'` - These violate decoupling
-- ❌ **Direct API calls are forbidden**: `Uri.file(path)` - These violate decoupling
-
-### **Extension Packages**
-
-- **Pattern**: Create local adapters with VSCode value imports
-- **Implementation**:
-
-    ```typescript
-    // src/adapters/Window.adapter.ts
-    import * as vscode from 'vscode'
-
-    export interface IWindowAdapter {
-        showInformationMessage: (message: string) => Promise<void>
-    }
-
-    export class WindowAdapter implements IWindowAdapter {
-        async showInformationMessage(message: string): Promise<void> {
-            await vscode.window.showInformationMessage(message)
-        }
-    }
-    ```
-
-- **Rationale**: Extension packages handle VSCode integration through local adapters
-- **Testing**: See **TESTING_STRATEGY** for comprehensive testing patterns
-
-### **No Shared Package Usage**
-
-- **Rule**: Each package is completely self-contained
-- **Rationale**: Enables independent validation (see [Testing Strategy](../testing/_Testing-Strategy.md))
-- **Implementation**: No dependencies on `@fux/shared` or other shared packages
-
-## **Build System Architecture**
+## **Build System Architecture** <!-- Start Fold --> **REVIEW REQUIREDD**
 
 ### **Universal Build Executor Rule**
 
@@ -239,7 +304,60 @@ While the architecture follows consistent patterns, some packages have legitimat
 - **Flat Structure (Preferred)**: Core packages use a flat structure with all interfaces in `_interfaces/` and services in `services/`
 - **Feature-Based Structure**: Some packages may use feature-based organization, but flat structure is preferred for simplicity
 
-## **Critical Architectural Rules**
+---
+
+<!-- Close Fold: Build System Architecture -->
+
+## **VSCode Import Patterns** <!-- Start Fold --> **REVIEW REQUIRED**
+
+### **Core Packages**
+
+- **Pattern**: Use type imports only
+- **Implementation**: `import type { Uri } from 'vscode'`
+- **Rationale**: Core packages remain pure business logic without VSCode dependencies
+- **Testing**: See **TEST_STRAT** for comprehensive testing patterns
+- **Local Interface Pattern**: Define local interfaces (e.g., `IUri`, `IUriFactory`) to replace VSCode value usage
+
+**Important Distinction**:
+
+- ✅ **Type imports are fine**: `import type { Uri } from 'vscode'` - These don't violate decoupling
+- ❌ **Value imports are forbidden**: `import { Uri } from 'vscode'` - These violate decoupling
+- ❌ **Direct API calls are forbidden**: `Uri.file(path)` - These violate decoupling
+
+### **Extension Packages**
+
+- **Pattern**: Create local adapters with VSCode value imports
+- **Implementation**:
+
+    ```typescript
+    // src/adapters/Window.adapter.ts
+    import * as vscode from 'vscode'
+
+    export interface IWindowAdapter {
+        showInformationMessage: (message: string) => Promise<void>
+    }
+
+    export class WindowAdapter implements IWindowAdapter {
+        async showInformationMessage(message: string): Promise<void> {
+            await vscode.window.showInformationMessage(message)
+        }
+    }
+    ```
+
+- **Rationale**: Extension packages handle VSCode integration through local adapters
+- **Testing**: See **TEST_STRAT** for comprehensive testing patterns
+
+### **No Shared Package Usage**
+
+- **Rule**: Each package is completely self-contained
+- **Rationale**: Enables independent validation (see [Testing Strategy](../testing/_Testing-Strategy.md))
+- **Implementation**: No dependencies on `@fux/shared` or other shared packages
+
+---
+
+<!-- Close Fold:  -->
+
+## **Critical Architectural Rules** <!-- Start Fold --> **REVIEW REQUIRED**
 
 ### **Adapter Architecture**
 
@@ -371,125 +489,11 @@ While the architecture follows consistent patterns, some packages have legitimat
 - **DevDependencies**: Build tools and types
 - **VSCode Configuration**: Complete extension manifest
 
-## **Project.json Configuration Patterns**
+---
 
-### **Core Package Project.json**
+<!-- Close Fold: Critical Architectural Rules -->
 
-```json
-{
-    "name": "@fux/{feature}-core",
-    "projectType": "library",
-    "targets": {
-        "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "options": {
-                "main": "packages/{feature}/core/src/index.ts",
-                "outputPath": "packages/{feature}/core/dist",
-                "tsConfig": "packages/{feature}/core/tsconfig.lib.json",
-                "format": ["esm"],
-                "bundle": false,
-                "external": ["vscode", "dependency1", "dependency2"]
-            }
-        },
-        "test": {
-            "executor": "@nx/vite:test",
-            "dependsOn": ["^build"]
-        }
-    },
-    "tags": ["core"]
-}
-```
-
-### **Extension Package Project.json**
-
-```json
-{
-    "name": "@fux/{feature}-ext",
-    "projectType": "application",
-    "targets": {
-        "build": {
-            "executor": "@nx/esbuild:esbuild",
-            "dependsOn": ["^build"],
-            "options": {
-                "entryPoints": ["packages/{feature}/ext/src/extension.ts"],
-                "outputPath": "packages/{feature}/ext/dist",
-                "format": ["cjs"],
-                "bundle": true,
-                "external": ["vscode"],
-                "assets": [
-                    {
-                        "glob": "**/*",
-                        "input": "packages/{feature}/ext/assets/",
-                        "output": "./assets/"
-                    }
-                ]
-            }
-        },
-        "package": {
-            "executor": "@fux/vpack:pack",
-            "dependsOn": ["build", "@fux/vsix-packager:build"],
-            "options": {
-                "targetPath": "{projectRoot}"
-            }
-        },
-        "package:dev": {
-            "executor": "@fux/vpack:pack",
-            "dependsOn": ["build", "@fux/vsix-packager:build"],
-            "options": {
-                "targetPath": "{projectRoot}",
-                "dev": true
-            }
-        }
-    },
-    "tags": ["ext"]
-}
-```
-
-## **VPack Executor Documentation**
-
-### **VPack Packaging System**
-
-The FocusedUX monorepo uses the **VPack executor** (`@fux/vpack:pack`) for VSCode extension packaging, replacing the traditional `vsce` command with a more integrated approach.
-
-#### **VPack Executor Configuration**
-
-```json
-{
-    "package": {
-        "executor": "@fux/vpack:pack",
-        "dependsOn": ["build", "@fux/vsix-packager:build"],
-        "options": {
-            "targetPath": "{projectRoot}"
-        }
-    },
-    "package:dev": {
-        "executor": "@fux/vpack:pack",
-        "dependsOn": ["build", "@fux/vsix-packager:build"],
-        "options": {
-            "targetPath": "{projectRoot}",
-            "dev": true
-        }
-    }
-}
-```
-
-#### **VPack Features**
-
-- **Integrated Build Pipeline**: Automatically handles build dependencies and VSIX packaging
-- **Development Mode**: `dev: true` option for development packaging with enhanced debugging
-- **Dependency Management**: Integrates with `@fux/vsix-packager` for consistent packaging
-- **Project Root Targeting**: Uses `{projectRoot}` placeholder for flexible path resolution
-
-#### **VPack vs Traditional Packaging**
-
-| Aspect            | VPack                    | Traditional vsce             |
-| ----------------- | ------------------------ | ---------------------------- |
-| **Integration**   | Nx-native executor       | External command             |
-| **Dependencies**  | Automatic build chain    | Manual dependency management |
-| **Configuration** | project.json integration | Separate vsce configuration  |
-| **Development**   | Built-in dev mode        | Manual dev flags             |
-
-## **Runtime Dependency Patterns for Extensions**
+## **Runtime Dependency Patterns for Extensions** <!-- Start Fold --> **REVIEW REQUIRED**
 
 ### **Extension Dependency Classification**
 
@@ -642,7 +646,11 @@ ALL packages (core, extension, shared) must follow this pattern to ensure proper
 - **Extension packages** must include ALL runtime deps from core packages
 - **Build chain externalization** requires runtime deps in `dependencies` at every level
 
-## **Package Structure**
+---
+
+<!-- Close Fold: Runtime Dependency Patterns for Extensions -->
+
+## **Package Structure** <!-- Start Fold --> **REVIEW REQUIRED**
 
 ### **Core Package Structure**
 
@@ -657,22 +665,6 @@ packages/{feature}/core/
 │   └── index.ts              # Comprehensive categorized exports
 ├── __tests__/                # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
 └── package.json              # Minimal dependencies
-```
-
-**Alternative Feature-Based Structure:**
-
-```
-packages/{feature}/core/
-├── src/
-│   ├── _interfaces/          # Global interfaces
-│   ├── _config/              # Configuration constants
-│   ├── features/             # Feature-based organization
-│   │   └── feature-name/
-│   │       ├── _interfaces/  # Feature interfaces
-│   │       └── services/     # Feature services
-│   └── index.ts              # Individual exports for tree-shaking
-├── __tests__/                # Test structure (see [Testing Strategy](../testing/_Testing-Strategy.md))
-└── package.json              # No shared dependencies
 ```
 
 ### **Extension Package Structure**
@@ -880,7 +872,61 @@ export class {Feature}ManagerService implements I{Feature}ManagerService {
 - **Enhanced Metadata**: Rich metadata support for complex workflow state management
 - **Workflow Efficiency**: Complete workflows that handle multiple operations in sequence
 
-## **Migration Guide**
+---
+
+<!-- Close Fold: Package Structure -->
+
+## **Nx Target Integration Best Practices** <!-- Start Fold --> **REVIEW REQUIRED**
+
+### **Target vs Package Scripts**
+
+**ALWAYS use Nx targets over package.json scripts** for better caching, dependency management, and build graph integration.
+
+**Benefits**:
+
+- **Caching**: Leverages Nx's intelligent caching system
+- **Dependencies**: Proper dependency graph management
+- **Build Order**: Correct execution order for complex workflows
+- **Performance**: Better performance through optimized execution
+
+### **Target Configuration**
+
+**Output Paths**:
+
+- Use package-relative paths, not workspace-relative paths
+- Example: `"{projectRoot}/dist/assets"` not `"{workspaceRoot}/packages/..."`
+- This ensures proper caching and dependency resolution
+
+**Dependency Management**:
+
+- Define clear dependencies between targets
+- Ensure asset processing occurs after core package build
+- Use `dependsOn` to establish correct execution order
+
+### **Asset Processing Targets**
+
+**Core Package Targets**:
+
+- `process-assets`: Full asset processing with change detection
+- `process-assets:incremental`: Change-based processing only
+- `process-assets:all`: Force all assets processing
+- `assets:manifest`: Generate manifest only
+- `assets:detect`: Detect changes only
+
+**Extension Package Targets**:
+
+- `copy-assets`: Copy processed assets from core to extension
+
+---
+
+<!-- Close Fold: Nx Target Integration Best Practices -->
+
+
+---
+
+**Should maybe relocated**
+
+## **Migration Guide** <!-- Start Fold --> **REVIEW REQUIRED**
 
 ### **From Shared Adapters to Local Adapters**
 
@@ -941,25 +987,11 @@ export class UriAdapter implements IUriFactory {
 }
 ```
 
-## **Benefits**
-
-### **Testing Benefits**
-
-- **Core packages**: Test business logic without VSCode complexity
-- **Extension packages**: Test VSCode integration patterns
-- **Independent validation**: Each package can be tested separately
-- **Fast execution**: Core tests run without VSCode context
-
-### **Architectural Benefits**
-
-- **Self-contained**: Each package is independent
-- **Clear separation**: Business logic vs VSCode integration
-- **Maintainable**: Changes in one package don't affect others
-- **Scalable**: Easy to add new packages following the same pattern
-
 ---
 
-## **Asset Processing Packages**
+<!-- Close Fold: Migration Guide -->
+
+## **Asset Processing Packages** <!-- Start Fold --> **REVIEW REQUIRED**
 
 ### **Asset Processing Package**
 
@@ -982,7 +1014,11 @@ export class AssetOrchestrator {
 }
 ```
 
-## **Asset Processing Architecture**
+---
+
+<!-- Close Fold: Asset Processing Packages -->
+
+## **Asset Processing Architecture** <!-- Start Fold --> **REVIEW REQUIRED**
 
 ### **Core Package Self-Containment**
 
@@ -1039,50 +1075,9 @@ Core packages MUST process assets to their own `dist/assets` directory and NEVER
 
 ---
 
-## **Nx Target Integration Best Practices**
+<!-- Close Fold: Asset Processing Architecture -->
 
-### **Target vs Package Scripts**
-
-**ALWAYS use Nx targets over package.json scripts** for better caching, dependency management, and build graph integration.
-
-**Benefits**:
-
-- **Caching**: Leverages Nx's intelligent caching system
-- **Dependencies**: Proper dependency graph management
-- **Build Order**: Correct execution order for complex workflows
-- **Performance**: Better performance through optimized execution
-
-### **Target Configuration**
-
-**Output Paths**:
-
-- Use package-relative paths, not workspace-relative paths
-- Example: `"{projectRoot}/dist/assets"` not `"{workspaceRoot}/packages/..."`
-- This ensures proper caching and dependency resolution
-
-**Dependency Management**:
-
-- Define clear dependencies between targets
-- Ensure asset processing occurs after core package build
-- Use `dependsOn` to establish correct execution order
-
-### **Asset Processing Targets**
-
-**Core Package Targets**:
-
-- `process-assets`: Full asset processing with change detection
-- `process-assets:incremental`: Change-based processing only
-- `process-assets:all`: Force all assets processing
-- `assets:manifest`: Generate manifest only
-- `assets:detect`: Detect changes only
-
-**Extension Package Targets**:
-
-- `copy-assets`: Copy processed assets from core to extension
-
----
-
-## **Asset Change Detection System**
+## **Asset Change Detection System** <!-- Start Fold --> **REVIEW REQUIRED**
 
 ### **Architectural Components**
 
@@ -1137,3 +1132,53 @@ Core packages MUST process assets to their own `dist/assets` directory and NEVER
 - Do not create build graph edges from extensions to this helper (no TS project refs, no devDependency in extensions).
 - Preferred pattern: build the helper as a pre-step in integration test targets and import it from its built dist in `.vscode-test.mjs`.
 - Benefit: keeps extension builds fast and predictable while preserving consistent test configuration.
+
+<!-- Close Fold: Asset Change Detection System -->
+
+## **VPack Executor Documentation** <!-- Start Fold --> **REVIEW REQUIRED**
+
+### **VPack Packaging System**
+
+The FocusedUX monorepo uses the **VPack executor** (`@fux/vpack:pack`) for VSCode extension packaging, replacing the traditional `vsce` command with a more integrated approach.
+
+#### **VPack Executor Configuration**
+
+```json
+{
+    "package": {
+        "executor": "@fux/vpack:pack",
+        "dependsOn": ["build", "@fux/vsix-packager:build"],
+        "options": {
+            "targetPath": "{projectRoot}"
+        }
+    },
+    "package:dev": {
+        "executor": "@fux/vpack:pack",
+        "dependsOn": ["build", "@fux/vsix-packager:build"],
+        "options": {
+            "targetPath": "{projectRoot}",
+            "dev": true
+        }
+    }
+}
+```
+
+#### **VPack Features**
+
+- **Integrated Build Pipeline**: Automatically handles build dependencies and VSIX packaging
+- **Development Mode**: `dev: true` option for development packaging with enhanced debugging
+- **Dependency Management**: Integrates with `@fux/vsix-packager` for consistent packaging
+- **Project Root Targeting**: Uses `{projectRoot}` placeholder for flexible path resolution
+
+#### **VPack vs Traditional Packaging**
+
+| Aspect            | VPack                    | Traditional vsce             |
+| ----------------- | ------------------------ | ---------------------------- |
+| **Integration**   | Nx-native executor       | External command             |
+| **Dependencies**  | Automatic build chain    | Manual dependency management |
+| **Configuration** | project.json integration | Separate vsce configuration  |
+| **Development**   | Built-in dev mode        | Manual dev flags             |
+
+---
+
+<!-- Close Fold: VPack Executor Documentation -->

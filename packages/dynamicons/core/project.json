@@ -1,8 +1,6 @@
 {
     "name": "@fux/dynamicons-core",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/dynamicons/core/src",
-    "projectType": "library",
+    "tags": ["core"],
     "targets": {
         "build": {
             "dependsOn": ["@fux/dynamicons-assets:generate-assets"],
@@ -64,5 +62,7 @@
             ]
         }
     },
-    "tags": ["scope:dynamicons", "type:core"]
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/dynamicons/core/src",
+    "projectType": "library"
 }

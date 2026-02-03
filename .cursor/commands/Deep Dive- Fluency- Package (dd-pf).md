@@ -2,26 +2,41 @@
 
 ## **REFERENCE FILES**
 
-### **Documentation References**
-
-- **SOP_DOCS**: `docs/_SOP.md`
-- **ARCH_DOCS**: `docs/_Architecture.md`
-- **TESTING_STRATEGY**: `docs/testing/_Testing-Strategy.md`
-
 ### **Output File References**
 
 - **STAGING_FILE**: `.cursor/command-phases/fluency-output-staging.md`
 - **FINAL_OUTPUT**: `.cursor/ADHOC/fluency-output-{package-name}.md`
 
+### Global Documentation
+
+- **SOP_DOCS**: `docs/_SOP.md`
+- **ARCH_DOCS**: `docs/_Architecture.md`
+- **PACKAGE_TYPES**: `docs/_Package-Archetypes.md`
+
+### General Testing Documentation
+
+- **TEST_STRAT**: `docs/testing/(AI) _Strategy- Base- Testing.md`
+- **MOCK_STRAT**: `docs/testing/(AI) _Strategy- Base- Mocking.md`
+- **TEST_BUGS**: `docs/testing/(AI) _Troubleshooting- Tests.md`
+
+### Targeted Testing Documentation
+
+- **LIBS_TESTS**: (Incomplete) `docs/testing/(AI) _Strategy- Specific- Libs.md`
+- **CORE_TESTS**: `@(AI) _Strategy- Specific- Core.md`
+- **EACC_TESTS**: (Incomplete) `docs/testing/(AI) _Strategy- Specific- ExtAcc.md`
+- **EXT_TESTS**: `@(AI) _Strategy- Specific- Ext.md`
+- **PLUG_TESTS**: (Incomplete) `docs/testing/(AI) _Strategy- Specific- Plugins.md`
+- **UTIL_TESTS**: `@(AI) _Strategy- Specific- Utilities.md`
+
 ### **Phase Command References**
 
-- **PHASE_1_CMD**: `@fluency-phase1-Identity.md`
-- **PHASE_2_CMD**: `@fluency-phase2-Architecture.md`
-- **PHASE_3_CMD**: `@fluency-phase3-Functionality.md`
-- **PHASE_4_CMD**: `@fluency-phase4-Implementation.md`
-- **PHASE_5_CMD**: `@fluency-phase5-Integration.md`
-- **PHASE_6_CMD**: `@fluency-phase6-Synthesis.md`
-- **PHASE_7_CMD**: `@fluency-phase7-Optimization.md`
+- **PHASE_1_CMD**: `@package-fluency-phase1-Identity.md`
+- **PHASE_2_CMD**: `@package-fluency-phase2-Architecture.md`
+- **PHASE_3_CMD**: `@package-fluency-phase3-Functionality.md`
+- **PHASE_4_CMD**: `@package-fluency-phase4-Implementation.md`
+- **PHASE_5_CMD**: `@package-fluency-phase5-Integration.md`
+- **PHASE_6_CMD**: `@package-fluency-phase6-Synthesis.md`
+- **PHASE_7_CMD**: `@package-fluency-phase7-Optimization.md`
 
 ---
 

@@ -1,3 +1,73 @@
+# SSH Setup Guide: Windows Host to Headless Raspberry Pi 4 (Debian Trixie)
+
+## 1. :: Windows SSH Framework Setup
+
+1. Verify OpenSSH Client Installation
+   - Open PowerShell as Administrator
+   - Run: `Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH.Client*'`
+   - If not installed, run: `Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0`
+
+2. Create SSH Directory Structure
+   - Ensure `C:\Users\<YourUsername>\.ssh` directory exists
+   - Run: `New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.ssh"`
+
+---
+
+## 2. :: SSH Key Pair Generation
+
+1. Generate Ed25519 Key Pair (Recommended)
+   - Open PowerShell (standard user, not admin)
+   - Run: `ssh-keygen -t ed25519 -f "$env:USERPROFILE\.ssh\rpi_clean_ed25519" -C "vscode-rpi-clean"`
+   - When prompted for passphrase, press Enter twice for passwordless
+
+---
+
+## 3. :: SSH Config File Creation
+
+1. Create/Edit SSH Config File
+   - Open or create: `C:\Users\<YourUsername>\.ssh\config`
+   - Add the following configuration:
+
+````ssh-config
+Host RPi-Clean
+    HostName 192.168.1.159
+    User pi
+    IdentityFile C:\Users\<YourUsername>\.ssh\rpi_clean_ed25519
+    IdentitiesOnly yes
+    StrictHostKeyChecking accept-new
+````
+
+2. Save and Set Permissions
+   - Save the config file
+   - Run: `icacls "$env:USERPROFILE\.ssh\config" /inheritance:r /grant:r "$($env:USERNAME):(R)"`
+
+---
+
+## 4. :: Quick Reference Commands
+
+1. Connect via SSH: `ssh RPi-Clean`
+2. Copy files to RPi: `scp <file> RPi-Clean:/home/pi/`
+3. Test connection: `ssh -v RPi-Clean` (verbose mode for debugging)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Add Skeleton Tests
 
 ## **COMMAND PURPOSE**

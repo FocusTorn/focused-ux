@@ -1,77 +1,84 @@
-# FocusedUX Monorepo
+# Devel-MCP
 
-A comprehensive monorepo for VSCode extensions and development tools, built with Nx and TypeScript.
+Universal Development Assistant - A Model Context Protocol (MCP) server for intelligent code analysis and generation across multiple programming languages.
 
-## Package Classification
+## 🎯 Features
 
-The FocusedUX monorepo follows a **standardized package classification system** that determines architectural patterns, build configurations, and testing strategies.
+- **Multi-Language Support**: TypeScript, JavaScript, C#, AutoHotkey, C/C++
+- **Project-Aware Analysis**: Understands project structure and conventions
+- **Smart Code Generation**: Generates boilerplate following project standards
+- **Universal MCP Integration**: Works with any MCP-compatible client
 
-**📋 Reference**: See [Package Archetypes](./docs/Package-Archetypes.md) for the complete single source of truth on package classification, including detailed descriptions, examples, and implementation guidelines.
-
-### **Quick Reference**
-
-- **Direct TSX Executed** (`libs/tools/`) - Standalone utilities
-- **Consumable Package: Shared Utility** (`libs/`) - Shared utilities
-- **Consumable Package: Feature Utility** (`packages/{feature}/`) - Feature-specific utilities
-- **Consumable Package: Core Extension Feature Logic** (`packages/{feature-name}/core`) - Business logic
-- **Pre-Packaged Extension: Single Feature** (`packages/{feature-name}/ext`) - VSCode extensions
-- **Nx Alignment Generators** (`plugins/`) - 🚧 In Development
-- **Monolithic Orchestrator** - 📋 Planned
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js 18+
-- pnpm
-- Nx CLI
+## 🚀 Quick Start
 
 ### Installation
 
 ```bash
-pnpm install
+# Build from source
+git clone https://github.com/user/devel-mcp
+cd devel-mcp
+go build -o devel-mcp cmd/devel-mcp/main.go
+
+# Install globally
+go install github.com/user/devel-mcp/cmd/devel-mcp
 ```
 
-### Development
+### Usage
 
 ```bash
-# Build all packages
-pnpm build
+# Initialize project configuration
+devel-mcp init --type typescript --interactive
 
-# Run tests
-pnpm test
+# Analyze project
+devel-mcp analyze --path ./my-project
 
-# Generate test scaffold
-nx g ./generators:test-scaffold
-
-# Run coverage for shared library
-pnpm dlx vitest run -c libs/shared/vitest.config.ts --coverage
+# Generate code
+devel-mcp generate function --name "ProcessData" --type typescript
 ```
 
-## Documentation
-
-- [Architecture](./docs/Architecture.md) - Project architecture and package patterns
-- [Testing Strategy](./docs/FocusedUX-Testing-Strategy.md) - Comprehensive testing guidelines
-- [Actions Log](./docs/Actions-Log.md) - Development history and decisions
-
-## Package Structure
+## 📁 Project Structure
 
 ```
-packages/
-├── dynamicons/          # Icon management extension
-│   ├── core/           # Core business logic
-│   ├── ext/            # VSCode extension wrapper
-│   └── assets/         # Asset processing utilities
-├── ghost-writer/        # AI writing assistant
-├── project-butler/      # Project management tools
-└── note-hub/           # Note-taking extension
-
-libs/
-├── shared/             # Shared utilities
-├── tools/              # Standalone tools
-└── vscode-test-cli-config/ # Test configuration
+devel-mcp/
+├── cmd/devel-mcp/          # Main executable
+├── internal/               # Core server logic
+├── pkg/                    # Public packages
+├── plugins/                # Language-specific implementations
+├── project-configs/        # Project configuration templates
+└── docs/                   # Documentation
 ```
 
-## Contributing
+## 🔧 Configuration
 
-Please refer to the [Architecture](./docs/Architecture.md) and [Testing Strategy](./docs/FocusedUX-Testing-Strategy.md) documents for development guidelines.
+Create a `.devel-mcp/config.yaml` file in your project root:
+
+```yaml
+project:
+    name: 'My Project'
+    type: 'typescript'
+    version: '1.0.0'
+
+guidelines:
+    coding_style: 'camelCase'
+    max_function_length: 50
+    required_comments: true
+
+preferences:
+    test_framework: 'vitest'
+    documentation_format: 'markdown'
+
+non_negotiables:
+    - 'All functions must have error handling'
+    - 'No global variables except constants'
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Submit a pull request
+
+## 📄 License
+
+MIT License - see LICENSE file for details.

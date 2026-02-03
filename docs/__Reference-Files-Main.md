@@ -1,4 +1,4 @@
-## **REFERENCE FILES**
+## REFERENCE FILES <!-- Start Fold -->
 
 ### Global Documentation
 
@@ -14,11 +14,13 @@
 
 ### Targeted Testing Documentation
 
+- **LIBS_TESTS**: (Incomplete) `docs/testing/(AI) _Strategy- Specific- Libs.md`
+- **CORE_TESTS**: `docs/testing/(AI) _Strategy- Specific- Core.md`
+- **EACC_TESTS**: (Incomplete) `docs/testing/(AI) _Strategy- Specific- ExtAcc.md`
+- **EXT_TESTS**: `docs/testing/(AI) _Strategy- Specific- Ext.md`
+- **PLUG_TESTS**: (Incomplete) `docs/testing/(AI) _Strategy- Specific- Plugins.md`
 - **UTIL_TESTS**: `docs/testing/(AI) _Strategy- Specific- Utilities.md`
 
-### Incomplete
+---
 
-- **EXT_TESTS**: `docs/testing/(AI) _Strategy- Specific- Ext.md`
-- **EUSE_TESTS**: `docs/testing/(AI) _Strategy- Specific- ExtAcc.md`
-- **LIBS_TESTS**: `docs/testing/(AI) _Strategy- Specific- Libs.md`
-- **PLUG_TESTS**: `docs/testing/(AI) _Strategy- Specific- Plugins.md`
+<!-- Close Fold: REFERENCE FILES -->

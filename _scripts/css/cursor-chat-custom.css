@@ -26,7 +26,16 @@
 #typeahead-item-17 > div,
 #typeahead-item-18 > div,
 #typeahead-item-19 > div,
-#typeahead-item-20 > div {
+#typeahead-item-20 > div,
+#typeahead-item-21 > div,
+#typeahead-item-22 > div,
+#typeahead-item-23 > div,
+#typeahead-item-24 > div,
+#typeahead-item-25 > div,
+#typeahead-item-26 > div,
+#typeahead-item-27 > div,
+#typeahead-item-28 > div,
+#typeahead-item-29 > div {
     background-color: transparent !important;
     color: #ffffff !important;
 }
@@ -53,6 +62,16 @@
 #typeahead-item-17 > div[data-is-selected="true"],
 #typeahead-item-18 > div[data-is-selected="true"],
 #typeahead-item-19 > div[data-is-selected="true"],
+#typeahead-item-20 > div[data-is-selected="true"],
+#typeahead-item-21 > div[data-is-selected="true"],
+#typeahead-item-22 > div[data-is-selected="true"],
+#typeahead-item-23 > div[data-is-selected="true"],
+#typeahead-item-24 > div[data-is-selected="true"],
+#typeahead-item-25 > div[data-is-selected="true"],
+#typeahead-item-26 > div[data-is-selected="true"],
+#typeahead-item-27 > div[data-is-selected="true"],
+#typeahead-item-28 > div[data-is-selected="true"],
+#typeahead-item-29 > div[data-is-selected="true"],
 #typeahead-item-20 > div[data-is-selected="true"] {
     background-color: #660000 !important;
     color: #ffffff !important;
