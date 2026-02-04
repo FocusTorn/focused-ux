@@ -81,11 +81,25 @@ export default async function vscodeTestExecutor(
             ? config.substring(projectRoot.length + 1)
             : config
 
+        // const vscodeTestArgs = [
+        //     '--config', relativeConfig,
+        //     '--verbose',
+        //     '--timeout', timeout.toString(),
+        //     '--reporter', 'spec',
+        //     ...additionalArgs
+        // ]
+        
         const vscodeTestArgs = [
             '--config', relativeConfig,
             '--verbose',
             '--timeout', timeout.toString(),
             '--reporter', 'spec',
+            // '--user-data-dir', path.resolve(sharedCachePath, 'user-data', packageName),
+
+            // Kill the GitHub & Git built-ins specifically
+            '--disable-extension', 'vscode.git',
+            '--disable-extension', 'vscode.github',
+            '--disable-extension', 'vscode.github-authentication',
             ...additionalArgs
         ]
 

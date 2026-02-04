@@ -530,20 +530,168 @@ async function activateIconThemeIfNeeded(...) {
 
 ---
 
+### Fix 15: Icon Picker Using Wrong Path for Icons
+
+**Symptom**: `Error reading icon directory ...extension\assets\icons\folder_icons` and "No available icons match the criteria."
+
+**Root Cause**: `IconDiscoveryService` used `extensionPath` to find icons, but in packaged VSIX, icons are in `node_modules/@fux/dynamicons-assets/assets/icons/`.
+
+**Files Changed**:
+
+1. `packages/dynamicons/ext/src/utils/asset-path-resolver.ts`:
+```typescript
+// Made getAssetsPackagePath() public
+static getAssetsPackagePath(): string { ... }
+
+// Fixed icon paths: dist/assets/icons → assets/icons
+static getIconPath(type: 'file' | 'folder', filename: string): string {
+    return resolve(assetsPath, 'assets/icons', iconType, filename)  // was dist/assets/icons
+}
+
+// Added new methods
+static getFileIconsPath(): string { ... }
+static getFolderIconsPath(): string { ... }
+```
+
+2. `packages/dynamicons/ext/src/extension.ts`:
+```typescript
+// BEFORE
+const iconDiscoveryService = new IconDiscoveryService(
+    ..., contextAdapter.extensionPath, ...
+)
+
+// AFTER
+const iconDiscoveryService = new IconDiscoveryService(
+    ..., AssetPathResolver.getAssetsPackagePath(), ...
+)
+```
+
+---
+
+### Fix 16: Theme Regeneration Using Wrong Path
+
+**Symptom**: `Base manifest not found at: ...extension\assets\themes\base.theme.json`
+
+**Root Cause**: `IconActionsService` and `DynamiconsManager.service` used `context.extensionPath` for theme paths, but themes are in `node_modules/@fux/dynamicons-assets/dist/assets/themes/`.
+
+**Files Changed**:
+
+1. `packages/dynamicons/core/src/_interfaces/IContext.ts`:
+```typescript
+// BEFORE
+export interface IContext {
+    extensionPath: string
+    subscriptions: any[]
+}
+
+// AFTER
+export interface IContext {
+    extensionPath: string
+    assetsPath: string  // NEW
+    subscriptions: any[]
+}
+```
+
+2. `packages/dynamicons/ext/src/adapters/Context.adapter.ts`:
+```typescript
+// ADDED
+get assetsPath(): string {
+    return AssetPathResolver.getAssetsPackagePath()
+}
+```
+
+3. `packages/dynamicons/core/src/services/IconActionsService.ts`:
+```typescript
+// BEFORE
+return this.path.join(this.context.extensionPath, 'assets', 'themes', 'base.theme.json')
+
+// AFTER
+return this.path.join(this.context.assetsPath, 'dist', 'assets', 'themes', 'base.theme.json')
+```
+
+4. `packages/dynamicons/core/src/services/DynamiconsManager.service.ts`:
+```typescript
+// Same fix as IconActionsService
+```
+
+---
+
+### Fix 17: Test Configuration Alignment with Project Butler
+
+**Issue**: Dynamicons not using standardized testing setup with mock-strategy library.
+
+**Files Changed**:
+- `packages/dynamicons/ext/tsconfig.json` - Added mock-strategy reference
+- `packages/dynamicons/core/tsconfig.json` - Added mock-strategy reference
+- `packages/dynamicons/assets/tsconfig.json` - Added mock-strategy reference
+- `packages/dynamicons/ext/vitest.config.ts` - Added @ms-* aliases
+- `packages/dynamicons/core/vitest.config.ts` - Added @ms-* aliases
+- `packages/dynamicons/assets/vitest.config.ts` - Added @ms-* aliases
+- `packages/dynamicons/*/project.json` - Aligned test targets with `test:deps` pattern
+
+---
+
+### Fix 18: nx.json test:deps Missing Build Dependencies
+
+**Issue**: `test:deps` target not running tests on dependency chain because local `dependsOn` overrode base.
+
+**File**: `nx.json`
+
+```json
+// BEFORE
+"test:deps": {
+    "dependsOn": [{
+        "dependencies": true,
+        "target": "test",
+        "params": "forward"
+    }]
+}
+
+// AFTER
+"test:deps": {
+    "dependsOn": [
+        "build:dev",
+        "^build",
+        {
+            "dependencies": true,
+            "target": "test",
+            "params": "forward"
+        }
+    ]
+}
+```
+
+This allows project.json files to simply extend without overriding:
+```json
+"test:deps": { "extends": "test:deps" }
+```
+
+---
+
 ## Complete File Change Summary
 
-| File                                                                          | Changes                                                                                         |
-| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `packages/dynamicons/ext/vitest.config.ts`                                    | Added node_modules exclusion                                                                    |
-| `packages/dynamicons/ext/project.json`                                        | Updated package targets, removed strip-json-comments external, updated integration test targets |
-| `packages/dynamicons/assets/package.json`                                     | Added `./package.json` export                                                                   |
-| `packages/dynamicons/ext/package.json`                                        | Fixed color theme path                                                                          |
-| `packages/dynamicons/ext/src/utils/asset-path-resolver.ts`                    | Used `dirname()` for cross-platform path handling                                               |
-| `packages/dynamicons/ext/src/extension.ts`                                    | Added test mode check to skip activation prompt                                                 |
-| `packages/dynamicons/assets/src/processors/theme-processor.ts`                | Fixed icon paths, language icons, default icons (6 changes)                                     |
-| `packages/dynamicons/ext/__tests__/tsconfig.test.json`                        | Added `declarationMap: false`                                                                   |
-| `packages/dynamicons/ext/__tests__/integration-tests/suite/extension.test.ts` | Comprehensive tests (30 total)                                                                  |
-| `plugins/vpack/src/executors/pack/pack.ts`                                    | Enhanced to handle workspace dependencies                                                       |
+| File                                                                          | Changes                                                                  |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `packages/dynamicons/ext/vitest.config.ts`                                    | Added node_modules exclusion, @ms-* aliases                              |
+| `packages/dynamicons/ext/project.json`                                        | Updated package targets, test targets aligned with test:deps pattern     |
+| `packages/dynamicons/assets/package.json`                                     | Added `./package.json` export                                            |
+| `packages/dynamicons/ext/package.json`                                        | Fixed color theme path                                                   |
+| `packages/dynamicons/ext/src/utils/asset-path-resolver.ts`                    | Fixed icon paths, made getAssetsPackagePath public, added helper methods |
+| `packages/dynamicons/ext/src/extension.ts`                                    | Added test mode check, use AssetPathResolver for IconDiscoveryService    |
+| `packages/dynamicons/ext/src/adapters/Context.adapter.ts`                     | Added `assetsPath` getter                                                |
+| `packages/dynamicons/assets/src/processors/theme-processor.ts`                | Fixed icon paths, language icons, default icons (6 changes)              |
+| `packages/dynamicons/ext/__tests__/tsconfig.test.json`                        | Added `declarationMap: false`                                            |
+| `packages/dynamicons/ext/__tests__/integration-tests/suite/extension.test.ts` | Comprehensive tests (30 total)                                           |
+| `packages/dynamicons/ext/tsconfig.json`                                       | Added mock-strategy reference                                            |
+| `packages/dynamicons/core/src/_interfaces/IContext.ts`                        | Added `assetsPath` to interface                                          |
+| `packages/dynamicons/core/src/services/IconActionsService.ts`                 | Fixed theme paths to use `assetsPath`                                    |
+| `packages/dynamicons/core/src/services/DynamiconsManager.service.ts`          | Fixed theme paths to use `assetsPath`                                    |
+| `packages/dynamicons/core/vitest.config.ts`                                   | Added @ms-* aliases                                                      |
+| `packages/dynamicons/core/tsconfig.json`                                      | Added mock-strategy reference                                            |
+| `packages/dynamicons/assets/vitest.config.ts`                                 | Added @ms-* aliases                                                      |
+| `packages/dynamicons/assets/tsconfig.json`                                    | Added mock-strategy reference                                            |
+| `nx.json`                                                                     | Added build deps to test:deps and test:deps:coverage-tests               |
+| `plugins/vpack/src/executors/pack/pack.ts`                                    | Enhanced to handle workspace dependencies                                |
 
 ---
 

@@ -6,16 +6,27 @@
     "targets": {
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "dependsOn": ["^build"],
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "dependsOn": [
+                "^build"
+            ],
             "options": {
-                "entryPoints": ["packages/note-hub/ext/src/extension.ts"],
+                "entryPoints": [
+                    "packages/note-hub/ext/src/extension.ts"
+                ],
                 "outputPath": "packages/note-hub/ext/dist",
-                "format": ["cjs"],
+                "format": [
+                    "cjs"
+                ],
                 "metafile": true,
                 "platform": "node",
                 "bundle": true,
-                "external": ["vscode", "js-yaml"],
+                "external": [
+                    "vscode",
+                    "js-yaml"
+                ],
                 "sourcemap": true,
                 "main": "packages/note-hub/ext/src/extension.ts",
                 "tsConfig": "packages/note-hub/ext/tsconfig.json",
@@ -29,65 +40,112 @@
                 "thirdParty": true
             }
         }, //<
-        "package": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+        "package": { //>
+            "executor": "@fux/vpack:pack",
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "{options.outputPath}"
+            ],
             "options": {
-                "command": "node scripts/create-vsix.js packages/note-hub/ext vsix_packages"
-            }
-        },
-        "package:dev": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
-            "options": {
-                "command": "node scripts/create-vsix.js packages/note-hub/ext vsix_packages --dev",
+                "targetPath": "packages/note-hub/ext",
                 "outputPath": "vsix_packages"
             },
-            "cache": false,
-            "inputs": ["production", "^production", "{workspaceRoot}/scripts/create-vsix.js"],
-            "outputs": ["{options.outputPath}"]
-        },
+            "cache": false
+        }, //<
+        "package:dev": { //>
+            "executor": "@fux/vpack:pack",
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "options": {
+                "targetPath": "packages/note-hub/ext",
+                "outputPath": "vsix_packages",
+                "deployPath": "packages/note-hub/ext/.vpack/deploy",
+                "freshDeploy": true,
+                "keepDeploy": true,
+                "contentsPath": "packages/note-hub/ext/.vpack/contents",
+                "extractContents": true,
+                "dev": true
+            },
+            "cache": false
+        }, //<
         "publish": {
             "executor": "nx:run-commands",
-            "dependsOn": ["package"],
+            "dependsOn": [
+                "package"
+            ],
             "options": {
                 "command": "vsce publish",
                 "cwd": "{projectRoot}"
             }
         },
-    
-        "check-types": { "extends": "check-types" },
-    
-        "lint": { "extends": "lint" },
-        "lint:deps": { "extends": "lint:deps" },
-    
-        "validate": { "extends": "validate" },
-        "validate:deps": { "extends": "validate:deps" },
-    
-        "audit": { "extends": "audit" },
-        "audit:full": { "extends": "audit:full" },
-    
-        "clean": { "extends": "clean" },
-        "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" },
-        
-        "test": {
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["^build"]
+        "check-types": {
+            "extends": "check-types"
         },
-        "test:full": {
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
+        "lint": {
+            "extends": "lint"
+        },
+        "lint:deps": {
+            "extends": "lint:deps"
+        },
+        "validate": {
+            "extends": "validate"
+        },
+        "validate:deps": {
+            "extends": "validate:deps"
+        },
+        "audit": {
+            "extends": "audit"
+        },
+        "audit:full": {
+            "extends": "audit:full"
+        },
+        "clean": {
+            "extends": "clean"
+        },
+        "clean:dist": {
+            "extends": "clean:dist"
+        },
+        "clean:cache": {
+            "extends": "clean:cache"
+        },
+        //= Single Package Testing ============================================== 
+        "test": { //>
+            "extends": "test",
             "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test",
-                    "params": "forward"
-                }
+                "build",
+                "^build"
             ]
-        }
-    
+        }, //<
+        "test:coverage-tests": { //>
+            "extends": "test:coverage-tests",
+            "dependsOn": [
+                "build",
+                "^build"
+            ]
+        }, //<
+        //= Dependency Chain Testing ============================================ 
+        "test:deps": {
+            "extends": "test:deps"
+        },
+        "test:deps:coverage-tests": {
+            "extends": "test:deps:coverage-tests"
+        },
+        //= Integration Testing ================================================= 
+        "test:integration": { //>
+            "extends": "test:integration",
+            "dependsOn": [
+                "build",
+                "^build"
+            ]
+        } //<
     },
-    "tags": ["ext"]
+    "tags": [
+        "ext"
+    ]
 }

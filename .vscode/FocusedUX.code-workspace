@@ -7,6 +7,41 @@
     "settings": {
         
             
+        
+        
+        
+        "explorer.copyRelativePathSeparator": "/",
+
+
+        // WORKSPACE_ROOT -->>
+        // These settings inject the variable into any new terminal session
+        "terminal.integrated.env.windows": {
+            "WORKSPACE_ROOT": "${workspaceFolder}"
+        },
+        "terminal.integrated.env.osx": {
+            "WORKSPACE_ROOT": "${workspaceFolder}"
+        },
+        "terminal.integrated.env.linux": {
+            "WORKSPACE_ROOT": "${workspaceFolder}"
+        },
+
+        //--------------------------------------------------------------------<<
+
+        "terminal.integrated.environmentChangesRelaunch": true,
+
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         "prettier.requireConfig": true,
         "prettier.configPath": "prettier.config.cjs",
         "editor.formatOnSave": true,

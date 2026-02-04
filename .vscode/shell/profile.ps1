@@ -1,4 +1,5 @@
 # winget install --id Microsoft.PowerShell --source winget
+
 # . $PSScriptRoot/../../Microsoft.PowerShell_profile.ps1
 
 # Run this to refresh the profile
@@ -95,6 +96,207 @@ try {
 catch {
     # Silently fail if integration can't be loaded
 } #<
+
+
+
+
+
+
+
+
+
+# PowerShell Profile Paths Alias (with spaces - no conversion)
+function Show-Profiles { #>
+
+
+    Write-Host $WORKSPACE_ROOT 
+        
+    # .SYNOPSIS
+    # Displays all PowerShell profile paths for PowerShell 5 and PowerShell 7.
+    # Shows original paths with spaces (no junction conversion).
+
+    
+    Write-Host "`nPowerShell Profile Paths (Original with Spaces)" -ForegroundColor Cyan
+    Write-Host "================================================`n" -ForegroundColor Cyan
+    
+    $currentPSVersion = $PSVersionTable.PSVersion.Major
+    
+    # Helper function to format path (no conversion, shows original with spaces)
+    function Format-ClickablePathSpaces {
+        param([string]$Path, [string]$Label)
+        if ($Path) {
+            # Output label and path on one line: label in white, path in cyan
+            # No path conversion - shows original paths with spaces
+            Write-Host "  $Label " -ForegroundColor White -NoNewline
+            Write-Host $Path -ForegroundColor Cyan
+        } else {
+            Write-Host "  $Label " -ForegroundColor White -NoNewline
+            Write-Host "(not set)" -ForegroundColor DarkGray
+        }
+    }
+    
+    # PowerShell 5 (Windows PowerShell)
+    if ($currentPSVersion -eq 5) {
+        Write-Host "PowerShell 5 (Windows PowerShell) - Current:" -ForegroundColor Yellow
+        Format-ClickablePathSpaces -Path $PROFILE.CurrentUserCurrentHost -Label "Current User, Current Host:"
+        Format-ClickablePathSpaces -Path $PROFILE.CurrentUserAllHosts -Label "Current User, All Hosts:"
+        Format-ClickablePathSpaces -Path $PROFILE.AllUsersCurrentHost -Label "All Users, Current Host:"
+        Format-ClickablePathSpaces -Path $PROFILE.AllUsersAllHosts -Label "All Users, All Hosts:"
+    } else {
+        Write-Host "PowerShell 5 (Windows PowerShell):" -ForegroundColor Yellow
+        if (Get-Command powershell.exe -ErrorAction SilentlyContinue) {
+            $ps5Profiles = powershell.exe -NoProfile -Command {
+                @{
+                    CurrentUserCurrentHost = $PROFILE.CurrentUserCurrentHost
+                    CurrentUserAllHosts = $PROFILE.CurrentUserAllHosts
+                    AllUsersCurrentHost = $PROFILE.AllUsersCurrentHost
+                    AllUsersAllHosts = $PROFILE.AllUsersAllHosts
+                } | ConvertTo-Json
+            } | ConvertFrom-Json
+            
+            Format-ClickablePathSpaces -Path $ps5Profiles.CurrentUserCurrentHost -Label "Current User, Current Host:"
+            Format-ClickablePathSpaces -Path $ps5Profiles.CurrentUserAllHosts -Label "Current User, All Hosts:"
+            Format-ClickablePathSpaces -Path $ps5Profiles.AllUsersCurrentHost -Label "All Users, Current Host:"
+            Format-ClickablePathSpaces -Path $ps5Profiles.AllUsersAllHosts -Label "All Users, All Hosts:"
+        } else {
+            Write-Host "  Not available" -ForegroundColor Gray
+        }
+    }
+    
+    Write-Host ""
+    
+    # PowerShell 7 (pwsh)
+    if ($currentPSVersion -ge 7) {
+        Write-Host "PowerShell 7 (pwsh) - Current:" -ForegroundColor Yellow
+        Format-ClickablePathSpaces -Path $PROFILE.CurrentUserCurrentHost -Label "Current User, Current Host:"
+        Format-ClickablePathSpaces -Path $PROFILE.CurrentUserAllHosts -Label "Current User, All Hosts:"
+        Format-ClickablePathSpaces -Path $PROFILE.AllUsersCurrentHost -Label "All Users, Current Host:"
+        Format-ClickablePathSpaces -Path $PROFILE.AllUsersAllHosts -Label "All Users, All Hosts:"
+    } else {
+        Write-Host "PowerShell 7 (pwsh):" -ForegroundColor Yellow
+        if (Get-Command pwsh -ErrorAction SilentlyContinue) {
+            $pwshProfiles = pwsh -NoProfile -Command {
+                @{
+                    CurrentUserCurrentHost = $PROFILE.CurrentUserCurrentHost
+                    CurrentUserAllHosts = $PROFILE.CurrentUserAllHosts
+                    AllUsersCurrentHost = $PROFILE.AllUsersCurrentHost
+                    AllUsersAllHosts = $PROFILE.AllUsersAllHosts
+                } | ConvertTo-Json
+            } | ConvertFrom-Json
+            
+            Format-ClickablePathSpaces -Path $pwshProfiles.CurrentUserCurrentHost -Label "Current User, Current Host:"
+            Format-ClickablePathSpaces -Path $pwshProfiles.CurrentUserAllHosts -Label "Current User, All Hosts:"
+            Format-ClickablePathSpaces -Path $pwshProfiles.AllUsersCurrentHost -Label "All Users, Current Host:"
+            Format-ClickablePathSpaces -Path $pwshProfiles.AllUsersAllHosts -Label "All Users, All Hosts:"
+        } else {
+            Write-Host "  Not installed" -ForegroundColor Gray
+        }
+    }
+    
+    Write-Host ""
+} #<
+
+
+
+
+
+
+
+ # ┌────────────────────────────────────────────────────────────────────────────┐
+ # │ Linux Tool Alias Override                                                  │
+ # ├────────────────────────────────────────────────────────────────────────────┤
+ # │ This section identifies tools provided by Git Bash (usr/bin) and removes   │
+ # │ any conflicting PowerShell aliases, allowing the Linux-style executables   │
+ # │ to take precedence in the terminal.                                       │
+ # └────────────────────────────────────────────────────────────────────────────┘
+ 
+ 
+ 
+ # 1. Identify Git Bash usr/bin path
+ $gitBashPath = "C:\Program Files\Git\usr\bin"
+ 
+ if (Test-Path $gitBashPath) {
+     # 2. Dynamically build the list of tools from the directory
+     $linuxTools = Get-ChildItem -Path "$gitBashPath\*.exe" | Select-Object -ExpandProperty BaseName
+ } else {
+     # Fallback to common subset if path is not standard
+     $linuxTools = @("ls", "cat", "grep", "curl", "wget", "echo", "cp", "mv", "rm", "sed", "awk", "find", "mkdir")
+ }
+
+ $removedAliases = @()
+ $failedAliases = @()
+
+ foreach ($tool in $linuxTools) {
+     # Skip '[' as it is a special character for PowerShell wildcard matching 
+     # and is not typically aliased in a way that needs overriding.
+     if ($tool -eq "[") { continue }
+
+     # If a PowerShell alias exists for this tool name, remove it.
+     # PowerShell discovery order will then fall back to $tool.exe in the PATH.
+     if (Get-Alias -Name $tool -ErrorAction SilentlyContinue) {
+         Remove-Item "alias:$tool" -Force -ErrorAction SilentlyContinue
+         
+         # Verification
+         if (-not (Get-Alias -Name $tool -ErrorAction SilentlyContinue)) {
+             $removedAliases += $tool
+         } else {
+             $failedAliases += $tool
+         }
+     }
+ }
+
+ # Output summary only if actions were taken
+ if ($removedAliases.Count -gt 0) {
+     Write-Host "Replaced Aliases: $($removedAliases -join ', ')" -ForegroundColor DarkGray
+ }
+ if ($failedAliases.Count -gt 0) {
+     Write-Host "Remaining Aliases: $($failedAliases -join ', ')" -ForegroundColor Red
+ }
+
+
+
+
+
+
+
+
+
+function gli { #>
+    # Capture original ComSpec to prevent side effects
+    $originalComSpec = $env:COMSPEC
+    try {
+        # Use absolute path for PowerShell 7 to ensure stability
+        $env:COMSPEC = "C:\Program Files\PowerShell\7\pwsh.exe"
+
+        # Check if the user already provided a --model flag
+        if ($args -notcontains "--model") {
+            # Add your preferred model as the default
+            clear
+            gemini --model gemini-3-flash-preview @args
+        } else {
+            # Execute with user-provided arguments
+            gemini @args
+        }
+    } finally {
+        # Restore original ComSpec
+        $env:COMSPEC = $originalComSpec
+    }
+} #<
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # pnpm install --global ./libs/project-alias-expander
 # ┌────────────────────────────────────────────────────────────────────────────┐

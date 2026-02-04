@@ -94,10 +94,11 @@ describe('notesHubConstants', () => {
 			expect(notesHubConstants).toHaveProperty('contextKeys')
 			expect(notesHubConstants).toHaveProperty('storageKeys')
 			expect(notesHubConstants).toHaveProperty('commands')
+			expect(notesHubConstants).toHaveProperty('errorMessages')
 		})
 
 		it('should have no extra properties', () => {
-			const expectedKeys = ['configKeys', 'contextKeys', 'storageKeys', 'commands']
+			const expectedKeys = ['configKeys', 'contextKeys', 'storageKeys', 'commands', 'errorMessages']
 			const actualKeys = Object.keys(notesHubConstants)
             
 			expect(actualKeys).toEqual(expectedKeys)

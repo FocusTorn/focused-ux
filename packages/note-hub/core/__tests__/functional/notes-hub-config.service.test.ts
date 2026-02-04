@@ -203,12 +203,12 @@ describe('NotesHubConfigService', () => {
 			expect(mockFileSystem.createDirectory).toHaveBeenCalledWith('/test/path')
 		})
 
-		it('should not create directory when it already exists', async () => {
-			mockFileSystem.fileExists.mockResolvedValue(true)
-
+		it('should always attempt to create directory (fs.mkdir recursive handles existing dirs)', async () => {
+			// With recursive: true, fs.mkdir succeeds whether directory exists or not
+			// This is simpler and more reliable than checking existence first
 			await service.createDirectoryIfNeeded('/test/path')
 
-			expect(mockFileSystem.createDirectory).not.toHaveBeenCalled()
+			expect(mockFileSystem.createDirectory).toHaveBeenCalledWith('/test/path')
 		})
 
 		it('should handle directory creation errors gracefully', async () => {

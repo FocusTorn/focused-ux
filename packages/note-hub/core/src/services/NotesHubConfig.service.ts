@@ -132,52 +132,17 @@ export class NotesHubConfigService implements INotesHubConfigService {
 				return
 			}
 
-			const uriAdapter = this.uriAdapter.file(normalizedPath)
-			const uri = (uriAdapter as any).uri // Access the underlying VSCode URI
-
-			// console.warn(`[NotesHubConfig] createDirectoryIfNeeded called with:`, {
-			// 	originalPath: dirPath,
-			// 	normalizedPath,
-			// 	uri: uri.toString(),
-			// })
-
-			try {
-				await this.iWorkspace.fs.stat(uri)
-				// console.warn(`[NotesHubConfig] Directory already exists: ${normalizedPath}`)
-			}
-			catch (error) {
-				const fsError = error as NodeJS.ErrnoException
-
-				if (fsError.code === 'ENOENT' || fsError.code === 'FileNotFound') {
-					// console.warn(`[NotesHubConfig] Directory does not exist, creating: ${normalizedPath}`)
-					// Use FileSystemAdapter for reliable directory creation
-					try {
-						await this.iFileSystem.createDirectory(normalizedPath)
-						// console.warn(`[NotesHubConfig] Successfully created directory using FileSystemAdapter: ${normalizedPath}`)
-					}
-					catch (_mkdirError) {
-						// If FileSystemAdapter fails, try VSCode workspace fs as fallback
-						// console.warn(`[NotesHubConfig] FileSystemAdapter mkdir failed for ${normalizedPath}:`, mkdirError)
-						try {
-							await this.iWorkspace.fs.createDirectory(uri)
-							// console.warn(`[NotesHubConfig] Successfully created directory using VSCode workspace fs: ${normalizedPath}`)
-						}
-						catch (vscodeError) {
-							// console.warn(`[NotesHubConfig] VSCode workspace fs also failed for ${normalizedPath}:`, vscodeError)
-							this.iCommonUtils.errMsg(`Failed to create directory: ${normalizedPath}`, vscodeError)
-							throw vscodeError
-						}
-					}
-				}
-				else {
-					// console.warn(`[NotesHubConfig] Unexpected error checking directory: ${normalizedPath}`, error)
-					throw error
-				}
-			}
+			// Use FileSystemAdapter.createDirectory which uses fs.mkdir with recursive: true
+			// This will create the directory if it doesn't exist, including parent directories,
+			// and will not throw an error if the directory already exists
+			await this.iFileSystem.createDirectory(normalizedPath)
 		}
 		catch (error) {
-			// console.warn(`[NotesHubConfig] Failed to ensure directory exists: ${dirPath}`, error)
-			this.iCommonUtils.errMsg(`Failed to ensure directory exists: ${dirPath}`, error)
+			// Only log if it's not an EEXIST error (directory already exists)
+			const fsError = error as NodeJS.ErrnoException
+			if (fsError.code !== 'EEXIST') {
+				this.iCommonUtils.errMsg(`Failed to ensure directory exists: ${dirPath}`, error)
+			}
 		}
 	} //<
 

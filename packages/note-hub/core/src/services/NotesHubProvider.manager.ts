@@ -51,7 +51,17 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 			return
 		}
 
+		console.log(`[NotesHub] Initializing providers with config:`, {
+			isProjectNotesEnabled: config.isProjectNotesEnabled,
+			isRemoteNotesEnabled: config.isRemoteNotesEnabled,
+			isGlobalNotesEnabled: config.isGlobalNotesEnabled,
+			projectNotesPath: config.projectNotesPath,
+			remoteNotesPath: config.remoteNotesPath,
+			globalNotesPath: config.globalNotesPath,
+		})
+
 		if (config.isProjectNotesEnabled && config.projectNotesPath) {
+			console.log(`[NotesHub] Creating ProjectNotesDataProvider for path: ${config.projectNotesPath}`)
 			this.projectNotesProvider = new ProjectNotesDataProvider(
 				config.projectNotesPath,
 				this.iContext,
@@ -69,11 +79,15 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.uriAdapter,
 				this.treeItemCollapsibleStateAdapter,
 			)
+			console.log(`[NotesHub] Registering tree view: ${commandPrefix}.projectNotesView`)
 			this.projectNotesProvider.initializeTreeView(`${commandPrefix}.projectNotesView`)
 			this.disposables.push(this.projectNotesProvider)
+		} else {
+			console.warn(`[NotesHub] Skipping ProjectNotesDataProvider - enabled: ${config.isProjectNotesEnabled}, path: ${config.projectNotesPath}`)
 		}
 
 		if (config.isRemoteNotesEnabled && config.remoteNotesPath) {
+			console.log(`[NotesHub] Creating RemoteNotesDataProvider for path: ${config.remoteNotesPath}`)
 			this.remoteNotesProvider = new RemoteNotesDataProvider(
 				config.remoteNotesPath,
 				this.iContext,
@@ -91,11 +105,15 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.uriAdapter,
 				this.treeItemCollapsibleStateAdapter,
 			)
+			console.log(`[NotesHub] Registering tree view: ${commandPrefix}.remoteNotesView`)
 			this.remoteNotesProvider.initializeTreeView(`${commandPrefix}.remoteNotesView`)
 			this.disposables.push(this.remoteNotesProvider)
+		} else {
+			console.warn(`[NotesHub] Skipping RemoteNotesDataProvider - enabled: ${config.isRemoteNotesEnabled}, path: ${config.remoteNotesPath}`)
 		}
 
 		if (config.isGlobalNotesEnabled && config.globalNotesPath) {
+			console.log(`[NotesHub] Creating GlobalNotesDataProvider for path: ${config.globalNotesPath}`)
 			this.globalNotesProvider = new GlobalNotesDataProvider(
 				config.globalNotesPath,
 				this.iContext,
@@ -113,8 +131,11 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.uriAdapter,
 				this.treeItemCollapsibleStateAdapter,
 			)
+			console.log(`[NotesHub] Registering tree view: ${commandPrefix}.globalNotesView`)
 			this.globalNotesProvider.initializeTreeView(`${commandPrefix}.globalNotesView`)
 			this.disposables.push(this.globalNotesProvider)
+		} else {
+			console.warn(`[NotesHub] Skipping GlobalNotesDataProvider - enabled: ${config.isGlobalNotesEnabled}, path: ${config.globalNotesPath}`)
 		}
 	} //<
 
