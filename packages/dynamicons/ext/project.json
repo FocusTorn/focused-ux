@@ -4,147 +4,158 @@
     "sourceRoot": "packages/dynamicons/ext/src",
     "projectType": "application",
     "targets": {
-        
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-
+            "outputs": [
+                "{options.outputPath}"
+            ],
             "dependsOn": [ //"^build", "@fux/dynamicons-assets:generate-assets"],
                 {
-                    "projects": ["@fux/dynamicons-core"],
+                    "projects": [
+                        "@fux/dynamicons-core"
+                    ],
                     "target": "build",
                     "params": "ignore"
                 },
                 "@fux/dynamicons-assets:generate-assets"
             ],
-
             "options": {
-
                 "main": "packages/dynamicons/ext/src/extension.ts",
                 "tsConfig": "packages/dynamicons/ext/tsconfig.json",
                 "entryPoints": [
                     "packages/dynamicons/ext/src/extension.ts"
                 ],
-
                 "platform": "node",
-                "format": ["cjs"],
+                "format": [
+                    "cjs"
+                ],
                 "outputPath": "packages/dynamicons/ext/dist",
                 "external": [
                     "vscode",
-                    "strip-json-comments",
                     "@fux/dynamicons-assets"
                 ],
-                
                 "metafile": true,
                 "bundle": true,
                 "sourcemap": true
             }
         }, //<
-        
         "package": { //>
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "executor": "@fux/vpack:pack",
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "{options.outputPath}"
+            ],
             "options": {
-                "commands": [
-                    "nx run @fux/vsix-packager:cli",
-                    "node libs/vsix-packager/dist/cli/index.js packages/dynamicons/ext vsix_packages"
-                ],
-                "parallel": false
+                "targetPath": "packages/dynamicons/ext",
+                "outputPath": "vsix_packages",
+                "deployPath": "packages/dynamicons/ext/.vpack/deploy",
+                "freshDeploy": true,
+                "keepDeploy": true,
+                "contentsPath": "packages/dynamicons/ext/.vpack/contents",
+                "extractContents": true,
+                "dev": false
             }
         }, //<
         "package:dev": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build"],
+            "executor": "@fux/vpack:pack",
+            "dependsOn": [
+                "build"
+            ],
+            "outputs": [
+                "{options.outputPath}"
+            ],
             "options": {
-                "commands": [
-                    "nx run @fux/vsix-packager:cli",
-                    "node libs/vsix-packager/dist/cli/index.js packages/dynamicons/ext vsix_packages --dev"
-                ],
-                "parallel": false
+                "targetPath": "packages/dynamicons/ext",
+                "outputPath": "vsix_packages",
+                "deployPath": "packages/dynamicons/ext/.vpack/deploy",
+                "freshDeploy": true,
+                "keepDeploy": true,
+                "contentsPath": "packages/dynamicons/ext/.vpack/contents",
+                "extractContents": true,
+                "dev": true
             }
         },
-        
         "publish": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["package"],
+            "dependsOn": [
+                "package"
+            ],
             "options": {
                 "command": "vsce publish",
                 "cwd": "{projectRoot}"
             }
         }, //<
-        
-        "check-types": { "extends": "check-types" },
-        "lint": { "extends": "lint" },
-        "lint:deps": { "extends": "lint:deps" },
-        "validate": { "extends": "validate" },
-        "validate:deps": { "extends": "validate:deps" },
-        "audit": { "extends": "audit" },
-        "audit:full": { "extends": "audit:full" },
-        
-        "clean": { "extends": "clean" },
-        "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" },
-
+        "check-types": {
+            "extends": "check-types"
+        },
+        "lint": {
+            "extends": "lint"
+        },
+        "lint:deps": {
+            "extends": "lint:deps"
+        },
+        "validate": {
+            "extends": "validate"
+        },
+        "validate:deps": {
+            "extends": "validate:deps"
+        },
+        "audit": {
+            "extends": "audit"
+        },
+        "audit:full": {
+            "extends": "audit:full"
+        },
+        "clean": {
+            "extends": "clean"
+        },
+        "clean:dist": {
+            "extends": "clean:dist"
+        },
+        "clean:cache": {
+            "extends": "clean:cache"
+        },
+        //= Single Package Testing ============================================== 
         "test": { //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["^build"],
-            "options": {}
-        }, //<
-        "test:full": {
-            "executor": "@nx/vite:test",
-            "outputs": [
-                "{options.reportsDirectory}"
-            ],
+            "extends": "test",
             "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test",
-                    "params": "forward"
-                }
+                "build:dev",
+                "^build"
+            ]
+        }, //<
+        "test:coverage-tests": { //>
+            "extends": "test:coverage-tests",
+            "dependsOn": [
+                "build:dev",
+                "^build"
+            ]
+        }, //<
+        //= Dependency Chain Testing ============================================ 
+        "test:deps": {
+            "extends": "test:deps"
+        },
+        "test:deps:coverage-tests": {
+            "extends": "test:deps:coverage-tests"
+        },
+        //= Integration Testing ================================================= 
+        "test:integration": { //>
+            "extends": "test:integration",
+            "dependsOn": [
+                "build",
+                "^build"
             ],
-            "options": {},
-            "configurations": {},
-            "parallelism": true
-        },
-        "test:compile": {
-            "executor": "nx:run-commands",
-            "outputs": ["{projectRoot}/__tests__/_out-tsc"],
             "options": {
-                "commands": ["tsc -p packages/dynamicons/ext/__tests__/tsconfig.test.json"]
+                "tsConfig": "{projectRoot}/__tests__/tsconfig.test.json",
+                "config": "{projectRoot}/.vscode-test.mjs"
             }
-        },
-        "test:integration": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build", "test:compile"],
-            "options": {
-                "commands": [
-                    "nx run @fux/vscode-test-cli-config:build",
-                    "vscode-test --config .vscode-test.mjs"
-                ],
-                "cwd": "packages/dynamicons/ext"
-            },
-            "configurations": {},
-            "parallelism": true
-        },
-        "test:integration:full": {
-            "executor": "nx:run-commands",
-            "dependsOn": ["build", "test:compile"],
-            "options": {
-                "commands": [
-                    "nx run @fux/vscode-test-cli-config:build",
-                    "vscode-test --config .vscode-test.mjs --coverage"
-                ],
-                "cwd": "packages/dynamicons/ext"
-            },
-            "configurations": {},
-            "parallelism": true
-        }
-        
+        } //<
     },
-    "tags": ["ext"]
+    "tags": [
+        "ext"
+    ]
 }
-
 // Original script-based packaging (commented out in favor of tool-based approach)
 // "package": { //>
 //     "executor": "nx:run-commands",

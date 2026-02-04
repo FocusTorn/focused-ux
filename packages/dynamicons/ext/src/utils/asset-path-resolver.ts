@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve, dirname } from 'path'
 
 /**
  * Utility for resolving asset paths from the @fux/dynamicons-assets package
@@ -11,12 +11,13 @@ export class AssetPathResolver {
 	/**
 	 * Get the resolved path to the assets package directory
 	 */
-	private static getAssetsPackagePath(): string {
+	static getAssetsPackagePath(): string {
 		if (!this.assetsPackagePath) {
 			try {
 				// Resolve the assets package from node_modules
-				this.assetsPackagePath = require.resolve('@fux/dynamicons-assets/package.json')
-					.replace('/package.json', '')
+				// Use dirname() to handle both Windows backslashes and Unix forward slashes
+				const packageJsonPath = require.resolve('@fux/dynamicons-assets/package.json')
+				this.assetsPackagePath = dirname(packageJsonPath)
 			} catch (error) {
 				// Critical failure - assets package is required
 				throw new Error(`CRITICAL: Cannot resolve @fux/dynamicons-assets package. Extension cannot function without assets. Error: ${error}`)
@@ -41,7 +42,7 @@ export class AssetPathResolver {
 		const assetsPath = this.getAssetsPackagePath()
 		const iconType = type === 'file' ? 'file_icons' : 'folder_icons'
 
-		return resolve(assetsPath, 'dist/assets/icons', iconType, filename)
+		return resolve(assetsPath, 'assets/icons', iconType, filename)
 	}
 
 	/**
@@ -77,7 +78,25 @@ export class AssetPathResolver {
 	static getIconsPath(): string {
 		const assetsPath = this.getAssetsPackagePath()
 
-		return resolve(assetsPath, 'dist/assets/icons')
+		return resolve(assetsPath, 'assets/icons')
+	}
+
+	/**
+	 * Get the file icons directory path
+	 */
+	static getFileIconsPath(): string {
+		const assetsPath = this.getAssetsPackagePath()
+
+		return resolve(assetsPath, 'assets/icons/file_icons')
+	}
+
+	/**
+	 * Get the folder icons directory path
+	 */
+	static getFolderIconsPath(): string {
+		const assetsPath = this.getAssetsPackagePath()
+
+		return resolve(assetsPath, 'assets/icons/folder_icons')
 	}
 
 }

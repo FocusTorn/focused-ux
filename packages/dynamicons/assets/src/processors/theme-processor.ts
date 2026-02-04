@@ -239,13 +239,37 @@ export class ThemeProcessor {
 				folderNamesExpanded: {},
 				fileExtensions: {},
 				fileNames: {},
-				file: fileIconsModel.file.iconName,
-				folder: folderIconsModel.folder.iconName,
-				folderExpanded: folderIconsModel.folder.iconName,
-				rootFolder: folderIconsModel.rootFolder.iconName,
-				rootFolderExpanded: folderIconsModel.rootFolder.iconName,
+				file: `_${fileIconsModel.file.iconName}`,
+				folder: `_folder-${folderIconsModel.folder.iconName}`,
+				folderExpanded: `_folder-${folderIconsModel.folder.iconName}-open`,
+				rootFolder: `_folder-${folderIconsModel.rootFolder.iconName}`,
+				rootFolderExpanded: `_folder-${folderIconsModel.rootFolder.iconName}-open`,
 				languageIds: {},
 				hidesExplorerArrows: false,
+			}
+
+			// Add default file icon definition
+			const defaultFileIconName = fileIconsModel.file.iconName
+			themeManifest.iconDefinitions[`_${defaultFileIconName}`] = {
+				iconPath: `../../../assets/icons/file_icons/${defaultFileIconName}.svg`,
+			}
+
+			// Add default folder icon definitions
+			const defaultFolderIconName = folderIconsModel.folder.iconName
+			themeManifest.iconDefinitions[`_folder-${defaultFolderIconName}`] = {
+				iconPath: `../../../assets/icons/folder_icons/folder-${defaultFolderIconName}.svg`,
+			}
+			themeManifest.iconDefinitions[`_folder-${defaultFolderIconName}-open`] = {
+				iconPath: `../../../assets/icons/folder_icons/folder-${defaultFolderIconName}-open.svg`,
+			}
+
+			// Add root folder icon definitions
+			const rootFolderIconName = folderIconsModel.rootFolder.iconName
+			themeManifest.iconDefinitions[`_folder-${rootFolderIconName}`] = {
+				iconPath: `../../../assets/icons/folder_icons/folder-${rootFolderIconName}.svg`,
+			}
+			themeManifest.iconDefinitions[`_folder-${rootFolderIconName}-open`] = {
+				iconPath: `../../../assets/icons/folder_icons/folder-${rootFolderIconName}-open.svg`,
 			}
 			
 			// Add file icon definitions and assignments
@@ -254,7 +278,7 @@ export class ThemeProcessor {
 					const iconName = `_${icon.iconName}`
 
 					themeManifest.iconDefinitions[iconName] = {
-						iconPath: `../assets/icons/file_icons/${icon.iconName}.svg`,
+						iconPath: `../../../assets/icons/file_icons/${icon.iconName}.svg`,
 					}
 					
 					if (icon.fileExtensions) {
@@ -279,12 +303,12 @@ export class ThemeProcessor {
 
 					// Add base folder icon definition
 					themeManifest.iconDefinitions[baseIconName] = {
-						iconPath: `../assets/icons/folder_icons/folder-${icon.iconName}.svg`,
+						iconPath: `../../../assets/icons/folder_icons/folder-${icon.iconName}.svg`,
 					}
 					
 					// Add open folder icon definition
 					themeManifest.iconDefinitions[openIconName] = {
-						iconPath: `../assets/icons/folder_icons/folder-${icon.iconName}-open.svg`,
+						iconPath: `../../../assets/icons/folder_icons/folder-${icon.iconName}-open.svg`,
 					}
 					
 					if (icon.folderNames) {
@@ -302,7 +326,7 @@ export class ThemeProcessor {
 					const iconName = `_${icon.iconName.replace('.svg', '')}`
 
 					themeManifest.iconDefinitions[iconName] = {
-						iconPath: `../assets/icons/language_icons/${icon.iconName}`,
+						iconPath: `../../../assets/icons/file_icons/${icon.iconName}.svg`,
 					}
 					themeManifest.languageIds[icon.languageID] = iconName
 				}

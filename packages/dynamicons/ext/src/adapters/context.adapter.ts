@@ -1,5 +1,6 @@
 import type { IContext } from '@fux/dynamicons-core'
 import type { ExtensionContext } from 'vscode'
+import { AssetPathResolver } from '../utils/asset-path-resolver.js'
 
 export class ContextAdapter implements IContext {
 
@@ -7,6 +8,10 @@ export class ContextAdapter implements IContext {
 
 	get extensionPath(): string {
 		return this.context.extensionPath
+	}
+
+	get assetsPath(): string {
+		return AssetPathResolver.getAssetsPackagePath()
 	}
 
 	get subscriptions(): any[] {

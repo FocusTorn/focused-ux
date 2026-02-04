@@ -4,6 +4,7 @@
     "type": "module",
     "private": true,
     "exports": {
+        "./package.json": "./package.json",
         "./themes/*": "./dist/assets/themes/*",
         "./icons/*": "./dist/assets/icons/*",
         "./images/*": "./dist/assets/images/*",

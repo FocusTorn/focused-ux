@@ -4,18 +4,7 @@
     "description": "A dynamic and customizable icon theme for a focused user experience.",
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
-    "version": "0.2.0",
-    "dependencies": {
-        "@fux/dynamicons-assets": "workspace:*",
-        "@fux/dynamicons-core": "workspace:*"
-    },
-    "devDependencies": {
-        "@types/node": "^24.8.0",
-        "@types/vscode": "^1.105.0",
-        "@vscode/test-cli": "^0.0.12",
-        "typescript": "^5.9.3",
-        "vitest": "^3.2.4"
-    },
+    "version": "0.2.0-dev.643217512",
     "contributes": {
         "themes": [
             {

@@ -67,7 +67,9 @@
         
         "publish": { //>
             "executor": "nx:run-commands",
-            "dependsOn": ["package"],
+            "dependsOn": [
+                "package"
+            ],
             "options": {
                 "command": "vsce publish",
                 "cwd": "{projectRoot}"
@@ -102,15 +104,12 @@
         }, //<
         
         //= Dependency Chain Testing ============================================ 
-        "test:deps": { //>
-            "extends": "test:deps",
-            "dependsOn": ["build:dev", "^build"]
-        }, //<
-        "test:deps:coverage-tests": { //>
-            "extends": "test:deps:coverage-tests",
-            "dependsOn": ["build:dev", "^build"]
-        }, //<
-         
+        "test:deps": {
+            "extends": "test:deps"
+        },
+        "test:deps:coverage-tests": {
+            "extends": "test:deps:coverage-tests"
+        },
         //= Integration Testing ================================================= 
         "test:integration": { //>
             "extends": "test:integration",

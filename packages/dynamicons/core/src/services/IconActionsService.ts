@@ -76,11 +76,11 @@ export class IconActionsService {
 	}
 
 	private async getBaseThemePath(): Promise<string> {
-		return this.path.join(this.context.extensionPath, 'assets', 'themes', 'base.theme.json')
+		return this.path.join(this.context.assetsPath, 'dist', 'assets', 'themes', 'base.theme.json')
 	}
 
 	private async getGeneratedThemeDir(): Promise<string> {
-		return this.path.join(this.context.extensionPath, 'assets', 'themes')
+		return this.path.join(this.context.assetsPath, 'dist', 'assets', 'themes')
 	}
 
 	public async showAvailableIconsQuickPick(

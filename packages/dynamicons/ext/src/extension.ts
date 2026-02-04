@@ -182,6 +182,11 @@ async function refreshFileExplorer(workspaceService: any): Promise<void> {
 }
 
 async function activateIconThemeIfNeeded(context: ExtensionContext, workspaceService: any, fileSystem: any, window: any): Promise<void> {
+	// Skip activation prompt during tests
+	if (process.env.VSCODE_TEST === '1') {
+		return
+	}
+
 	const workbenchConfig = workspaceService.getConfiguration('workbench')
 	const currentTheme = workbenchConfig.get('iconTheme') as string | undefined
 
@@ -319,7 +324,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		fileSystemAdapter,
 		pathAdapter,
 		commonUtilsAdapter,
-		contextAdapter.extensionPath,
+		AssetPathResolver.getAssetsPackagePath(),
 		uriAdapter,
 	)
 	const iconPickerService = new IconPickerService(

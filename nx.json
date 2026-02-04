@@ -2,44 +2,76 @@
     "targetDefaults": {
         "@nx/esbuild:esbuild": {
             "cache": true,
-            "inputs": ["production", "^production"],
+            "inputs": [
+                "production",
+                "^production"
+            ],
             "options": {
                 "main": "{workspaceRoot}/{projectRoot}/src/index.ts",
                 "outputPath": "{workspaceRoot}/{projectRoot}/dist",
                 "tsConfig": "{workspaceRoot}/{projectRoot}/tsconfig.json",
                 "declarationRootDir": "{workspaceRoot}/{projectRoot}/src",
-                "format": ["esm"],
+                "format": [
+                    "esm"
+                ],
                 "bundle": false,
                 "platform": "node",
                 "target": "es2022",
-                "external": ["vscode"],
+                "external": [
+                    "vscode"
+                ],
                 "thirdParty": false,
                 "deleteOutputPath": true
             }
         },
         "@nx/js:tsc": {
             "cache": true,
-            "dependsOn": ["^build"],
-            "inputs": ["production", "^production"]
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ]
         },
         "build": {
-            "dependsOn": ["^build"],
-            "outputs": ["{options.outputPath}"],
-            "inputs": ["production", "^production"],
+            "dependsOn": [
+                "^build"
+            ],
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ],
             "cache": true,
-            "syncGenerators": ["@nx/js:typescript-sync"]
+            "syncGenerators": [
+                "@nx/js:typescript-sync"
+            ]
         },
         "build:dev": {
             "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "inputs": ["production", "^production"],
-            "dependsOn": ["^build"],
-            "syncGenerators": ["@nx/js:typescript-sync"],
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "inputs": [
+                "production",
+                "^production"
+            ],
+            "dependsOn": [
+                "^build"
+            ],
+            "syncGenerators": [
+                "@nx/js:typescript-sync"
+            ],
             "cache": true,
             "options": {
                 "main": "{projectRoot}/src/cli.ts",
                 "outputFileName": "cli.js",
-                "format": ["esm"],
+                "format": [
+                    "esm"
+                ],
                 "bundle": false,
                 "sourcemap": true,
                 "declaration": true,
@@ -52,7 +84,9 @@
             "executor": "@nx/esbuild:esbuild",
             "options": {
                 "main": "{projectRoot}/src/index.ts",
-                "format": ["esm"],
+                "format": [
+                    "esm"
+                ],
                 "bundle": false,
                 "sourcemap": true,
                 "declaration": true,
@@ -65,7 +99,9 @@
             "executor": "@nx/esbuild:esbuild",
             "options": {
                 "main": "{workspaceRoot}/{projectRoot}/src/extension.ts",
-                "format": ["cjs"],
+                "format": [
+                    "cjs"
+                ],
                 "bundle": true,
                 "sourcemap": false,
                 "declaration": false,
@@ -78,7 +114,9 @@
             "executor": "@nx/esbuild:esbuild",
             "options": {
                 "main": "{workspaceRoot}/{projectRoot}/src/extension.ts",
-                "format": ["cjs"],
+                "format": [
+                    "cjs"
+                ],
                 "bundle": false,
                 "sourcemap": true,
                 "declaration": true,
@@ -89,7 +127,9 @@
         },
         "package": {
             "executor": "@fux/vpack:pack",
-            "outputs": ["{options.outputPath}"],
+            "outputs": [
+                "{options.outputPath}"
+            ],
             "options": {
                 "targetPath": "{projectRoot}",
                 "outputPath": "vsix_packages",
@@ -103,7 +143,9 @@
         },
         "package:dev": {
             "executor": "@fux/vpack:pack",
-            "outputs": ["{options.outputPath}"],
+            "outputs": [
+                "{options.outputPath}"
+            ],
             "options": {
                 "targetPath": "{projectRoot}",
                 "dev": true,
@@ -115,24 +157,38 @@
             }
         },
         "publish": {
-            "dependsOn": ["build"]
+            "dependsOn": [
+                "build"
+            ]
         },
         "check-types": {
             "executor": "@fux/ft-typescript:typecheck",
-            "inputs": ["default", "^default"],
-            "dependsOn": ["build"],
+            "inputs": [
+                "default",
+                "^default"
+            ],
+            "dependsOn": [
+                "build"
+            ],
             "cache": true,
             "options": {
-                "files": ["{projectRoot}/**/*.ts"],
+                "files": [
+                    "{projectRoot}/**/*.ts"
+                ],
                 "show": "totals"
             }
         },
         "check-types:loose": {
             "executor": "@fux/ft-typescript:typecheck",
-            "inputs": ["default", "^default"],
+            "inputs": [
+                "default",
+                "^default"
+            ],
             "cache": true,
             "options": {
-                "files": ["{projectRoot}/**/*.ts"],
+                "files": [
+                    "{projectRoot}/**/*.ts"
+                ],
                 "strict": false
             }
         },
@@ -146,7 +202,10 @@
                     "params": "forward"
                 }
             ],
-            "inputs": ["default", "^default"],
+            "inputs": [
+                "default",
+                "^default"
+            ],
             "options": {
                 "command": "tsc --noEmit --project {projectRoot}/tsconfig.json",
                 "cwd": "{workspaceRoot}"
@@ -155,7 +214,10 @@
         "lint": {
             "executor": "@nx/eslint:lint",
             "cache": true,
-            "dependsOn": ["build", "^build"],
+            "dependsOn": [
+                "build",
+                "^build"
+            ],
             "options": {
                 "parallel": true,
                 "maxParallel": 4,
@@ -186,8 +248,14 @@
         },
         "audit": {
             "executor": "@fux/recommended:audit-structure",
-            "dependsOn": ["build", "^build"],
-            "inputs": ["default", "^default"],
+            "dependsOn": [
+                "build",
+                "^build"
+            ],
+            "inputs": [
+                "default",
+                "^default"
+            ],
             "outputs": [],
             "cache": true,
             "options": {
@@ -198,8 +266,14 @@
         },
         "audit:code": {
             "executor": "@fux/recommended:audit-structure:code",
-            "dependsOn": ["build", "^build"],
-            "inputs": ["default", "^default"],
+            "dependsOn": [
+                "build",
+                "^build"
+            ],
+            "inputs": [
+                "default",
+                "^default"
+            ],
             "outputs": [],
             "cache": true,
             "options": {
@@ -209,8 +283,14 @@
         },
         "audit:test": {
             "executor": "@fux/recommended:audit-structure:test",
-            "dependsOn": ["build", "^build"],
-            "inputs": ["default", "^default"],
+            "dependsOn": [
+                "build",
+                "^build"
+            ],
+            "inputs": [
+                "default",
+                "^default"
+            ],
             "outputs": [],
             "cache": true,
             "options": {
@@ -221,11 +301,17 @@
         "validate": {
             "executor": "nx:run-commands",
             "dependsOn": [],
-            "inputs": ["default", "^default"],
+            "inputs": [
+                "default",
+                "^default"
+            ],
             "outputs": [],
             "cache": true,
             "options": {
-                "commands": ["nx run {projectName}:lint --fix", "nx run {projectName}:audit"],
+                "commands": [
+                    "nx run {projectName}:lint --fix",
+                    "nx run {projectName}:audit"
+                ],
                 "parallel": false
             }
         },
@@ -238,11 +324,16 @@
                     "params": "forward"
                 }
             ],
-            "inputs": ["default", "^default"],
+            "inputs": [
+                "default",
+                "^default"
+            ],
             "outputs": [],
             "cache": true,
             "options": {
-                "commands": ["nx run {projectName}:validate"],
+                "commands": [
+                    "nx run {projectName}:validate"
+                ],
                 "parallel": false
             }
         },
@@ -285,8 +376,13 @@
         },
         "test": {
             "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
+            "outputs": [
+                "{options.reportsDirectory}"
+            ],
+            "dependsOn": [
+                "build",
+                "^build"
+            ],
             "options": {
                 "configFile": "{projectRoot}/vitest.config.ts",
                 "reportsDirectory": "__tests__/_reports/functional",
@@ -295,8 +391,13 @@
         },
         "test:coverage-tests": {
             "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"],
+            "outputs": [
+                "{options.reportsDirectory}"
+            ],
+            "dependsOn": [
+                "build",
+                "^build"
+            ],
             "options": {
                 "configFile": "{projectRoot}/vitest.coverage.config.ts",
                 "reportsDirectory": "__tests__/_reports/coverage",
@@ -305,8 +406,12 @@
         },
         "test:deps": {
             "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
+            "outputs": [
+                "{options.reportsDirectory}"
+            ],
             "dependsOn": [
+                "build:dev",
+                "^build",
                 {
                     "dependencies": true,
                     "target": "test",
@@ -320,8 +425,12 @@
         },
         "test:deps:coverage-tests": {
             "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
+            "outputs": [
+                "{options.reportsDirectory}"
+            ],
             "dependsOn": [
+                "build:dev",
+                "^build",
                 {
                     "dependencies": true,
                     "target": "test:coverage-tests",
@@ -336,7 +445,9 @@
         },
         "test:integration": {
             "executor": "@fux/vscode-test-executor:test-integration",
-            "dependsOn": ["build"],
+            "dependsOn": [
+                "build"
+            ],
             "cache": false,
             "options": {
                 "tsConfig": "{projectRoot}/__tests__/integration-tests/tsconfig.test.json",
@@ -377,14 +488,20 @@
             "{projectRoot}/tsconfig.spec.json",
             "{projectRoot}/src/test-setup.[jt]s"
         ],
-        "lint": ["default", "{projectRoot}/**/*.eslintrc.js", "{projectRoot}/**/*.eslint.json"],
+        "lint": [
+            "default",
+            "{projectRoot}/**/*.eslintrc.js",
+            "{projectRoot}/**/*.eslint.json"
+        ],
         "docs": [
             "{projectRoot}/docs/**",
             "{projectRoot}/**/*.md",
             "{projectRoot}/**/*.markdown",
             "{projectRoot}/**/*.mdx"
         ],
-        "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
+        "sharedGlobals": [
+            "{workspaceRoot}/.github/workflows/ci.yml"
+        ]
     },
     "tui": {
         "enabled": true,

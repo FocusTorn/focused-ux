@@ -346,11 +346,11 @@ export class DynamiconsManagerService implements IDynamiconsManagerService {
     }
 
     private async getBaseThemePath(): Promise<string> {
-        return this.dependencies.path.join(this.dependencies.context.extensionPath, 'assets', 'themes', 'base.theme.json')
+        return this.dependencies.path.join(this.dependencies.context.assetsPath, 'dist', 'assets', 'themes', 'base.theme.json')
     }
 
     private async getGeneratedThemeDir(): Promise<string> {
-        return this.dependencies.path.join(this.dependencies.context.extensionPath, 'assets', 'themes')
+        return this.dependencies.path.join(this.dependencies.context.assetsPath, 'dist', 'assets', 'themes')
     }
 
     private async regenerateAndApplyTheme(): Promise<void> {

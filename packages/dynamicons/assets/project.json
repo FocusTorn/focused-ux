@@ -4,18 +4,22 @@
     "sourceRoot": "packages/dynamicons/assets/src",
     "projectType": "library",
     "targets": {
-        
         "build": { //>
             "executor": "@nx/esbuild:esbuild",
-            "outputs": ["{options.outputPath}"],
-            "inputs": ["{projectRoot}/src/**/*"],
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "inputs": [
+                "{projectRoot}/src/**/*"
+            ],
             "options": {
-                
                 "main": "packages/dynamicons/assets/src/index.ts",
                 "outputPath": "packages/dynamicons/assets/dist",
                 "tsConfig": "packages/dynamicons/assets/tsconfig.lib.json",
                 "platform": "node",
-                "format": ["esm"],
+                "format": [
+                    "esm"
+                ],
                 "bundle": false,
                 "sourcemap": true,
                 "target": "es2022",
@@ -23,18 +27,18 @@
                 "declarationRootDir": "packages/dynamicons/assets/src",
                 "thirdParty": false,
                 "deleteOutputPath": false,
-                "external": [
-                ]
+                "external": []
             }
         }, //<
-        
         "generate-assets": { //>
             "executor": "nx:run-commands",
             "options": {
                 "command": "node dist/cli.js",
                 "cwd": "packages/dynamicons/assets"
             },
-            "dependsOn": ["build"],
+            "dependsOn": [
+                "build"
+            ],
             "inputs": [
                 "default",
                 "{workspaceRoot}/packages/dynamicons/assets/src/_config/dynamicons.constants.js",
@@ -55,7 +59,6 @@
             ],
             "description": "Generate all assets (icons, themes, previews) with orchestrated output"
         }, //<
-        
         "build-with-assets": {
             "executor": "nx:run-commands",
             "options": {
@@ -65,7 +68,9 @@
                 ],
                 "parallel": false
             },
-            "dependsOn": ["build"],
+            "dependsOn": [
+                "build"
+            ],
             "inputs": [
                 "default",
                 "{workspaceRoot}/packages/dynamicons/assets/src/_config/dynamicons.constants.js",
@@ -86,46 +91,56 @@
             ],
             "description": "Build package and generate all assets in one command"
         },
-        
         // Standard ==================================================================================================================================
-        
-        "lint": { "extends": "lint" },
-        "lint:deps": { "extends": "lint:deps" },
-        
-        "validate": { "extends": "validate" },
-        "validate:deps": { "extends": "validate:deps" },
-        
-        "audit": { "extends": "audit" },
-        "audit:full": { "extends": "audit:full" },
-        
-        "clean": { "extends": "clean" },
-        "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" },
-        
-        "test": { //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"]
-        }, //<
-        "test:full": { //>
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test",
-                    "params": "forward"
-                }
-            ]
-        } //<
-        
+        "lint": {
+            "extends": "lint"
+        },
+        "lint:deps": {
+            "extends": "lint:deps"
+        },
+        "validate": {
+            "extends": "validate"
+        },
+        "validate:deps": {
+            "extends": "validate:deps"
+        },
+        "audit": {
+            "extends": "audit"
+        },
+        "audit:full": {
+            "extends": "audit:full"
+        },
+        "clean": {
+            "extends": "clean"
+        },
+        "clean:dist": {
+            "extends": "clean:dist"
+        },
+        "clean:cache": {
+            "extends": "clean:cache"
+        },
+        //= Single Package Testing ============================================== 
+        "test": {
+            "extends": "test"
+        },
+        "test:coverage-tests": {
+            "extends": "test:coverage-tests"
+        },
+        //= Dependency Chain Testing ============================================ 
+        "test:deps": {
+            "extends": "test:deps"
+        },
+        "test:deps:coverage-tests": {
+            "extends": "test:deps:coverage-tests"
+        }
     },
-    "tags": ["scope:dynamicons", "type:assets"]
+    "tags": [
+        "scope:dynamicons",
+        "type:assets"
+    ]
 }
-
 //==============================================================================================
 // Orgiginal script based targets
-
 // "process-icons": { //>
 // "executor": "nx:run-commands",
 // "options": {
@@ -146,7 +161,6 @@
 // ],
 // "description": "Process icons from external source (stage, organize, optimize)"
 // }, //<
-
 // "audit-models": { //>
 // "executor": "nx:run-commands",
 // "options": {
@@ -163,7 +177,6 @@
 // "outputs": [],
 // "description": "Audit icon models for validation and error reporting"
 // }, //<
-
 // "generate-themes": { //>
 // "executor": "nx:run-commands",
 // "options": {
@@ -184,7 +197,6 @@
 // ],
 // "description": "Generate theme files (concise output by default, use --verbose for detailed output)"
 // }, //<
-
 // "generate-previews": { //>
 // "executor": "nx:run-commands",
 // "options": {
@@ -204,7 +216,6 @@
 // ],
 // "description": "Generate preview images (concise output by default, use --verbose for detailed output)"
 // }, //<
-
 // "sync-to-ext": { //>
 // "executor": "nx:run-commands",
 // "options": {
@@ -220,7 +231,6 @@
 // ],
 // "description": "Sync assets to extension package (concise output by default, use --verbose for detailed output)"
 // }, //<
-
 // "generate-assets": { //>
 // "executor": "nx:run-commands",
 // "options": {
@@ -247,7 +257,6 @@
 // ],
 // "description": "Generate all assets (icons, themes, previews) with orchestrated output"
 // }, //<
-
 // "process-icons": { //>
 // "executor": "nx:run-commands",
 // "options": {
@@ -268,7 +277,6 @@
 // ],
 // "description": "Process icons from external source (stage, organize, optimize)"
 // }, //<
-
 // "audit-models": { //>
 // "executor": "nx:run-commands",
 // "options": {
@@ -285,7 +293,6 @@
 // "outputs": [],
 // "description": "Audit icon models for validation and error reporting"
 // }, //<
-
 // "generate-themes": { //>
 // "executor": "nx:run-commands",
 // "options": {
@@ -306,7 +313,6 @@
 // ],
 // "description": "Generate theme files (concise output by default, use --verbose for detailed output)"
 // }, //<
-
 // "generate-previews": { //>
 // "executor": "nx:run-commands",
 // "options": {
@@ -326,7 +332,6 @@
 // ],
 // "description": "Generate preview images (concise output by default, use --verbose for detailed output)"
 // }, //<
-
 // "sync-to-ext": { //>
 // "executor": "nx:run-commands",
 // "options": {

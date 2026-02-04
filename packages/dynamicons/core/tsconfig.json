@@ -1,8 +1,8 @@
 {
     "extends": "../../../tsconfig.base.json",
-    
-    "include": ["src/**/*.ts"],
-
+    "include": [
+        "src/**/*.ts"
+    ],
     "compilerOptions": {
         "outDir": "./out-tsc",
         "rootDir": "./src",
@@ -11,11 +11,12 @@
         "declarationMap": true,
         "tsBuildInfoFile": "./out-tsc/tsconfig.tsbuildinfo"
     },
-    
     "references": [
         {
             "path": "./tsconfig.lib.json"
+        },
+        {
+            "path": "../../../libs/mock-strategy"
         }
     ]
-    
 }

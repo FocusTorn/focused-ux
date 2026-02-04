@@ -1,18 +1,25 @@
 {
     "name": "@fux/dynamicons-core",
-    "tags": ["core"],
+    "tags": [
+        "core"
+    ],
     "targets": {
         "build": {
-            "dependsOn": ["@fux/dynamicons-assets:generate-assets"],
+            "dependsOn": [
+                "@fux/dynamicons-assets:generate-assets"
+            ],
             "executor": "@nx/esbuild:esbuild",
-            "outputs": [ "{options.outputPath}" ],
-            "inputs": [ "{projectRoot}/src/**/*" ],
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "inputs": [
+                "{projectRoot}/src/**/*"
+            ],
             "options": {
                 "main": "packages/dynamicons/core/src/index.ts",
                 "outputPath": "packages/dynamicons/core/dist",
                 "tsConfig": "packages/dynamicons/core/tsconfig.lib.json",
                 "declarationRootDir": "packages/dynamicons/core/src",
-                
                 "platform": "node",
                 "format": [
                     "esm"
@@ -29,37 +36,49 @@
                 ]
             }
         },
-        
-        "check-types": { "extends": "check-types" },
-        
-        "lint": { "extends": "lint" },
-        "lint:deps": { "extends": "lint:deps" },
-        
-        "validate": { "extends": "validate" },
-        "validate:deps": { "extends": "validate:deps" },
-        
-        "audit": { "extends": "audit" },
-        "audit:full": { "extends": "audit:full" },
-        
-        "clean": { "extends": "clean" },
-        "clean:dist": { "extends": "clean:dist" },
-        "clean:cache": { "extends": "clean:cache" },
-
-        "test": {
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": ["build", "^build"]
+        "check-types": {
+            "extends": "check-types"
         },
-        "test:full": {
-            "executor": "@nx/vite:test",
-            "outputs": ["{options.reportsDirectory}"],
-            "dependsOn": [
-                {
-                    "dependencies": true,
-                    "target": "test",
-                    "params": "forward"
-                }
-            ]
+        "lint": {
+            "extends": "lint"
+        },
+        "lint:deps": {
+            "extends": "lint:deps"
+        },
+        "validate": {
+            "extends": "validate"
+        },
+        "validate:deps": {
+            "extends": "validate:deps"
+        },
+        "audit": {
+            "extends": "audit"
+        },
+        "audit:full": {
+            "extends": "audit:full"
+        },
+        "clean": {
+            "extends": "clean"
+        },
+        "clean:dist": {
+            "extends": "clean:dist"
+        },
+        "clean:cache": {
+            "extends": "clean:cache"
+        },
+        //= Single Package Testing ============================================== 
+        "test": {
+            "extends": "test"
+        },
+        "test:coverage-tests": {
+            "extends": "test:coverage-tests"
+        },
+        //= Dependency Chain Testing ============================================ 
+        "test:deps": {
+            "extends": "test:deps"
+        },
+        "test:deps:coverage-tests": {
+            "extends": "test:deps:coverage-tests"
         }
     },
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
