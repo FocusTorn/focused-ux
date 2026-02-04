@@ -50,6 +50,7 @@ export function createVscodeTestConfig(options: FuxVSCodeTestConfigOptions) {
     const defaultConfig = {
         // Centralize the VS Code download location at the monorepo root
         cachePath: sharedCachePath,
+        // Use insiders to avoid conflicts with user's stable VS Code instance
         version: 'insiders',
         files,
         workspaceFolder,

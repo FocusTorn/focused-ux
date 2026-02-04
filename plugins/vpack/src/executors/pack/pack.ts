@@ -145,6 +145,25 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
 
         const projectDeps = pnpmList.length > 0 ? pnpmList[0].dependencies : undefined
 
+        // Helper to resolve and copy dependencies of a workspace package
+        function resolveWorkspacePkgDeps(pkgPath: string, processed: Set<string>): void {
+            try {
+                const wsDepListOutput = execSync(`pnpm list --prod --json --depth=Infinity`, {
+                    cwd: pkgPath,
+                    encoding: 'utf-8',
+                    timeout: 60000,
+                })
+                const wsDepList = JSON.parse(wsDepListOutput)
+                const wsProjectDeps = wsDepList.length > 0 ? wsDepList[0].dependencies : undefined
+                if (wsProjectDeps) {
+                    copyDependencyTree(wsProjectDeps, processed)
+                }
+            } catch (err) {
+                // Workspace package may not have dependencies
+                logger.warn(`Could not resolve dependencies for workspace package at ${pkgPath}: ${err}`)
+            }
+        }
+
         function copyDependencyTree(dependencies: Record<string, unknown>, processed = new Set<string>()) {
 
             if (!dependencies) return
@@ -154,9 +173,46 @@ export default async function runExecutor(options: PackExecutorSchema, context: 
 
                 if (processed.has(depName)) continue
                 processed.add(depName)
-                if ((depInfo?.version as string)?.startsWith('link:')) continue
-                if (depInfo?.path) {
+                
+                const isWorkspaceDep = (depInfo?.version as string)?.startsWith('link:')
+                
+                if (isWorkspaceDep && depInfo?.path) {
+                    // Handle workspace dependencies - copy built output only
+                    const destPath = join(deployNodeModules, depName)
+                    const sourcePath = depInfo.path as string
 
+                    if (!existsSync(destPath)) {
+                        mkdirSync(destPath, { recursive: true })
+                        
+                        // Copy package.json (required)
+                        const pkgJsonSrc = join(sourcePath, 'package.json')
+                        if (existsSync(pkgJsonSrc)) {
+                            cpSync(pkgJsonSrc, join(destPath, 'package.json'))
+                        }
+                        
+                        // Copy dist folder (built output)
+                        const distSrc = join(sourcePath, 'dist')
+                        if (existsSync(distSrc)) {
+                            cpSync(distSrc, join(destPath, 'dist'), { recursive: true })
+                        }
+                        
+                        // Copy assets folder if present (for asset packages)
+                        const assetsSrc = join(sourcePath, 'assets')
+                        if (existsSync(assetsSrc)) {
+                            cpSync(assetsSrc, join(destPath, 'assets'), { recursive: true })
+                        }
+                        
+                        logger.info(`Copied workspace dependency: ${depName}`)
+                    }
+                    
+                    // Resolve and copy dependencies of the workspace package
+                    resolveWorkspacePkgDeps(sourcePath, processed)
+                    
+                    // Process nested dependencies if any came through the original list
+                    if (depInfo.dependencies) copyDependencyTree(depInfo.dependencies as Record<string, unknown>, processed)
+                    
+                } else if (!isWorkspaceDep && depInfo?.path) {
+                    // Handle npm dependencies - copy entire package
                     const destPath = join(deployNodeModules, depName)
 
                     if (!existsSync(destPath)) {
