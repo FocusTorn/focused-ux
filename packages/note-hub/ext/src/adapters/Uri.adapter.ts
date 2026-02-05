@@ -9,6 +9,10 @@ interface IUriWithVscode extends IUri {
 export class UriAdapter implements IUriFactory {
 
 	file(path: string): IUri {
+		if (!path || path.trim() === '') {
+			console.warn('[UriAdapter] Attempted to create file URI with empty path, using root instead.')
+			path = '/'
+		}
 		const uri = vscode.Uri.file(path)
 
 		return {
@@ -39,6 +43,10 @@ export class UriAdapter implements IUriFactory {
 	}
 
 	parse(value: string): IUri {
+		if (!value || value.trim() === '') {
+			console.warn('[UriAdapter] Attempted to parse empty URI, using default root.')
+			value = 'file:///'
+		}
 		const uri = vscode.Uri.parse(value)
 
 		return {
@@ -107,6 +115,10 @@ export class UriAdapter implements IUriFactory {
 	}
 
 	joinPath(base: IUri, ...paths: string[]): IUri {
+		if (!base || !base.fsPath) {
+			console.warn('[UriAdapter] joinPath called with invalid base, using root.')
+			base = this.file('/')
+		}
 		// Convert IUri to VSCode URI for joining
 		const vscodeUri = vscode.Uri.file(base.fsPath)
 		const joinedUri = vscode.Uri.joinPath(vscodeUri, ...paths)

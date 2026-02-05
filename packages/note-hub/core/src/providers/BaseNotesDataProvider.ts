@@ -30,7 +30,6 @@ import { NotesHubItem } from '../models/NotesHubItem.js'
 
 const DEFAULT_ROOT_ICON = 'folder'
 const PROJECT_ROOT_ICON = 'project'
-const REMOTE_ROOT_ICON = 'remote-explorer'
 const GLOBAL_ROOT_ICON = 'globe'
 const DEFAULT_FOLDER_ICON = 'folder'
 
@@ -52,7 +51,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 	// Awilix-ready constructor (no decorators)
 	constructor(
 		public readonly notesDir: string,
-		public readonly providerName: 'project' | 'remote' | 'global',
+		public readonly providerName: 'project' | 'global',
 		private readonly openNoteCommandId: string,
 		protected readonly iContext: IExtensionContext,
 		protected readonly iWindow: IWindow,
@@ -86,7 +85,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 		}
 
 		this.fileWatcher = this.iWorkspace.createFileSystemWatcher(
-			RelativePatternAdapter.create(this.notesDir, '**/*'),
+			RelativePatternAdapter.create(this.sanitizePath(this.notesDir), '**/*'),
 		)
 		this.fileWatcher.onDidChange(() => this.refresh())
 		this.fileWatcher.onDidCreate(() => this.refresh())
@@ -98,6 +97,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 
 	public initializeTreeView(viewId: string): void {
 		if (!this.notesDir) {
+			console.warn(`[NotesHub] Skipping tree view registration for ${viewId} because notesDir is empty`)
 			return
 		}
 		// Prevent duplicate registrations
@@ -106,13 +106,17 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 			return
 		}
 		
-		// We use registerTreeDataProvider because the view is already declared in package.json.
-		// Using createTreeView would attempt to register it a second time, causing an error.
-		// I am assuming iWindow, which is an adapter for vscode.window, has this method.
-		const disposable = this.iWindow.registerTreeDataProvider(viewId, this)
-		
-		this.iContext.subscriptions.push(disposable)
-		this.treeViewRegistered = true
+		console.log(`[NotesHub] Registering tree data provider for view: ${viewId}`)
+		try {
+			const disposable = this.iWindow.registerTreeDataProvider(viewId, this)
+			this.iContext.subscriptions.push(disposable)
+			this.treeViewRegistered = true
+			console.log(`[NotesHub] Successfully registered tree data provider for view: ${viewId}`)
+		}
+		catch (error) {
+			console.error(`[NotesHub] Failed to register tree data provider for view: ${viewId}`, error)
+			throw error
+		}
 	}
 
 	public refresh(): void {
@@ -178,6 +182,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 
 			return treeItem as any
 		}
+		console.log(`[NotesHub] ${this.providerName} getTreeItem called`, element?.fileName ?? '(root)')
 		try {
 			if (element.isDirectory) {
 				// If it's a root item (no parent), start it as expanded. Otherwise, collapsed.
@@ -195,9 +200,6 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 						case 'project':
 							element.iconPath = ThemeIconAdapter.create(PROJECT_ROOT_ICON)
 							break
-						case 'remote':
-							element.iconPath = ThemeIconAdapter.create(REMOTE_ROOT_ICON)
-							break
 						case 'global':
 							element.iconPath = ThemeIconAdapter.create(GLOBAL_ROOT_ICON)
 							break
@@ -208,13 +210,35 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 				else {
 					element.iconPath = ThemeIconAdapter.create(DEFAULT_FOLDER_ICON)
 				}
+			} else {
+				// For files, if no frontmatter icon, use default note icon
+				if (!element.iconPath) {
+					element.iconPath = ThemeIconAdapter.create('dash')
+				}
+			}
+
+			// Ensure description is never undefined for VS Code internal replace calls
+			if (element.description === undefined || element.description === null) {
+				element.description = ''
 			}
 
 			// Return a VS Code TreeItem object rather than our adapter wrapper to avoid serialization issues
 			// in VS Code internals when it expects a raw TreeItem
 			const raw = (element as unknown as { toVsCode?: () => any })?.toVsCode?.()
+			const finalItem = raw ?? element
 
-			return (raw ?? element) as any
+			// Final sanity check on iconPath for VS Code
+			if (finalItem.iconPath && typeof finalItem.iconPath === 'object') {
+				if ('toVsCode' in finalItem.iconPath) {
+					finalItem.iconPath = (finalItem.iconPath as any).toVsCode()
+				} else if ('id' in finalItem.iconPath && !('label' in finalItem.iconPath)) {
+					// It's our raw adapter object { id: '...' }, convert to real ThemeIcon
+					const { id, color } = finalItem.iconPath as any
+					finalItem.iconPath = color ? this.themeIconAdapter.create(id, color) : this.themeIconAdapter.create(id)
+				}
+			}
+
+			return finalItem as any
 		}
 		catch (error) {
 			// Ensure the error has proper properties for VSCode's error handling
@@ -248,6 +272,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 		if (!this.notesDir) {
 			return []
 		}
+		console.log(`[NotesHub] ${this.providerName} getChildren called`, element == null ? '(root)' : `element="${element.fileName}"`)
 		try {
 			const dirPath = element?.filePath || this.notesDir
 
@@ -268,7 +293,7 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 					this.uriAdapter,
 					this.treeItemCollapsibleStateAdapter,
 				)
-
+				console.log(`[NotesHub] ${this.providerName} getChildren(root) → 1 item`)
 				return [rootFolderItem]
 			}
 
@@ -323,8 +348,11 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 						}
 					}
 				}
-				return items.sort(this.sortItems)
+				const sorted = items.sort(this.sortItems)
+				console.log(`[NotesHub] ${this.providerName} getChildren("${element.fileName}") → ${sorted.length} items`)
+				return sorted
 			}
+			console.log(`[NotesHub] ${this.providerName} getChildren("${element.fileName}") → 0 items`)
 			return []
 		}
 		catch (error) {
@@ -516,12 +544,13 @@ export abstract class BaseNotesDataProvider implements INotesHubDataProvider {
 		
 		const normalPath = normalize(uncleanPath)
 
-		if (!normalPath) {
+		if (normalPath == null || normalPath === '') {
 			return uncleanPath
 		}
 
-		// Ensure normalPath is a string before calling replace
-		return String(normalPath).replace(/\\/g, '/')
-	} //<
+		// Ensure we never call .replace on undefined (defensive)
+		const pathStr = String(normalPath)
+		return pathStr.replace(/\\/g, '/')
+	} //<\
 
 }

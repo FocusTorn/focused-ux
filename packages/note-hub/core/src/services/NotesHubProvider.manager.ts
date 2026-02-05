@@ -15,7 +15,6 @@ import type { INotesHubProviderManager } from '../_interfaces/INotesHubProviderM
 import type { INotesHubDataProvider } from '../_interfaces/INotesHubDataProvider.js'
 import type { INotesHubItem } from '../_interfaces/INotesHubItem.js'
 import { ProjectNotesDataProvider } from '../providers/ProjectNotesDataProvider.js'
-import { RemoteNotesDataProvider } from '../providers/RemoteNotesDataProvider.js'
 import { GlobalNotesDataProvider } from '../providers/GlobalNotesDataProvider.js'
 import type { NotesHubConfig } from '../_interfaces/INotesHubConfigService.js'
 
@@ -24,7 +23,6 @@ import type { NotesHubConfig } from '../_interfaces/INotesHubConfigService.js'
 export class NotesHubProviderManager implements INotesHubProviderManager {
 
 	private projectNotesProvider?: ProjectNotesDataProvider
-	private remoteNotesProvider?: RemoteNotesDataProvider
 	private globalNotesProvider?: GlobalNotesDataProvider
 	private disposables: Disposable[] = []
 
@@ -46,17 +44,15 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 
 	public async initializeProviders(config: NotesHubConfig, commandPrefix: string, openNoteCommandId: string): Promise<void> { //>
 		// Check if providers are already initialized
-		if (this.projectNotesProvider || this.remoteNotesProvider || this.globalNotesProvider) {
+		if (this.projectNotesProvider || this.globalNotesProvider) {
 			console.warn(`[NotesHub] Providers already initialized, skipping.`)
 			return
 		}
 
 		console.log(`[NotesHub] Initializing providers with config:`, {
 			isProjectNotesEnabled: config.isProjectNotesEnabled,
-			isRemoteNotesEnabled: config.isRemoteNotesEnabled,
 			isGlobalNotesEnabled: config.isGlobalNotesEnabled,
 			projectNotesPath: config.projectNotesPath,
-			remoteNotesPath: config.remoteNotesPath,
 			globalNotesPath: config.globalNotesPath,
 		})
 
@@ -79,37 +75,12 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.uriAdapter,
 				this.treeItemCollapsibleStateAdapter,
 			)
-			console.log(`[NotesHub] Registering tree view: ${commandPrefix}.projectNotesView`)
-			this.projectNotesProvider.initializeTreeView(`${commandPrefix}.projectNotesView`)
+			const viewId = `${commandPrefix}.projectNotesView`
+			console.log(`[NotesHub] Registering tree view: ${viewId}`)
+			this.projectNotesProvider.initializeTreeView(viewId)
 			this.disposables.push(this.projectNotesProvider)
 		} else {
 			console.warn(`[NotesHub] Skipping ProjectNotesDataProvider - enabled: ${config.isProjectNotesEnabled}, path: ${config.projectNotesPath}`)
-		}
-
-		if (config.isRemoteNotesEnabled && config.remoteNotesPath) {
-			console.log(`[NotesHub] Creating RemoteNotesDataProvider for path: ${config.remoteNotesPath}`)
-			this.remoteNotesProvider = new RemoteNotesDataProvider(
-				config.remoteNotesPath,
-				this.iContext,
-				this.iWindow,
-				this.iWorkspace,
-				this.iCommands,
-				this.iCommonUtils,
-				this.iFrontmatterUtils,
-				this.iPathUtils,
-				this.iFileTypeEnum,
-				openNoteCommandId,
-				this.treeItemAdapter,
-				this.themeIconAdapter,
-				this.themeColorAdapter,
-				this.uriAdapter,
-				this.treeItemCollapsibleStateAdapter,
-			)
-			console.log(`[NotesHub] Registering tree view: ${commandPrefix}.remoteNotesView`)
-			this.remoteNotesProvider.initializeTreeView(`${commandPrefix}.remoteNotesView`)
-			this.disposables.push(this.remoteNotesProvider)
-		} else {
-			console.warn(`[NotesHub] Skipping RemoteNotesDataProvider - enabled: ${config.isRemoteNotesEnabled}, path: ${config.remoteNotesPath}`)
 		}
 
 		if (config.isGlobalNotesEnabled && config.globalNotesPath) {
@@ -131,8 +102,9 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 				this.uriAdapter,
 				this.treeItemCollapsibleStateAdapter,
 			)
-			console.log(`[NotesHub] Registering tree view: ${commandPrefix}.globalNotesView`)
-			this.globalNotesProvider.initializeTreeView(`${commandPrefix}.globalNotesView`)
+			const viewId = `${commandPrefix}.globalNotesView`
+			console.log(`[NotesHub] Registering tree view: ${viewId}`)
+			this.globalNotesProvider.initializeTreeView(viewId)
 			this.disposables.push(this.globalNotesProvider)
 		} else {
 			console.warn(`[NotesHub] Skipping GlobalNotesDataProvider - enabled: ${config.isGlobalNotesEnabled}, path: ${config.globalNotesPath}`)
@@ -141,10 +113,8 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 
 	public dispose(): void { //>
 		this.projectNotesProvider?.dispose()
-		this.remoteNotesProvider?.dispose()
 		this.globalNotesProvider?.dispose()
 		this.projectNotesProvider = undefined
-		this.remoteNotesProvider = undefined
 		this.globalNotesProvider = undefined
 		this.disposables.forEach(d => d.dispose())
 		this.disposables = []
@@ -155,16 +125,12 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 	): Promise<INotesHubDataProvider | undefined> {
 		const config = {
 			projectNotesPath: this.projectNotesProvider?.notesDir || '',
-			remoteNotesPath: this.remoteNotesProvider?.notesDir || '',
 			globalNotesPath: this.globalNotesProvider?.notesDir || '',
 		}
 		const sanitizedFilePath = item.filePath ? this.iPathUtils.sanitizePath(item.filePath) : ''
 
 		if (this.projectNotesProvider && config.projectNotesPath && sanitizedFilePath.startsWith(config.projectNotesPath)) {
 			return this.projectNotesProvider
-		}
-		if (this.remoteNotesProvider && config.remoteNotesPath && sanitizedFilePath.startsWith(config.remoteNotesPath)) {
-			return this.remoteNotesProvider
 		}
 		if (this.globalNotesProvider && config.globalNotesPath && sanitizedFilePath.startsWith(config.globalNotesPath)) {
 			return this.globalNotesProvider
@@ -173,28 +139,26 @@ export class NotesHubProviderManager implements INotesHubProviderManager {
 		return undefined
 	} //<
 
-	public getProviderInstance(providerName: 'project' | 'remote' | 'global'): INotesHubDataProvider | undefined { //>
+	public getProviderInstance(providerName: 'project' | 'global'): INotesHubDataProvider | undefined { //>
 		switch (providerName) {
 			case 'project': return this.projectNotesProvider
-			case 'remote': return this.remoteNotesProvider
 			case 'global': return this.globalNotesProvider
 			default: return undefined
 		}
 	} //<
 
 	public refreshProviders( //>
-		providersToRefresh?: 'project' | 'remote' | 'global' | 'all' | Array<'project' | 'remote' | 'global'>,
+		providersToRefresh?: 'project' | 'global' | 'all' | Array<'project' | 'global'>,
 	): void {
 		const targets = Array.isArray(providersToRefresh)
 			? providersToRefresh
 			: providersToRefresh === undefined || providersToRefresh === 'all'
-				? ['project', 'remote', 'global'] as const
+				? ['project', 'global'] as const
 				: [providersToRefresh]
 
 		for (const target of targets) {
 			switch (target) {
 				case 'project': this.projectNotesProvider?.refresh(); break
-				case 'remote': this.remoteNotesProvider?.refresh(); break
 				case 'global': this.globalNotesProvider?.refresh(); break
 			}
 		}

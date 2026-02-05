@@ -4,7 +4,7 @@
     "description": "A VSCode extension for project management utilities including package.json formatting, terminal management, backup creation, and Poetry shell integration.",
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
-    "version": "0.1.0-dev.833244150",
+    "version": "0.1.0-dev.137191135",
     "contributes": {
         "commands": [
             {

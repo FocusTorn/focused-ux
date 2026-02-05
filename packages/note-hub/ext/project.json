@@ -24,8 +24,7 @@
                 "platform": "node",
                 "bundle": true,
                 "external": [
-                    "vscode",
-                    "js-yaml"
+                    "vscode"
                 ],
                 "sourcemap": true,
                 "main": "packages/note-hub/ext/src/extension.ts",

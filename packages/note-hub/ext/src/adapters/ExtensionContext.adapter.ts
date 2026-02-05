@@ -19,6 +19,9 @@ export class ExtensionContextAdapter implements IExtensionContext {
 			update: async (key: string, value: any): Promise<void> => {
 				await this.context.globalState.update(key, value)
 			},
+			delete: async (key: string): Promise<void> => {
+				await this.context.globalState.update(key, undefined)
+			},
 		}
 	}
 
@@ -31,6 +34,9 @@ export class ExtensionContextAdapter implements IExtensionContext {
 			},
 			update: async (key: string, value: any): Promise<void> => {
 				await this.context.workspaceState.update(key, value)
+			},
+			delete: async (key: string): Promise<void> => {
+				await this.context.workspaceState.update(key, undefined)
 			},
 		}
 	}

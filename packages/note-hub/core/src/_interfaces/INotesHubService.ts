@@ -23,11 +23,11 @@ export interface INotesHubService {
 	// Creation Operations
 	newNoteInFolder: (targetFolderItem: INotesHubItem) => Promise<void>
 	newFolderInFolder: (targetFolderItem: INotesHubItem) => Promise<void>
-	newNoteAtRoot: (providerName: 'project' | 'remote' | 'global') => Promise<void>
-	newFolderAtRoot: (providerName: 'project' | 'remote' | 'global') => Promise<void>
+	newNoteAtRoot: (providerName: 'project' | 'global') => Promise<void>
+	newFolderAtRoot: (providerName: 'project' | 'global') => Promise<void>
 
 	// Provider and View Management
-	refreshProviders: (providersToRefresh?: 'project' | 'remote' | 'global' | 'all' | Array<'project' | 'remote' | 'global'>) => void
+	refreshProviders: (providersToRefresh?: 'project' | 'global' | 'all' | Array<'project' | 'global'>) => void
 	getProviderForNote: (item: INotesHubItem) => Promise<INotesHubDataProvider | undefined>
 	revealNotesHubItem: (provider: INotesHubDataProvider, item: INotesHubItem, select?: boolean) => Promise<void>
 

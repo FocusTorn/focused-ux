@@ -2,11 +2,11 @@
 
 // _UTILITIES (direct imports) ================================================================================
 import type { IWorkspace } from '../_interfaces/IWorkspace.js'
-import type { IPathUtilsService } from '../_interfaces/IPathUtils.ts'
-import type { IWorkspaceUtilsService } from '../_interfaces/IWorkspaceUtils.ts'
-import type { ICommonUtilsService } from '../_interfaces/ICommonUtils.ts'
+import type { IPathUtilsService } from '../_interfaces/IPathUtils.js'
+import type { IWorkspaceUtilsService } from '../_interfaces/IWorkspaceUtils.js'
+import type { ICommonUtilsService } from '../_interfaces/ICommonUtils.js'
 import type { ICommands } from '../_interfaces/ICommands.js'
-import type { IFileSystem } from '../_interfaces/IFileSystem.ts'
+import type { IFileSystem } from '../_interfaces/IFileSystem.js'
 import type { IUriFactory } from '../_interfaces/IUri.js'
 import type * as nodeOs from 'node:os'
 import type * as nodePath from 'node:path'
@@ -33,22 +33,27 @@ export class NotesHubConfigService implements INotesHubConfigService {
 	) {}
 
 	public getNotesHubConfig(configPrefix: string): NotesHubConfig { //>
+		console.log(`[NotesHubConfig] Getting configuration for prefix: ${configPrefix}`)
 		const nhConfig = this.iWorkspace.getConfiguration(configPrefix)
 
 		const getPath = (key: string, defaultSubPath: string): string => {
+			console.log(`[NotesHubConfig] Resolving path for key: ${key}`)
 			// Resolve homedir safely first
 			const homedir = typeof this.iOsHomedir === 'function' ? (this.iOsHomedir() || '') : ''
 
 			if (!homedir) {
+				console.warn(`[NotesHubConfig] homedir is empty, cannot resolve path for ${key}`)
 				return ''
 			}
 
 			const configuredPathRaw = nhConfig.get(key) as unknown
+			console.log(`[NotesHubConfig] Raw configured path for ${key}:`, configuredPathRaw)
 			let configuredPath = typeof configuredPathRaw === 'string' ? configuredPathRaw : ''
 
 			if (!configuredPath) {
 				if (key === notesHubConstants.configKeys.PROJECT_PATH) {
 					const workspaceInfo = this.iWorkspaceUtils.getWorkspaceInfo()
+					console.log(`[NotesHubConfig] No project path configured, using workspace info:`, workspaceInfo)
 					const { primaryName, workspaceName } = workspaceInfo
 					let projectDirName: string = 'default_project_notes'
 
@@ -64,58 +69,55 @@ export class NotesHubConfigService implements INotesHubConfigService {
 				else {
 					configuredPath = this.iPathJoin(homedir, '.fux_note-hub', defaultSubPath)
 				}
+				console.log(`[NotesHubConfig] Using default path for ${key}: ${configuredPath}`)
 			}
 			else if (configuredPath.startsWith('~')) {
 				configuredPath = this.iPathJoin(homedir, configuredPath.slice(1))
+				console.log(`[NotesHubConfig] Expanded '~' path for ${key}: ${configuredPath}`)
 			}
 
-			// Normalize the path and clean up any double backslashes on Windows
+			// Normalize the path, then use forward slashes for consistent display and cross-platform behavior
+			console.log(`[NotesHubConfig] Normalizing path: ${configuredPath}`)
 			let normalizedPath = this.iPathNormalize(configuredPath || '')
-			
-			// Clean up double backslashes on Windows
-			if (normalizedPath) {
-				// Avoid importing process directly per SOP; normalization is safe across OS
-				normalizedPath = String(normalizedPath).replace(/\\/g, '\\')
+			console.log(`[NotesHubConfig] Normalized result: ${normalizedPath}`)
+			if (normalizedPath != null && normalizedPath !== '') {
+				normalizedPath = String(normalizedPath).replace(/\\/g, '/')
 			}
 
 			const finalPath = typeof normalizedPath === 'string' ? normalizedPath : ''
+			console.log(`[NotesHubConfig] Final resolved path for ${key}: ${finalPath}`)
 
-			// console.warn(`[NotesHubConfig] getPath generated for ${key}:`, {
-			// 	configuredPath,
-			// 	normalizedPath: finalPath,
-			// 	homedir,
-			// })
 			return finalPath
 		}
 
 		const projectNotesPath = getPath(notesHubConstants.configKeys.PROJECT_PATH, 'project/default_project_notes')
-		const remoteNotesPath = getPath(notesHubConstants.configKeys.REMOTE_PATH, 'remote')
 		const globalNotesPath = getPath(notesHubConstants.configKeys.GLOBAL_PATH, 'global')
 
-		console.log(`[NotesHubConfig] Final paths:`, {
+		console.log(`[NotesHubConfig] Final resolved paths:`, {
 			projectNotesPath,
-			remoteNotesPath,
 			globalNotesPath,
 		})
 
 		const isProjectNotesEnabled = (nhConfig.get(notesHubConstants.configKeys.ENABLE_PROJECT_NOTES, true) && !!projectNotesPath) as boolean
-		const isRemoteNotesEnabled = (nhConfig.get(notesHubConstants.configKeys.ENABLE_REMOTE_NOTES, true) && !!remoteNotesPath) as boolean
 		const isGlobalNotesEnabled = (nhConfig.get(notesHubConstants.configKeys.ENABLE_GLOBAL_NOTES, true) && !!globalNotesPath) as boolean
+
+		console.log(`[NotesHubConfig] Provider enablement:`, {
+			isProjectNotesEnabled,
+			isGlobalNotesEnabled,
+		})
 
 		// Set context variables for view visibility (only once to prevent duplicate registrations)
 		if (!this.contextSet) {
+			console.log(`[NotesHubConfig] Setting context variables for views...`)
 			this.iCommands.executeCommand('setContext', `config.${configPrefix}.enableProjectNotes`, isProjectNotesEnabled)
-			this.iCommands.executeCommand('setContext', `config.${configPrefix}.enableRemoteNotes`, isRemoteNotesEnabled)
 			this.iCommands.executeCommand('setContext', `config.${configPrefix}.enableGlobalNotes`, isGlobalNotesEnabled)
 			this.contextSet = true
 		}
 
 		return {
 			projectNotesPath,
-			remoteNotesPath,
 			globalNotesPath,
 			isProjectNotesEnabled,
-			isRemoteNotesEnabled,
 			isGlobalNotesEnabled,
 		}
 	} //<

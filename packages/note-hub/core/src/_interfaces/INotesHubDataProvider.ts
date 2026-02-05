@@ -11,7 +11,7 @@ import type { ITreeItem } from './ITreeItem.js'
 export interface INotesHubDataProvider {
 	onDidChangeTreeData: Event<INotesHubItem | undefined | null | void>
 	readonly notesDir: string
-	readonly providerName: 'project' | 'remote' | 'global'
+	readonly providerName: 'project' | 'global'
 	readonly dropMimeTypes: string[]
 	readonly dragMimeTypes: string[]
 

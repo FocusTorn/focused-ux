@@ -1,3 +1,10 @@
+# 1. :: Mandatory Rules
+
+**CRITICAL:** This workspace is governed by a set of strict, non-negotiable integrity rules. You MUST load and adhere to these rules before executing any tool calls or proposing code changes.
+
+- **[Workspace Rules Orchestrator](.gemini/rules/_readme.md)**: **MANDATORY READING.** This is the central source of truth for all active standards (Code Integrity, Formatting, Stability, and Shell Usage).
+- **Compliance Requirement**: Every response must be verified against the standards defined in the Orchestrator. Failure to comply with section numbering, title formatting, or code-elision rules is considered a system-level failure.
+
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 

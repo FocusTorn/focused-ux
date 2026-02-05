@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 	<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
 		<Metadata>
-			<Identity Language="en-US" Id="fux-project-butler" Version="0.1.0-dev.833244150" Publisher="NewRealityDesigns" />
+			<Identity Language="en-US" Id="fux-project-butler" Version="0.1.0-dev.137191135" Publisher="NewRealityDesigns" />
 			<DisplayName>F-UX: Project Butler</DisplayName>
 			<Description xml:space="preserve">A VSCode extension for project management utilities including package.json formatting, terminal management, backup creation, and Poetry shell integration.</Description>
 			<Tags>terminal</Tags>

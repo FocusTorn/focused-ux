@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 	<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
 		<Metadata>
-			<Identity Language="en-US" Id="fux-note-hub" Version="0.1.0-dev.144502636" Publisher="NewRealityDesigns" />
+			<Identity Language="en-US" Id="fux-note-hub" Version="0.1.0-dev.169234592" Publisher="NewRealityDesigns" />
 			<DisplayName>F-UX: Note Hub</DisplayName>
 			<Description xml:space="preserve">Notes Hub VSCode extension</Description>
 			<Tags>focused ux,f-ux</Tags>

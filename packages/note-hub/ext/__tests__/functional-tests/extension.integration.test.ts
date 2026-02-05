@@ -1,15 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { ExtensionContext } from 'vscode'
 import { activate, deactivate } from '../../src/extension.js'
-
-// Mock vscode
-vi.mock('vscode', () => ({
-	workspace: {
-		workspaceFolders: [],
-		getConfiguration: vi.fn(),
-		onDidChangeConfiguration: vi.fn(),
-	},
-}))
+import { mockVSCode } from '../_setup.js'
 
 // Mock node modules
 vi.mock('node:os', () => ({
@@ -48,6 +40,9 @@ describe('Extension Integration', () => {
 	}
 
 	beforeEach(() => {
+		// Reset extension state
+		deactivate()
+
 		// Create mock extension context
 		mockContext = {
 			subscriptions: [],

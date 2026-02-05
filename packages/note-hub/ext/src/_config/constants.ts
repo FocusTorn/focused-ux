@@ -9,10 +9,8 @@ export const constants = {
 	},
 	commands: {
 		newProjectFolder: `${EXT_ID_PREFIX}.newProjectFolder`,
-		newRemoteFolder: `${EXT_ID_PREFIX}.newRemoteFolder`,
 		newGlobalFolder: `${EXT_ID_PREFIX}.newGlobalFolder`,
 		newProjectNote: `${EXT_ID_PREFIX}.newProjectNote`,
-		newRemoteNote: `${EXT_ID_PREFIX}.newRemoteNote`,
 		newGlobalNote: `${EXT_ID_PREFIX}.newGlobalNote`,
 		newNestedNote: `${EXT_ID_PREFIX}.newNestedNote`,
 		newNestedFolder: `${EXT_ID_PREFIX}.newNestedFolder`,
@@ -28,7 +26,6 @@ export const constants = {
 	views: {
 		container: 'notesHub',
 		project: `${EXT_ID_PREFIX}.projectNotesView`,
-		remote: `${EXT_ID_PREFIX}.remoteNotesView`,
 		global: `${EXT_ID_PREFIX}.globalNotesView`,
 	},
 } as const

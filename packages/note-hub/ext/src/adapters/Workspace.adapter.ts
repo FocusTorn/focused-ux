@@ -1,5 +1,5 @@
 import type { IWorkspace, IConfiguration, IFileSystemWatcher } from '@fux/note-hub-core'
-import type * as vscode from 'vscode'
+import * as vscode from 'vscode'
 
 export class WorkspaceAdapter implements IWorkspace {
 
@@ -27,13 +27,33 @@ export class WorkspaceAdapter implements IWorkspace {
 	}
 
 	createFileSystemWatcher(pattern: any): IFileSystemWatcher {
-		const watcher = this.vscodeWorkspace.createFileSystemWatcher(pattern)
+		// Core passes { base: string, pattern: string }; VS Code expects a RelativePattern instance (baseUri: Uri).
+		// Passing a plain object causes VS Code to read .baseUri which is undefined → "undefined.replace" at runtime.
+		try {
+			console.log(`[WorkspaceAdapter] Creating file system watcher for pattern:`, pattern)
+			const resolvedPattern =
+				pattern && typeof pattern.base === 'string' && typeof pattern.pattern === 'string'
+					? new vscode.RelativePattern(vscode.Uri.file(pattern.base), pattern.pattern)
+					: pattern
+			
+			const watcher = this.vscodeWorkspace.createFileSystemWatcher(resolvedPattern)
 
-		return {
-			onDidChange: listener => watcher.onDidChange(listener),
-			onDidCreate: listener => watcher.onDidCreate(listener),
-			onDidDelete: listener => watcher.onDidDelete(listener),
-			dispose: () => watcher.dispose(),
+			return {
+				onDidChange: listener => watcher.onDidChange(listener),
+				onDidCreate: listener => watcher.onDidCreate(listener),
+				onDidDelete: listener => watcher.onDidDelete(listener),
+				dispose: () => watcher.dispose(),
+			}
+		}
+		catch (error) {
+			console.error(`[WorkspaceAdapter] Failed to create file system watcher:`, error)
+			// Return a dummy watcher to prevent crashing
+			return {
+				onDidChange: () => ({ dispose: () => {} } as any),
+				onDidCreate: () => ({ dispose: () => {} } as any),
+				onDidDelete: () => ({ dispose: () => {} } as any),
+				dispose: () => {},
+			}
 		}
 	}
 

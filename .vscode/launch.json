@@ -1,8 +1,9 @@
+/* eslint-disable style/no-multiple-empty-lines */
 {
     "version": "0.2.0",
     "configurations": [
-        {
-            "name": "Dynamicons", //>
+
+        {   "name": "Dynamicons", //>
             "type": "extensionHost",
             "request": "launch",
             "args": [
@@ -13,9 +14,18 @@
             "sourceMaps": true,
             "preLaunchTask": "Build Dynamicons"
         }, //<
+        {   "name": "Dynamicons  (no build)", //>
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/dynamicons/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true
+        }, //<
 
-        {
-            "name": "Ghost Writer", //>
+        {   "name": "Ghost Writer", //>
             "type": "extensionHost",
             "request": "launch",
             "args": [
@@ -26,9 +36,18 @@
             "sourceMaps": true,
             "preLaunchTask": "Build Ghost Writer"
         }, //<
+        {   "name": "Ghost Writer (no build)", //>
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/ghost-writer/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true
+        }, //<
 
-        {
-            "name": "Context Cherry Picker", //>
+        {   "name": "Context Cherry Picker", //>
             "type": "extensionHost",
             "request": "launch",
             "args": [
@@ -39,22 +58,40 @@
             "sourceMaps": true,
             "preLaunchTask": "Build Context Cherry Picker"
         }, //<
-
-        {
-            "name": "AI Agent Interactor", //>
+        {   "name": "Context Cherry Picker (no build)", //>
             "type": "extensionHost",
             "request": "launch",
             "args": [
                 "--profile=Clean",
-                "--extensionDevelopmentPath=${workspaceFolder}/packages/ai-agent-interactor/ext",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/context-cherry-picker/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true
+        }, //<
+
+        {   "name": "Project Butler", //>
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/project-butler/ext",
                 "${workspaceFolder}"
             ],
             "sourceMaps": true,
-            "preLaunchTask": "Build AI Agent Interactor"
+            "preLaunchTask": "Build Context Cherry Picker"
         }, //<
-
-        {
-            "name": "Note Hub", //>
+        {   "name": "Project Butler (no build)", //>
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/project-butler/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true
+        }, //<
+        
+        {   "name": "Note Hub", //>
             "type": "extensionHost",
             "request": "launch",
             "args": [
@@ -64,6 +101,17 @@
             ],
             "sourceMaps": true,
             "preLaunchTask": "Build NoteHub"
+        }, //<
+        {   "name": "Note Hub (no build)", //>
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--profile=Clean",
+                "--extensionDevelopmentPath=${workspaceFolder}/packages/note-hub/ext",
+                "${workspaceFolder}"
+            ],
+            "sourceMaps": true
         } //<
+        
     ]
 }

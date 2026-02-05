@@ -64,9 +64,9 @@ export class NotesHubItem implements INotesHubItem {
 	set label(value: TreeItemLabel | string) { this.treeItem.label = value }
 
 	get resourceUri(): IUri | undefined {
+		// treeItem.resourceUri is the raw vscode.Uri (no .uri sub-property); return it as IUri for callers
 		const iUri = this.treeItem.resourceUri
-
-		return iUri ? (iUri as any).uri : undefined
+		return iUri != null ? (iUri as unknown as IUri) : undefined
 	}
 
 	set resourceUri(value: IUri | undefined) {
@@ -154,8 +154,8 @@ export class NotesHubItem implements INotesHubItem {
 			(resourceUri as any).uri,
 		)
 		
-		// Only assign description when it's a proper string; otherwise leave undefined
-		this.treeItem.description = typeof (frontmatter as any)?.Desc === 'string' ? (frontmatter as any).Desc : undefined
+		// VS Code may call .replace on description; never leave it undefined
+		this.treeItem.description = typeof (frontmatter as any)?.Desc === 'string' ? (frontmatter as any).Desc : ''
 		this.treeItem.tooltip = this.filePath
 		this.treeItem.contextValue = isDirectory ? 'notesHubFolderItem' : 'notesHubFileItem'
 		

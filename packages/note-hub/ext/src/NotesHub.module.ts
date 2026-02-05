@@ -33,10 +33,8 @@ export class NotesHubModule {
 		const service = this.service!
 		const commandMap: { [key: string]: (...args: any[]) => any } = {
 			[constants.commands.newProjectFolder]: () => service.newFolderAtRoot('project'),
-			[constants.commands.newRemoteFolder]: () => service.newFolderAtRoot('remote'),
 			[constants.commands.newGlobalFolder]: () => service.newFolderAtRoot('global'),
 			[constants.commands.newProjectNote]: () => service.newNoteAtRoot('project'),
-			[constants.commands.newRemoteNote]: () => service.newNoteAtRoot('remote'),
 			[constants.commands.newGlobalNote]: () => service.newNoteAtRoot('global'),
 			[constants.commands.newNestedNote]: (item?: INotesHubItem) => item ? service.newNoteInFolder(item) : this.windowAdapter.showWarningMessage('Select a folder to create a nested note.'),
 			[constants.commands.newNestedFolder]: (item?: INotesHubItem) => item ? service.newFolderInFolder(item) : this.windowAdapter.showWarningMessage('Select a folder to create a nested folder.'),
@@ -47,6 +45,7 @@ export class NotesHubModule {
 			[constants.commands.cutItem]: (item?: INotesHubItem) => item && service.cutItem(item),
 			[constants.commands.pasteItem]: (item?: INotesHubItem) => item && service.pasteItem(item),
 			[constants.commands.renameItem]: (item?: INotesHubItem) => item && service.renameItem(item),
+			[constants.commands.deleteItem]: (item?: INotesHubItem) => item && service.deleteItem(item),
 		}
 
 		return Object.entries(commandMap).map(([command, handler]) => {

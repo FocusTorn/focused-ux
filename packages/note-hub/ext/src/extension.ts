@@ -20,6 +20,8 @@ import { TreeItemAdapter } from './adapters/TreeItem.adapter.js'
 import { ThemeIconAdapter } from './adapters/ThemeIcon.adapter.js'
 import { ThemeColorAdapter } from './adapters/ThemeColor.adapter.js'
 import { TreeItemCollapsibleStateAdapter } from './adapters/TreeItemCollapsibleState.adapter.js'
+import { EnvAdapter } from './adapters/Env.adapter.js'
+import { NotesHubModule } from './NotesHub.module.js'
 import { NotesHubConfigService, NotesHubProviderManager, NotesHubActionService, NotesHubService } from '@fux/note-hub-core'
 
 //--------------------------------------------------------------------------------------------------------------<<
@@ -45,6 +47,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 		const contextAdapter = new ExtensionContextAdapter(context)
 		const windowAdapter = new WindowAdapter()
 		const workspaceAdapter = new WorkspaceAdapter(vscode.workspace)
+		const envAdapter = new EnvAdapter()
 		const commandsAdapter = new CommandsAdapter()
 		const fileSystemAdapter = new FileSystemAdapter()
 		const pathUtilsAdapter = new PathUtilsAdapter()
@@ -97,11 +100,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			commandsAdapter,
 			windowAdapter,
 			workspaceAdapter,
-			{ machineId: '', sessionId: '', language: '', appName: '', appRoot: '', appHost: '', uiKind: 1, clipboard: { readText: async () => '', writeText: async () => {} } },
+			envAdapter,
 			commonUtilsAdapter,
 			frontmatterUtilsAdapter,
 			pathUtilsAdapter,
-			{ get: <T>(key: string, defaultValue?: T): T => defaultValue as T, update: async () => {}, delete: async () => {} },
+			contextAdapter.globalState,
 			providerManager,
 			path.join,
 			path.dirname,
@@ -131,12 +134,33 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 		)
 		console.log(`[${constants.extension.name}] NotesHubService created`)
 
+		// Create module
+		console.log(`[${constants.extension.name}] Creating NotesHubModule...`)
+		const notesHubModule = new NotesHubModule(
+			notesHubService,
+			windowAdapter,
+			commandsAdapter,
+		)
+
 		// Initialize and register commands
-		console.log(`[${constants.extension.name}] Calling initializeNotesHub()...`)
-		await notesHubService.initializeNotesHub()
-		console.log(`[${constants.extension.name}] initializeNotesHub() completed`)
+		console.log(`[${constants.extension.name}] Initializing module...`)
+		try {
+			await notesHubModule.initializeModule()
+			console.log(`[${constants.extension.name}] Module initialized successfully`)
+		}
+		catch (initError) {
+			console.error(`[${constants.extension.name}] Module initialization failed:`, initError)
+			throw initError
+		}
+
+		console.log(`[${constants.extension.name}] Registering commands...`)
+		const disposables = notesHubModule.registerCommands(context)
+		context.subscriptions.push(...disposables)
+		console.log(`[${constants.extension.name}] Commands registered successfully`)
+
 		context.subscriptions.push({ dispose: () => notesHubService?.dispose() })
 		isActivated = true
+		console.log(`[${constants.extension.name}] Activation complete.`)
 	}
 	catch (error) {
 		console.error(`[${constants.extension.name}] Error during NotesHub initialization:`, error)

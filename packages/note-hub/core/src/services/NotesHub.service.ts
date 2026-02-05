@@ -40,7 +40,6 @@ export class NotesHubService implements INotesHubService {
 		const config = this.iConfigService.getNotesHubConfig(this.configPrefix)
 
 		await this.iConfigService.createDirectoryIfNeeded(config.projectNotesPath)
-		await this.iConfigService.createDirectoryIfNeeded(config.remoteNotesPath)
 		await this.iConfigService.createDirectoryIfNeeded(config.globalNotesPath)
 
 		const openNoteCommandId = `${this.commandPrefix}.${notesHubConstants.commands.openNote}`
@@ -62,12 +61,12 @@ export class NotesHubService implements INotesHubService {
 		})
 
 		this.disposables.push(configWatcher, { dispose: () => this.iProviderManager.dispose() })
-	} //<
+	} //<\
 
 	public dispose(): void { //>
 		this.disposables.forEach(d => d.dispose())
 		this.disposables = []
-	} //<
+	} //<\
 
 	// Delegated methods
 	public getNotesHubConfig(): NotesHubConfig {
@@ -78,7 +77,7 @@ export class NotesHubService implements INotesHubService {
 		return this.iProviderManager.getProviderForNote(item)
 	}
 
-	public refreshProviders(providersToRefresh?: 'project' | 'remote' | 'global' | 'all' | Array<'project' | 'remote' | 'global'>): void {
+	public refreshProviders(providersToRefresh?: 'project' | 'global' | 'all' | Array<'project' | 'global'>): void {
 		this.iProviderManager.refreshProviders(providersToRefresh)
 	}
 
@@ -126,11 +125,11 @@ export class NotesHubService implements INotesHubService {
 		return this.iActionService.newFolderInFolder(targetFolderItem)
 	}
 
-	public newNoteAtRoot(providerName: 'project' | 'remote' | 'global'): Promise<void> {
+	public newNoteAtRoot(providerName: 'project' | 'global'): Promise<void> {
 		return this.iActionService.newNoteAtRoot(providerName)
 	}
 
-	public newFolderAtRoot(providerName: 'project' | 'remote' | 'global'): Promise<void> {
+	public newFolderAtRoot(providerName: 'project' | 'global'): Promise<void> {
 		return this.iActionService.newFolderAtRoot(providerName)
 	}
 

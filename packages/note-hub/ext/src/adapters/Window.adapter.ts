@@ -3,46 +3,46 @@ import type { IWindow } from '../_interfaces/IWindow.js'
 
 export class WindowAdapter implements IWindow {
 
-	async showInformationMessage(message: string, ...args: (string | boolean)[]): Promise<string | undefined> {
+	async showInformationMessage(message: string, ...args: (string | boolean | object)[]): Promise<string | undefined> {
 		if (args.length === 0) {
 			return vscode.window.showInformationMessage(message)
 		}
-		// Handle the case where first arg might be a boolean (modal)
-		if (typeof args[0] === 'boolean') {
-			const modal = args[0]
+		// Handle the case where first arg might be a boolean or object (options)
+		if (typeof args[0] === 'boolean' || (typeof args[0] === 'object' && args[0] !== null)) {
+			const options = typeof args[0] === 'boolean' ? { modal: args[0] } : args[0] as vscode.MessageOptions
 			const items = args.slice(1) as string[]
 
-			return vscode.window.showInformationMessage(message, { modal }, ...items)
+			return vscode.window.showInformationMessage(message, options, ...items)
 		}
 		// All args are strings (actions)
 		return vscode.window.showInformationMessage(message, ...(args as string[]))
 	}
 
-	async showWarningMessage(message: string, ...args: (string | boolean)[]): Promise<string | undefined> {
+	async showWarningMessage(message: string, ...args: (string | boolean | object)[]): Promise<string | undefined> {
 		if (args.length === 0) {
 			return vscode.window.showWarningMessage(message)
 		}
-		// Handle the case where first arg might be a boolean (modal)
-		if (typeof args[0] === 'boolean') {
-			const modal = args[0]
+		// Handle the case where first arg might be a boolean or object (options)
+		if (typeof args[0] === 'boolean' || (typeof args[0] === 'object' && args[0] !== null)) {
+			const options = typeof args[0] === 'boolean' ? { modal: args[0] } : args[0] as vscode.MessageOptions
 			const items = args.slice(1) as string[]
 
-			return vscode.window.showWarningMessage(message, { modal }, ...items)
+			return vscode.window.showWarningMessage(message, options, ...items)
 		}
 		// All args are strings (actions)
 		return vscode.window.showWarningMessage(message, ...(args as string[]))
 	}
 
-	async showErrorMessage(message: string, ...args: (string | boolean)[]): Promise<string | undefined> {
+	async showErrorMessage(message: string, ...args: (string | boolean | object)[]): Promise<string | undefined> {
 		if (args.length === 0) {
 			return vscode.window.showErrorMessage(message)
 		}
-		// Handle the case where first arg might be a boolean (modal)
-		if (typeof args[0] === 'boolean') {
-			const modal = args[0]
+		// Handle the case where first arg might be a boolean or object (options)
+		if (typeof args[0] === 'boolean' || (typeof args[0] === 'object' && args[0] !== null)) {
+			const options = typeof args[0] === 'boolean' ? { modal: args[0] } : args[0] as vscode.MessageOptions
 			const items = args.slice(1) as string[]
 
-			return vscode.window.showErrorMessage(message, { modal }, ...items)
+			return vscode.window.showErrorMessage(message, options, ...items)
 		}
 		// All args are strings (actions)
 		return vscode.window.showErrorMessage(message, ...(args as string[]))

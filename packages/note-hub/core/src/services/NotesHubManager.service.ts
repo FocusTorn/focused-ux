@@ -31,7 +31,6 @@ export class NotesHubManagerService implements INotesHubManagerService {
             const config = this.dependencies.configService.getNotesHubConfig(this.configPrefix)
 
             await this.dependencies.configService.createDirectoryIfNeeded(config.projectNotesPath)
-            await this.dependencies.configService.createDirectoryIfNeeded(config.remoteNotesPath)
             await this.dependencies.configService.createDirectoryIfNeeded(config.globalNotesPath)
 
             const openNoteCommandId = `${this.commandPrefix}.${notesHubConstants.commands.openNote}`
@@ -88,9 +87,9 @@ export class NotesHubManagerService implements INotesHubManagerService {
         }
     }
 
-    public refreshProviders(providersToRefresh?: 'project' | 'remote' | 'global' | 'all' | Array<'project' | 'remote' | 'global'>): void {
+    public refreshProviders(providersToRefresh?: 'project' | 'global' | 'all' | Array<'project' | 'global'>): void {
         try {
-            this.dependencies.providerManager.refreshProviders(providersToRefresh)
+            this.dependencies.providerManager.refreshProviders(providersToRefresh as any)
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error'
             throw new Error(`Refresh providers failed: ${errorMessage}`)
@@ -197,7 +196,7 @@ export class NotesHubManagerService implements INotesHubManagerService {
         }
     }
 
-    public newNoteAtRoot(providerName: 'project' | 'remote' | 'global'): Promise<void> {
+    public newNoteAtRoot(providerName: 'project' | 'global'): Promise<void> {
         try {
             return this.dependencies.actionService.newNoteAtRoot(providerName)
         } catch (error: unknown) {
@@ -206,7 +205,7 @@ export class NotesHubManagerService implements INotesHubManagerService {
         }
     }
 
-    public newFolderAtRoot(providerName: 'project' | 'remote' | 'global'): Promise<void> {
+    public newFolderAtRoot(providerName: 'project' | 'global'): Promise<void> {
         try {
             return this.dependencies.actionService.newFolderAtRoot(providerName)
         } catch (error: unknown) {
@@ -245,7 +244,7 @@ export class NotesHubManagerService implements INotesHubManagerService {
     }
 
     public async createNoteWithValidation(
-        providerName: 'project' | 'remote' | 'global', 
+        providerName: 'project' | 'global', 
         noteName?: string
     ): Promise<{ created: boolean; notePath?: string; providerName?: string }> {
         try {
@@ -281,7 +280,7 @@ export class NotesHubManagerService implements INotesHubManagerService {
     public async completeNoteWorkflow(
         operation: 'open' | 'create' | 'delete',
         noteItem?: INotesHubItem,
-        providerName?: 'project' | 'remote' | 'global'
+        providerName?: 'project' | 'global'
     ): Promise<{ success: boolean; operation: string; notePath?: string }> {
         try {
             // Step 1: Validate input parameters based on operation
@@ -334,11 +333,11 @@ export class NotesHubManagerService implements INotesHubManagerService {
         }
     }
 
-    private validateProviderName(providerName: 'project' | 'remote' | 'global' | undefined): void {
+    private validateProviderName(providerName: 'project' | 'global' | undefined): void {
         if (!providerName) {
             throw new Error(notesHubConstants.errorMessages.NO_PROVIDER_SELECTED)
         }
-        if (!['project', 'remote', 'global'].includes(providerName)) {
+        if (!['project', 'global'].includes(providerName)) {
             throw new Error(notesHubConstants.errorMessages.INVALID_PROVIDER_NAME)
         }
     }

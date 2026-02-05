@@ -33,7 +33,6 @@ export { NotesHubItem } from './models/NotesHubItem.js'
 export { BaseNotesDataProvider } from './providers/BaseNotesDataProvider.js'
 export { GlobalNotesDataProvider } from './providers/GlobalNotesDataProvider.js'
 export { ProjectNotesDataProvider } from './providers/ProjectNotesDataProvider.js'
-export { RemoteNotesDataProvider } from './providers/RemoteNotesDataProvider.js'
 
 // Services
 export { NotesHubService } from './services/NotesHub.service.js'

@@ -50,7 +50,7 @@ export interface INotesHubManagerService {
 	dispose: Disposable['dispose']
     getNotesHubConfig: () => NotesHubConfig
     getProviderForNote: (item: INotesHubItem) => Promise<INotesHubDataProvider | undefined>
-    refreshProviders: (providersToRefresh?: 'project' | 'remote' | 'global' | 'all' | Array<'project' | 'remote' | 'global'>) => void
+    refreshProviders: (providersToRefresh?: 'project' | 'global' | 'all' | Array<'project' | 'global'>) => void
     revealNotesHubItem: (provider: INotesHubDataProvider, item: INotesHubItem, select?: boolean) => Promise<void>
     
     // Action service methods
@@ -64,11 +64,11 @@ export interface INotesHubManagerService {
     pasteItem: (targetFolderItem: INotesHubItem) => Promise<void>
     newNoteInFolder: (targetFolderItem: INotesHubItem) => Promise<void>
     newFolderInFolder: (targetFolderItem: INotesHubItem) => Promise<void>
-    newNoteAtRoot: (providerName: 'project' | 'remote' | 'global') => Promise<void>
-    newFolderAtRoot: (providerName: 'project' | 'remote' | 'global') => Promise<void>
+    newNoteAtRoot: (providerName: 'project' | 'global') => Promise<void>
+    newFolderAtRoot: (providerName: 'project' | 'global') => Promise<void>
 
     // Complex orchestration methods
     openNoteWithValidation: (noteItem: INotesHubItem) => Promise<{ opened: boolean; notePath?: string }>
-    createNoteWithValidation: (providerName: 'project' | 'remote' | 'global', noteName?: string) => Promise<{ created: boolean; notePath?: string; providerName?: string }>
-    completeNoteWorkflow: (operation: 'open' | 'create' | 'delete', noteItem?: INotesHubItem, providerName?: 'project' | 'remote' | 'global') => Promise<{ success: boolean; operation: string; notePath?: string }>
+    createNoteWithValidation: (providerName: 'project' | 'global', noteName?: string) => Promise<{ created: boolean; notePath?: string; providerName?: string }>
+    completeNoteWorkflow: (operation: 'open' | 'create' | 'delete', noteItem?: INotesHubItem, providerName?: 'project' | 'global') => Promise<{ success: boolean; operation: string; notePath?: string }>
 }

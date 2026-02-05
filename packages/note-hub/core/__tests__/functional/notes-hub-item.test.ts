@@ -289,7 +289,7 @@ describe('NotesHubItem', () => {
 			expect(item.description).toBe('Custom Description')
 		})
 
-		it('should return undefined when no frontmatter description', () => {
+		it('should return empty string when no frontmatter description', () => {
 			const item = new NotesHubItem(
 				'test-file.md',
 				'/test/path/file.md',
@@ -301,7 +301,7 @@ describe('NotesHubItem', () => {
 				mockTreeItemCollapsibleStateAdapter,
 			)
 
-			expect(item.description).toBeUndefined()
+			expect(item.description).toBe('')
 		})
 	})
 
@@ -466,7 +466,7 @@ describe('NotesHubItem', () => {
 				mockTreeItemCollapsibleStateAdapter,
 			)
 
-			expect(item.description).toBeUndefined()
+			expect(item.description).toBe('')
             
 			item.description = 'New Description'
 			expect(item.description).toBe('New Description')

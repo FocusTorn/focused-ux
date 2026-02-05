@@ -4,10 +4,8 @@
 
 export interface NotesHubConfig { //>
 	projectNotesPath: string
-	remoteNotesPath: string
 	globalNotesPath: string
 	isProjectNotesEnabled: boolean
-	isRemoteNotesEnabled: boolean
 	isGlobalNotesEnabled: boolean
 } //<
 

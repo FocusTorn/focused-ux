@@ -4,7 +4,11 @@ import * as path from 'node:path'
 export class PathUtilsAdapter implements IPathUtilsService {
 
 	sanitizePath(inputPath: string): string {
-		return path.normalize(inputPath)
+		if (inputPath == null || typeof inputPath !== 'string') {
+			return ''
+		}
+		const normalized = path.normalize(inputPath)
+		return normalized.replace(/\\/g, '/')
 	}
 
 	join(...paths: string[]): string {

@@ -16,6 +16,6 @@ export interface INotesHubActionService { //>
 	pasteItem: (targetFolderItem: INotesHubItem) => Promise<void>
 	newNoteInFolder: (targetFolderItem: INotesHubItem) => Promise<void>
 	newFolderInFolder: (targetFolderItem: INotesHubItem) => Promise<void>
-	newNoteAtRoot: (providerName: 'project' | 'remote' | 'global') => Promise<void>
-	newFolderAtRoot: (providerName: 'project' | 'remote' | 'global') => Promise<void>
+	newNoteAtRoot: (providerName: 'project' | 'global') => Promise<void>
+	newFolderAtRoot: (providerName: 'project' | 'global') => Promise<void>
 } //<

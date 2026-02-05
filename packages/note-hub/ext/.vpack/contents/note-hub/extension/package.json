@@ -4,18 +4,12 @@
     "description": "Notes Hub VSCode extension",
     "publisher": "NewRealityDesigns",
     "repository": "https://github.com/FocusTorn/focused-ux",
-    "version": "0.1.0-dev.144502636",
+    "version": "0.1.0-dev.169234592",
     "contributes": {
         "commands": [
             {
                 "command": "nh.newProjectFolder",
                 "title": "Notes Hub: New Project Folder",
-                "category": "Notes Hub",
-                "icon": "$(new-folder)"
-            },
-            {
-                "command": "nh.newRemoteFolder",
-                "title": "Notes Hub: New Remote Folder",
                 "category": "Notes Hub",
                 "icon": "$(new-folder)"
             },
@@ -28,12 +22,6 @@
             {
                 "command": "nh.newProjectNote",
                 "title": "Notes Hub: New Project Note",
-                "category": "Notes Hub",
-                "icon": "$(new-file)"
-            },
-            {
-                "command": "nh.newRemoteNote",
-                "title": "Notes Hub: New Remote Note",
                 "category": "Notes Hub",
                 "icon": "$(new-file)"
             },
@@ -120,13 +108,6 @@
                     "icon": "$(project)"
                 },
                 {
-                    "id": "nh.remoteNotesView",
-                    "name": "Remote Notes",
-                    "type": "tree",
-                    "when": "config.nh.enableRemoteNotes",
-                    "icon": "$(remote-explorer)"
-                },
-                {
                     "id": "nh.globalNotesView",
                     "name": "Global Notes",
                     "type": "tree",
@@ -145,16 +126,6 @@
                 {
                     "command": "nh.newProjectFolder",
                     "when": "view == 'nh.projectNotesView'",
-                    "group": "navigation@2"
-                },
-                {
-                    "command": "nh.newRemoteNote",
-                    "when": "view == 'nh.remoteNotesView'",
-                    "group": "navigation@1"
-                },
-                {
-                    "command": "nh.newRemoteFolder",
-                    "when": "view == 'nh.remoteNotesView'",
                     "group": "navigation@2"
                 },
                 {
@@ -230,12 +201,6 @@
                     "description": "Enable the Project Notes view.",
                     "scope": "resource"
                 },
-                "nh.enableRemoteNotes": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Enable the Remote Notes view.",
-                    "scope": "resource"
-                },
                 "nh.enableGlobalNotes": {
                     "type": "boolean",
                     "default": true,
@@ -247,12 +212,6 @@
                     "default": "",
                     "description": "Path to project-specific notes directory. If empty, defaults to '~/.fux_note-hub/project/[workspaceName]'. Supports '~' for home directory.",
                     "scope": "resource"
-                },
-                "nh.remoteNotesPath": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Path to remote notes directory. If empty, defaults to '~/.fux_note-hub/remote'. Supports '~' for home directory.",
-                    "scope": "machine"
                 },
                 "nh.globalNotesPath": {
                     "type": "string",
